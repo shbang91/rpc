@@ -1,0 +1,46 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Precompiled Headers *.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+build
+tags
+.DS_Store
+experiment_data
+video
+configuration.hpp
+drake_binary
+*_RESULTS.yaml
+*.pyc
+__pycache__
+octave-workspace
+*.m~
+RLData
+*.json
+note.txt
