@@ -11,6 +11,8 @@ set(CMAKE_CXX_EXTENSIONS on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 
 ##==================================================
@@ -40,6 +42,12 @@ include_directories(${DART_INCLUDE_DIRS})
 # Eigen
 find_package(Eigen 3.3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
+##==================================================
+## Subdirectories
+##==================================================
+add_subdirectory(pnc)
+add_subdirectory(test)
+#add_subdirectory(util)
 
 
 ##==================================================
@@ -50,3 +58,4 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.cmake
     ${PROJECT_SOURCE_DIR}/configuration.hpp)
 install(FILES ${PROJECT_SOURCE_DIR}/configuration.hpp DESTINATION
     "${INSTALL_INCLUDE_DIR}")
+

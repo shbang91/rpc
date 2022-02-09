@@ -50,11 +50,13 @@ pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
 pb.setGravity(0, 0, -9.81)
 
 ## robot spawn & initial kinematics and dynamics setting
+pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
 draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco.urdf",
                              Config.INITIAL_BASE_JOINT_POS,
                              Config.INITIAL_BASE_JOINT_QUAT)
 
 ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=1)
+pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
 nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
     draco_humanoid, Config.INITIAL_BASE_JOINT_POS,
@@ -105,6 +107,9 @@ while (1):
                                                 rot_basejoint_to_basecom)
     ##compute control command
 
+    ##apply motor torque
+
+    #step simulation
     pb.stepSimulation()
     # time.sleep(dt)  ## Is it necessary?
 
