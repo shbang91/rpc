@@ -5,7 +5,6 @@ DartRobotSystem::DartRobotSystem(const std::string &_urdf_path, const bool &_b_f
         dart::utils::DartLoader urdf_loader;
         skeleton_ = urdf_loader.parseSkeleton(_urdf_path);
 
-
         this->ConfigRobot();
 }
 
@@ -25,8 +24,6 @@ void DartRobotSystem::ConfigRobot(){
         } else{
         }
     }
-
-    std::cout << "1" << std::endl;
 
 
     for (int i = 0; i < skeleton_->getNumBodyNodes(); ++i) {
@@ -56,7 +53,6 @@ void DartRobotSystem::ConfigRobot(){
     joint_trq_limits_.block(0,1,n_a_,1) = 
         skeleton_->getForceUpperLimits().segment(n_floating_base_,n_a_);
 
-    std::cout << "2" << std::endl;
 
     if(b_print_info_){
         std::cout << "===================" << std::endl;
