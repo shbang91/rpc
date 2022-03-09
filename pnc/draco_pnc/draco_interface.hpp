@@ -7,18 +7,6 @@
 class DracoStateProvider;
 class DracoStateEstimator;
 
-class DracoInterface: public Interface {
-    public:
-        DracoInterface();
-        virtual ~DracoInterface();
-        virtual void GetCommand(void *_sensor_data, void *_command_data);
-
-    private:
-        DracoStateProvider *sp_;
-        DracoStateEstimator *se_;
-
-};
-
 class DracoSensorData {
     public:
         DracoSensorData() {
@@ -47,4 +35,17 @@ class DracoCommand {
         std::map<std::string, double> joint_positions_cmd_;
         std::map<std::string, double> joint_velocities_cmd_;
         std::map<std::string, double> joint_torques_cmd_;
+};
+
+class DracoInterface: public Interface {
+    public:
+        DracoInterface();
+        virtual ~DracoInterface();
+        virtual void GetCommand(void *_sensor_data, void *_command_data);
+        void InitialCommand(DracoSensorData *data, DracoCommand *command);
+
+    private:
+        DracoStateProvider *sp_;
+        DracoStateEstimator *se_;
+
 };

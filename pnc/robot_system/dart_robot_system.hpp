@@ -16,6 +16,7 @@
 class DartRobotSystem : public RobotSystem {
     public:
         DartRobotSystem(const std::string &_urdf_path, const bool &_b_fixed_base, const bool &_b_print_info);
+        DartRobotSystem(dart::dynamics::SkeletonPtr _robot, const bool &_b_fixed_base, const bool &_b_print_info);
         ~DartRobotSystem();
 
         //Configure the following properties: n_floating, n_q, n_q_dot, n_a,

@@ -6,6 +6,23 @@ DartRobotSystem::DartRobotSystem(const std::string &_urdf_path, const bool &_b_f
         skeleton_ = urdf_loader.parseSkeleton(_urdf_path);
 
         this->ConfigRobot();
+
+        joint_positions_.resize(n_a_);
+        joint_velocities_.resize(n_a_);
+
+        Ag_.resize(6, n_qdot_);
+}
+
+DartRobotSystem::DartRobotSystem(dart::dynamics::SkeletonPtr _robot, const bool &_b_fixed_base, const bool &_b_print_info)
+    : RobotSystem(_b_fixed_base, _b_print_info) {
+        skeleton_ = _robot;
+
+        this->ConfigRobot();
+
+        joint_positions_.resize(n_a_);
+        joint_velocities_.resize(n_a_);
+
+        Ag_.resize(6, n_qdot_);
 }
 
 DartRobotSystem::~DartRobotSystem(){}
@@ -144,6 +161,7 @@ void DartRobotSystem::UpdateRobotModel(const Eigen::Vector3d &_base_com_pos,
 
     //floating base update
     if(!b_fixed_base_){
+
         Eigen::Isometry3d floating_base_joint_iso = Eigen::Isometry3d::Identity();
         floating_base_joint_iso.linear() = _base_joint_quat.normalized().toRotationMatrix();
         floating_base_joint_iso.translation() = _base_joint_pos;
@@ -176,7 +194,7 @@ void DartRobotSystem::UpdateRobotModel(const Eigen::Vector3d &_base_com_pos,
     for(std::map<std::string, double>::iterator it = _joint_velocities.begin();
             it != _joint_velocities.end(); it++){
         joint_ptr_map_.find(it->first)->second->setVelocity(0, it->second);
-        joint_positions_[this->GetJointIdx(it->first)] = it->second;
+        joint_velocities_[this->GetJointIdx(it->first)] = it->second;
     }
 
     skeleton_->computeForwardKinematics();

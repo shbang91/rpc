@@ -4,6 +4,8 @@ from collections import OrderedDict
 
 import pybullet as pb
 import numpy as np
+
+np.set_printoptions(precision=5)
 from tqdm import tqdm
 import cv2
 import imageio
@@ -53,6 +55,14 @@ def get_robot_config(robot,
         print("+" * 80)
         print("Link Infos")
         util.PrettyPrint(link_id)
+        print("base com pos")
+        print(base_pos)
+        print("base com ori")
+        print(rot_world_com)
+        print("base joint pos")
+        print(initial_pos)
+        print("base joint ori")
+        print(rot_world_basejoint)
 
     return nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom
 
@@ -153,8 +163,9 @@ def draw_link_frame(robot, link_idx, linewidth=5.0, text=None):
 def set_motor_impedance(robot, joint_id, command, kp, kd):
     trq_applied = OrderedDict()
     for (joint_name, pos_des), (_, vel_des), (_, trq_des) in zip(
-            command['joint_pos'].items(), command['joint_vel'].items(),
-            command['joint_trq'].items()):
+            command['joint_positions_cmd_'].items(),
+            command['joint_velocities_cmd_'].items(),
+            command['joint_torques_cmd_'].items()):
         joint_state = pb.getJointState(robot, joint_id[joint_name])
         joint_pos, joint_vel = joint_state[0], joint_state[1]
         trq_applied[joint_id[joint_name]] = trq_des + kp[joint_name] * (

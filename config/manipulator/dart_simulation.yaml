@@ -1,0 +1,9 @@
+servo_dt: 0.001 # !!this should be match with controller servo rate!!
+is_record: false
+show_joint_frame: true
+
+# Low-level Joint PD gains
+control_configuration:
+  kp: 0
+  kd: 0
+

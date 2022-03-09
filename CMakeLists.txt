@@ -42,12 +42,25 @@ include_directories(${DART_INCLUDE_DIRS})
 # Eigen
 find_package(Eigen 3.3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
+
+#Boost
+find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
+include_directories(${Boost_INCLUDE_DIRS})
+
+#pybind11
+if(PYTHON_BINDING)
+    find_package(pybind11 REQUIRED)
+    include_directories(${pybind11_INCLUDE_DIRS})
+    add_subdirectory(binding)
+endif()
+
 ##==================================================
 ## Subdirectories
 ##==================================================
 add_subdirectory(pnc)
 add_subdirectory(test)
-#add_subdirectory(util)
+add_subdirectory(util)
+add_subdirectory(third_party)
 
 
 ##==================================================

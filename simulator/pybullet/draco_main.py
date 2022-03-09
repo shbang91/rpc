@@ -6,12 +6,20 @@ cwd = os.getcwd()
 import sys
 
 sys.path.append(cwd)
+sys.path.append(cwd + "/build/lib")
+
 import time
 
 import numpy as np
+import ipdb
 
 from config.draco.pybullet_simulation import Config
 from util.python_utils import pybullet_util
+from util.python_utils import util
+
+import copy
+
+import draco_interface_pybind
 
 
 def set_initial_config(robot, joint_id):
@@ -90,8 +98,10 @@ c = pb.createConstraint(draco_humanoid,
                         childFramePosition=[0, 0, 0])
 pb.changeConstraint(c, gearRatio=-1, maxForce=500, erp=10)
 
-#TODO:
-#interface, sensor_data, command class
+#pnc interface, sensor_data, command class
+pnc_draco_interface = draco_interface_pybind.DracoInterface()
+pnc_draco_sensor_data = draco_interface_pybind.DracoSensorData()
+pnc_draco_command = draco_interface_pybind.DracoCommand()
 
 ## Run Simulation
 t = 0
@@ -101,14 +111,87 @@ count = 0
 while (1):
 
     ##get_sensor_data
-    sensor_data = pybullet_util.get_sensor_data(draco_humanoid, joint_id,
-                                                link_id,
-                                                pos_basejoint_to_basecom,
-                                                rot_basejoint_to_basecom)
+    pybullet_sensor_data_dict = pybullet_util.get_sensor_data(
+        draco_humanoid, joint_id, link_id, pos_basejoint_to_basecom,
+        rot_basejoint_to_basecom)
+
+    pybullet_sensor_data_dict['imu_frame_iso'] = pybullet_util.get_link_iso(
+        draco_humanoid, link_id['torso_imu'])
+    pybullet_sensor_data_dict['imu_frame_vel'] = pybullet_util.get_link_vel(
+        draco_humanoid, link_id['torso_imu'])
+    lf_height = pybullet_util.get_link_iso(draco_humanoid,
+                                           link_id['l_foot_contact'])[2, 3]
+    rf_height = pybullet_util.get_link_iso(draco_humanoid,
+                                           link_id['r_foot_contact'])[2, 3]
+    pybullet_sensor_data_dict[
+        'b_lf_contact'] = True if lf_height <= 0.05 else False
+    pybullet_sensor_data_dict[
+        'b_rf_contact'] = True if rf_height <= 0.05 else False
+
+    ##copy pybullet sensor data to pnc sensor data
+    pnc_draco_sensor_data.joint_positions_ = pybullet_sensor_data_dict[
+        'joint_pos']
+    pnc_draco_sensor_data.joint_velocities_ = pybullet_sensor_data_dict[
+        'joint_vel']
+    pnc_draco_sensor_data.imu_frame_isometry_ = pybullet_sensor_data_dict[
+        'imu_frame_iso']
+    pnc_draco_sensor_data.imu_frame_velocities_ = pybullet_sensor_data_dict[
+        'imu_frame_vel']
+    pnc_draco_sensor_data.b_lf_contact_ = pybullet_sensor_data_dict[
+        'b_lf_contact']
+    pnc_draco_sensor_data.b_rf_contact_ = pybullet_sensor_data_dict[
+        'b_rf_contact']
+
+    ##Debugging purpose
+    # print("==================")
+    # print("pybullet robot")
+    # print("==================")
+    # print("base com pos")
+    # print(pybullet_sensor_data_dict['base_com_pos'])
+    # print("base com ori")
+    # print(util.quat_to_rot(pybullet_sensor_data_dict['base_com_quat']))
+    # print("base joint pos")
+    # print(pybullet_sensor_data_dict['base_joint_pos'])
+    # print("base joint ori")
+    # print(util.quat_to_rot(pybullet_sensor_data_dict['base_joint_quat']))
+    # print("base_com_lin_vel")
+    # print(pybullet_sensor_data_dict['base_com_lin_vel'])
+    # print("base_com_ang_vel")
+    # print(pybullet_sensor_data_dict['base_com_ang_vel'])
+    # print("base_joint_lin_vel")
+    # print(pybullet_sensor_data_dict['base_joint_lin_vel'])
+    # print("base_joint_ang_vel")
+    # print(pybullet_sensor_data_dict['base_joint_ang_vel'])
+    # print("lf height")
+    # print(lf_height)
+
+    # lf_pos = pybullet_util.get_link_iso(draco_humanoid,
+    # link_id['l_foot_contact'])[:3, 3]
+    # print("lf pos")
+    # print(lf_pos)
+
     ##compute control command
+    pnc_draco_interface.GetCommand(pnc_draco_sensor_data, pnc_draco_command)
+
+    ##copy command
+    pybullet_joint_positions_cmd = copy.deepcopy(
+        pnc_draco_command.joint_positions_cmd_)
+    pybullet_joint_velocities_cmd = copy.deepcopy(
+        pnc_draco_command.joint_velocities_cmd_)
+    pybullet_joint_torques_cmd = copy.deepcopy(
+        pnc_draco_command.joint_torques_cmd_)
+
+    ##delete passive joint command
+    del pybullet_joint_positions_cmd['l_knee_fe_jp']
+    del pybullet_joint_velocities_cmd['l_knee_fe_jp']
+    del pybullet_joint_torques_cmd['l_knee_fe_jp']
+    del pybullet_joint_positions_cmd['r_knee_fe_jp']
+    del pybullet_joint_velocities_cmd['r_knee_fe_jp']
+    del pybullet_joint_torques_cmd['r_knee_fe_jp']
 
     ##apply motor torque
-
+    pybullet_util.set_motor_trq(draco_humanoid, joint_id,
+                                pybullet_joint_torques_cmd)
     #step simulation
     pb.stepSimulation()
     # time.sleep(dt)  ## Is it necessary?
