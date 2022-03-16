@@ -5,7 +5,10 @@
 
 #include "pnc/robot_system/dart_robot_system.hpp"
 
+#include "pnc/draco_pnc/draco_data_manager.hpp"
+
 #include "configuration.hpp"
+#include "util/util.hpp"
 
 DracoInterface::DracoInterface(): Interface() {
 
@@ -14,9 +17,14 @@ DracoInterface::DracoInterface(): Interface() {
     sp_ = DracoStateProvider::GetStateProvider();
     sp_->stance_foot_ = "l_foot_contact";
     sp_->prev_stance_foot_ = "l_foot_contact";
-    //config setting
+
+    //get yaml node
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
 
     //control_architecture_ = new DracoControlArchitecture(robot_);
+
+    //initalize data publisher
+    DracoDataManager::GetDataManager()->InitializeSocket(util::ReadParameter<std::string>(cfg,"ip_address"));
 }
 
 DracoInterface::~DracoInterface(){
@@ -26,21 +34,27 @@ DracoInterface::~DracoInterface(){
 }
 
 void DracoInterface::GetCommand(void *_sensor_data, void *_command_data){
+
+    running_time_ = (double)(count_)*sp_->servo_dt_;
+
+    sp_->current_time_ = running_time_;
+
     DracoSensorData *sensor_data = ((DracoSensorData *)_sensor_data);
     DracoCommand *command_data = ((DracoCommand *)_command_data);
 
-    //int waiting_count = 10;
-    //if (count_ < waiting_count) {
-    se_->InitializeModel(sensor_data); 
-    this->InitialCommand(sensor_data, command_data);
-       // TODO:initial config control
-    //}
+    int waiting_count = 10;
+    if (count_ < waiting_count) {
+        se_->InitializeModel(sensor_data); 
+        this->InitialCommand(sensor_data, command_data);
+    } else {
     //robot model update using sensor_data
     //se_->UpdateModel(sensor_data);
     //get command from controller
     //control_architecture_->GetCommand(command_data);
+    }
 
-    //running_time_ = (double)(count_)*sp_->servo_dt;
+    DracoDataManager::GetDataManager()->data_->time_ = sp_->current_time_; 
+    DracoDataManager::GetDataManager()->SendData();
     ++count_;
 }
 

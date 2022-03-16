@@ -104,6 +104,8 @@ void DracoStateEstimator::UpdateModel(DracoSensorData *_sensor_data){
     //std::cout << robot_->GetLinkVel("torso_imu").tail(3) << std::endl;
     //std::cout << "lf pos" << std::endl;
     //std::cout << robot_->GetLinkIso("l_foot_contact").translation() << std::endl;
+    //std::cout << "rf pos" << std::endl;
+    //std::cout << robot_->GetLinkIso("r_foot_contact").translation() << std::endl;
 }
 
 void DracoStateEstimator::EstimateOrientation(DracoSensorData* _sensor_data){

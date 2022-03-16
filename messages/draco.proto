@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package draco;
+
+message pnc_msg {
+    float time = 1;
+
+    repeated float base_joint_pos = 2;
+    repeated float base_joint_ori = 3;
+    repeated float base_joint_lin_vel = 4;
+    repeated float base_joint_ang_vel = 5;
+
+    repeated float base_com_pos = 6;
+    repeated float base_com_ori = 7;
+    repeated float base_com_lin_vel = 8;
+    repeated float base_com_ang_vel = 9;
+}

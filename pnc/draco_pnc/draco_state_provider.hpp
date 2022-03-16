@@ -8,6 +8,7 @@ class DracoStateProvider{
         ~DracoStateProvider(){};
 
         double servo_dt_;
+        double current_time_;
 
         //stance foot
         std::string stance_foot_;

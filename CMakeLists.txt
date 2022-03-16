@@ -54,6 +54,15 @@ if(PYTHON_BINDING)
     add_subdirectory(binding)
 endif()
 
+#Protobuf & ZMQ
+find_package(ZMQ)
+find_package(Protobuf)
+if(Protobuf_FOUND AND ZMQ_FOUND)
+    include_directories(${Protobuf_INCLUDE_DIRS})
+    include_directories(${ZMQ_INCLUDE_DIRS})
+    add_subdirectory(messages)
+endif()
+
 ##==================================================
 ## Subdirectories
 ##==================================================
