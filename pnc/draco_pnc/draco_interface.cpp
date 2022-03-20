@@ -44,10 +44,12 @@ void DracoInterface::GetCommand(void *_sensor_data, void *_command_data){
 
     int waiting_count = 10;
     if (count_ < waiting_count) {
-        se_->InitializeModel(sensor_data); 
+        //se_->InitializeModel(sensor_data); 
+        se_->UpdateModelWithGroundTruth(sensor_data);
         this->InitialCommand(sensor_data, command_data);
     } else {
     //robot model update using sensor_data
+    se_->UpdateModelWithGroundTruth(sensor_data);
     //se_->UpdateModel(sensor_data);
     //get command from controller
     //control_architecture_->GetCommand(command_data);

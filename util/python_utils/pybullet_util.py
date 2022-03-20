@@ -235,7 +235,7 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
         base_com_pos (np.array):
             base com pos in world
         base_com_quat (np.array):
-            base com quat in world
+            base com quat in world [x,y,z,w]
         base_com_lin_vel (np.array):
             base com lin vel in world
         base_com_ang_vel (np.array):

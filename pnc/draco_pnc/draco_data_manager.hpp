@@ -45,4 +45,6 @@ class DracoData {
         Eigen::Vector3d base_com_lin_vel_;
         Eigen::Vector3d base_com_ang_vel_;
 
+        Eigen::VectorXd joint_positions_;
+
 };

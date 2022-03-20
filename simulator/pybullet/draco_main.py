@@ -108,7 +108,7 @@ t = 0
 dt = Config.CONTROLLER_DT
 count = 0
 
-while (1):
+while (True):
 
     ##get_sensor_data
     pybullet_sensor_data_dict = pybullet_util.get_sensor_data(
@@ -141,6 +141,25 @@ while (1):
         'b_lf_contact']
     pnc_draco_sensor_data.b_rf_contact_ = pybullet_sensor_data_dict[
         'b_rf_contact']
+
+    ##debugging
+    pnc_draco_sensor_data.base_com_pos_ = pybullet_sensor_data_dict[
+        'base_com_pos']
+    pnc_draco_sensor_data.base_com_quat_ = pybullet_sensor_data_dict[
+        'base_com_quat']
+    pnc_draco_sensor_data.base_com_lin_vel_ = pybullet_sensor_data_dict[
+        'base_com_lin_vel']
+    pnc_draco_sensor_data.base_com_ang_vel_ = pybullet_sensor_data_dict[
+        'base_com_ang_vel']
+
+    pnc_draco_sensor_data.base_joint_pos_ = pybullet_sensor_data_dict[
+        'base_joint_pos']
+    pnc_draco_sensor_data.base_joint_quat_ = pybullet_sensor_data_dict[
+        'base_joint_quat']
+    pnc_draco_sensor_data.base_joint_lin_vel_ = pybullet_sensor_data_dict[
+        'base_joint_lin_vel']
+    pnc_draco_sensor_data.base_joint_ang_vel_ = pybullet_sensor_data_dict[
+        'base_joint_ang_vel']
 
     ##Debugging purpose
     # print("==================")

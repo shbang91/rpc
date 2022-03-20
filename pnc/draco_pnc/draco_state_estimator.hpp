@@ -9,6 +9,7 @@ class DracoStateEstimator{
         DracoStateEstimator(RobotSystem *_robot); 
         ~ DracoStateEstimator();
 
+        void UpdateModelWithGroundTruth(DracoSensorData *_sensor_data);
         void InitializeModel(DracoSensorData *_sensor_data);
         void UpdateModel(DracoSensorData *_sensor_data);
 

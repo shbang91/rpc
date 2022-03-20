@@ -14,6 +14,16 @@ class DracoSensorData {
         imu_frame_velocities_.setZero();
         b_lf_contact_ = false;
         b_rf_contact_ = false;
+
+        base_com_pos_.setZero();
+        base_com_quat_.setZero();
+        base_com_lin_vel_.setZero();
+        base_com_ang_vel_.setZero();
+
+        base_joint_pos_.setZero();
+        base_joint_quat_.setZero();
+        base_joint_lin_vel_.setZero();
+        base_joint_ang_vel_.setZero();
         };
         ~DracoSensorData() {};
 
@@ -24,6 +34,17 @@ class DracoSensorData {
 
         bool b_lf_contact_;
         bool b_rf_contact_;
+
+        //Debug purpose
+        Eigen::Vector3d base_com_pos_;
+        Eigen::Vector4d base_com_quat_;
+        Eigen::Vector3d base_com_lin_vel_;
+        Eigen::Vector3d base_com_ang_vel_;
+
+        Eigen::Vector3d base_joint_pos_;
+        Eigen::Vector4d base_joint_quat_;
+        Eigen::Vector3d base_joint_lin_vel_;
+        Eigen::Vector3d base_joint_ang_vel_;
 
 };
 

@@ -44,6 +44,10 @@ void DracoDataManager::SendData(){
     msg.add_base_joint_ori(data_->base_joint_ori_[3]);
     msg.add_base_com_ori(data_->base_com_ori_[3]);
 
+    for (int i = 0; i < data_->joint_positions_.size(); ++i) {
+        msg.add_joint_positions(data_->joint_positions_[i]);
+    }
+
 
     //serialize msg in string type
     std::string encoded_msg;
@@ -69,6 +73,10 @@ DracoData::DracoData(){
     base_com_ori_ = Eigen::Vector4d::Zero();
     base_com_lin_vel_ = Eigen::Vector3d::Zero();
     base_com_ang_vel_ = Eigen::Vector3d::Zero();
+
+    joint_positions_ = Eigen::VectorXd::Zero(27);
+
+
 }
 
 DracoData::~DracoData(){}

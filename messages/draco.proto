@@ -14,4 +14,6 @@ message pnc_msg {
     repeated float base_com_ori = 7;
     repeated float base_com_lin_vel = 8;
     repeated float base_com_ang_vel = 9;
+
+    repeated float joint_positions = 10;
 }

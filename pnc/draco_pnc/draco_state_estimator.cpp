@@ -1,4 +1,5 @@
 #include "pnc/draco_pnc/draco_state_estimator.hpp"
+#include "pnc/draco_pnc/draco_data_manager.hpp"
 
 DracoStateEstimator::DracoStateEstimator(RobotSystem *_robot){
     robot_ = _robot;
@@ -19,6 +20,42 @@ DracoStateEstimator::DracoStateEstimator(RobotSystem *_robot){
 }
 
 DracoStateEstimator::~DracoStateEstimator(){};
+
+void DracoStateEstimator::UpdateModelWithGroundTruth(DracoSensorData *_sensor_data){
+    Eigen::Vector4d base_com_quat = _sensor_data->base_com_quat_;
+    Eigen::Quaternion<double> base_com_ori(base_com_quat[3], base_com_quat[0], base_com_quat[1], base_com_quat[2]);
+    Eigen::Vector4d base_joint_quat = _sensor_data->base_joint_quat_;
+    Eigen::Quaternion<double> base_joint_ori(base_joint_quat[3], base_joint_quat[0], base_joint_quat[1], base_joint_quat[2]);
+
+    robot_->UpdateRobotModel(_sensor_data->base_com_pos_,
+                           base_com_ori,
+                           _sensor_data->base_com_lin_vel_,
+                           _sensor_data->base_com_ang_vel_,
+                           _sensor_data->base_joint_pos_,
+                           base_joint_ori,
+                           _sensor_data->base_joint_lin_vel_,
+                           _sensor_data->base_joint_ang_vel_,
+                           _sensor_data->joint_positions_,
+                           _sensor_data->joint_velocities_,
+                           true);
+
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    dm->data_->base_com_pos_ = _sensor_data->base_com_pos_;
+    dm->data_->base_com_ori_ = base_com_quat;
+    dm->data_->base_com_lin_vel_ = _sensor_data->base_com_lin_vel_;
+    dm->data_->base_com_ang_vel_ = _sensor_data->base_com_ang_vel_;
+
+    dm->data_->base_joint_pos_ = _sensor_data->base_joint_pos_;
+    dm->data_->base_joint_ori_ = base_joint_quat;
+    dm->data_->base_joint_lin_vel_ = _sensor_data->base_joint_lin_vel_;
+    dm->data_->base_joint_ang_vel_ = _sensor_data->base_joint_ang_vel_;
+
+    //for meshcat visualizing
+    dm->data_->joint_positions_ = robot_->joint_positions_;
+
+    this->ComputeDCM();
+
+}
 
 void DracoStateEstimator::InitializeModel(DracoSensorData *_sensor_data){
     this->UpdateModel(_sensor_data);

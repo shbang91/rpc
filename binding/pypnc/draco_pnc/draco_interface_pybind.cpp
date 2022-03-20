@@ -36,7 +36,17 @@ PYBIND11_MODULE(draco_interface_pybind, m){
         .def_readwrite("imu_frame_isometry_", &DracoSensorData::imu_frame_isometry_)
         .def_readwrite("imu_frame_velocities_", &DracoSensorData::imu_frame_velocities_)
         .def_readwrite("b_lf_contact_", &DracoSensorData::b_lf_contact_)
-        .def_readwrite("b_rf_contact_", &DracoSensorData::b_rf_contact_);
+        .def_readwrite("b_rf_contact_", &DracoSensorData::b_rf_contact_)
+
+        .def_readwrite("base_com_pos_", &DracoSensorData::base_com_pos_)
+        .def_readwrite("base_com_quat_", &DracoSensorData::base_com_quat_)
+        .def_readwrite("base_com_lin_vel_", &DracoSensorData::base_com_lin_vel_)
+        .def_readwrite("base_com_ang_vel_", &DracoSensorData::base_com_ang_vel_)
+
+        .def_readwrite("base_joint_pos_", &DracoSensorData::base_joint_pos_)
+        .def_readwrite("base_joint_quat_", &DracoSensorData::base_joint_quat_)
+        .def_readwrite("base_joint_lin_vel_", &DracoSensorData::base_joint_lin_vel_)
+        .def_readwrite("base_joint_ang_vel_", &DracoSensorData::base_joint_ang_vel_);
 
     py::class_<DracoCommand>(m, "DracoCommand")
         .def(py::init<>())
