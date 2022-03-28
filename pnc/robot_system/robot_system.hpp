@@ -1,6 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <string>
+#include <map>
 
 class RobotSystem {
     public:
