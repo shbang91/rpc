@@ -3,8 +3,8 @@
 #include <map>
 
 #include "pnc/state_machine.hpp" 
+#include "pnc/robot_system/robot_system.hpp"
 
-class RobotSystem; 
 
 class ControlArchitecture {
     public:

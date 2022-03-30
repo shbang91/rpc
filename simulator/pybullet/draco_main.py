@@ -52,6 +52,10 @@ def set_initial_config(robot, joint_id):
 
 pb.connect(pb.GUI)
 
+pb.resetDebugVisualizerCamera(cameraDistance=1.5,
+                              cameraYaw=90,
+                              cameraPitch=0,
+                              cameraTargetPosition=[0, 0, 0.8])
 ## sim physics setting
 pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
                              numSubSteps=Config.N_SUBSTEP)

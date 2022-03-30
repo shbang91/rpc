@@ -12,7 +12,7 @@ class StateMachine {
         state_machine_time_ = 0.;
         };
 
-        virtual ~StateMachine() {};
+        virtual ~StateMachine(){};
 
         virtual void OneStep() = 0;
 
