@@ -30,7 +30,7 @@
         <!--<mesh filename="package://meshes/torso_link.stl"/>-->
         <mesh filename="package://meshes/torso_link.obj"/>
       </geometry>
-      <material name="white"/>
+      <!--<material name="white"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-31.658e-03 -0.03865e-03 125.19e-03"/>

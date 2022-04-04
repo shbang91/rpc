@@ -63,9 +63,10 @@ pb.setGravity(0, 0, -9.81)
 
 ## robot spawn & initial kinematics and dynamics setting
 pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco.urdf",
+draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco2.urdf",
                              Config.INITIAL_BASE_JOINT_POS,
-                             Config.INITIAL_BASE_JOINT_QUAT)
+                             Config.INITIAL_BASE_JOINT_QUAT,
+                             useFixedBase=1)
 
 ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=1)
 pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
@@ -213,8 +214,10 @@ while (True):
     del pybullet_joint_torques_cmd['r_knee_fe_jp']
 
     ##apply motor torque
-    pybullet_util.set_motor_trq(draco_humanoid, joint_id,
-                                pybullet_joint_torques_cmd)
+    # pybullet_util.set_motor_trq(draco_humanoid, joint_id,
+    # pybullet_joint_torques_cmd)
+    pybullet_util.set_motor_pos(draco_humanoid, joint_id,
+                                pybullet_joint_positions_cmd)
     #step simulation
     pb.stepSimulation()
     # time.sleep(dt)  ## Is it necessary?
