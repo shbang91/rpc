@@ -19,7 +19,7 @@
   </material>
 
   <material name = "white">
-    <color rgba="1 1 1 1"/>
+    <color rgba="0.8 0.8 0.8 1"/>
   </material>
 
   <!--=============================== root (torso) ===========================-->
@@ -94,7 +94,8 @@
       <geometry>
         <mesh filename="package://meshes/l_shoulder_fe_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <!--<material name="dark_gray"/>-->
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.0825089 -0.0272215 0"/>
@@ -118,7 +119,7 @@
       <geometry>
         <mesh filename="package://meshes/l_shoulder_aa_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.0189446 0.000135529 0.00688183"/>
@@ -167,7 +168,7 @@
       <geometry>
         <mesh filename="package://meshes/l_elbow_fe_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.0190443 0 -0.0633779"/>
@@ -191,7 +192,7 @@
       <geometry>
         <mesh filename="package://meshes/l_wrist_ps_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.000229308 0.0158433 -0.154"/>
@@ -229,7 +230,7 @@
       <geometry>
         <mesh filename="package://meshes/l_sake_gripper_link.stl"/>
       </geometry>
-      <material name="gray"/>
+      <material name="white"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="5.4498e-05 0.000382544 -0.061"/>
@@ -294,7 +295,7 @@
       <geometry>
         <mesh filename="package://meshes/r_shoulder_fe_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.0825089 0.0272215 6.40505e-05"/>
@@ -318,7 +319,7 @@
       <geometry>
         <mesh filename="package://meshes/r_shoulder_aa_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.0189446 0.000135529 0.00688183"/>
@@ -367,7 +368,7 @@
       <geometry>
         <mesh filename="package://meshes/r_elbow_fe_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.0190415 1.75896e-05 -0.0633849"/>
@@ -391,7 +392,7 @@
       <geometry>
         <mesh filename="package://meshes/r_wrist_ps_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.000229308 0.0158433 -0.154481"/>
@@ -429,7 +430,7 @@
       <geometry>
         <mesh filename="package://meshes/r_sake_gripper_link.stl"/>
       </geometry>
-      <material name="gray"/>
+      <material name="white"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="5.4498e-05 0.000382544 -0.061"/>
@@ -494,7 +495,7 @@
       <geometry>
         <mesh filename="package://meshes/l_hip_ie_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00363703 0.00531284 -0.0260463"/>
@@ -519,7 +520,7 @@
       <geometry>
         <mesh filename="package://meshes/l_hip_aa_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.000880455 0.00182239 -0.00110234"/>
@@ -568,7 +569,7 @@
       <geometry>
         <mesh filename="package://meshes/l_knee_fe_lp.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-7.68312e-09 0.0147631 -0.0260394"/>
@@ -589,7 +590,7 @@
       <geometry>
         <mesh filename="package://meshes/l_knee_adj_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00907506 -0.006495 -0.017049"/>
@@ -641,7 +642,7 @@
       <geometry>
         <mesh filename="package://meshes/l_ankle_fe_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="white"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.000143954 0.0286126 -0.000732972"/>
@@ -665,7 +666,7 @@
       <geometry>
         <mesh filename="package://meshes/l_ankle_ie_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>
@@ -709,7 +710,7 @@
       <geometry>
         <mesh filename="package://meshes/r_hip_ie_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00363703 -0.00531284 -0.0260652"/>
@@ -733,7 +734,7 @@
       <geometry>
         <mesh filename="package://meshes/r_hip_aa_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.000880446 -0.00180849 -0.00110234"/>
@@ -782,7 +783,7 @@
       <geometry>
         <mesh filename="package://meshes/r_knee_fe_lp.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="4.68497e-09 -0.0147631 -0.0260394"/>
@@ -803,7 +804,7 @@
       <geometry>
         <mesh filename="package://meshes/r_knee_adj_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="black"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00907522 0.00649535 -0.0170486"/>
@@ -856,7 +857,7 @@
       <geometry>
         <mesh filename="package://meshes/r_ankle_fe_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="white"/>
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00026965 -0.0286127 -0.000732675"/>
@@ -880,7 +881,7 @@
       <geometry>
         <mesh filename="package://meshes/r_ankle_ie_link.stl"/>
       </geometry>
-      <material name="dark_gray"/>
+      <material name="white"/>
     </visual>
     <collision>
       <origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>
