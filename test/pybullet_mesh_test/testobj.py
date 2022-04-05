@@ -10,12 +10,12 @@ dt = p.getPhysicsEngineParameters()['fixedTimeStep']
 # husky = p.loadURDF("husky.urdf", flags=p.URDF_INITIALIZE_SAT_FEATURES)
 
 # col_shape_id = p.createCollisionShape(shapeType=p.GEOM_MESH,
-# fileName="meshes/neck_pitch_link.obj",
+# fileName="meshes/neck_pitch_link.dae",
 # flags=p.URDF_INITIALIZE_SAT_FEATURES)
 
 viz_shape_id = p.createVisualShape(
     shapeType=p.GEOM_MESH,
-    fileName="meshes/neck_pitch_link_2.obj",
+    fileName="meshes/neck_pitch_link.obj",
 )
 
 body_id = p.createMultiBody(

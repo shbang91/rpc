@@ -28,7 +28,7 @@
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="package://meshes/torso_link.stl"/>-->
-        <mesh filename="package://meshes/torso_link.obj"/>
+        <mesh filename="package://meshes/torso_link3.obj"/>
       </geometry>
       <!--<material name="white"/>-->
     </visual>
@@ -68,9 +68,9 @@
       <origin rpy="0 0 0" xyz="0 0 -0.35"/>
       <geometry>
         <!--<mesh filename="package://meshes/neck_pitch_link.stl"/>-->
-        <mesh filename="package://meshes/neck_pitch_link.obj"/>
+        <mesh filename="package://meshes/neck_pitch_link3.obj"/>
       </geometry>
-      <material name="white"/>
+      <!--<material name="white"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.0133603 -0.00105814 0.050"/>
@@ -140,9 +140,10 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.05 -0.15 -0.26"/>
       <geometry>
-        <mesh filename="package://meshes/l_shoulder_ie_link.stl"/>
+        <!--<mesh filename="package://meshes/l_shoulder_ie_link.stl"/>-->
+        <mesh filename="package://meshes/l_shoulder_ie_link3.obj"/>
       </geometry>
-      <material name="gray"/>
+      <!--<material name="gray"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00404627 0.029987 -0.137257"/>
@@ -339,9 +340,10 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.05 0.15 -0.26"/>
       <geometry>
-        <mesh filename="package://meshes/r_shoulder_ie_link.stl"/>
+        <!--<mesh filename="package://meshes/r_shoulder_ie_link.stl"/>-->
+        <mesh filename="package://meshes/r_shoulder_ie_link3.obj"/>
       </geometry>
-      <material name="gray"/>
+      <!--<material name="gray"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00404627 -0.029987 -0.137257"/>
@@ -539,9 +541,10 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.0 -0.1 0.15"/>
       <geometry>
-        <mesh filename="package://meshes/l_hip_fe_link.stl"/>
+        <!--<mesh filename="package://meshes/l_hip_fe_link.stl"/>-->
+        <mesh filename="package://meshes/l_hip_fe_link3.obj"/>
       </geometry>
-      <material name="gray"/>
+      <!--<material name="gray"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00193727 -0.00408989 -0.1636"/>
@@ -609,9 +612,10 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 -0.1 0.59"/>
       <geometry>
-        <mesh filename="package://meshes/l_knee_fe_ld.stl"/>
+        <!--<mesh filename="package://meshes/l_knee_fe_ld.stl"/>-->
+        <mesh filename="package://meshes/l_knee_fe_ld3.obj"/>
       </geometry>
-      <material name="gray"/>
+      <!--<material name="gray"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00588785 0.0041898 -0.0805522"/>
@@ -751,9 +755,10 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.0 0.1 0.15"/>
       <geometry>
-        <mesh filename="package://meshes/r_hip_fe_link.stl"/>
+        <!--<mesh filename="package://meshes/r_hip_fe_link.stl"/>-->
+        <mesh filename="package://meshes/r_hip_fe_link3.obj"/>
       </geometry>
-      <material name="gray"/>
+      <!--<material name="gray"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00193727 0.00408989 -0.1636"/>
@@ -822,9 +827,10 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0.1 0.59"/>
       <geometry>
-        <mesh filename="package://meshes/r_knee_fe_ld.stl"/>
+        <!--<mesh filename="package://meshes/r_knee_fe_ld.stl"/>-->
+        <mesh filename="package://meshes/r_knee_fe_ld3.obj"/>
       </geometry>
-      <material name="gray"/>
+      <!--<material name="gray"/>-->
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00590237 -0.00420298 -0.0805676"/>
