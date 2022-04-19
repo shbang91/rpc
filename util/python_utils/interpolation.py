@@ -44,33 +44,6 @@ def iso_interpolate(T1, T2, alpha):
     return liegroup.RpToTrans(R_ret, p_ret)
 
 
-# class HermiteCurve(object):
-# def __init__(self, start_pos, start_vel, end_pos, end_vel):
-# self._p1 = start_pos
-# self._v1 = start_vel
-# self._p2 = end_pos
-# self._v2 = end_vel
-
-# def evaluate(self, s_in):
-# s = np.clip(s_in, 0., 1.)
-# return self._p1 * (2 * s**3 - 3 * s**2 + 1) + self._p2 * (
-# -2 * s**3 + 3 * s**2) + self._v1 * (s**3 - 2 * s**2 +
-# s) + self._v2 * (s**3 - s**2)
-
-# def evaluate_first_derivative(self, s_in):
-# s = np.clip(s_in, 0., 1.)
-
-# return self._p1 * (6 * s**2 - 6 * s) + self._p2 * (
-# -6 * s**2 + 6 * s) + self._v1 * (3 * s**2 - 4 * s +
-# 1) + self._v2 * (3 * s**2 - 2 * s)
-
-# def evaluate_second_derivative(self, s_in):
-# s = np.clip(s_in, 0., 1.)
-
-# return self._p1 * (12 * s - 6) + self._p2 * (
-# -12 * s + 6) + self._v1 * (6 * s - 4) + self._v2 * (6 * s - 2)
-
-
 class HermiteCurve(object):
     def __init__(self, start_pos, start_vel, end_pos, end_vel, duration):
         self._p1 = start_pos
@@ -101,32 +74,6 @@ class HermiteCurve(object):
                                       (6 * s - 2))
 
 
-# class HermiteCurveVec(object):
-# def __init__(self, start_pos, start_vel, end_pos, end_vel):
-# self._p1 = np.copy(start_pos)
-# self._v1 = np.copy(start_vel)
-# self._p2 = np.copy(end_pos)
-# self._v2 = np.copy(end_vel)
-# self._dim = start_pos.shape[0]
-
-# self._curves = []
-# for i in range(self._dim):
-# self._curves.append(
-# HermiteCurve(start_pos[i], start_vel[i], end_pos[i],
-# end_vel[i]))
-
-# def evaluate(self, s_in):
-# return np.array([c.evaluate(s_in) for c in self._curves])
-
-# def evaluate_first_derivative(self, s_in):
-# return np.array(
-# [c.evaluate_first_derivative(s_in) for c in self._curves])
-
-# def evaluate_second_derivative(self, s_in):
-# return np.array(
-# [c.evaluate_second_derivative(s_in) for c in self._curves])
-
-
 class HermiteCurveVec(object):
     def __init__(self, start_pos, start_vel, end_pos, end_vel, duration):
         self._p1 = start_pos
@@ -146,11 +93,11 @@ class HermiteCurveVec(object):
 
     def evaluate_first_derivative(self, t_in):
         return np.array(
-            [curve.evaluate_first_derivate(t_in) for curve in self._curves])
+            [curve.evaluate_first_derivative(t_in) for curve in self._curves])
 
     def evaluate_second_derivative(self, t_in):
         return np.array(
-            [curve.evaluate_second_derivate(t_in) for curve in self._curves])
+            [curve.evaluate_second_derivative(t_in) for curve in self._curves])
 
 
 # class HermiteCurveQuat(object):
@@ -256,7 +203,7 @@ class HermiteCurveQuat(object):
                                          end_vel, duration)
 
     def evaluate(self, t_in):
-        delq_vec = self._thata_ab.evaluate(t_in)
+        delq_vec = self._theta_ab.evaluate(t_in)
 
         if np.linalg.norm(delq_vec) < 1e-6:
             delq = R.from_quat([0., 0., 0., 1.])
