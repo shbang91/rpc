@@ -253,7 +253,8 @@ def Adjoint(T):
                   [0, 0,  0, 0, 1,  0]])
     """
     R, p = TransToRp(T)
-    return np.r_[np.c_[R, np.zeros((3, 3))], np.c_[np.dot(SkewSymmetric(p), R), R]]
+    return np.r_[np.c_[R, np.zeros((3, 3))], np.c_[np.dot(SkewSymmetric(p), R),
+                                                   R]]
 
 
 def ScrewToAxis(q, s, h):
