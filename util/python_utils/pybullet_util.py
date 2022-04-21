@@ -378,7 +378,7 @@ def is_key_triggered(keys, key):
     return False
 
 
-def set_config(robot, joint_id, link_id, base_pos, base_quat, joint_pos):
+def set_config(robot, joint_id, base_pos, base_quat, joint_pos):
     pb.resetBasePositionAndOrientation(robot, base_pos, base_quat)
     for k, v in joint_pos.items():
         pb.resetJointState(robot, joint_id[k], v, 0.)
