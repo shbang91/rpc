@@ -9,12 +9,19 @@ import numpy as np
 
 import time
 import copy
+import math
+from tqdm import tqdm
 
 from util.python_utils import pybullet_util
 from util.python_utils import interpolation
 from util.python_utils import util
 from util.python_utils import liegroup
 from util.python_utils import robot_kinematics
+
+import matplotlib
+
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 ## Configs
 VIDEO_RECORD = False
@@ -40,7 +47,7 @@ FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.deg2rad(45)])
 BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 
 ## Data generation parameters
-N_DATA_PER_SWING = 15
+N_DATA_PER_SWING = 100
 
 
 def set_initial_config(robot, joint_id):
@@ -132,11 +139,11 @@ def generate_locomotion_trajectories(initial_base_iso, final_base_iso,
 
     lf_pos_curve_first_half = interpolation.HermiteCurveVec(
         initial_lf_iso[0:3, 3], np.zeros(3), mid_lf_iso[0:3, 3], mid_lf_vel,
-        swing_time)
+        swing_time / 2.)
 
     lf_pos_curve_second_half = interpolation.HermiteCurveVec(
         mid_lf_iso[0:3, 3], mid_lf_vel, final_lf_iso[0:3, 3], np.zeros(3),
-        swing_time)
+        swing_time / 2.)
 
     lf_quat_curve = interpolation.HermiteCurveQuat(
         util.rot_to_quat(initial_lf_iso[0:3, 0:3]), np.zeros(3),
@@ -144,11 +151,11 @@ def generate_locomotion_trajectories(initial_base_iso, final_base_iso,
 
     rf_pos_curve_first_half = interpolation.HermiteCurveVec(
         initial_rf_iso[0:3, 3], np.zeros(3), mid_rf_iso[0:3, 3], mid_rf_vel,
-        swing_time)
+        swing_time / 2.)
 
     rf_pos_curve_second_half = interpolation.HermiteCurveVec(
         mid_rf_iso[0:3, 3], mid_rf_vel, final_rf_iso[0:3, 3], np.zeros(3),
-        swing_time)
+        swing_time / 2.)
 
     rf_quat_curve = interpolation.HermiteCurveQuat(
         util.rot_to_quat(initial_rf_iso[0:3, 0:3]), np.zeros(3),
@@ -206,8 +213,8 @@ if __name__ == "__main__":
                                   cameraPitch=-30,
                                   cameraTargetPosition=[1, 0.5, 1.5])
     ## sim physics setting
-    pb.setPhysicsEngineParameter(fixedTimeStep=DT, numSubSteps=1)
-    pb.setGravity(0, 0, -9.81)
+    # pb.setPhysicsEngineParameter(fixedTimeStep=DT, numSubSteps=1)
+    # pb.setGravity(0, 0, -9.81)
 
     ## robot spawn & initial kinematics and dynamics setting
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
@@ -216,8 +223,8 @@ if __name__ == "__main__":
                         INITIAL_QUAT_WORLD_TO_BASEJOINT,
                         useFixedBase=False)
 
-    ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
-                         useFixedBase=True)
+    # ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
+    # useFixedBase=True)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
@@ -276,12 +283,17 @@ if __name__ == "__main__":
     dt = DT
     count = 0
 
+    loop_count = 0
+
     while (True):
 
         # Get Keyboard Event
         keys = pb.getKeyboardEvents()
 
-        if pybullet_util.is_key_triggered(keys, '8'):
+        if pybullet_util.is_key_triggered(keys, '1'):
+
+            print('*' * 80)
+            print('left foot swing motion sampling')
 
             initial_base_iso, final_base_iso, initial_lf_iso, mid_lf_iso, final_lf_iso, mid_lf_vel, initial_rf_iso, mid_rf_iso, final_rf_iso, mid_rf_vel, swing_time = sample_locomotion_boundary(
                 lf_nominal_pos, rf_nominal_pos, 'left_foot')
@@ -291,7 +303,11 @@ if __name__ == "__main__":
                 final_lf_iso, mid_lf_vel, initial_rf_iso, mid_rf_iso,
                 final_rf_iso, mid_rf_vel, swing_time)
 
+            pbar = tqdm(total=math.floor(swing_time))
+
+            base_pos_list, rf_pos_list, rf_quat_list, lf_pos_list, time_list = [], [], [], [], []
             for t in np.linspace(0, swing_time, num=N_DATA_PER_SWING):
+
                 base_pos = base_pos_curve.evaluate(t)
                 base_quat = base_quat_curve.evaluate(t)
 
@@ -299,22 +315,41 @@ if __name__ == "__main__":
                     lf_pos = lf_pos_curve_first_half.evaluate(t)
                     rf_pos = rf_pos_curve_first_half.evaluate(t)
                 else:
-                    lf_pos = lf_pos_curve_second_half.evaluate(t)
-                    rf_pos = rf_pos_curve_second_half.evaluate(t)
+                    lf_pos = lf_pos_curve_second_half.evaluate(t -
+                                                               swing_time / 2.)
+                    rf_pos = rf_pos_curve_second_half.evaluate(t -
+                                                               swing_time / 2.)
 
                 lf_quat = lf_quat_curve.evaluate(t)
                 rf_quat = rf_quat_curve.evaluate(t)
 
                 joint_pos, lf_ik_success, rf_ik_success = lowerbody_inverse_kinematics(
-                    base_pos, base_quat, lf_pos, lf_quat, rf_pos, lf_quat,
+                    base_pos, base_quat, lf_pos, lf_quat, rf_pos, rf_quat,
                     open_chain_joints_name_dict, joint_screws_in_ee_at_home,
                     ee_SE3_at_home, nominal_sensor_data_dict)
+
+                # prepare plotting curve
+                time_list.append(t)
+                lf_pos_list.append(lf_pos)
+                rf_pos_list.append(rf_pos)
+                rf_quat_list.append(rf_quat)
+                base_pos_list.append(base_pos)
 
                 # visualize config
                 pybullet_util.set_config(robot, joint_id, base_pos, base_quat,
                                          joint_pos)
+                if t < swing_time:
+                    pbar.update(t)
+                    time.sleep(dt)
+                else:
+                    pbar.close()
 
-                __import__('ipdb').set_trace()
+            fig, axes = plt.subplots(4, 1)
+            axes[0].plot(time_list, lf_pos_list)
+            axes[1].plot(time_list, rf_pos_list)
+            axes[2].plot(time_list, base_pos_list)
+            axes[3].plot(time_list, rf_quat_list)
+            plt.show()
 
         # Disable forward step
         # pb.stepSimulation()
