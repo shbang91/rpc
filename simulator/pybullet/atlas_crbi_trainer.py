@@ -47,7 +47,7 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 ## Data generation parameters
 N_SWING_MOTIONS = 100
 N_DATA_PER_SWING = 100
-N_CPU_USE_FOR_PARALELL_COM = 3
+N_CPU_USE_FOR_PARALELL_COM = 5
 
 
 def set_initial_config(robot, joint_id):
@@ -601,10 +601,20 @@ if __name__ == "__main__":
         elif pybullet_util.is_key_triggered(keys, '5'):
             print('=' * 80)
             print('generate data set with multiprocessing')
-            x_data, y_data = parallerize_data_generate(
+            x_data_lf, y_data_lf = parallerize_data_generate(
                 N_SWING_MOTIONS, N_DATA_PER_SWING, lf_nominal_pos,
                 rf_nominal_pos, nominal_sensor_data_dict, 'left_foot',
                 N_CPU_USE_FOR_PARALELL_COM)
+
+            x_data_rf, y_data_rf = parallerize_data_generate(
+                N_SWING_MOTIONS, N_DATA_PER_SWING, lf_nominal_pos,
+                rf_nominal_pos, nominal_sensor_data_dict, 'right_foot',
+                N_CPU_USE_FOR_PARALELL_COM)
+
+            x_data = x_data_lf + x_data_rf
+            y_data = y_data_lf + y_data_rf
+
+            ##TODO: create regressor using pytorch
 
             # fig, axes = plt.subplots(4, 1)
             # axes[0].plot(time_list, lf_pos_list)
