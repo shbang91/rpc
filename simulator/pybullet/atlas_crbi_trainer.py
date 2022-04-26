@@ -21,6 +21,10 @@ from util.python_utils import robot_kinematics
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
+import torch
+import torch.utils.data as torch_utils
+import torch.nn.functional as F
+
 ## Configs
 VIDEO_RECORD = False
 PRINT_FREQ = 10
@@ -45,9 +49,24 @@ FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.deg2rad(45)])
 BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 
 ## Data generation parameters
-N_SWING_MOTIONS = 100
-N_DATA_PER_SWING = 100
+N_SWING_MOTIONS = 10000
+N_DATA_PER_SWING = 15
 N_CPU_USE_FOR_PARALELL_COM = 5
+
+
+## 2-hidden layer Neural Network
+class NetWork(torch.nn.Module):
+    def __init__(self, n_input, n_hidden_1, n_hidden_2, n_output):
+        super(NetWork, self).__init__()
+        self.hidden_1 = torch.nn.Linear(n_input, n_hidden_1)
+        self.hidden_2 = torch.nn.Linear(n_hidden_1, n_hidden_2)
+        self.output = torch.nn.Linear(n_hidden_2, n_output)
+
+    def forward(self, x):
+        h1 = torch.tanh(self.hidden_1(x))
+        h2 = torch.tanh(self.hidden_2(h1))
+        y = self.output(h2)
+        return y
 
 
 def set_initial_config(robot, joint_id):
@@ -291,7 +310,12 @@ def generate_data_set(num_swing,
         np.random.seed(rseed)
     x_data, y_data = [], []
 
-    text = "#" + "{}".format(cpu_idx).zfill(2)
+    from pnc.robot_system.pinocchio_robot_system import PinocchioRobotSystem
+    robot_system = PinocchioRobotSystem(cwd + "/robot_model/atlas/atlas.urdf",
+                                        cwd + "/robot_model/atlas", False,
+                                        False)
+
+    text = "{}".format(leg_side) + "#" + "{}".format(cpu_idx).zfill(2)
     with tqdm(total=num_swing * num_samples_per_swing,
               desc=text + 'data generation',
               position=cpu_idx) as pbar:
@@ -326,25 +350,32 @@ def generate_data_set(num_swing,
                     ee_SE3_at_home, nominal_sensor_data_dict)
 
                 if lf_ik_success and rf_ik_success:
-                    from pnc.robot_system.pinocchio_robot_system import PinocchioRobotSystem
-                    robot_system = PinocchioRobotSystem(
-                        cwd + "/robot_model/atlas/atlas.urdf",
-                        cwd + "/robot_model/atlas", False, False)
-
                     I_b = get_centroidal_rot_inertia_in_body(
                         robot_system, base_pos, base_quat, joint_pos)
 
-                    base_euler = (R.from_quat(base_quat)).as_euler(
-                        'xyz', degrees=True)
-                    lf_euler = (R.from_quat(lf_quat)).as_euler('xyz',
-                                                               degrees=True)
-                    rf_euler = (R.from_quat(rf_quat)).as_euler('xyz',
-                                                               degrees=True)
+                    base_quat = R.from_quat(base_quat)
+                    lf_quat = R.from_quat(lf_quat)
+                    rf_quat = R.from_quat(rf_quat)
+                    lf_so3_err = (lf_quat * base_quat.inv()).as_rotvec()
+                    rf_so3_err = (rf_quat * base_quat.inv()).as_rotvec()
 
+                    # base_euler = (R.from_quat(base_quat)).as_euler(
+                    # 'xyz', degrees=True)
+                    # lf_euler = (R.from_quat(lf_quat)).as_euler('xyz',
+                    # degrees=True)
+                    # rf_euler = (R.from_quat(rf_quat)).as_euler('xyz',
+                    # degrees=True)
+
+                    # x_data.append(
+                    # np.concatenate([
+                    # base_pos, base_euler, lf_pos, lf_euler, rf_pos,
+                    # rf_euler
+                    # ],
+                    # axis=0))
                     x_data.append(
                         np.concatenate([
-                            base_pos, base_euler, lf_pos, lf_euler, rf_pos,
-                            rf_euler
+                            lf_pos - base_pos, rf_pos - base_pos, lf_so3_err,
+                            rf_so3_err
                         ],
                                        axis=0))
                     y_data.append(
@@ -357,7 +388,7 @@ def generate_data_set(num_swing,
                     # base_quat, joint_pos)
                     pbar.update(1)
 
-    return data_x, data_y
+    return x_data, y_data
 
 
 def do_generate_data_set(arg_list):
@@ -591,16 +622,58 @@ if __name__ == "__main__":
 
         elif pybullet_util.is_key_triggered(keys, '4'):
             print('=' * 80)
-            print('generate data set without multiprocessing')
+            print('generate data set without multiprocessing and training')
             x_data, y_data = generate_data_set(N_SWING_MOTIONS,
                                                N_DATA_PER_SWING,
                                                lf_nominal_pos, rf_nominal_pos,
                                                nominal_sensor_data_dict,
-                                               'left_foot')
+                                               'right_foot')
+            print('{} data collected'.format(len(x_data)))
+
+            ## normalize data
+            input_mean, input_std, input_normalized_data = util.normalize_data(
+                x_data)
+            output_mean, output_std, output_normalized_data = util.normalize_data(
+                y_data)
+
+            LR = 0.01
+            BATCH_SIZE = 32
+            EPOCH = 20
+
+            x_data_torch, y_data_torch = torch.from_numpy(
+                np.array(input_normalized_data)).float(), torch.from_numpy(
+                    np.array(output_normalized_data)).float()
+            torch_dataset = torch_utils.TensorDataset(x_data_torch,
+                                                      y_data_torch)
+            data_loader = torch_utils.DataLoader(dataset=torch_dataset,
+                                                 batch_size=BATCH_SIZE,
+                                                 shuffle=True,
+                                                 num_workers=2)
+
+            crbi_model = NetWork(12, 64, 64, 6)
+            optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR)
+            loss_function = torch.nn.MSELoss()
+
+            ## training
+            loss_history = []
+            for epoch in range(EPOCH):
+                for step, (b_x, b_y) in enumerate(data_loader):
+                    output = crbi_model(b_x)
+                    loss = loss_function(output, b_y)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    loss_history.append(loss.data.numpy())
+
+            ## plot loss history
+            plt.plot(loss_history)
+            plt.show()
 
         elif pybullet_util.is_key_triggered(keys, '5'):
             print('=' * 80)
-            print('generate data set with multiprocessing')
+            print(
+                'Pressed 5: generate data set with multiprocessing and training CRBI model'
+            )
             x_data_lf, y_data_lf = parallerize_data_generate(
                 N_SWING_MOTIONS, N_DATA_PER_SWING, lf_nominal_pos,
                 rf_nominal_pos, nominal_sensor_data_dict, 'left_foot',
@@ -615,6 +688,52 @@ if __name__ == "__main__":
             y_data = y_data_lf + y_data_rf
 
             ##TODO: create regressor using pytorch
+            ## normalize data
+            input_mean, input_std, input_normalized_data = util.normalize_data(
+                x_data)
+            output_mean, output_std, output_normalized_data = util.normalize_data(
+                y_data)
+            ## put dataset into torch dataset
+            LR = 0.01
+            BATCH_SIZE = 32
+            EPOCH = 20
+
+            x_data_torch, y_data_torch = torch.from_numpy(
+                np.array(x_data)).float(), torch.from_numpy(
+                    np.array(y_data)).float()
+            torch_dataset = torch_utils.TensorDataset(x_data_torch,
+                                                      y_data_torch)
+            data_loader = torch_utils.DataLoader(dataset=torch_dataset,
+                                                 batch_size=BATCH_SIZE,
+                                                 shuffle=True,
+                                                 num_workers=4)
+
+            crbi_model = NetWork(12, 64, 64, 6)
+            optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR)
+            loss_function = torch.nn.MSELoss()
+
+            ##TODO: add tensorboard for visualization
+
+            ## training
+            loss_history = []
+            for epoch in range(EPOCH):
+                for step, (b_x, b_y) in enumerate(data_loader):
+                    output = crbi_model(b_x)
+                    loss = loss_function(output, b_y)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    loss_history.append(loss.data.numpy())
+
+            ## plot loss history
+            plt.plot(loss_history)
+            plt.show()
+
+            ## save the model
+            torch.save(crbi_model,
+                       'experiment_data/pytorch_model/atlas_crbi.pkl')
+            torch.save(crbi_model.state_dict(),
+                       'experiment_data/pytorch_model/atlas_crbi_params.pkl')
 
             # fig, axes = plt.subplots(4, 1)
             # axes[0].plot(time_list, lf_pos_list)
