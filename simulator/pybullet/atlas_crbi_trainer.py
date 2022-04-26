@@ -8,6 +8,7 @@ import pybullet as pb
 import numpy as np
 
 import time
+from datetime import datetime
 import copy
 import math
 from tqdm import tqdm
@@ -24,6 +25,7 @@ from scipy.spatial.transform import Rotation as R
 import torch
 import torch.utils.data as torch_utils
 import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
 VIDEO_RECORD = False
@@ -49,8 +51,10 @@ FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.deg2rad(45)])
 BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 
 ## Data generation parameters
-N_SWING_MOTIONS = 10000
-N_DATA_PER_SWING = 15
+# N_SWING_MOTIONS = 10000
+# N_DATA_PER_SWING = 15
+N_SWING_MOTIONS = 100
+N_DATA_PER_SWING = 5
 N_CPU_USE_FOR_PARALELL_COM = 5
 
 
@@ -654,8 +658,14 @@ if __name__ == "__main__":
             optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR)
             loss_function = torch.nn.MSELoss()
 
+            log_dir = "experiment_data/tensorboard/atlas_crbi"
+            if os.path.exist(log_dir):
+                shutil.rmtree(log_dir)
+            writer = SummaryWriter(log_dir)
+
             ## training
-            loss_history = []
+            # loss_history = []
+            loss_idx_value = 0
             for epoch in range(EPOCH):
                 for step, (b_x, b_y) in enumerate(data_loader):
                     output = crbi_model(b_x)
@@ -663,11 +673,17 @@ if __name__ == "__main__":
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
-                    loss_history.append(loss.data.numpy())
+                    # loss_history.append(loss.data.numpy())
+                    current_loss = loss.item()
+                    writer.add_scalar("Loss", current_loss, loss_idx_value)
+                    loss_idx_value += 1
+
+            print('training done')
+            exit(1)
 
             ## plot loss history
-            plt.plot(loss_history)
-            plt.show()
+            # plt.plot(loss_history)
+            # plt.show()
 
         elif pybullet_util.is_key_triggered(keys, '5'):
             print('=' * 80)
@@ -687,13 +703,13 @@ if __name__ == "__main__":
             x_data = x_data_lf + x_data_rf
             y_data = y_data_lf + y_data_rf
 
-            ##TODO: create regressor using pytorch
+            ## create regressor using pytorch
             ## normalize data
             input_mean, input_std, input_normalized_data = util.normalize_data(
                 x_data)
             output_mean, output_std, output_normalized_data = util.normalize_data(
                 y_data)
-            ## put dataset into torch dataset
+
             LR = 0.01
             BATCH_SIZE = 32
             EPOCH = 20
@@ -712,10 +728,14 @@ if __name__ == "__main__":
             optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR)
             loss_function = torch.nn.MSELoss()
 
-            ##TODO: add tensorboard for visualization
+            ## add tensorboard for visualization
+            log_dir = "experiment_data/tensorboard/atlas_crbi"
+            if os.path.exists(log_dir):
+                shutil.rmtree(log_dir)
+            writer = SummaryWriter(log_dir)
 
             ## training
-            loss_history = []
+            loss_idx_value = 0
             for epoch in range(EPOCH):
                 for step, (b_x, b_y) in enumerate(data_loader):
                     output = crbi_model(b_x)
@@ -723,17 +743,21 @@ if __name__ == "__main__":
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
-                    loss_history.append(loss.data.numpy())
-
-            ## plot loss history
-            plt.plot(loss_history)
-            plt.show()
+                    current_loss = loss.item()
+                    writer.add_scalar("Loss", current_loss, loss_idx_value)
+                    loss_idx_value += 1
 
             ## save the model
-            torch.save(crbi_model,
-                       'experiment_data/pytorch_model/atlas_crbi.pkl')
-            torch.save(crbi_model.state_dict(),
-                       'experiment_data/pytorch_model/atlas_crbi_params.pkl')
+            model_path = "experiment_data/pytorch_model/atlas_crbi.pkl"
+            if os.path.exists(model_path):
+                shutil.rmtree(model_path)
+            torch.save(crbi_model, model_path)
+
+            print('=' * 80)
+            print("CRBI training done")
+            exit(1)
+            # torch.save(crbi_model.state_dict(),
+            # 'experiment_data/pytorch_model/atlas_crbi_params.pkl')
 
             # fig, axes = plt.subplots(4, 1)
             # axes[0].plot(time_list, lf_pos_list)
