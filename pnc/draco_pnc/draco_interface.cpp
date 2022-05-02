@@ -44,7 +44,7 @@ void DracoInterface::GetCommand(void *_sensor_data, void *_command_data) {
   DracoSensorData *sensor_data = ((DracoSensorData *)_sensor_data);
   DracoCommand *command_data = ((DracoCommand *)_command_data);
 
-  int waiting_count = 10;
+  int waiting_count = 0;
   if (count_ < waiting_count) {
     // se_->InitializeModel(sensor_data);
     se_->UpdateModelWithGroundTruth(sensor_data);
