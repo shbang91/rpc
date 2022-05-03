@@ -53,9 +53,11 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 ## Data generation parameters
 N_SWING_MOTIONS = 10000
 N_DATA_PER_SWING = 15
-# N_SWING_MOTIONS = 100
-# N_DATA_PER_SWING = 5
 N_CPU_USE_FOR_PARALELL_COM = 5
+
+LR = 0.01
+BATCH_SIZE = 32
+EPOCH = 30
 
 
 ## 2-hidden layer Neural Network
@@ -643,10 +645,6 @@ if __name__ == "__main__":
             output_mean, output_std, output_normalized_data = util.normalize_data(
                 y_data)
 
-            LR = 0.01
-            BATCH_SIZE = 32
-            EPOCH = 20
-
             x_data_torch, y_data_torch = torch.from_numpy(
                 np.array(input_normalized_data)).float(), torch.from_numpy(
                     np.array(output_normalized_data)).float()
@@ -697,16 +695,19 @@ if __name__ == "__main__":
             test_torch_dataset = torch_utils.TensorDataset(
                 test_x_data_torch, test_y_data_torch)
             test_data_loader = torch_utils.DataLoader(
-                dataset=test_torch_dataset, batch_size=1, shuffle=False)
+                dataset=test_torch_dataset,
+                batch_size=BATCH_SIZE,
+                shuffle=False)
 
             test_loss_idx = 0
             crbi_model.eval()
-            for i, (b_x, b_y) in enumerate(test_data_loader):
-                output = crbi_model(b_x)
-                loss = loss_function(output, b_y)
-                test_loss = loss.item()
-                writer.add_scalar("TEST Loss", test_loss, test_loss_idx)
-                test_loss_idx += 1
+            with torch.no_grad():
+                for i, (b_x, b_y) in enumerate(test_data_loader):
+                    output = crbi_model(b_x)
+                    loss = loss_function(output, b_y)
+                    test_loss = loss.item()
+                    writer.add_scalar("TEST Loss", test_loss, test_loss_idx)
+                    test_loss_idx += 1
 
             print('test done')
 
@@ -715,12 +716,15 @@ if __name__ == "__main__":
             ## plot loss history
             # plt.plot(loss_history)
             # plt.show()
-
         elif pybullet_util.is_key_triggered(keys, '5'):
             print('=' * 80)
             print(
                 'Pressed 5: generate data set with multiprocessing and training CRBI model'
             )
+
+            ##################################################################
+            '''DATA Generation'''
+            ##################################################################
             x_data_lf, y_data_lf = parallerize_data_generate(
                 N_SWING_MOTIONS, N_DATA_PER_SWING, lf_nominal_pos,
                 rf_nominal_pos, nominal_sensor_data_dict, 'left_foot',
@@ -731,107 +735,213 @@ if __name__ == "__main__":
                 rf_nominal_pos, nominal_sensor_data_dict, 'right_foot',
                 N_CPU_USE_FOR_PARALELL_COM)
 
+            x_data_lf_val, y_data_lf_val = parallerize_data_generate(
+                (N_SWING_MOTIONS // 10), N_DATA_PER_SWING, lf_nominal_pos,
+                rf_nominal_pos, nominal_sensor_data_dict, 'left_foot',
+                N_CPU_USE_FOR_PARALELL_COM)
+
+            x_data_rf_val, y_data_rf_val = parallerize_data_generate(
+                (N_SWING_MOTIONS // 10), N_DATA_PER_SWING, lf_nominal_pos,
+                rf_nominal_pos, nominal_sensor_data_dict, 'right_foot',
+                N_CPU_USE_FOR_PARALELL_COM)
+
+            x_data_lf_test, y_data_lf_test = parallerize_data_generate(
+                (N_SWING_MOTIONS // 50), N_DATA_PER_SWING, lf_nominal_pos,
+                rf_nominal_pos, nominal_sensor_data_dict, 'left_foot',
+                N_CPU_USE_FOR_PARALELL_COM)
+
+            x_data_rf_test, y_data_rf_test = parallerize_data_generate(
+                (N_SWING_MOTIONS // 50), N_DATA_PER_SWING, lf_nominal_pos,
+                rf_nominal_pos, nominal_sensor_data_dict, 'right_foot',
+                N_CPU_USE_FOR_PARALELL_COM)
+
             x_data = x_data_lf + x_data_rf
             y_data = y_data_lf + y_data_rf
 
-            test_x_data_lf, test_y_data_lf = parallerize_data_generate(
-                10, N_DATA_PER_SWING, lf_nominal_pos, rf_nominal_pos,
-                nominal_sensor_data_dict, 'left_foot',
-                N_CPU_USE_FOR_PARALELL_COM)
+            x_data_val = x_data_lf_val + x_data_rf_val
+            y_data_val = y_data_lf_val + y_data_lf_val
 
-            test_x_data_rf, test_y_data_rf = parallerize_data_generate(
-                10, N_DATA_PER_SWING, lf_nominal_pos, rf_nominal_pos,
-                nominal_sensor_data_dict, 'right_foot',
-                N_CPU_USE_FOR_PARALELL_COM)
+            x_data_test = x_data_lf_test + x_data_rf_test
+            y_data_test = y_data_lf_test + y_data_lf_test
 
-            test_x_data = test_x_data_lf + test_x_data_rf
-            test_y_data = test_y_data_lf + test_y_data_rf
+            ##################################################################
+            '''Training Dataset Normalization'''
+            ##################################################################
 
-            ## create regressor using pytorch
-            ## normalize data
-            input_mean, input_std, input_normalized_data = util.normalize_data(
+            mean_x_data, std_x_data, normalized_x_data = util.normalize_data(
                 x_data)
-            output_mean, output_std, output_normalized_data = util.normalize_data(
+            mean_y_data, std_y_data, normalized_y_data = util.normalize_data(
                 y_data)
 
-            LR = 0.03
-            BATCH_SIZE = 60
-            EPOCH = 20
+            ##################################################################
+            '''Pytorch Dataloader'''
+            ##################################################################
 
             x_data_torch, y_data_torch = torch.from_numpy(
-                np.array(x_data)).float(), torch.from_numpy(
-                    np.array(y_data)).float()
-            torch_dataset = torch_utils.TensorDataset(x_data_torch,
+                np.array(normalized_x_data)).float(), torch.from_numpy(
+                    np.array(normalized_y_data)).float()
+            dataset_torch = torch_utils.TensorDataset(x_data_torch,
                                                       y_data_torch)
-            data_loader = torch_utils.DataLoader(dataset=torch_dataset,
+            data_loader = torch_utils.DataLoader(dataset=dataset_torch,
                                                  batch_size=BATCH_SIZE,
                                                  shuffle=True,
-                                                 num_workers=4)
+                                                 num_workers=6)
 
-            crbi_model = NetWork(12, 64, 64, 6)
-            optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR)
+            normalized_x_data_val = util.normalize(x_data_val, mean_x_data,
+                                                   std_x_data)
+            normalized_y_data_val = util.normalize(y_data_val, mean_y_data,
+                                                   std_y_data)
+            x_data_val_torch, y_data_val_torch = torch.from_numpy(
+                np.array(normalized_x_data_val)).float(), torch.from_numpy(
+                    np.array(normalized_y_data_val)).float()
+
+            val_torch_dataset = torch_utils.TensorDataset(
+                x_data_val_torch, y_data_val_torch)
+            val_data_loader = torch_utils.DataLoader(dataset=val_torch_dataset,
+                                                     batch_size=BATCH_SIZE,
+                                                     shuffle=False,
+                                                     num_workers=6)
+
+            ##################################################################
+            '''Training Regressor'''
+            ##################################################################
+            #regressor model
+            nn_crbi_model = NetWork(12, 64, 64, 6)
+
+            #loss & optimizer
             loss_function = torch.nn.MSELoss()
+            optimizer = torch.optim.SGD(nn_crbi_model.parameters(), lr=LR)
 
-            ## add tensorboard for visualization
+            # add tensorboard for visualization
             log_dir = "experiment_data/tensorboard/atlas_crbi"
             if os.path.exists(log_dir):
                 shutil.rmtree(log_dir)
             writer = SummaryWriter(log_dir)
 
-            ## training
-            loss_idx_value = 0
+            # training
+            train_loss_per_epoch = 0.
+            val_loss_per_epoch = 0.
+            iter = 0
             for epoch in range(EPOCH):
+                train_loss = 0.
+                train_batch_loss = 0.
+                nn_crbi_model.train()
                 for step, (b_x, b_y) in enumerate(data_loader):
-                    output = crbi_model(b_x)
+                    output = nn_crbi_model(b_x)
                     loss = loss_function(output, b_y)
                     optimizer.zero_grad()
                     loss.backward()
                     optimizer.step()
-                    current_loss = loss.item()
-                    writer.add_scalar("Loss", current_loss, loss_idx_value)
-                    loss_idx_value += 1
+                    train_batch_loss = loss.item()
+                    train_loss += loss.item()
+                    iter += 1
+                    writer.add_scalar('batch loss', train_batch_loss, iter)
+                train_loss_per_epoch = train_loss / len(data_loader)
 
-            ## save the model
-            model_path = "experiment_data/pytorch_model/atlas_crbi"
+                val_loss = 0.
+                nn_crbi_model.eval()
+                for step, (b_x, b_y) in enumerate(val_data_loader):
+                    output = nn_crbi_model(b_x)
+                    loss = loss_function(output, b_y)
+                    val_loss += loss.item()
+                val_loss_per_epoch = train_loss / len(val_data_loader)
+
+                writer.add_scalars(
+                    'loss vs epoch', {
+                        'train': train_loss_per_epoch,
+                        'validation': val_loss_per_epoch
+                    }, epoch + 1)
+
+            # save the model
+            model_path = "experiment_data/pytorch_model/atlas_crbi.pth"
             if os.path.exists(model_path):
-                shutil.rmtree(model_path)
-            torch.save(crbi_model, model_path)
+                os.remove(model_path)
+            torch.save(nn_crbi_model, model_path)
 
             print('=' * 80)
             print("CRBI training done")
 
-            ## test model
-            ## normalizing test set
-            test_input_normalized_data = util.normalize(
-                test_x_data, input_mean, input_std)
-            test_output_normalized_data = util.normalize(
-                test_y_data, output_mean, output_std)
+            ##################################################################
+            '''Test Regressor'''
+            ##################################################################
+            normalized_x_data_test = util.normalize(x_data_test, mean_x_data,
+                                                    std_x_data)
+            normalized_y_data_test = util.normalize(y_data_test, mean_y_data,
+                                                    std_y_data)
+            x_data_test_torch, y_data_test_torch = torch.from_numpy(
+                np.array(normalized_x_data_test)).float(), torch.from_numpy(
+                    np.array(normalized_y_data_test)).float()
 
-            test_x_data_torch, test_y_data_torch = torch.from_numpy(
-                np.array(
-                    test_input_normalized_data)).float(), torch.from_numpy(
-                        np.array(test_output_normalized_data)).float()
             test_torch_dataset = torch_utils.TensorDataset(
-                test_x_data_torch, test_y_data_torch)
+                x_data_test_torch, y_data_test_torch)
             test_data_loader = torch_utils.DataLoader(
                 dataset=test_torch_dataset,
                 batch_size=BATCH_SIZE,
-                shuffle=True,
-                num_workers=4)
+                shuffle=False,
+                num_workers=6)
 
-            test_loss_idx = 0
-            crbi_model.eval()
-            for i, (b_x, b_y) in enumerate(test_data_loader):
-                output = crbi_model(b_x)
-                loss = loss_function(output, b_y)
-                test_loss = loss.item()
-                writer.add_scalar("TEST Loss", test_loss, test_loss_idx)
-                test_loss_idx += 1
+            nn_crbi_model.eval()
+            with torch.no_grad():
+                test_loss_per_epoch = 0.
+                for epoch in range(EPOCH):
+                    test_loss = 0.
+                    for i, (b_x, b_y) in enumerate(test_data_loader):
+                        output = nn_crbi_model(b_x)
+                        loss = loss_function(output, b_y)
+                        test_loss += loss.item()
+                    test_loss_per_epoch = test_loss / len(test_data_loader)
+
+                    writer.add_scalar('test loss vs epoch',
+                                      test_loss_per_epoch, epoch + 1)
 
             print('=' * 80)
             print('CRBI test done')
 
+            #####################################################
+            '''plot centroidal inertia dim = 6'''
+            #####################################################
+            test_data_loader2 = torch_utils.DataLoader(
+                dataset=test_torch_dataset,
+                batch_size=1,
+                shuffle=False,
+                num_workers=6)
+
+            nn_crbi_model.eval()
+            gt_inertia_list, predict_inertia_list = [], []
+            iter_list = []
+            num_iter = 0
+            with torch.no_grad():
+                for i, (b_x, b_y) in enumerate(test_data_loader2):
+                    output = nn_crbi_model(b_x)
+                    gt_denormalized_output = util.denormalize(
+                        np.squeeze(b_y.numpy(), axis=0), mean_y_data,
+                        std_y_data)
+                    predict_denormalized_output = util.denormalize(
+                        np.squeeze(output.numpy(), axis=0), mean_y_data,
+                        std_y_data)
+                    iter_list.append(num_iter)
+                    gt_inertia_list.append(gt_denormalized_output)
+                    predict_inertia_list.append(predict_denormalized_output)
+                    num_iter += 1
+
+            ##plot
+            fig, axes = plt.subplots(6, 1)
+            for i in range(6):
+                axes[i].plot(iter_list,
+                             [gt_inertia[i] for gt_inertia in gt_inertia_list],
+                             'r')
+                axes[i].plot(iter_list, [
+                    predict_inertia[i]
+                    for predict_inertia in predict_inertia_list
+                ], 'b')
+                axes[i].grid(True)
+            plt.show()
+
             exit(0)
+
+        elif pybullet_util.is_key_triggered(keys, '6'):
+            print('=' * 80)
+            print('Pressed 6: ')
             # torch.save(crbi_model.state_dict(),
             # 'experiment_data/pytorch_model/atlas_crbi_params.pkl')
 

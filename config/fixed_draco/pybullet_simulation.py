@@ -10,64 +10,64 @@ class Config(object):
     KP, KD = dict(), dict()
 
     KP["neck_pitch"] = 20.
-    KD["neck_pitch"] = 0.
+    KD["neck_pitch"] = 1.
 
     KP["r_hip_ie"] = 300
-    KD["r_hip_ie"] = 0
+    KD["r_hip_ie"] = 1
     KP["l_hip_ie"] = 300
-    KD["l_hip_ie"] = 0
+    KD["l_hip_ie"] = 1
 
     KP["r_hip_aa"] = 300
-    KD["r_hip_aa"] = 0
+    KD["r_hip_aa"] = 1
     KP["l_hip_aa"] = 300
-    KD["l_hip_aa"] = 0
+    KD["l_hip_aa"] = 1
 
     KP["r_hip_fe"] = 400
-    KD["r_hip_fe"] = 0
+    KD["r_hip_fe"] = 1
     KP["l_hip_fe"] = 400
-    KD["l_hip_fe"] = 0
+    KD["l_hip_fe"] = 1
 
     KP["r_knee_fe_jd"] = 400
-    KD["r_knee_fe_jd"] = 0
+    KD["r_knee_fe_jd"] = 1
     KP["l_knee_fe_jd"] = 400
-    KD["l_knee_fe_jd"] = 0
+    KD["l_knee_fe_jd"] = 1
 
     KP["r_ankle_fe"] = 150
-    KD["r_ankle_fe"] = 0
+    KD["r_ankle_fe"] = 1
     KP["l_ankle_fe"] = 150.
-    KD["l_ankle_fe"] = 0
+    KD["l_ankle_fe"] = 1
 
     KP["r_ankle_ie"] = 150.
-    KD["r_ankle_ie"] = 0
+    KD["r_ankle_ie"] = 1
     KP["l_ankle_ie"] = 150.
-    KD["l_ankle_ie"] = 0
+    KD["l_ankle_ie"] = 1
 
     KP["r_shoulder_fe"] = 50.
-    KD["r_shoulder_fe"] = 0.
+    KD["r_shoulder_fe"] = 1.
     KP["l_shoulder_fe"] = 50.
-    KD["l_shoulder_fe"] = 0.
+    KD["l_shoulder_fe"] = 1.
 
     KP["r_shoulder_aa"] = 50.
-    KD["r_shoulder_aa"] = 0.
+    KD["r_shoulder_aa"] = 1.
     KP["l_shoulder_aa"] = 50.
-    KD["l_shoulder_aa"] = 0.
+    KD["l_shoulder_aa"] = 1.
 
     KP["r_shoulder_ie"] = 50.
-    KD["r_shoulder_ie"] = 0.
+    KD["r_shoulder_ie"] = 1.
     KP["l_shoulder_ie"] = 50.
-    KD["l_shoulder_ie"] = 0.
+    KD["l_shoulder_ie"] = 1.
 
     KP["r_elbow_fe"] = 30.
-    KD["r_elbow_fe"] = 0
+    KD["r_elbow_fe"] = 1
     KP["l_elbow_fe"] = 30.
-    KD["l_elbow_fe"] = 0
+    KD["l_elbow_fe"] = 1
 
     KP["r_wrist_ps"] = 10.
-    KD["r_wrist_ps"] = 0
+    KD["r_wrist_ps"] = 1
     KP["l_wrist_ps"] = 10.
-    KD["l_wrist_ps"] = 0
+    KD["l_wrist_ps"] = 1
 
     KP["r_wrist_pitch"] = 10.
-    KD["r_wrist_pitch"] = 0
+    KD["r_wrist_pitch"] = 1
     KP["l_wrist_pitch"] = 10.
-    KD["l_wrist_pitch"] = 0
+    KD["l_wrist_pitch"] = 1
