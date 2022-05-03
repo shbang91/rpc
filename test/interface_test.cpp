@@ -13,7 +13,7 @@ int main() {
     DracoInterface *interface2_ = new DracoInterface();
     std::cout << "construct DracoInterface" << std::endl;
     delete interface2_;
-    std::cout << "destruct DracoInterface" << std::endl;
+        std::cout << "destruct DracoInterface" << std::endl;
     //interface2_->print();
     //interface2_->print2();
 
