@@ -7,3 +7,6 @@ target_link_libraries(rolling_joint ${DART_LIBRARIES}
                                     pnc-util
                                     robot-system
                                     rj-module)
+add_executable(robot_system_test robot_system_test.cpp)
+target_link_libraries(robot_system_test ${DART_LIBRARIES}
+                                        robot-system)

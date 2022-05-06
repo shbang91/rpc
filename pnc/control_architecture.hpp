@@ -2,26 +2,24 @@
 
 #include <map>
 
-#include "pnc/state_machine.hpp" 
-#include "pnc/robot_system/robot_system.hpp"
+#include "pnc/state_machine.hpp"
 
-
+class RobotSystem;
 class ControlArchitecture {
-    public:
-        ControlArchitecture(RobotSystem *_robot) {robot_ = _robot;};
+public:
+  ControlArchitecture(RobotSystem *_robot) { robot_ = _robot; };
 
-        virtual ~ControlArchitecture() {};
+  virtual ~ControlArchitecture() = default;
 
-        virtual void GetCommand(void *_command) = 0;
+  virtual void GetCommand(void *_command) = 0;
 
-        int state_;
+  std::map<StateId, StateMachine *> state_machines_container_;
 
-        int prev_state_;
+  int state_;
+  int prev_state_;
 
-        std::map<StateId, StateMachine *> state_machines_container_;
+protected:
+  RobotSystem *robot_;
 
-
-    protected:
-        RobotSystem *robot_;
-
+  bool b_state_first_visit_;
 };

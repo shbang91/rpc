@@ -1,15 +1,18 @@
 #pragma once
-#include <iostream>
 #include <Eigen/Dense>
+#include <iostream>
 
-class FixedDracoStateProvider{
-    public:
-        static FixedDracoStateProvider *GetStateProvider();
-        ~FixedDracoStateProvider(){};
+class FixedDracoStateProvider {
+public:
+  static FixedDracoStateProvider *GetStateProvider();
+  ~FixedDracoStateProvider(){};
 
-        double servo_dt_;
-        double current_time_;
+  double servo_dt;
+  double current_time;
 
-    private:
-        FixedDracoStateProvider();
+  int state;
+  int prev_state;
+
+private:
+  FixedDracoStateProvider();
 };

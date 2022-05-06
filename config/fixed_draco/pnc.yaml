@@ -2,3 +2,4 @@ ip_address: "tcp://127.0.0.1:5557"
 
 controller:
   waiting_count: 10
+  control_mode: 0

@@ -202,11 +202,11 @@ while (True):
         pnc_draco_command.joint_torques_cmd_)
 
     ##delete passive joint command
-    # del pybullet_joint_positions_cmd['l_knee_fe_jp']
-    # del pybullet_joint_velocities_cmd['l_knee_fe_jp']
+    del pybullet_joint_positions_cmd['l_knee_fe_jp']
+    del pybullet_joint_velocities_cmd['l_knee_fe_jp']
     del pybullet_joint_torques_cmd['l_knee_fe_jp']
-    # del pybullet_joint_positions_cmd['r_knee_fe_jp']
-    # del pybullet_joint_velocities_cmd['r_knee_fe_jp']
+    del pybullet_joint_positions_cmd['r_knee_fe_jp']
+    del pybullet_joint_velocities_cmd['r_knee_fe_jp']
     del pybullet_joint_torques_cmd['r_knee_fe_jp']
 
     command_dict = dict()
@@ -215,10 +215,10 @@ while (True):
     command_dict['joint_torques_cmd_'] = pybullet_joint_torques_cmd
 
     ##apply motor torque
-    pybullet_util.set_motor_trq(fixed_draco, joint_id,
-                                pybullet_joint_torques_cmd)
-    # pybullet_util.set_motor_impedance(fixed_draco, joint_id, command_dict,
-    # Config.KP, Config.KD)
+    # pybullet_util.set_motor_trq(fixed_draco, joint_id,
+    # pybullet_joint_torques_cmd)
+    pybullet_util.set_motor_impedance(fixed_draco, joint_id, command_dict,
+                                      Config.KP, Config.KD)
 
     ## initial pos control
     # pos_cmd_dict = copy.deepcopy(
