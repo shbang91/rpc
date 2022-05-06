@@ -1,4 +1,4 @@
-# rpc
+# Robot Planning and Control (rpc)
 
 Dependency
 - DART
