@@ -4,10 +4,12 @@
 
 class FixedDracoController;
 class FixedDracoStateProvider;
+class FixedDracoTCIContainer;
 
 namespace FixedDracoState {
 constexpr int kInitialize = 0;
-constexpr int kRightFootMove = 1;
+constexpr int kHold = 1;
+constexpr int kRightFootMove = 2;
 } // namespace FixedDracoState
 
 class FixedDracoControlArchitecture : public ControlArchitecture {
@@ -16,6 +18,8 @@ public:
   ~FixedDracoControlArchitecture();
 
   void GetCommand(void *_command) override;
+
+  FixedDracoTCIContainer *tci_container_;
 
 private:
   FixedDracoController *controller_;

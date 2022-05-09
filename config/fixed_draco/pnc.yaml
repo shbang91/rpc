@@ -1,5 +1,42 @@
 ip_address: "tcp://127.0.0.1:5557"
 
+b_exp: True
+
 controller:
   waiting_count: 10
   control_mode: 0
+
+behavior:
+  duration: 5.
+  ini_joint_pos:
+        l_shoulder_aa: 0.523
+        l_elbow_fe: -1.57
+        r_shoulder_aa: -0.523
+        r_elbow_fe: -1.57
+        l_hip_aa: 0.
+        #l_hip_aa: 0.047
+        l_hip_fe: -0.785
+        l_knee_fe_jp: 0.785
+        l_knee_fe_jd: 0.785
+        l_ankle_fe: -0.785
+        l_ankle_ie: 0.
+        #l_ankle_ie: -0.047
+        r_hip_aa: 0.
+        #r_hip_aa: -0.047
+        r_hip_fe: -0.785
+        r_knee_fe_jp: 0.785
+        r_knee_fe_jd: 0.785
+        r_ankle_fe: -0.785
+        r_ankle_ie: 0.
+        #r_ankle_ie: 0.047
+        neck_pitch: 0.
+        r_hip_ie: 0.
+        l_hip_ie: 0.
+        l_shoulder_fe: 0.
+        r_shoulder_fe: 0.
+        l_shoulder_ie: 0.
+        r_shoulder_ie: 0.
+        l_wrist_ps: 0.
+        r_wrist_ps: 0.
+        l_wrist_pitch: 0.
+        r_wrist_pitch: 0.

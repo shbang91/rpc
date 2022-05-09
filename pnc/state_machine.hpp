@@ -28,6 +28,7 @@ public:
 
 protected:
   StateId state_id_;
+  double state_machine_start_time_;
   double state_machine_time_;
   RobotSystem *robot_;
 };
