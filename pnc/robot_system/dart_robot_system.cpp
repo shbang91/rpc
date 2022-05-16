@@ -1,9 +1,11 @@
 #include "pnc/robot_system/dart_robot_system.hpp"
+#include "util/util.hpp"
 
 DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,
                                  const bool &_b_fixed_base,
                                  const bool &_b_print_info)
     : RobotSystem(_b_fixed_base, _b_print_info) {
+  util::PrettyConstructor(1, "DartRobotSystem");
   dart::utils::DartLoader urdf_loader;
   skeleton_ = urdf_loader.parseSkeleton(_urdf_path);
 

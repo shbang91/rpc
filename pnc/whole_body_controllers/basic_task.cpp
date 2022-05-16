@@ -1,7 +1,9 @@
 #include "pnc/whole_body_controllers/basic_task.hpp"
 #include "util/util.hpp"
 
-JointTask::JointTask(RobotSystem *_robot) : Task(_robot, _robot->n_a_) {}
+JointTask::JointTask(RobotSystem *_robot) : Task(_robot, _robot->n_a_) {
+  util::PrettyConstructor(3, "JointTask");
+}
 
 JointTask::~JointTask() {}
 

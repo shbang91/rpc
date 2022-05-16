@@ -9,6 +9,7 @@
 FixedDracoControlArchitecture::FixedDracoControlArchitecture(
     RobotSystem *_robot)
     : ControlArchitecture(_robot) {
+  util::PrettyConstructor(1, "FixedDracoControlArchitecture");
   robot_ = _robot;
 
   YAML::Node cfg = YAML::LoadFile(THIS_COM "config/fixed_draco/pnc.yaml");

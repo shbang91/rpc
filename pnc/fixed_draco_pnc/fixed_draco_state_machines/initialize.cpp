@@ -9,7 +9,7 @@ Initialize::Initialize(StateId _state_id,
                        FixedDracoControlArchitecture *_ctrl_arch,
                        RobotSystem *_robot)
     : StateMachine(_state_id, _robot) {
-  std::cout << "initialize" << std::endl;
+  util::PrettyConstructor(2, "FixedDracoStateMachine: Initialize");
   state_id_ = _state_id;
   robot_ = _robot;
   ctrl_arch_ = _ctrl_arch;

@@ -9,7 +9,7 @@ target_link_libraries(fixed-draco-pnc ${DART_LIBRARIES}
                                 ${ZMQ_LIBRARIES}
                                 robot-system
                                 pnc-wbc
-                                #fixed-draco-pnc-msg
+                                fixed-draco-pnc-msg
                                 pnc-util)
 
 install(TARGETS fixed-draco-pnc DESTINATION "${INSTALL_LIB_DIR}")

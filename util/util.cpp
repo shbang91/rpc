@@ -75,7 +75,7 @@ void CleaningFile(std::string _file_name, std::string &_ret_file,
 
 void PrettyConstructor(const int &_num_tab, const std::string &_name) {
   int color;
-  util::ColorPrint(color::kBoldCyan, "|", false);
+  util::ColorPrint(color::kBoldRed, "|", false);
   std::string content = " ";
   int space_to_go(0);
   if (_num_tab != 0) {
@@ -109,7 +109,7 @@ void PrettyConstructor(const int &_num_tab, const std::string &_name) {
     content += " ";
   }
   util::ColorPrint(color, content, false);
-  util::ColorPrint(color::kBoldCyan, "|");
+  util::ColorPrint(color::kBoldRed, "|");
 }
 
 void ColorPrint(const int &_color, const std::string &_name, bool line_change) {

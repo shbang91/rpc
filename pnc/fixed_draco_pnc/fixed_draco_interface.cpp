@@ -1,16 +1,19 @@
 #include "pnc/fixed_draco_pnc/fixed_draco_interface.hpp"
+#include "configuration.hpp"
 #include "pnc/fixed_draco_pnc/fixed_draco_control_architecture.hpp"
+#include "pnc/fixed_draco_pnc/fixed_draco_data_manager.hpp"
 #include "pnc/fixed_draco_pnc/fixed_draco_state_estimator.hpp"
 #include "pnc/fixed_draco_pnc/fixed_draco_state_provider.hpp"
-
 #include "pnc/robot_system/dart_robot_system.hpp"
-
-//#include "pnc/fixed_draco_pnc/fixed_draco_data_manager.hpp"
-
-#include "configuration.hpp"
 #include "util/util.hpp"
 
 FixedDracoInterface::FixedDracoInterface() : Interface() {
+  std::string border = "=";
+  for (unsigned int i = 0; i < 79; ++i) {
+    border += "=";
+  }
+  util::ColorPrint(color::kBoldRed, border);
+  util::PrettyConstructor(0, "FixedDraco Interface");
 
   robot_ = new DartRobotSystem(THIS_COM "robot_model/draco/draco_rel_path.urdf",
                                true, false);
@@ -24,14 +27,14 @@ FixedDracoInterface::FixedDracoInterface() : Interface() {
   control_architecture_ = new FixedDracoControlArchitecture(robot_);
   bool b_exp = util::ReadParameter<bool>(cfg, "b_exp");
   if (b_exp) {
-    control_architecture_->state = FixedDracoState::kInitialize;
+    control_architecture_->state_ = FixedDracoState::kInitialize;
   } else {
-    control_architecture_->state = FixedDracoState::kHold;
+    control_architecture_->state_ = FixedDracoState::kHold;
   }
 
   // initalize data publisher
-  // FixedDracoDataManager::GetDataManager()->InitializeSocket(
-  // util::ReadParameter<std::string>(cfg, "ip_address"));
+  FixedDracoDataManager::GetDataManager()->InitializeSocket(
+      util::ReadParameter<std::string>(cfg, "ip_address"));
 }
 
 FixedDracoInterface::~FixedDracoInterface() {
@@ -64,8 +67,8 @@ void FixedDracoInterface::GetCommand(void *_sensor_data, void *_command_data) {
     control_architecture_->GetCommand(command_data);
   }
 
-  // FixedDracoDataManager::GetDataManager()->data_->time_ = sp_->current_time;
-  // FixedDracoDataManager::GetDataManager()->SendData();
+  FixedDracoDataManager::GetDataManager()->data_->time_ = sp_->current_time;
+  FixedDracoDataManager::GetDataManager()->SendData();
   ++count_;
 }
 

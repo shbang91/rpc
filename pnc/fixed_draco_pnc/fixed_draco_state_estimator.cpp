@@ -1,9 +1,11 @@
 #include "pnc/fixed_draco_pnc/fixed_draco_state_estimator.hpp"
+#include "pnc/fixed_draco_pnc/fixed_draco_data_manager.hpp"
 #include "pnc/fixed_draco_pnc/fixed_draco_state_provider.hpp"
 #include "pnc/robot_system/robot_system.hpp"
-//#include "pnc/fixed_draco_pnc/fixed_draco_data_manager.hpp"
+#include "util/util.hpp"
 
 FixedDracoStateEstimator::FixedDracoStateEstimator(RobotSystem *_robot) {
+  util::PrettyConstructor(1, "FixedDracoStateEstimator");
   robot_ = _robot;
   sp_ = FixedDracoStateProvider::GetStateProvider();
 
@@ -29,19 +31,19 @@ void FixedDracoStateEstimator::UpdateModelWithGroundTruth(
       _sensor_data->base_joint_lin_vel_, _sensor_data->base_joint_ang_vel_,
       _sensor_data->joint_positions_, _sensor_data->joint_velocities_, false);
 
-  // FixedDracoDataManager *dm = FixedDracoDataManager::GetDataManager();
-  // dm->data_->base_com_pos_ = _sensor_data->base_com_pos_;
-  // dm->data_->base_com_ori_ = base_com_quat;
-  // dm->data_->base_com_lin_vel_ = _sensor_data->base_com_lin_vel_;
-  // dm->data_->base_com_ang_vel_ = _sensor_data->base_com_ang_vel_;
+  FixedDracoDataManager *dm = FixedDracoDataManager::GetDataManager();
+  dm->data_->base_com_pos_ = _sensor_data->base_com_pos_;
+  dm->data_->base_com_ori_ = base_com_quat;
+  dm->data_->base_com_lin_vel_ = _sensor_data->base_com_lin_vel_;
+  dm->data_->base_com_ang_vel_ = _sensor_data->base_com_ang_vel_;
 
-  // dm->data_->base_joint_pos_ = _sensor_data->base_joint_pos_;
-  // dm->data_->base_joint_ori_ = base_joint_quat;
-  // dm->data_->base_joint_lin_vel_ = _sensor_data->base_joint_lin_vel_;
-  // dm->data_->base_joint_ang_vel_ = _sensor_data->base_joint_ang_vel_;
+  dm->data_->base_joint_pos_ = _sensor_data->base_joint_pos_;
+  dm->data_->base_joint_ori_ = base_joint_quat;
+  dm->data_->base_joint_lin_vel_ = _sensor_data->base_joint_lin_vel_;
+  dm->data_->base_joint_ang_vel_ = _sensor_data->base_joint_ang_vel_;
 
   // for meshcat visualizing
-  // dm->data_->joint_positions_ = robot_->joint_positions_;
+  dm->data_->joint_positions_ = robot_->joint_positions_;
 }
 
 void FixedDracoStateEstimator::InitializeModel(

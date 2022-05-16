@@ -4,7 +4,8 @@ b_exp: True
 
 controller:
   waiting_count: 10
-  control_mode: 0
+  control_mode: 0 # GravityComp = 0, ImpedanceControl = 1, AdmittanceControl =2
+
 
 behavior:
   duration: 5.

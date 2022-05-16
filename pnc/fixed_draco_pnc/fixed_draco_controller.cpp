@@ -9,7 +9,7 @@
 
 FixedDracoController::FixedDracoController(
     FixedDracoTCIContainer *_tci_container, RobotSystem *_robot) {
-  std::cout << "controller" << std::endl;
+  util::PrettyConstructor(2, "FixedDracoController");
   tci_container_ = _tci_container;
   robot_ = _robot;
 

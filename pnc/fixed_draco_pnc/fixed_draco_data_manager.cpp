@@ -1,13 +1,14 @@
-#include <pnc/draco_pnc/draco_data_manager.hpp>
+#include "pnc/fixed_draco_pnc/fixed_draco_data_manager.hpp"
+#include "util/util.hpp"
 
-DracoDataManager *DracoDataManager::GetDataManager() {
-  static DracoDataManager dm;
+FixedDracoDataManager *FixedDracoDataManager::GetDataManager() {
+  static FixedDracoDataManager dm;
   return &dm;
 }
 
-DracoDataManager::DracoDataManager() {
+FixedDracoDataManager::FixedDracoDataManager() {
   // dracodata initialize
-  data_ = std::make_unique<DracoData>();
+  data_ = std::make_unique<FixedDracoData>();
 
   // zmq stuff initialize
   context_ = std::make_unique<zmq::context_t>(1);
@@ -17,17 +18,17 @@ DracoDataManager::DracoDataManager() {
   b_initialize_socket_ = false;
 }
 
-void DracoDataManager::InitializeSocket(const std::string &ip_address) {
+void FixedDracoDataManager::InitializeSocket(const std::string &ip_address) {
   socket_->bind(ip_address);
   b_initialize_socket_ = true;
 }
 
-DracoDataManager::~DracoDataManager() {}
+FixedDracoDataManager::~FixedDracoDataManager() {}
 
-void DracoDataManager::SendData() {
+void FixedDracoDataManager::SendData() {
   assert(b_initialize_socket_);
 
-  draco::pnc_msg msg;
+  fixed_draco::pnc_msg msg;
   msg.set_time(data_->time_);
 
   for (int i = 0; i < 3; ++i) {
@@ -58,7 +59,7 @@ void DracoDataManager::SendData() {
   socket_->send(zmq_msg);
 }
 
-DracoData::DracoData() {
+FixedDracoData::FixedDracoData() {
   time_ = 0.;
 
   base_joint_pos_ = Eigen::Vector3d::Zero();
@@ -74,4 +75,4 @@ DracoData::DracoData() {
   joint_positions_ = Eigen::VectorXd::Zero(27);
 }
 
-DracoData::~DracoData() {}
+FixedDracoData::~FixedDracoData() {}
