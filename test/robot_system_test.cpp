@@ -11,5 +11,7 @@ int main() {
   std::cout << "lfoot_jac: " << std::endl;
   std::cout << robot->GetLinkJacobian("l_foot_contact") << std::endl;
 
+  delete robot;
+
   return 0;
 }
