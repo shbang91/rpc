@@ -2,8 +2,8 @@
 #include "util/util.hpp"
 
 DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,
-                                 const bool &_b_fixed_base,
-                                 const bool &_b_print_info)
+                                 const bool _b_fixed_base,
+                                 const bool _b_print_info)
     : RobotSystem(_b_fixed_base, _b_print_info) {
   util::PrettyConstructor(1, "DartRobotSystem");
   dart::utils::DartLoader urdf_loader;
@@ -18,8 +18,8 @@ DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,
 }
 
 DartRobotSystem::DartRobotSystem(dart::dynamics::SkeletonPtr _robot,
-                                 const bool &_b_fixed_base,
-                                 const bool &_b_print_info)
+                                 const bool _b_fixed_base,
+                                 const bool _b_print_info)
     : RobotSystem(_b_fixed_base, _b_print_info) {
   skeleton_ = _robot;
 
@@ -30,8 +30,6 @@ DartRobotSystem::DartRobotSystem(dart::dynamics::SkeletonPtr _robot,
 
   Ag_.resize(6, n_qdot_);
 }
-
-DartRobotSystem::~DartRobotSystem() {}
 
 void DartRobotSystem::ConfigRobot() {
   if (b_fixed_base_) {
@@ -244,13 +242,15 @@ void DartRobotSystem::UpdateCentroidalQuantities() {
   Hg_ = Ag_ * GetQdot();
 }
 
-Eigen::VectorXd DartRobotSystem::GetQ() { return skeleton_->getPositions(); }
+Eigen::VectorXd DartRobotSystem::GetQ() const {
+  return skeleton_->getPositions();
+}
 
-Eigen::VectorXd DartRobotSystem::GetQdot() {
+Eigen::VectorXd DartRobotSystem::GetQdot() const {
   return skeleton_->getVelocities();
 }
 
-Eigen::MatrixXd DartRobotSystem::GetInertiaMatrix() {
+Eigen::MatrixXd DartRobotSystem::GetMassMatrix() {
   return skeleton_->getMassMatrix();
 }
 

@@ -23,7 +23,7 @@ set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 set(PYTHON_BINDING TRUE)
-set(USE_PINOCCHIO TRUE)
+option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
 
 ##==================================================
 ## Include Directory
@@ -42,9 +42,9 @@ find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
 include_directories(${DART_INCLUDE_DIRS})
 
 # Pinocchio
-if(USE_PINOCCHIO)
+if(BUILD_WITH_PINOCCHIO)
     find_package(pinocchio)
-    include_directories(${PINOCCHIO_INCLUDE_DIR})
+    include_directories(${PINOCCHIO_INCLUDE_DIRS})
 endif()
 
 # Eigen

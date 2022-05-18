@@ -55,12 +55,12 @@ void FixedDracoController::GetCommand(void *command) {
       jac_int(1, l_knee_fe_jd_idx) = 1;
 
       Eigen::MatrixXd jac_int_bar = util::WeightedPseudoInverse(
-          jac_int, robot_->GetInertiaMatrix().inverse(), 0.0001);
+          jac_int, robot_->GetMassMatrix().inverse(), 0.0001);
       Eigen::MatrixXd N_int =
           Eigen::MatrixXd::Identity(robot_->n_qdot_, robot_->n_qdot_) -
           jac_int_bar * jac_int;
       Eigen::MatrixXd sa_N_int_bar = util::WeightedPseudoInverse(
-          sa * N_int, robot_->GetInertiaMatrix().inverse(), 0.0001);
+          sa * N_int, robot_->GetMassMatrix().inverse(), 0.0001);
       Eigen::VectorXd trq =
           sa_N_int_bar.transpose() * N_int.transpose() * robot_->GetGravity();
       Eigen::VectorXd total_trq = sa.transpose() * trq;
