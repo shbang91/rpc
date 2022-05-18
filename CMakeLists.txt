@@ -23,6 +23,7 @@ set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 set(PYTHON_BINDING TRUE)
+set(USE_PINOCCHIO TRUE)
 
 ##==================================================
 ## Include Directory
@@ -39,6 +40,12 @@ link_directories("/usr/local/lib")
 # DART
 find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
 include_directories(${DART_INCLUDE_DIRS})
+
+# Pinocchio
+if(USE_PINOCCHIO)
+    find_package(pinocchio)
+    include_directories(${PINOCCHIO_INCLUDE_DIR})
+endif()
 
 # Eigen
 find_package(Eigen 3.3 REQUIRED)

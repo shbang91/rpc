@@ -7,7 +7,7 @@ add_library(fixed-draco-pnc SHARED ${sources})
 target_link_libraries(fixed-draco-pnc ${DART_LIBRARIES}
                                 ${Protobuf_LIBRARIES}
                                 ${ZMQ_LIBRARIES}
-                                robot-system
+                                dart-robot-system
                                 pnc-wbc
                                 fixed-draco-pnc-msg
                                 pnc-util)

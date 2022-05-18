@@ -5,7 +5,7 @@ add_library(draco-pnc SHARED ${sources})
 target_link_libraries(draco-pnc ${DART_LIBRARIES}
                                 ${Protobuf_LIBRARIES}
                                 ${ZMQ_LIBRARIES}
-                                robot-system
+                                dart-robot-system
                                 draco-pnc-msg
                                 pnc-util)
 

@@ -3,7 +3,7 @@ FILE(GLOB wbc_headers *.hpp)
 
 add_library(pnc-wbc ${sources})
 
-target_link_libraries(pnc-wbc robot-system
+target_link_libraries(pnc-wbc dart-robot-system
                               pnc-util)
 
 install(TARGETS pnc-wbc DESTINATION "${INSTALL_LIB_DIR}")
