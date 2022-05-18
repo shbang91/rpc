@@ -52,8 +52,8 @@ find_package(Eigen 3.3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 
 #Boost
-find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
-include_directories(${Boost_INCLUDE_DIRS})
+#find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
+#include_directories(${Boost_INCLUDE_DIRS})
 
 #pybind11
 if(PYTHON_BINDING)
