@@ -26,8 +26,9 @@ public:
   int GetJointIdx(const std::string &_joint_name) override;
 
   std::map<std::string, double>
-  EigenVectorToMap(const Eigen::VectorXd &_joint_cmd);
-  Eigen::VectorXd MapToEigenVector(std::map<std::string, double> _joint_map);
+  EigenVectorToMap(const Eigen::VectorXd &_joint_cmd) override;
+  Eigen::VectorXd
+  MapToEigenVector(std::map<std::string, double> _joint_map) override;
 
   Eigen::Vector3d GetBaseLocalComPos() override;
   std::string GetBaseLinkName() override;
