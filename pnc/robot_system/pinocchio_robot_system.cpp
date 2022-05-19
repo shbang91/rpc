@@ -174,7 +174,7 @@ void PinocchioRobotSystem::UpdateRobotModel(
     joint_positions_(GetJointIdx(kv.first)) = kv.second;
   }
   for (const auto &kv : joint_vel) {
-    qdot_(GetQIdx(kv.first)) = kv.second;
+    qdot_(GetQdotIdx(kv.first)) = kv.second;
     joint_velocities_(GetJointIdx(kv.first)) = kv.second;
   }
   // for (const auto & [key, value] : joint_pos) {
@@ -279,18 +279,13 @@ PinocchioRobotSystem::GetLinkJacobian(const std::string &link_id) {
   pinocchio::Model::Index frame_id = model_.getFrameId(link_id);
   computeJointJacobians(model_, data_, q_);
 
-  std::cout << "before" << std::endl;
-  Eigen::MatrixXd jac = Eigen::MatrixXd::Zero(6, n_qdot_);
+  Eigen::MatrixXd jac(6, n_qdot_);
   getFrameJacobian(model_, data_, frame_id, pinocchio::LOCAL_WORLD_ALIGNED,
                    jac);
 
-  std::cout << "after" << std::endl;
-  Eigen::MatrixXd ret = Eigen::MatrixXd::Zero(6, n_qdot_);
-
-  std::cout << "before toprows" << std::endl;
+  Eigen::MatrixXd ret(6, n_qdot_);
   ret.topRows(3) = jac.bottomRows(3);
   ret.bottomRows(3) = jac.topRows(3);
-  std::cout << "after rows" << std::endl;
 
   return ret;
 }

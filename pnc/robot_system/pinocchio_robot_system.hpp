@@ -1,7 +1,5 @@
 #pragma once
 
-//#define __pinocchio_compute_all_terms_hpp__
-
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/centroidal.hpp>
 #include <pinocchio/algorithm/crba.hpp>
