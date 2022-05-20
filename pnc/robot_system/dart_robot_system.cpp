@@ -3,8 +3,8 @@
 
 DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,
                                  const bool _b_fixed_base,
-                                 const bool _b_print_info)
-    : RobotSystem(_b_fixed_base, _b_print_info) {
+                                 const bool _b_print_info, const int _n_vdof)
+    : RobotSystem(_b_fixed_base, _b_print_info), n_vdof_(_n_vdof) {
   util::PrettyConstructor(1, "DartRobotSystem");
   dart::utils::DartLoader urdf_loader;
   skeleton_ = urdf_loader.parseSkeleton(_urdf_path);
@@ -15,6 +15,10 @@ DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,
   joint_velocities_.resize(n_a_);
 
   Ag_.resize(6, n_qdot_);
+
+  if (b_print_info_) {
+    this->PrintRobotInfo();
+  }
 }
 
 DartRobotSystem::DartRobotSystem(dart::dynamics::SkeletonPtr _robot,
@@ -74,36 +78,36 @@ void DartRobotSystem::ConfigRobot() {
   joint_trq_limits_.block(0, 1, n_a_, 1) =
       skeleton_->getForceUpperLimits().segment(n_float_, n_a_);
 
-  if (b_print_info_) {
-    std::cout << "===================" << std::endl;
-    std::cout << "Dart Robot Model" << std::endl;
-    std::cout << "n_q:" << n_q_ << std::endl;
-    std::cout << "n_qdot:" << n_qdot_ << std::endl;
-    std::cout << "n_a:" << n_a_ << std::endl;
-    std::cout << "Joint Info: " << std::endl;
-    int count(0);
-    for (std::map<std::string, dart::dynamics::JointPtr>::iterator it =
-             joint_ptr_map_.begin();
-         it != joint_ptr_map_.end(); it++) {
-      std::cout << count << ": " << it->first << std::endl;
-      ++count;
-    }
+  // if (b_print_info_) {
+  // std::cout << "===================" << std::endl;
+  // std::cout << "Dart Robot Model" << std::endl;
+  // std::cout << "n_q:" << n_q_ << std::endl;
+  // std::cout << "n_qdot:" << n_qdot_ << std::endl;
+  // std::cout << "n_a:" << n_a_ << std::endl;
+  // std::cout << "Joint Info: " << std::endl;
+  // int count(0);
+  // for (std::map<std::string, dart::dynamics::JointPtr>::iterator it =
+  // joint_ptr_map_.begin();
+  // it != joint_ptr_map_.end(); it++) {
+  // std::cout << count << ": " << it->first << std::endl;
+  //++count;
+  //}
 
-    std::cout << "Link Info: " << std::endl;
-    count = 0;
-    for (std::map<std::string, dart::dynamics::BodyNodePtr>::iterator it =
-             body_node_ptr_map_.begin();
-         it != body_node_ptr_map_.end(); it++) {
-      std::cout << count << ": " << it->first << std::endl;
-      ++count;
-    }
+  // std::cout << "Link Info: " << std::endl;
+  // count = 0;
+  // for (std::map<std::string, dart::dynamics::BodyNodePtr>::iterator it =
+  // body_node_ptr_map_.begin();
+  // it != body_node_ptr_map_.end(); it++) {
+  // std::cout << count << ": " << it->first << std::endl;
+  //++count;
+  //}
 
-    std::cout << "Dof Info: " << std::endl;
-    for (int i = 0; i < skeleton_->getNumDofs(); ++i) {
-      dart::dynamics::DegreeOfFreedom *dof = skeleton_->getDof(i);
-      std::cout << i << ": " << dof->getName() << std::endl;
-    }
-  }
+  // std::cout << "Dof Info: " << std::endl;
+  // for (int i = 0; i < skeleton_->getNumDofs(); ++i) {
+  // dart::dynamics::DegreeOfFreedom *dof = skeleton_->getDof(i);
+  // std::cout << i << ": " << dof->getName() << std::endl;
+  //}
+}
 }
 int DartRobotSystem::GetQIdx(const std::string &_joint_name) {
   return joint_ptr_map_[_joint_name]->getIndexInSkeleton(0);
@@ -309,4 +313,33 @@ Eigen::Matrix<double, 3, Eigen::Dynamic> DartRobotSystem::GetComLinJacobian() {
 Eigen::Matrix<double, 3, Eigen::Dynamic>
 DartRobotSystem::GetComLinJacobianDot() {
   return skeleton_->getCOMLinearJacobianDeriv(dart::dynamics::Frame::World());
+}
+
+void DartRobotSystem::PrintRobotInfo() {
+  std::cout << "=======================" << std::endl;
+  std::cout << "DART robot info" << std::endl;
+  std::cout << "=======================" << std::endl;
+
+  std::cout << " ==== draco link ====" << std::endl;
+  for (int i = 0; i < skeleton_->getNumBodyNodes(); ++i) {
+    dart::dynamics::BodyNodePtr bn = skeleton_->getBodyNode(i);
+    std::cout << "constexpr int " << bn->getName() << " = " << std::to_string(i)
+              << ";" << std::endl;
+  }
+  std::cout << " ==== draco joint ====" << std::endl;
+  for (int i = 0; i < skeleton_->getNumDofs(); ++i) {
+    dart::dynamics::DegreeOfFreedom *dof = skeleton_->getDof(i);
+    std::cout << "constexpr int " << dof->getName() << " = "
+              << std::to_string(i) << ";" << std::endl;
+  }
+  std::cout << " ==== draco ====" << std::endl;
+  std::cout << "constexpr int n_link = "
+            << std::to_string(skeleton_->getNumBodyNodes()) << ";" << std::endl;
+  std::cout << "constexpr int n_dof = "
+            << std::to_string(skeleton_->getNumDofs()) << ";" << std::endl;
+  std::cout << "constexpr int n_vdof = " << std::to_string(n_vdof_) << ";"
+            << std::endl;
+  std::cout << "constexpr int n_adof = " << std::to_string(n_a_ - n_vdof_)
+            << ";" << std::endl;
+  exit(0);
 }

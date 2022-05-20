@@ -16,7 +16,7 @@
 class DartRobotSystem : public RobotSystem {
 public:
   DartRobotSystem(const std::string &_urdf_path, const bool _b_fixed_base,
-                  const bool _b_print_info);
+                  const bool _b_print_info = false, const int _n_vdof = 0);
   DartRobotSystem(dart::dynamics::SkeletonPtr _robot, const bool _b_fixed_base,
                   const bool _b_print_info);
   ~DartRobotSystem() = default;
@@ -68,6 +68,9 @@ private:
   dart::dynamics::SkeletonPtr skeleton_;
   std::map<std::string, dart::dynamics::JointPtr> joint_ptr_map_;
   std::map<std::string, dart::dynamics::BodyNodePtr> body_node_ptr_map_;
+
+  int n_vdof_;
+  void PrintRobotInfo();
 
   // Configure the following properties: n_floating, n_q, n_q_dot, n_a,
   // total_mass, joint_pos_limit, joint_vel_limit, joint_trq_limit.

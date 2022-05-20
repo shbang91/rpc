@@ -15,10 +15,10 @@
 DracoInterface::DracoInterface() : Interface() {
 
   // robot_ = new DartRobotSystem(THIS_COM
-  // "robot_model/draco/draco_rel_path.urdf", false, false);
-  robot_ =
-      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
-                               THIS_COM "robot_model/draco", false, true, 2);
+  // "robot_model/draco/draco_rel_path.urdf", false, true, 2);
+  // robot_ =
+  new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+                           THIS_COM "robot_model/draco", false, true, 2);
   se_ = new DracoStateEstimator(robot_);
   sp_ = DracoStateProvider::GetStateProvider();
   sp_->stance_foot_ = "l_foot_contact";

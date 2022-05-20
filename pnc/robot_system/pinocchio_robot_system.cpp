@@ -50,7 +50,7 @@ void PinocchioRobotSystem::ConfigRobot() {
   n_a_ = n_qdot_ - n_float_;
 
   int passing_index = 0;
-  for (pinocchio::JointIndex i = 1;
+  for (pinocchio::JointIndex i = 0;
        i < static_cast<pinocchio::JointIndex>(model_.njoints);
        ++i) { // NOT SURE IF START AT 0???
     if (model_.names[i] == "root_joint" || model_.names[i] == "universe") {
@@ -60,8 +60,8 @@ void PinocchioRobotSystem::ConfigRobot() {
     }
   }
 
-  for (pinocchio::FrameIndex i = 1; i < (pinocchio::FrameIndex)model_.nframes;
-       ++i) {
+  for (pinocchio::FrameIndex i = 0;
+       i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
     std::string frameName = model_.frames[i].name;
     if (frameName == "root_joint" || frameName == "universe") {
     } // pass
@@ -309,25 +309,30 @@ PinocchioRobotSystem::GetLinkJacobianDotQdot(const std::string &link_id) {
   return ret;
 }
 
+Eigen::Isometry3d PinocchioRobotSystem::GetLinkIso(const int &link_id) {}
+Eigen::Matrix<double, 6, 1> GetLinkVel(const int &link_id) {}
+Eigen::Matrix<double, 6, Eigen::Dynamic> GetLinkJacobian(const int &link_id) {}
+Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(const int &link_id) {}
+
 void PinocchioRobotSystem::PrintRobotInfo() {
   std::cout << "=======================" << std::endl;
   std::cout << "Pinocchio robot info" << std::endl;
   std::cout << "=======================" << std::endl;
 
-  std::cout << "===== draco link ======" << std::endl;
+  std::cout << "============ draco link ================" << std::endl;
   for (pinocchio::FrameIndex i = 0;
        i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
-    std::cout << "constexpr int" << model_.frames[i].name << " = "
+    std::cout << "constexpr int " << model_.frames[i].name << " = "
               << model_.getFrameId(model_.frames[i].name) << ";" << std::endl;
   }
-  std::cout << "===== draco joint ======" << std::endl;
-  for (pinocchio::JointIndex i = 1;
+  std::cout << "============ draco joint ================" << std::endl;
+  for (pinocchio::JointIndex i = 0;
        i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
-    std::cout << "constexpr int" << model_.names[i] << " = "
+    std::cout << "constexpr int " << model_.names[i] << " = "
               << model_.getJointId(model_.names[i]) << ";" << std::endl;
   }
 
-  std::cout << "===== draco ======" << std::endl;
+  std::cout << "============ draco ================" << std::endl;
   std::cout << "constexpr int n_link = "
             << static_cast<pinocchio::FrameIndex>(model_.nframes) << ";"
             << std::endl;

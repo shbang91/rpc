@@ -62,12 +62,18 @@ public:
   Eigen::Vector3d GetRobotComLinVel() override;
   Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobian() override;
   Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobianDot() override;
+
   Eigen::Isometry3d GetLinkIso(const std::string &link_id) override;
   Eigen::Matrix<double, 6, 1> GetLinkVel(const std::string &link_id) override;
   Eigen::Matrix<double, 6, Eigen::Dynamic>
   GetLinkJacobian(const std::string &link_id) override;
   Eigen::Matrix<double, 6, 1>
   GetLinkJacobianDotQdot(const std::string &link_id) override;
+
+  Eigen::Isometry3d GetLinkIso(const int &link_id);
+  Eigen::Matrix<double, 6, 1> GetLinkVel(const int &link_id);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> GetLinkJacobian(const int &link_id);
+  Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(const int &link_id);
 
 private:
   void UpdateCentroidalQuantities() override;
