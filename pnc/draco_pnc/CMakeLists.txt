@@ -2,10 +2,10 @@ file(GLOB_RECURSE sources "*.cpp")
 file(GLOB draco_pnc_headers "*.hpp")
 
 add_library(draco-pnc SHARED ${sources})
-target_link_libraries(draco-pnc ${DART_LIBRARIES}
-                                ${Protobuf_LIBRARIES}
+target_link_libraries(draco-pnc ${Protobuf_LIBRARIES}
                                 ${ZMQ_LIBRARIES}
                                 dart-robot-system
+                                pinocchio-robot-system
                                 draco-pnc-msg
                                 pnc-util)
 

@@ -10,7 +10,7 @@ public:
 
   virtual ~RobotSystem() = default;
 
-  int n_floating_base_;
+  int n_float_;
   int n_q_;
   int n_qdot_;
   int n_a_;

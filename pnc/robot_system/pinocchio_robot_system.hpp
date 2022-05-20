@@ -28,7 +28,8 @@ public:
   PinocchioRobotSystem(const std::string &_urdf_file,
                        const std::string &_package_dir,
                        const bool _b_fixed_base,
-                       const bool _b_print_info = false);
+                       const bool _b_print_info = false,
+                       const int _num_virtual_dof = 0);
   ~PinocchioRobotSystem() = default;
   /// \}
 
@@ -71,6 +72,7 @@ public:
 private:
   void UpdateCentroidalQuantities() override;
   void ConfigRobot() override;
+  void PrintRobotInfo();
 
   pinocchio::Model model_;
   pinocchio::GeometryModel collision_model_;
@@ -85,6 +87,7 @@ private:
 
   std::string urdf_file_;
   std::string package_dir_;
+  int n_vdof_;
 
   /// Map of joint name and joint idx
   std::map<std::string, int> joint_id_;

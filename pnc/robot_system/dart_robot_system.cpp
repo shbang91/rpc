@@ -35,12 +35,12 @@ void DartRobotSystem::ConfigRobot() {
   if (b_fixed_base_) {
     skeleton_->getRootBodyNode()
         ->changeParentJointType<dart::dynamics::WeldJoint>();
-    n_floating_base_ = 0;
+    n_float_ = 0;
   }
   for (int i = 0; i < skeleton_->getNumJoints(); ++i) {
     dart::dynamics::JointPtr joint = skeleton_->getJoint(i);
     if (joint->getName() == "rootJoint") {
-      n_floating_base_ = joint->getNumDofs();
+      n_float_ = joint->getNumDofs();
     } else if (joint->getType() != "WeldJoint") {
       joint_ptr_map_[joint->getName()] = joint;
     } else {
@@ -54,7 +54,7 @@ void DartRobotSystem::ConfigRobot() {
 
   n_q_ = skeleton_->getNumDofs();
   n_qdot_ = skeleton_->getNumDofs();
-  n_a_ = n_qdot_ - n_floating_base_;
+  n_a_ = n_qdot_ - n_float_;
   total_mass_ = skeleton_->getMass();
 
   joint_pos_limits_.resize(n_a_, 2);
@@ -62,17 +62,17 @@ void DartRobotSystem::ConfigRobot() {
   joint_trq_limits_.resize(n_a_, 2);
 
   joint_pos_limits_.block(0, 0, n_a_, 1) =
-      skeleton_->getPositionLowerLimits().segment(n_floating_base_, n_a_);
+      skeleton_->getPositionLowerLimits().segment(n_float_, n_a_);
   joint_pos_limits_.block(0, 1, n_a_, 1) =
-      skeleton_->getPositionUpperLimits().segment(n_floating_base_, n_a_);
+      skeleton_->getPositionUpperLimits().segment(n_float_, n_a_);
   joint_vel_limits_.block(0, 0, n_a_, 1) =
-      skeleton_->getVelocityLowerLimits().segment(n_floating_base_, n_a_);
+      skeleton_->getVelocityLowerLimits().segment(n_float_, n_a_);
   joint_vel_limits_.block(0, 1, n_a_, 1) =
-      skeleton_->getVelocityUpperLimits().segment(n_floating_base_, n_a_);
+      skeleton_->getVelocityUpperLimits().segment(n_float_, n_a_);
   joint_trq_limits_.block(0, 0, n_a_, 1) =
-      skeleton_->getForceLowerLimits().segment(n_floating_base_, n_a_);
+      skeleton_->getForceLowerLimits().segment(n_float_, n_a_);
   joint_trq_limits_.block(0, 1, n_a_, 1) =
-      skeleton_->getForceUpperLimits().segment(n_floating_base_, n_a_);
+      skeleton_->getForceUpperLimits().segment(n_float_, n_a_);
 
   if (b_print_info_) {
     std::cout << "===================" << std::endl;
@@ -114,7 +114,7 @@ int DartRobotSystem::GetQdotIdx(const std::string &_joint_name) {
 }
 
 int DartRobotSystem::GetJointIdx(const std::string &_joint_name) {
-  return joint_ptr_map_[_joint_name]->getIndexInSkeleton(0) - n_floating_base_;
+  return joint_ptr_map_[_joint_name]->getIndexInSkeleton(0) - n_float_;
 }
 
 std::map<std::string, double>

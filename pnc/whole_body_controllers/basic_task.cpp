@@ -19,7 +19,7 @@ void JointTask::UpdateOscCommand() {
 }
 
 void JointTask::UpdateTaskJacobian() {
-  jacobian_.block(0, robot_->n_floating_base_, dim_, robot_->n_a_) =
+  jacobian_.block(0, robot_->n_float_, dim_, robot_->n_a_) =
       Eigen::MatrixXd::Identity(robot_->n_a_, robot_->n_a_);
 }
 

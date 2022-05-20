@@ -3,6 +3,8 @@
 #include "pnc/draco_pnc/draco_state_provider.hpp"
 //#include "pnc/draco_pnc/draco_control_architecture.hpp"
 
+#include "pnc/robot_system/pinocchio_robot_system.hpp"
+
 #include "pnc/robot_system/dart_robot_system.hpp"
 
 #include "pnc/draco_pnc/draco_data_manager.hpp"
@@ -12,8 +14,11 @@
 
 DracoInterface::DracoInterface() : Interface() {
 
-  robot_ = new DartRobotSystem(THIS_COM "robot_model/draco/draco_rel_path.urdf",
-                               false, false);
+  // robot_ = new DartRobotSystem(THIS_COM
+  // "robot_model/draco/draco_rel_path.urdf", false, false);
+  robot_ =
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+                               THIS_COM "robot_model/draco", false, true, 2);
   se_ = new DracoStateEstimator(robot_);
   sp_ = DracoStateProvider::GetStateProvider();
   sp_->stance_foot_ = "l_foot_contact";

@@ -3,9 +3,11 @@
 PinocchioRobotSystem::PinocchioRobotSystem(const std::string &_urdf_file,
                                            const std::string &_package_dir,
                                            const bool _b_fixed_base,
-                                           const bool _b_print_info)
+                                           const bool _b_print_info,
+                                           const int _num_virtual_dof)
     : RobotSystem(_b_fixed_base, _b_print_info), urdf_file_(_urdf_file),
-      package_dir_(_package_dir) {
+      package_dir_(_package_dir), n_vdof_(_num_virtual_dof) {
+
   this->ConfigRobot();
 
   joint_positions_.resize(n_a_);
@@ -14,6 +16,10 @@ PinocchioRobotSystem::PinocchioRobotSystem(const std::string &_urdf_file,
   qdot_ = Eigen::VectorXd::Zero(n_qdot_);
 
   Ag_.resize(6, n_qdot_);
+
+  if (b_print_info_) {
+    this->PrintRobotInfo();
+  }
 }
 
 void PinocchioRobotSystem::ConfigRobot() {
@@ -24,8 +30,7 @@ void PinocchioRobotSystem::ConfigRobot() {
                                collision_model_, package_dir_);
     pinocchio::urdf::buildGeom(model_, urdf_file_, pinocchio::VISUAL,
                                visual_model_, package_dir_);
-
-    n_floating_base_ = 0;
+    n_float_ = 0;
   } else {
     pinocchio::urdf::buildModel(urdf_file_, pinocchio::JointModelFreeFlyer(),
                                 model_);
@@ -33,8 +38,7 @@ void PinocchioRobotSystem::ConfigRobot() {
                                collision_model_, package_dir_);
     pinocchio::urdf::buildGeom(model_, urdf_file_, pinocchio::VISUAL,
                                visual_model_, package_dir_);
-
-    n_floating_base_ = 6;
+    n_float_ = 6;
   }
 
   data_ = pinocchio::Data(model_);
@@ -43,10 +47,11 @@ void PinocchioRobotSystem::ConfigRobot() {
 
   n_q_ = model_.nq;
   n_qdot_ = model_.nv;
-  n_a_ = n_qdot_ - n_floating_base_;
+  n_a_ = n_qdot_ - n_float_;
 
   int passing_index = 0;
-  for (pinocchio::JointIndex i = 1; i < (pinocchio::JointIndex)model_.njoints;
+  for (pinocchio::JointIndex i = 1;
+       i < static_cast<pinocchio::JointIndex>(model_.njoints);
        ++i) { // NOT SURE IF START AT 0???
     if (model_.names[i] == "root_joint" || model_.names[i] == "universe") {
       passing_index += 1;
@@ -85,17 +90,17 @@ void PinocchioRobotSystem::ConfigRobot() {
     joint_pos_limits_.block(0, 1, n_a_, 1) = model_.upperPositionLimit;
   } else {
     joint_pos_limits_.block(0, 0, n_a_, 1) =
-        model_.lowerPositionLimit.segment(n_floating_base_, n_a_);
+        model_.lowerPositionLimit.segment(n_float_, n_a_);
     joint_pos_limits_.block(0, 1, n_a_, 1) =
-        model_.upperPositionLimit.segment(n_floating_base_, n_a_);
+        model_.upperPositionLimit.segment(n_float_, n_a_);
     joint_vel_limits_.block(0, 0, n_a_, 1) =
-        -model_.velocityLimit.segment(n_floating_base_, n_a_);
+        -model_.velocityLimit.segment(n_float_, n_a_);
     joint_vel_limits_.block(0, 1, n_a_, 1) =
-        model_.velocityLimit.segment(n_floating_base_, n_a_);
+        model_.velocityLimit.segment(n_float_, n_a_);
     joint_trq_limits_.block(0, 0, n_a_, 1) =
-        -model_.effortLimit.segment(n_floating_base_, n_a_);
+        -model_.effortLimit.segment(n_float_, n_a_);
     joint_trq_limits_.block(0, 1, n_a_, 1) =
-        model_.effortLimit.segment(n_floating_base_, n_a_);
+        model_.effortLimit.segment(n_float_, n_a_);
   }
 }
 
@@ -114,8 +119,7 @@ int PinocchioRobotSystem::GetQdotIdx(const std::string &joint_name) {
 }
 
 int PinocchioRobotSystem::GetJointIdx(const std::string &joint_name) {
-  return model_.joints[model_.getJointId(joint_name)].idx_v() -
-         n_floating_base_;
+  return model_.joints[model_.getJointId(joint_name)].idx_v() - n_float_;
 }
 
 // TODO:
@@ -303,4 +307,33 @@ PinocchioRobotSystem::GetLinkJacobianDotQdot(const std::string &link_id) {
   ret.segment(3, 3) = af.linear();
 
   return ret;
+}
+
+void PinocchioRobotSystem::PrintRobotInfo() {
+  std::cout << "=======================" << std::endl;
+  std::cout << "Pinocchio robot info" << std::endl;
+  std::cout << "=======================" << std::endl;
+
+  std::cout << "===== draco link ======" << std::endl;
+  for (pinocchio::FrameIndex i = 0;
+       i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
+    std::cout << "constexpr int" << model_.frames[i].name << " = "
+              << model_.getFrameId(model_.frames[i].name) << ";" << std::endl;
+  }
+  std::cout << "===== draco joint ======" << std::endl;
+  for (pinocchio::JointIndex i = 1;
+       i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
+    std::cout << "constexpr int" << model_.names[i] << " = "
+              << model_.getJointId(model_.names[i]) << ";" << std::endl;
+  }
+
+  std::cout << "===== draco ======" << std::endl;
+  std::cout << "constexpr int n_link = "
+            << static_cast<pinocchio::FrameIndex>(model_.nframes) << ";"
+            << std::endl;
+  std::cout << "constexpr int n_dof = " << qdot_.size() << ";" << std::endl;
+  std::cout << "constexpr int n_vdof = " << n_vdof_ << ";" << std::endl;
+  std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ - n_vdof_
+            << ";" << std::endl;
+  exit(0);
 }
