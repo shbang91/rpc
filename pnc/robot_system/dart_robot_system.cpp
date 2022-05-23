@@ -108,7 +108,7 @@ void DartRobotSystem::ConfigRobot() {
   // std::cout << i << ": " << dof->getName() << std::endl;
   //}
 }
-}
+
 int DartRobotSystem::GetQIdx(const std::string &_joint_name) {
   return joint_ptr_map_[_joint_name]->getIndexInSkeleton(0);
 }
