@@ -76,6 +76,13 @@ public:
   virtual Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobian() = 0;
   virtual Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobianDot() = 0;
 
+  virtual Eigen::Isometry3d GetLinkIso(const int &_link_id) = 0;
+  virtual Eigen::Matrix<double, 6, 1> GetLinkVel(const int &_link_id) = 0;
+  virtual Eigen::Matrix<double, 6, Eigen::Dynamic>
+  GetLinkJacobian(const int &_link_id) = 0;
+  virtual Eigen::Matrix<double, 6, 1>
+  GetLinkJacobianDotQdot(const int &_link_id) = 0;
+
 protected:
   // Configure the following properties: n_floating, n_q, n_q_dot, n_a,
   // total_mass, joint_pos_limit, joint_vel_limit, joint_trq_limit.

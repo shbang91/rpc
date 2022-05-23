@@ -373,9 +373,9 @@ void PinocchioRobotSystem::PrintRobotInfo() {
   }
 
   std::cout << "============ draco ================" << std::endl;
-  std::cout << "constexpr int n_link = "
-            << static_cast<pinocchio::FrameIndex>(model_.nframes) << ";"
-            << std::endl;
+  // std::cout << "constexpr int n_link = "
+  //<< static_cast<pinocchio::FrameIndex>(model_.nframes) << ";"
+  //<< std::endl;
   std::cout << "constexpr int n_dof = " << qdot_.size() << ";" << std::endl;
   std::cout << "constexpr int n_vdof = " << n_vdof_ << ";" << std::endl;
   std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ - n_vdof_

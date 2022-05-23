@@ -7,12 +7,13 @@
 #include "pnc/robot_system/pinocchio_robot_system.hpp"
 
 int main() {
-  // RobotSystem *pin_robot =
-  // new PinocchioRobotSystem(THIS_COM "robot_model/atlas/atlas.urdf",
-  // THIS_COM "robot_model/atlas", false, false);
-  PinocchioRobotSystem pin_robot(THIS_COM
-                                 "robot_model/draco/draco_modified.urdf",
-                                 THIS_COM "robot_model/draco", false, false, 2);
+  auto tic = std::chrono::high_resolution_clock::now();
+  RobotSystem *pin_robot =
+      new PinocchioRobotSystem(THIS_COM "robot_model/atlas/atlas.urdf",
+                               THIS_COM "robot_model/atlas", false, false);
+  auto toc = std::chrono::high_resolution_clock::now();
+  std::cout << std::chrono::duration<double, std::milli>(toc - tic).count()
+            << "ms" << std::endl;
 
   Eigen::Vector3d com_pos(0, 0, 0);
   Eigen::Vector3d com_lv(0.1, 0, 0);
@@ -23,83 +24,43 @@ int main() {
   Eigen::Vector3d bjoint_av(0.1, 0, 0);
   Eigen::Quaternion<double> bjoint_quat(1, 0, 0, 0);
 
-  // std::map<std::string, double> joint_pos = {
-  //{"back_bkx", 0},    {"back_bky", 0},    {"back_bkz", 0},
-  //{"l_arm_elx", 0},   {"l_arm_ely", 0},   {"l_arm_shx", 0},
-  //{"l_arm_shz", 0},   {"l_arm_wrx", 0},   {"l_arm_wry", 0},
-  //{"l_arm_wry2", 0},  {"l_leg_akx", 0},   {"l_leg_aky", 0},
-  //{"l_leg_hpx", 0},   {"l_leg_hpy", 0},   {"l_leg_hpz", 0},
-  //{"l_leg_kny", 0},   {"neck_ry", 0},     {"r_arm_elx", 0},
-  //{"r_arm_ely", 0},   {"r_arm_shx", 0},   {"r_arm_shz", 0},
-  //{"r_arm_wrx", 0},   {"r_arm_wry", 0},   {"r_arm_wry2", 0},
-  //{"r_leg_akx", 0.1}, {"r_leg_aky", 0.2}, {"r_leg_hpx", 0},
-  //{"r_leg_hpy", 0},   {"r_leg_hpz", 0},   {"r_leg_kny", 0}};
-  // std::map<std::string, double> joint_vel = {
-  //{"back_bkx", 0},    {"back_bky", 0},    {"back_bkz", 0},
-  //{"l_arm_elx", 0},   {"l_arm_ely", 0},   {"l_arm_shx", 0},
-  //{"l_arm_shz", 0},   {"l_arm_wrx", 0},   {"l_arm_wry", 0},
-  //{"l_arm_wry2", 0},  {"l_leg_akx", 0},   {"l_leg_aky", 0},
-  //{"l_leg_hpx", 0},   {"l_leg_hpy", 0},   {"l_leg_hpz", 0},
-  //{"l_leg_kny", 0},   {"neck_ry", 0},     {"r_arm_elx", 0},
-  //{"r_arm_ely", 0},   {"r_arm_shx", 0},   {"r_arm_shz", 0},
-  //{"r_arm_wrx", 0},   {"r_arm_wry", 0},   {"r_arm_wry2", 0},
-  //{"r_leg_akx", 0.1}, {"r_leg_aky", 0.2}, {"r_leg_hpx", 0},
-  //{"r_leg_hpy", 0},   {"r_leg_hpz", 0},   {"r_leg_kny", 0}};
-
   std::map<std::string, double> joint_pos = {
-      {"l_hip_ie", 0},      {"l_hip_aa", 0},      {"l_hip_fe", 0},
-      {"l_knee_fe_jp", 0},  {"l_knee_fe_jd", 0},  {"l_ankle_fe", 0},
-      {"l_ankle_ie", 0},    {"l_shoulder_fe", 0}, {"l_shoulder_aa", 0},
-      {"l_shoulder_ie", 0}, {"l_elbow_fe", 0},    {"l_wrist_ps", 0},
-      {"l_wrist_pitch", 0}, {"neck_pitch", 0},    {"r_hip_ie", 0},
-      {"r_hip_aa", 0},      {"r_hip_fe", 0},      {"r_knee_fe_jp", 0},
-      {"r_knee_fe_jd", 0},  {"r_ankle_fe", 0},    {"r_ankle_ie", 0},
-      {"r_shoulder_fe", 0}, {"r_shoulder_aa", 0}, {"r_shoulder_ie", 0},
-      {"r_elbow_fe", 0},    {"r_wrist_ps", 0},    {"r_wrist_pitch", 0}};
+      {"back_bkx", 0},    {"back_bky", 0},    {"back_bkz", 0},
+      {"l_arm_elx", 0},   {"l_arm_ely", 0},   {"l_arm_shx", 0},
+      {"l_arm_shz", 0},   {"l_arm_wrx", 0},   {"l_arm_wry", 0},
+      {"l_arm_wry2", 0},  {"l_leg_akx", 0},   {"l_leg_aky", 0},
+      {"l_leg_hpx", 0},   {"l_leg_hpy", 0},   {"l_leg_hpz", 0},
+      {"l_leg_kny", 0},   {"neck_ry", 0},     {"r_arm_elx", 0},
+      {"r_arm_ely", 0},   {"r_arm_shx", 0},   {"r_arm_shz", 0},
+      {"r_arm_wrx", 0},   {"r_arm_wry", 0},   {"r_arm_wry2", 0},
+      {"r_leg_akx", 0.1}, {"r_leg_aky", 0.2}, {"r_leg_hpx", 0},
+      {"r_leg_hpy", 0},   {"r_leg_hpz", 0},   {"r_leg_kny", 0}};
   std::map<std::string, double> joint_vel = {
-      {"l_hip_ie", 0},      {"l_hip_aa", 0},      {"l_hip_fe", 0},
-      {"l_knee_fe_jp", 0},  {"l_knee_fe_jd", 0},  {"l_ankle_fe", 0},
-      {"l_ankle_ie", 0},    {"l_shoulder_fe", 0}, {"l_shoulder_aa", 0},
-      {"l_shoulder_ie", 0}, {"l_elbow_fe", 0},    {"l_wrist_ps", 0},
-      {"l_wrist_pitch", 0}, {"neck_pitch", 0},    {"r_hip_ie", 0},
-      {"r_hip_aa", 0},      {"r_hip_fe", 0},      {"r_knee_fe_jp", 0},
-      {"r_knee_fe_jd", 0},  {"r_ankle_fe", 0},    {"r_ankle_ie", 0},
-      {"r_shoulder_fe", 0}, {"r_shoulder_aa", 0}, {"r_shoulder_ie", 0},
-      {"r_elbow_fe", 0},    {"r_wrist_ps", 0},    {"r_wrist_pitch", 0}};
+      {"back_bkx", 0},    {"back_bky", 0},    {"back_bkz", 0},
+      {"l_arm_elx", 0},   {"l_arm_ely", 0},   {"l_arm_shx", 0},
+      {"l_arm_shz", 0},   {"l_arm_wrx", 0},   {"l_arm_wry", 0},
+      {"l_arm_wry2", 0},  {"l_leg_akx", 0},   {"l_leg_aky", 0},
+      {"l_leg_hpx", 0},   {"l_leg_hpy", 0},   {"l_leg_hpz", 0},
+      {"l_leg_kny", 0},   {"neck_ry", 0},     {"r_arm_elx", 0},
+      {"r_arm_ely", 0},   {"r_arm_shx", 0},   {"r_arm_shz", 0},
+      {"r_arm_wrx", 0},   {"r_arm_wry", 0},   {"r_arm_wry2", 0},
+      {"r_leg_akx", 0.1}, {"r_leg_aky", 0.2}, {"r_leg_hpx", 0},
+      {"r_leg_hpy", 0},   {"r_leg_hpz", 0},   {"r_leg_kny", 0}};
 
-  pin_robot.UpdateRobotModel(com_pos, com_quat.normalized(), com_lv, com_av,
-                             bjoint_pos, bjoint_quat.normalized(), bjoint_lv,
-                             bjoint_av, joint_pos, joint_vel, true);
+  auto tic1 = std::chrono::high_resolution_clock::now();
+  pin_robot->UpdateRobotModel(com_pos, com_quat.normalized(), com_lv, com_av,
+                              bjoint_pos, bjoint_quat.normalized(), bjoint_lv,
+                              bjoint_av, joint_pos, joint_vel, true);
+  auto toc1 = std::chrono::high_resolution_clock::now();
+  std::cout << std::chrono::duration<double, std::milli>(toc1 - tic1).count()
+            << "ms" << std::endl;
 
   std::cout << "============PINOCCHIO robot updated=============" << std::endl;
 
-  std::cout << "r_sole pos with string: " << std::endl;
-
-  auto tic = std::chrono::high_resolution_clock::now();
-  Eigen::Isometry3d iso = pin_robot.GetLinkIso("r_foot_contact");
-  auto toc = std::chrono::high_resolution_clock::now();
-
+  std::cout << "r_sole position: " << std::endl;
+  Eigen::Isometry3d iso = pin_robot->GetLinkIso("r_sole");
   std::cout << iso.linear() << std::endl;
   std::cout << iso.translation() << std::endl;
-  std::cout << "time passed: "
-            << std::chrono::duration<double, std::milli>(toc - tic).count()
-            << "ms" << std::endl;
-
-  std::cout << "r_sole pos with int: " << std::endl;
-  int r_foot_contact(58);
-  auto tic1 = std::chrono::high_resolution_clock::now();
-  Eigen::Isometry3d iso2 = pin_robot.GetLinkIso(r_foot_contact);
-  auto toc1 = std::chrono::high_resolution_clock::now();
-  std::cout << iso2.linear() << std::endl;
-  std::cout << iso2.translation() << std::endl;
-  std::cout << "time passed: "
-            << std::chrono::duration<double, std::milli>(toc1 - tic1).count()
-            << "ms" << std::endl;
-
-  // std::cout << "r_sole position: " << std::endl;
-  // Eigen::Isometry3d iso = pin_robot->GetLinkIso("r_sole");
-  // std::cout << iso.linear() << std::endl;
-  // std::cout << iso.translation() << std::endl;
 
   // std::cout << "r_sole velocity" << std::endl;
   // Eigen::MatrixXd vel = pin_robot->GetLinkVel("r_sole");
