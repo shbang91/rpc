@@ -70,10 +70,12 @@ public:
   Eigen::Matrix<double, 6, 1>
   GetLinkJacobianDotQdot(const std::string &link_name) override;
 
-  Eigen::Isometry3d GetLinkIso(const int &link_id);
-  Eigen::Matrix<double, 6, 1> GetLinkVel(const int &link_id);
-  Eigen::Matrix<double, 6, Eigen::Dynamic> GetLinkJacobian(const int &link_id);
-  Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(const int &link_id);
+  Eigen::Isometry3d GetLinkIso(const int &link_id) override;
+  Eigen::Matrix<double, 6, 1> GetLinkVel(const int &link_id) override;
+  Eigen::Matrix<double, 6, Eigen::Dynamic>
+  GetLinkJacobian(const int &link_id) override;
+  Eigen::Matrix<double, 6, 1>
+  GetLinkJacobianDotQdot(const int &link_id) override;
 
 private:
   void UpdateCentroidalQuantities() override;
