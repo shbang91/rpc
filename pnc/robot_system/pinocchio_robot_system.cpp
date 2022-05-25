@@ -319,33 +319,33 @@ Eigen::Isometry3d PinocchioRobotSystem::GetLinkIso(const int &link_id) {
   return ret;
 }
 
-Eigen::Matrix<double, 6, 1>
-PinocchioRobotSystem::GetLinkVel(const int &link_id) {
+Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkVel(
+    const int &link_id, const pinocchio::ReferenceFrame referenceframe) {
   Eigen::Matrix<double, 6, 1> ret;
   pinocchio::Motion fv =
-      getFrameVelocity(model_, data_, link_id, pinocchio::LOCAL_WORLD_ALIGNED);
+      getFrameVelocity(model_, data_, link_id, referenceframe);
   ret.segment(0, 3) = fv.angular();
   ret.segment(3, 3) = fv.linear();
   return ret;
 }
 
-Eigen::Matrix<double, 6, Eigen::Dynamic>
-PinocchioRobotSystem::GetLinkJacobian(const int &link_id) {
+Eigen::Matrix<double, 6, Eigen::Dynamic> PinocchioRobotSystem::GetLinkJacobian(
+    const int &link_id, const pinocchio::ReferenceFrame referenceframe) {
   computeJointJacobians(model_, data_, q_);
 
   Eigen::MatrixXd jac(6, n_qdot_);
-  getFrameJacobian(model_, data_, link_id, pinocchio::LOCAL_WORLD_ALIGNED, jac);
+  getFrameJacobian(model_, data_, link_id, referenceframe, jac);
   Eigen::MatrixXd ret(6, n_qdot_);
   ret.topRows(3) = jac.bottomRows(3);
   ret.bottomRows(3) = jac.topRows(3);
   return ret;
 }
 
-Eigen::Matrix<double, 6, 1>
-PinocchioRobotSystem::GetLinkJacobianDotQdot(const int &link_id) {
+Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkJacobianDotQdot(
+    const int &link_id, const pinocchio::ReferenceFrame referenceframe) {
   forwardKinematics(model_, data_, q_, qdot_, 0 * qdot_);
-  pinocchio::Motion fa = getFrameClassicalAcceleration(
-      model_, data_, link_id, pinocchio::LOCAL_WORLD_ALIGNED);
+  pinocchio::Motion fa =
+      getFrameClassicalAcceleration(model_, data_, link_id, referenceframe);
 
   Eigen::Matrix<double, 6, 1> ret;
   ret.segment(0, 3) = fa.angular();

@@ -314,12 +314,6 @@ Eigen::Matrix<double, 3, Eigen::Dynamic>
 DartRobotSystem::GetComLinJacobianDot() {
   return skeleton_->getCOMLinearJacobianDeriv(dart::dynamics::Frame::World());
 }
-Eigen::Isometry3d DartRobotSystem::GetLinkIso(const int &_link_id){};
-Eigen::Matrix<double, 6, 1> DartRobotSystem::GetLinkVel(const int &_link_id){};
-Eigen::Matrix<double, 6, Eigen::Dynamic>
-DartRobotSystem::GetLinkJacobian(const int &_link_id){};
-Eigen::Matrix<double, 6, 1>
-DartRobotSystem::GetLinkJacobianDotQdot(const int &_link_id){};
 
 void DartRobotSystem::PrintRobotInfo() {
   std::cout << "=======================" << std::endl;

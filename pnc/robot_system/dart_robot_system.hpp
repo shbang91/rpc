@@ -64,13 +64,6 @@ public:
   Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobian() override;
   Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobianDot() override;
 
-  virtual Eigen::Isometry3d GetLinkIso(const int &_link_id) override;
-  virtual Eigen::Matrix<double, 6, 1> GetLinkVel(const int &_link_id) override;
-  virtual Eigen::Matrix<double, 6, Eigen::Dynamic>
-  GetLinkJacobian(const int &_link_id) override;
-  virtual Eigen::Matrix<double, 6, 1>
-  GetLinkJacobianDotQdot(const int &_link_id) override;
-
 private:
   dart::dynamics::SkeletonPtr skeleton_;
   std::map<std::string, dart::dynamics::JointPtr> joint_ptr_map_;

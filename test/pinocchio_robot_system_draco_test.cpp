@@ -75,5 +75,17 @@ int main() {
   std::cout << "flaoting joint qdot idex: " << robot.GetQdotIdx("root_joint")
             << std::endl;
 
+  std::cout << "link vel wrt local world aligned" << std::endl;
+  std::cout << robot
+                   .GetLinkVel(draco_link::r_foot_contact,
+                               pinocchio::LOCAL_WORLD_ALIGNED)
+                   .transpose()
+            << std::endl;
+
+  std::cout << "link vel wrt local frame" << std::endl;
+  std::cout << robot.GetLinkVel(draco_link::r_foot_contact, pinocchio::LOCAL)
+                   .transpose()
+            << std::endl;
+
   return 0;
 }

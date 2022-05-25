@@ -70,12 +70,19 @@ public:
   Eigen::Matrix<double, 6, 1>
   GetLinkJacobianDotQdot(const std::string &link_name) override;
 
-  Eigen::Isometry3d GetLinkIso(const int &link_id) override;
-  Eigen::Matrix<double, 6, 1> GetLinkVel(const int &link_id) override;
-  Eigen::Matrix<double, 6, Eigen::Dynamic>
-  GetLinkJacobian(const int &link_id) override;
+  Eigen::Isometry3d GetLinkIso(const int &link_id);
   Eigen::Matrix<double, 6, 1>
-  GetLinkJacobianDotQdot(const int &link_id) override;
+  GetLinkVel(const int &link_id,
+             const pinocchio::ReferenceFrame referenceframe =
+                 pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::Matrix<double, 6, Eigen::Dynamic>
+  GetLinkJacobian(const int &link_id,
+                  const pinocchio::ReferenceFrame referenceframe =
+                      pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::Matrix<double, 6, 1>
+  GetLinkJacobianDotQdot(const int &link_id,
+                         const pinocchio::ReferenceFrame referenceframe =
+                             pinocchio::LOCAL_WORLD_ALIGNED);
 
 private:
   void UpdateCentroidalQuantities() override;
