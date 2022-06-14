@@ -17,6 +17,7 @@ class DataSaver(metaclass=Singleton):
     Data Saver:
         add topics --> advance
     """
+
     def __init__(self, filename='pnc.pkl'):
         self._history = dict()
         if not os.path.exists('experiment_data'):

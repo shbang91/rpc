@@ -1,7 +1,6 @@
 #pragma once
-#include <iostream>
 #include <Eigen/Dense>
-
+#include <iostream>
 
 class RobotSystem;
 class ControlArchitecture;
@@ -9,22 +8,19 @@ class ControlArchitecture;
 class Interface {
 
 public:
-    Interface() {
-        count_ = 0;
-        running_time_ = 0.;
-    };
+  Interface() {
+    count_ = 0;
+    running_time_ = 0.;
+  };
 
-    virtual ~Interface() {};
+  virtual ~Interface(){};
 
-    virtual void GetCommand(void *_sensor_data, void *_command_data) = 0;
-
+  virtual void GetCommand(void *_sensor_data, void *_command_data) = 0;
 
 protected:
-    int count_;
-    double running_time_;
+  int count_;
+  double running_time_;
 
-    RobotSystem *robot_;
-    ControlArchitecture *control_architecture_;
-
+  RobotSystem *robot_;
+  ControlArchitecture *control_architecture_;
 };
-

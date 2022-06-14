@@ -17,7 +17,7 @@ target_link_libraries(pinocchio-robot-system ${PINOCCHIO_LIBRARIES}
 
 install(TARGETS dart-robot-system DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${dart_robot_system_header} DESTINATION
-    "{INSTALL_INCLUDE_DIR}/pnc/robot_system")
+    "${INSTALL_INCLUDE_DIR}/pnc/robot_system")
 install(TARGETS pinocchio-robot-system DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${pinocchio_robot_system_header} DESTINATION
-    "{INSTALL_INCLUDE_DIR}/pnc/robot_system")
+    "${INSTALL_INCLUDE_DIR}/pnc/robot_system")

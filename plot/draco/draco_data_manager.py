@@ -14,8 +14,8 @@ sys.path.append(cwd)
 from messages.draco_pb2 import *
 from plot.data_saver import *
 
-import pinocchio as pin
-from pinocchio.visualize import MeshcatVisualizer
+# import pinocchio as pin
+# from pinocchio.visualize import MeshcatVisualizer
 
 import argparse
 
@@ -42,21 +42,21 @@ msg = pnc_msg()
 data_saver = DataSaver()
 
 ##meshcat visualizer
-if args.b_visualize:
-    model, collision_model, visual_model = pin.buildModelsFromUrdf(
-        "robot_model/draco/draco.urdf", "robot_model/draco",
-        pin.JointModelFreeFlyer())
-    viz = MeshcatVisualizer(model, collision_model, visual_model)
-    try:
-        viz.initViewer(open=True)
-    except ImportError as err:
-        print(
-            "Error while initializing the viewer. It seems you should install python meshcat"
-        )
-        print(err)
-        exit()
-    viz.loadViewerModel()
-    vis_q = pin.neutral(model)
+# if args.b_visualize:
+# model, collision_model, visual_model = pin.buildModelsFromUrdf(
+# "robot_model/draco/draco.urdf", "robot_model/draco",
+# pin.JointModelFreeFlyer())
+# viz = MeshcatVisualizer(model, collision_model, visual_model)
+# try:
+# viz.initViewer(open=True)
+# except ImportError as err:
+# print(
+# "Error while initializing the viewer. It seems you should install python meshcat"
+# )
+# print(err)
+# exit()
+# viz.loadViewerModel()
+# vis_q = pin.neutral(model)
 
 while True:
     ##receive msg trough socket
@@ -68,15 +68,16 @@ while True:
 
     ##save data in pkl file
     data_saver.add('time', msg.time)
-    data_saver.add('base_com_pos', list(msg.base_com_pos))
-    data_saver.add('base_com_ori', list(msg.base_com_ori))
-    data_saver.add('base_com_lin_vel', list(msg.base_com_lin_vel))
-    data_saver.add('base_com_ang_vel', list(msg.base_com_ang_vel))
 
     data_saver.add('base_joint_pos', list(msg.base_joint_pos))
     data_saver.add('base_joint_ori', list(msg.base_joint_ori))
     data_saver.add('base_joint_lin_vel', list(msg.base_joint_lin_vel))
     data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
+
+    data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
+    data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
+    data_saver.add('est_base_joint_lin_vel', list(msg.est_base_joint_lin_vel))
+    data_saver.add('est_base_joint_ang_vel', list(msg.est_base_joint_ang_vel))
 
     data_saver.advance()
 

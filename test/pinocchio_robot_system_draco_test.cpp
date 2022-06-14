@@ -49,43 +49,58 @@ int main() {
 
   std::cout << "============PINOCCHIO robot updated=============" << std::endl;
 
-  std::cout << "r_sole pos with string: " << std::endl;
-  auto tic = std::chrono::high_resolution_clock::now();
-  Eigen::Isometry3d iso = robot.GetLinkIso("r_foot_contact");
-  auto toc = std::chrono::high_resolution_clock::now();
+  // std::cout << "q" << std::endl;
+  // std::cout << robot.GetQ() << std::endl;
 
-  std::cout << iso.linear() << std::endl;
-  std::cout << iso.translation() << std::endl;
-  std::cout << "time passed: "
-            << std::chrono::duration<double, std::milli>(toc - tic).count()
-            << "ms" << std::endl;
+  // std::cout << "qdot" << std::endl;
+  // std::cout << robot.GetQdot() << std::endl;
 
-  std::cout << "r_sole pos with int: " << std::endl;
-  auto tic1 = std::chrono::high_resolution_clock::now();
-  Eigen::Isometry3d iso2 = robot.GetLinkIso(draco_link::r_foot_contact_frame);
-  auto toc1 = std::chrono::high_resolution_clock::now();
-  std::cout << iso2.linear() << std::endl;
-  std::cout << iso2.translation() << std::endl;
-  std::cout << "time passed : "
-            << std::chrono::duration<double, std::milli>(toc1 - tic1).count()
-            << "ms" << std::endl;
+  // std::cout << "Ig" << std::endl;
+  // std::cout << robot.Ig_ << std::endl;
 
-  std::cout << "flaoting joint q idex: " << robot.GetQIdx("root_joint")
-            << std::endl;
-  std::cout << "flaoting joint qdot idex: " << robot.GetQdotIdx("root_joint")
-            << std::endl;
+  // std::cout << "Hg" << std::endl;
+  // std::cout << robot.Hg_ << std::endl;
 
-  std::cout << "link vel wrt local world aligned" << std::endl;
-  std::cout << robot
-                   .GetLinkVel(draco_link::r_foot_contact,
-                               pinocchio::LOCAL_WORLD_ALIGNED)
-                   .transpose()
-            << std::endl;
+  // std::cout << "Ag" << std::endl;
+  // std::cout << robot.Ag_ << std::endl;
 
-  std::cout << "link vel wrt local frame" << std::endl;
-  std::cout << robot.GetLinkVel(draco_link::r_foot_contact, pinocchio::LOCAL)
-                   .transpose()
-            << std::endl;
+  // std::cout << "mass matrix" << std::endl;
+  // std::cout << robot.GetMassMatrix() << std::endl;
+
+  // std::cout << "gravity" << std::endl;
+  // std::cout << robot.GetGravity() << std::endl;
+
+  // std::cout << "coriolis" << std::endl;
+  // std::cout << robot.GetCoriolis() << std::endl;
+
+  // std::cout << "rfoot pos" << std::endl;
+  // Eigen::Isometry3d iso = robot.GetLinkIso("r_foot_contact");
+  // std::cout << iso.translation() << std::endl;
+  // std::cout << iso.linear() << std::endl;
+
+  // std::cout << "rfoot vel" << std::endl;
+  // Eigen::Matrix<double, 6, 1> vel = robot.GetLinkVel("r_foot_contact");
+  // std::cout << vel.transpose() << std::endl;
+
+  // std::cout << "rfoot jac" << std::endl;
+  // std::cout << robot.GetLinkJacobian("r_foot_contact") << std::endl;
+
+  // std::cout << "rfoot link acc drift" << std::endl;
+  // std::cout << robot.GetLinkJacobianDotQdot("r_foot_contact").transpose()
+  //<< std::endl;
+
+  // std::cout << "com" << std::endl;
+  // std::cout << robot.GetRobotComPos() << std::endl;
+
+  // std::cout << "com vel" << std::endl;
+  // std::cout << robot.GetRobotComLinVel() << std::endl;
+
+  // std::cout << "com jac" << std::endl;
+  // std::cout << robot.GetComLinJacobian() << std::endl;
+
+  // std::cout << "com jdot_qdot" << std::endl;
+  // std::cout << (robot.GetComLinJacobianDot() * robot.GetQdot()).transpose()
+  //<< std::endl;
 
   return 0;
 }

@@ -15,3 +15,6 @@ target_link_libraries(draco_test pinocchio-robot-system)
 
 add_executable(dart_test dart_robot_system_test.cpp)
 target_link_libraries(dart_test dart-robot-system)
+
+add_executable(pin_robot_system_test pin_robot_system_test.cpp)
+target_link_libraries(pin_robot_system_test pin-robot-system)

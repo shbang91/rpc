@@ -105,10 +105,16 @@ void PinocchioRobotSystem::ConfigRobot() {
 }
 
 // TODO:
-Eigen::Vector3d PinocchioRobotSystem::GetBaseLocalComPos() {}
+Eigen::Vector3d PinocchioRobotSystem::GetBaseLocalComPos() {
+  Eigen::Vector3d ret(0, 0, 0);
+  return ret;
+}
 
 // TODO:
-std::string PinocchioRobotSystem::GetBaseLinkName() {}
+std::string PinocchioRobotSystem::GetBaseLinkName() {
+  std::string ret = "torso";
+  return ret;
+}
 
 int PinocchioRobotSystem::GetQIdx(const std::string &joint_name) {
   return model_.joints[model_.getJointId(joint_name)].idx_q();
@@ -124,11 +130,17 @@ int PinocchioRobotSystem::GetJointIdx(const std::string &joint_name) {
 
 // TODO:
 std::map<std::string, double>
-PinocchioRobotSystem::EigenVectorToMap(const Eigen::VectorXd &cmd_vec) {}
+PinocchioRobotSystem::EigenVectorToMap(const Eigen::VectorXd &cmd_vec) {
+  std::map<std::string, double> ret;
+  return ret;
+}
 
 // TODO:
 Eigen::VectorXd
-PinocchioRobotSystem::MapToEigenVector(std::map<std::string, double> _map) {}
+PinocchioRobotSystem::MapToEigenVector(std::map<std::string, double> _map) {
+  Eigen::VectorXd ret;
+  return ret;
+}
 
 void PinocchioRobotSystem::UpdateRobotModel(
     const Eigen::Vector3d &base_com_pos,
@@ -246,7 +258,6 @@ Eigen::Matrix<double, 3, Eigen::Dynamic>
 PinocchioRobotSystem::GetComLinJacobian() {
   crba(model_, data_, q_);
   return jacobianCenterOfMass(model_, data_, q_);
-  ;
 }
 
 Eigen::Matrix<double, 3, Eigen::Dynamic>
@@ -380,5 +391,4 @@ void PinocchioRobotSystem::PrintRobotInfo() {
   std::cout << "constexpr int n_vdof = " << n_vdof_ << ";" << std::endl;
   std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ - n_vdof_
             << ";" << std::endl;
-  exit(0);
 }

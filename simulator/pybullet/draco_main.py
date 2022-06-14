@@ -222,9 +222,11 @@ while (True):
 
     ##apply motor torque
     pybullet_util.set_motor_trq(draco_humanoid, joint_id,
-                                    pybullet_joint_torques_cmd)
+                                pybullet_joint_torques_cmd)
+    print("trq command value")
+    print(pybullet_joint_torques_cmd)
     # pybullet_util.set_motor_pos(draco_humanoid, joint_id,
-                                # pybullet_joint_positions_cmd)
+    # pybullet_joint_positions_cmd)
     #step simulation
     pb.stepSimulation()
     # time.sleep(dt)

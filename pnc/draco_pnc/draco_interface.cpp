@@ -7,7 +7,7 @@
 
 #include "pnc/robot_system/dart_robot_system.hpp"
 
-#include "pnc/draco_pnc/draco_data_manager.hpp"
+//#include "pnc/draco_pnc/draco_data_manager.hpp"
 
 #include "configuration.hpp"
 #include "util/util.hpp"
@@ -16,9 +16,9 @@ DracoInterface::DracoInterface() : Interface() {
 
   // robot_ = new DartRobotSystem(THIS_COM
   // "robot_model/draco/draco_rel_path.urdf", false, true, 2);
-  // robot_ =
-  new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
-                           THIS_COM "robot_model/draco", false, true, 2);
+  robot_ =
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+                               THIS_COM "robot_model/draco", false, false, 2);
   se_ = new DracoStateEstimator(robot_);
   sp_ = DracoStateProvider::GetStateProvider();
   sp_->stance_foot_ = "l_foot_contact";
@@ -30,8 +30,8 @@ DracoInterface::DracoInterface() : Interface() {
   // control_architecture_ = new DracoControlArchitecture(robot_);
 
   // initalize data publisher
-  DracoDataManager::GetDataManager()->InitializeSocket(
-      util::ReadParameter<std::string>(cfg, "ip_address"));
+  // DracoDataManager::GetDataManager()->InitializeSocket(
+  // util::ReadParameter<std::string>(cfg, "ip_address"));
 }
 
 DracoInterface::~DracoInterface() {
@@ -63,8 +63,8 @@ void DracoInterface::GetCommand(void *_sensor_data, void *_command_data) {
     // control_architecture_->GetCommand(command_data);
   }
 
-  DracoDataManager::GetDataManager()->data_->time_ = sp_->current_time_;
-  DracoDataManager::GetDataManager()->SendData();
+  // DracoDataManager::GetDataManager()->data_->time_ = sp_->current_time_;
+  // DracoDataManager::GetDataManager()->SendData();
   ++count_;
 }
 

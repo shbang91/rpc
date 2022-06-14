@@ -1,6 +1,7 @@
 #pragma once
 
 namespace draco_link {
+constexpr int universe = 0;
 constexpr int root_joint = 1;
 constexpr int torso_link = 2;
 constexpr int l_hip_ie = 3;
@@ -84,7 +85,8 @@ constexpr int torso_imu = 80;
 } // namespace draco_link
 
 namespace draco_joint {
-constexpr int root_joint = 1; // floating base
+constexpr int universe = 0;
+constexpr int root_joint = 1;
 constexpr int l_hip_ie = 2;
 constexpr int l_hip_aa = 3;
 constexpr int l_hip_fe = 4;

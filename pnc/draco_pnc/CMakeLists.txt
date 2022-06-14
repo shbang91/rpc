@@ -6,7 +6,6 @@ target_link_libraries(draco-pnc ${Protobuf_LIBRARIES}
                                 ${ZMQ_LIBRARIES}
                                 dart-robot-system
                                 pinocchio-robot-system
-                                draco-pnc-msg
                                 pnc-util)
 
 install(TARGETS draco-pnc DESTINATION "${INSTALL_LIB_DIR}")

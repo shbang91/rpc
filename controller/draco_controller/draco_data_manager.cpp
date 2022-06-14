@@ -1,4 +1,4 @@
-#include <pnc/draco_pnc/draco_data_manager.hpp>
+#include <controller/draco_controller/draco_data_manager.hpp>
 
 DracoDataManager *DracoDataManager::GetDataManager() {
   static DracoDataManager dm;
@@ -6,7 +6,7 @@ DracoDataManager *DracoDataManager::GetDataManager() {
 }
 
 DracoDataManager::DracoDataManager() {
-  // dracodata initialize
+  // draco data initialize
   data_ = std::make_unique<DracoData>();
 
   // zmq stuff initialize
@@ -22,8 +22,6 @@ void DracoDataManager::InitializeSocket(const std::string &ip_address) {
   b_initialize_socket_ = true;
 }
 
-DracoDataManager::~DracoDataManager() {}
-
 void DracoDataManager::SendData() {
   assert(b_initialize_socket_);
 
@@ -35,18 +33,20 @@ void DracoDataManager::SendData() {
     msg.add_base_joint_ori(data_->base_joint_ori_[i]);
     msg.add_base_joint_lin_vel(data_->base_joint_lin_vel_[i]);
     msg.add_base_joint_ang_vel(data_->base_joint_ang_vel_[i]);
-
-    msg.add_base_com_pos(data_->base_com_pos_[i]);
-    msg.add_base_com_ori(data_->base_com_ori_[i]);
-    msg.add_base_com_lin_vel(data_->base_com_lin_vel_[i]);
-    msg.add_base_com_ang_vel(data_->base_com_ang_vel_[i]);
   }
   msg.add_base_joint_ori(data_->base_joint_ori_[3]);
-  msg.add_base_com_ori(data_->base_com_ori_[3]);
 
   for (int i = 0; i < data_->joint_positions_.size(); ++i) {
     msg.add_joint_positions(data_->joint_positions_[i]);
   }
+
+  for (int i = 0; i < 3; ++i) {
+    msg.add_est_base_joint_pos(data_->est_base_joint_pos_[i]);
+    msg.add_est_base_joint_ori(data_->est_base_joint_ori_[i]);
+    msg.add_est_base_joint_lin_vel(data_->est_base_joint_lin_vel_[i]);
+    msg.add_est_base_joint_ang_vel(data_->est_base_joint_ang_vel_[i]);
+  }
+  msg.add_est_base_joint_ori(data_->est_base_joint_ori_[3]);
 
   // serialize msg in string type
   std::string encoded_msg;
@@ -66,12 +66,10 @@ DracoData::DracoData() {
   base_joint_lin_vel_ = Eigen::Vector3d::Zero();
   base_joint_ang_vel_ = Eigen::Vector3d::Zero();
 
-  base_com_pos_ = Eigen::Vector3d::Zero();
-  base_com_ori_ = Eigen::Vector4d::Zero();
-  base_com_lin_vel_ = Eigen::Vector3d::Zero();
-  base_com_ang_vel_ = Eigen::Vector3d::Zero();
-
   joint_positions_ = Eigen::VectorXd::Zero(27);
-}
 
-DracoData::~DracoData() {}
+  est_base_joint_pos_ = Eigen::Vector3d::Zero();
+  est_base_joint_ori_ = Eigen::Vector4d::Zero();
+  est_base_joint_lin_vel_ = Eigen::Vector3d::Zero();
+  est_base_joint_ang_vel_ = Eigen::Vector3d::Zero();
+}

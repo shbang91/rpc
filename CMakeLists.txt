@@ -75,6 +75,7 @@ endif()
 ## Subdirectories
 ##==================================================
 add_subdirectory(pnc)
+add_subdirectory(controller)
 add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
