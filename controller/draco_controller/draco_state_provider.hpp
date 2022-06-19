@@ -6,7 +6,9 @@ public:
   static DracoStateProvider *GetStateProvider();
   ~DracoStateProvider() = default;
 
+  // servo dt should be set outside of controller
   double servo_dt_;
+
   double current_time_;
 
   int stance_foot_;
@@ -21,6 +23,9 @@ public:
 
   int state_;
   int prev_state_;
+
+  // should be set outside of controller
+  Eigen::VectorXd nominal_jpos_;
 
 private:
   DracoStateProvider();

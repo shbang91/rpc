@@ -6,14 +6,14 @@ class PinocchioRobotSystem;
 
 class ControlArchitecture {
 public:
-  ControlArchitecture(PinocchioRobotSystem *robot) { robot_ = robot; };
+  ControlArchitecture(PinocchioRobotSystem *robot) : robot_(robot){};
   virtual ~ControlArchitecture() = default;
 
   virtual void GetCommand(void *command) = 0;
 
   // getter
-  int GetStateId() const { return this->state_; }
-  int GetPrevStateId() const { return this->prev_state_; }
+  const int GetStateId() const { return this->state_; }
+  const int GetPrevStateId() const { return this->prev_state_; }
 
 protected:
   PinocchioRobotSystem *robot_;
@@ -21,5 +21,8 @@ protected:
   int state_;
   int prev_state_;
 
-  bool b_state_first_visit_ = true;
+  bool b_state_first_visit_;
+
+  YAML::Node cfg_;
+  virtual void _InitializeParameters() = 0;
 };

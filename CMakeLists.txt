@@ -24,6 +24,10 @@ set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 set(PYTHON_BINDING TRUE)
 option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
+if(NOT CMAKE_BUILD_TYPE MATCHES Release)
+    message(STATUS "CMAKE_BUILD_TYPE not set to Release -> impacts
+    performance")
+endif()
 
 ##==================================================
 ## Include Directory
@@ -74,12 +78,13 @@ endif()
 ##==================================================
 ## Subdirectories
 ##==================================================
-add_subdirectory(pnc)
 add_subdirectory(controller)
+add_subdirectory(planner)
 add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
 
+#add_subdirectory(pnc)
 
 ##==================================================
 ## Configuration File

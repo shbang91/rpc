@@ -15,6 +15,14 @@
 #include <string>
 #include <unordered_map>
 
+/*
+ *  Pinnochio considers floating base with 7 positions and 6 velocities with the
+ *  order of [x, y, z, quat_x, quat_y, quat_z, quat_w, joints] and
+ *  [xdot, ydot, zdot, ang_x, ang_y, ang_z, joints].
+ *  Note that first six element of generalized velocities are represented in the
+ *  base joint frame acting on the base joint frame.
+ */
+
 class PinocchioRobotSystem {
 public:
   PinocchioRobotSystem(const std::string &urdf_file,
@@ -37,7 +45,12 @@ public:
   int GetQIdx(const int &joint_idx) const;
   int GetQdotIdx(const int &joint_idx) const;
 
+  Eigen::VectorXd GetJointPos() const;
+  Eigen::VectorXd GetJointVel() const;
+
   Eigen::Isometry3d GetLinkIsometry(const int &link_idx);
+  // function overloading
+  Eigen::Isometry3d GetLinkIsometry(const int *link_idx);
   Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
       const int &link_idx,
       const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;

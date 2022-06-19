@@ -1,5 +1,4 @@
 #include "controller/whole_body_controller/basic_task.hpp"
-#include "util/util.hpp"
 
 JointTask::JointTask(PinocchioRobotSystem *robot)
     : Task(robot, robot->GetNumActiveDof()) {
@@ -8,10 +7,10 @@ JointTask::JointTask(PinocchioRobotSystem *robot)
 
 // not being used
 void JointTask::UpdateOscCommand() {
-  pos_ = robot_->GetQ().tail(robot_->GetNumActiveDof());
+  pos_ = robot_->GetJointPos();
   pos_err_ = des_pos_ - pos_;
 
-  vel_ = robot_->GetQdot().tail(robot_->GetNumActiveDof());
+  vel_ = robot_->GetJointVel();
   vel_err_ = des_vel_ - vel_;
 
   osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
@@ -28,6 +27,8 @@ void JointTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
 
+void JointTask::SetTaskParameters(const YAML::Node &node, const bool &b_sim){};
+
 // Selected Joint Task
 SelectedJointTask::SelectedJointTask(
     PinocchioRobotSystem *robot, const std::vector<int> &joint_idx_container)
@@ -36,7 +37,7 @@ SelectedJointTask::SelectedJointTask(
 }
 
 void SelectedJointTask::UpdateOscCommand() {
-  for (int i = 0; i < dim_; ++i) {
+  for (unsigned int i = 0; i < dim_; ++i) {
     pos_[i] = robot_->GetQ()(robot_->GetQIdx(joint_idx_container_[i]));
     pos_err_[i] = des_pos_[i] - pos_[i];
 
@@ -48,7 +49,7 @@ void SelectedJointTask::UpdateOscCommand() {
 }
 
 void SelectedJointTask::UpdateTaskJacobian() {
-  for (int i = 0; i < dim_; ++i) {
+  for (unsigned int i = 0; i < dim_; ++i) {
     int idx = robot_->GetQdotIdx(joint_idx_container_[i]);
     jacobian_(i, idx) = 1.;
   }
@@ -57,11 +58,31 @@ void SelectedJointTask::UpdateTaskJacobian() {
 void SelectedJointTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
+void SelectedJointTask::SetTaskParameters(const YAML::Node &node,
+                                          const bool &b_sim) {
+  try {
+    kp_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kp")
+                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
+    kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
+                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
+    task_component_hierarchy_ =
+        b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
+              : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
+  } catch (std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+};
+std::vector<int> SelectedJointTask::GetJointIdxContainer() {
+  return this->joint_idx_container_;
+}
 
 // Link Position Task
 LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot,
                          const int &target_link_idx)
-    : Task(robot, 3) {
+    : Task(robot, 3, &target_link_idx) {
 
   target_link_idx_ = target_link_idx;
 }
@@ -86,10 +107,13 @@ void LinkPosTask::UpdateTaskJacobianDotQdot() {
       robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
 }
 
+void LinkPosTask::SetTaskParameters(const YAML::Node &node,
+                                    const bool &b_sim){};
+
 // Link Orientation Task
 LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot,
                          const int &target_link_idx)
-    : Task(robot, 3) {
+    : Task(robot, 3, &target_link_idx) {
   target_link_idx_ = target_link_idx;
 }
 
@@ -124,6 +148,22 @@ void LinkOriTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ =
       robot_->GetLinkJacobianDotQdot(target_link_idx_).head(dim_);
 }
+void LinkOriTask::SetTaskParameters(const YAML::Node &node, const bool &b_sim) {
+  try {
+    kp_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kp")
+                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
+    kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
+                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
+    task_component_hierarchy_ =
+        b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
+              : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
+  } catch (std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+}
 
 // Robot Center of Mass Task
 ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {}
@@ -146,3 +186,4 @@ void ComTask::UpdateTaskJacobian() { jacobian_ = robot_->GetComLinJacobian(); }
 void ComTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot();
 }
+void ComTask::SetTaskParameters(const YAML::Node &node, const bool &b_sim){};

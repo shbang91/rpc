@@ -151,10 +151,27 @@ int PinocchioRobotSystem::GetQdotIdx(const int &joint_idx) const {
   return idx;
 }
 
+Eigen::VectorXd PinocchioRobotSystem::GetJointPos() const {
+  return this->q_.tail(n_adof_);
+}
+Eigen::VectorXd PinocchioRobotSystem::GetJointVel() const {
+  return this->qdot_.tail(n_adof_);
+}
+
 Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int &link_idx) {
   Eigen::Isometry3d ret;
   const pinocchio::SE3 trans =
       pinocchio::updateFramePlacement(model_, data_, link_idx);
+  ret.linear() = trans.rotation();
+  ret.translation() = trans.translation();
+  return ret;
+}
+
+// function overloading
+Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int *link_idx) {
+  Eigen::Isometry3d ret;
+  const pinocchio::SE3 trans =
+      pinocchio::updateFramePlacement(model_, data_, *link_idx);
   ret.linear() = trans.rotation();
   ret.translation() = trans.translation();
   return ret;

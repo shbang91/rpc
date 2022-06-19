@@ -3,10 +3,13 @@
 #include <iostream>
 
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "util/util.hpp"
 
 class Task {
 public:
-  Task(PinocchioRobotSystem *_robot, const int &dim) : dim_(dim) {
+  Task(PinocchioRobotSystem *_robot, const int &dim,
+       const int *target_idx = nullptr)
+      : dim_(dim) {
     robot_ = _robot;
 
     des_pos_ = Eigen::VectorXd::Zero(dim_);
@@ -29,6 +32,8 @@ public:
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 
     task_component_hierarchy_ = Eigen::VectorXd::Zero(dim_);
+
+    target_idx_ = target_idx;
   }
   virtual ~Task() = default;
 
@@ -47,7 +52,15 @@ public:
   virtual void UpdateTaskJacobian() = 0;
   virtual void UpdateTaskJacobianDotQdot() = 0;
 
-  // TODO: change to getter function
+  // setter function
+  virtual void SetTaskParameters(const YAML::Node &node, const bool &b_sim) = 0;
+
+  // getter function
+  Eigen::VectorXd GetTaskDesiredPos() { return des_pos_; }
+  Eigen::VectorXd GetTaskDesiredVel() { return des_vel_; }
+  Eigen::VectorXd GetTaskDesiredAcc() { return des_acc_; }
+
+  const int *GetTargetIdx() { return target_idx_; }
 
 protected:
   PinocchioRobotSystem *robot_;
@@ -75,4 +88,6 @@ protected:
   Eigen::VectorXd jacobian_dot_q_dot_;
 
   Eigen::VectorXd task_component_hierarchy_;
+
+  const int *target_idx_;
 };

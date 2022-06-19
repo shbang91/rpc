@@ -25,6 +25,9 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   // get yaml node
   YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
 
+  // set control frequency
+  sp_->servo_dt_ = util::ReadParameter<double>(cfg, "servo_dt");
+
   // initalize data publisher
   DracoDataManager::GetDataManager()->InitializeSocket(
       util::ReadParameter<std::string>(cfg, "ip_address"));
@@ -46,11 +49,12 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   if (count_ <= waiting_count_) {
     se_->InitializeSensorData(draco_sensor_data);
+    // for simulation without state estimator
     // se_->UpdateGroundTruthSensorData(draco_sensor_data);
     this->_SafeCommand(draco_sensor_data, draco_command);
   } else {
     se_->UpdateSensorData(draco_sensor_data);
-    //  crtl_arch_->GetCommand(draco_command);
+    ctrl_arch_->GetCommand(draco_command);
   }
 
   DracoDataManager::GetDataManager()->data_->time_ = sp_->current_time_;

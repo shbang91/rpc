@@ -10,7 +10,6 @@ DracoStateProvider *DracoStateProvider::GetStateProvider() {
 
 DracoStateProvider::DracoStateProvider() {
   util::PrettyConstructor(1, "DracoStateProvider");
-  servo_dt_ = 0.00125;
   current_time_ = 0.;
 
   stance_foot_ = draco_link::l_foot_contact;
@@ -23,6 +22,6 @@ DracoStateProvider::DracoStateProvider() {
   b_lf_contact_ = true;
   b_rf_contact_ = true;
 
-  state_ = DracoStates::kInitialize;
-  prev_state_ = DracoStates::kInitialize;
+  state_ = draco_states::kInitialize;
+  prev_state_ = draco_states::kInitialize;
 }

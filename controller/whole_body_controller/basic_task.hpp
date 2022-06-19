@@ -6,28 +6,34 @@
 #include <vector>
 
 #include "controller/whole_body_controller/task.hpp"
+#include "util/util.hpp"
 
 class JointTask : public Task {
 public:
   JointTask(PinocchioRobotSystem *robot);
   virtual ~JointTask() = default;
 
-  void UpdateOscCommand();
+  void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian();
-  void UpdateTaskJacobianDotQdot();
+  void UpdateTaskJacobian() override;
+  void UpdateTaskJacobianDotQdot() override;
+
+  void SetTaskParameters(const YAML::Node &node, const bool &b_sim) override;
 };
 
 class SelectedJointTask : public Task {
 public:
   SelectedJointTask(PinocchioRobotSystem *robot,
-                    const std::vector<int> &joint_container);
+                    const std::vector<int> &joint_idx_container);
   virtual ~SelectedJointTask() = default;
 
-  void UpdateOscCommand();
+  void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian();
-  void UpdateTaskJacobianDotQdot();
+  void UpdateTaskJacobian() override;
+  void UpdateTaskJacobianDotQdot() override;
+
+  void SetTaskParameters(const YAML::Node &node, const bool &b_sim) override;
+  std::vector<int> GetJointIdxContainer();
 
 private:
   std::vector<int> joint_idx_container_;
@@ -38,10 +44,12 @@ public:
   LinkPosTask(PinocchioRobotSystem *robot, const int &target_link);
   virtual ~LinkPosTask() = default;
 
-  void UpdateOscCommand();
+  void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian();
-  void UpdateTaskJacobianDotQdot();
+  void UpdateTaskJacobian() override;
+  void UpdateTaskJacobianDotQdot() override;
+
+  void SetTaskParameters(const YAML::Node &node, const bool &b_sim) override;
 
 private:
   int target_link_idx_;
@@ -52,10 +60,12 @@ public:
   LinkOriTask(PinocchioRobotSystem *robot, const int &target_link);
   virtual ~LinkOriTask() = default;
 
-  void UpdateOscCommand();
+  void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian();
-  void UpdateTaskJacobianDotQdot();
+  void UpdateTaskJacobian() override;
+  void UpdateTaskJacobianDotQdot() override;
+
+  void SetTaskParameters(const YAML::Node &node, const bool &b_sim) override;
 
 private:
   int target_link_idx_;
@@ -66,8 +76,10 @@ public:
   ComTask(PinocchioRobotSystem *robot);
   virtual ~ComTask() = default;
 
-  void UpdateOscCommand();
+  void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian();
-  void UpdateTaskJacobianDotQdot();
+  void UpdateTaskJacobian() override;
+  void UpdateTaskJacobianDotQdot() override;
+
+  void SetTaskParameters(const YAML::Node &node, const bool &b_sim) override;
 };

@@ -1,10 +1,9 @@
 #pragma once
 #include <vector>
 
-#include "controller/whole_body_controller/contact.hpp"
-#include "controller/whole_body_controller/internal_constraint.hpp"
-#include "controller/whole_body_controller/task.hpp"
-
+class Task;
+class Contact;
+class InternalConstraint;
 class PinocchioRobotSystem;
 
 class TCIContainer {
