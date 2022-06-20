@@ -61,6 +61,7 @@ void DoubleSupportStandUp::FirstVisit() {
 }
 
 void DoubleSupportStandUp::OneStep() {
+  std::cout << "one step" << std::endl;
   state_machine_time_ = sp_->current_time_ - state_machine_time_;
 
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);

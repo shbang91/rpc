@@ -6,19 +6,17 @@
 
 FloatingBaseTrajectoryManager::FloatingBaseTrajectoryManager(
     Task *com_task, Task *torso_ori_task, PinocchioRobotSystem *robot)
-    : duration_(0.), init_com_pos_(Eigen::Vector3d::Zero()),
+    : com_task_(com_task), torso_ori_task_(torso_ori_task), robot_(robot),
+      duration_(0.), init_com_pos_(Eigen::Vector3d::Zero()),
       target_com_pos_(Eigen::Vector3d::Zero()),
       exp_err_(Eigen::VectorXd::Zero(3)) {
-
-  com_task_ = com_task;
-  torso_ori_task_ = torso_ori_task;
-  robot_ = robot;
+  util::PrettyConstructor(2, "FloatingBaseTrajectoryManager");
 }
 
 void FloatingBaseTrajectoryManager::InitializeFloatingBaseInterpolation(
     const Eigen::Vector3d &target_com_pos,
-    const Eigen::Quaterniond &target_torso_quat, const double &duration,
-    const bool &b_use_base_height) {
+    const Eigen::Quaterniond &target_torso_quat, const double duration,
+    const bool b_use_base_height) {
   duration_ = duration;
   init_com_pos_ = robot_->GetRobotComPos();
   target_com_pos_ = target_com_pos;
@@ -34,12 +32,12 @@ void FloatingBaseTrajectoryManager::InitializeFloatingBaseInterpolation(
 }
 
 void FloatingBaseTrajectoryManager::UpdateDesired(
-    const double &state_machine_time) {
-  Eigen::VectorXd des_com_pos(Eigen::VectorXd::Zero(3));
-  Eigen::VectorXd des_com_vel(Eigen::VectorXd::Zero(3));
-  Eigen::VectorXd des_com_acc(Eigen::VectorXd::Zero(3));
+    const double state_machine_time) {
+  Eigen::VectorXd des_com_pos = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_com_vel = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_com_acc = Eigen::VectorXd::Zero(3);
 
-  for (unsigned int i(0); i < des_com_pos.size(); ++i) {
+  for (int i(0); i < des_com_pos.size(); ++i) {
     des_com_pos[i] = util::SmoothPos(init_com_pos_[i], target_com_pos_[i],
                                      duration_, state_machine_time);
     des_com_vel[i] = util::SmoothVel(init_com_pos_[i], target_com_pos_[i],

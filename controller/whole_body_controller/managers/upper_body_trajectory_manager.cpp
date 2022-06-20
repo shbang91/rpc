@@ -3,10 +3,9 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 
 UpperBodyTrajetoryManager::UpperBodyTrajetoryManager(
-    Task *upper_body_task, PinocchioRobotSystem *robot) {
-
-  upper_body_task_ = upper_body_task;
-  robot_ = robot;
+    Task *upper_body_task, PinocchioRobotSystem *robot)
+    : upper_body_task_(upper_body_task), robot_(robot) {
+  util::PrettyConstructor(2, "UpperBodyTrajetoryManager");
 }
 
 void UpperBodyTrajetoryManager::UseNominalUpperBodyJointPos(
@@ -15,6 +14,10 @@ void UpperBodyTrajetoryManager::UseNominalUpperBodyJointPos(
   std::vector<int> upper_body_jidx(
       (static_cast<SelectedJointTask *>(upper_body_task_))
           ->GetJointIdxContainer()); // TODO:check this
+
+  // std::cout << "upper body jidx vector" << std::endl;
+  // for (const auto &v : upper_body_jidx)
+  // std::cout << v << "  ";
 
   Eigen::VectorXd nominal_upper_body_jpos(upper_body_jidx.size());
   for (int i(0); i < upper_body_jidx.size(); ++i)

@@ -8,13 +8,12 @@
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), duration_(0.),
-      target_joint_pos_(Eigen::VectorXd::Zero(robot_->GetNumActiveDof())) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), duration_(0.) {
   util::PrettyConstructor(2, "Initialize");
 
-  ctrl_arch_ = ctrl_arch;
   sp_ = DracoStateProvider::GetStateProvider();
-  init_joint_pos_ = Eigen::VectorXd::Zero(target_joint_pos_.size());
+  target_joint_pos_ = Eigen::VectorXd::Zero(robot_->GetNumActiveDof());
+  init_joint_pos_ = Eigen::VectorXd::Zero(robot_->GetNumActiveDof());
 }
 
 void Initialize::FirstVisit() {

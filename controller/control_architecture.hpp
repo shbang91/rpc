@@ -6,7 +6,8 @@ class PinocchioRobotSystem;
 
 class ControlArchitecture {
 public:
-  ControlArchitecture(PinocchioRobotSystem *robot) : robot_(robot){};
+  ControlArchitecture(PinocchioRobotSystem *robot)
+      : robot_(robot), b_state_first_visit_(true){};
   virtual ~ControlArchitecture() = default;
 
   virtual void GetCommand(void *command) = 0;
@@ -17,11 +18,11 @@ public:
 
 protected:
   PinocchioRobotSystem *robot_;
+  bool b_state_first_visit_;
+
   std::unordered_map<StateId, StateMachine *> state_machine_container_;
   int state_;
   int prev_state_;
-
-  bool b_state_first_visit_;
 
   YAML::Node cfg_;
   virtual void _InitializeParameters() = 0;

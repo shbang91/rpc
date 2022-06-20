@@ -6,14 +6,11 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
 
-DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot) {
+DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
+    : robot_(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
+      global_leg_odometry_(Eigen::Vector3d::Zero()),
+      prev_base_joint_pos_(Eigen::Vector3d::Zero()) {
   util::PrettyConstructor(1, "DracoStateEstimator");
-  robot_ = robot;
-
-  R_imu_base_com_.setZero();
-  global_leg_odometry_.setZero();
-  prev_base_joint_pos_.setZero();
-
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
@@ -87,16 +84,13 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   // TODO:velocity filtering for com vel (for real experiment)
 
   // Save estimated base joint states
-  DracoDataManager::GetDataManager()->data_->est_base_joint_pos_ =
-      base_joint_pos;
+  DracoDataManager *dm = DracoDataManager::GetDataManager();
+  dm->data_->est_base_joint_pos_ = base_joint_pos;
   Eigen::Quaterniond base_joint_quat(base_joint_ori);
-  DracoDataManager::GetDataManager()->data_->est_base_joint_ori_
-      << base_joint_quat.x(),
-      base_joint_quat.y(), base_joint_quat.z(), base_joint_quat.w();
-  DracoDataManager::GetDataManager()->data_->est_base_joint_lin_vel_ =
-      base_joint_lin_vel;
-  DracoDataManager::GetDataManager()->data_->est_base_joint_ang_vel_ =
-      sensor_data->imu_ang_vel_;
+  dm->data_->est_base_joint_ori_ << base_joint_quat.x(), base_joint_quat.y(),
+      base_joint_quat.z(), base_joint_quat.w();
+  dm->data_->est_base_joint_lin_vel_ = base_joint_lin_vel;
+  dm->data_->est_base_joint_ang_vel_ = sensor_data->imu_ang_vel_;
 
   // compute dcm
   this->_ComputeDCM();

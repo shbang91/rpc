@@ -13,8 +13,5 @@ public:
   Task *upper_body_task_;
 
 private:
-  int com_feedback_source_;
-  int com_height_target_source_;
-
   void _InitializeParameters(const YAML::Node &node, const bool &b_sim);
 };

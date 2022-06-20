@@ -13,9 +13,9 @@ public:
   void
   InitializeFloatingBaseInterpolation(const Eigen::Vector3d &des_com_pos,
                                       const Eigen::Quaterniond &des_body_quat,
-                                      const double &duration,
-                                      const bool &b_use_base_height);
-  void UpdateDesired(const double &state_machine_time);
+                                      const double duration,
+                                      const bool b_use_base_height);
+  void UpdateDesired(const double state_machine_time);
 
 private:
   Task *com_task_;

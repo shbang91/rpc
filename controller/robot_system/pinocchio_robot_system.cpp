@@ -142,12 +142,12 @@ Eigen::VectorXd PinocchioRobotSystem::GetQ() const { return this->q_; }
 Eigen::VectorXd PinocchioRobotSystem::GetQdot() const { return this->qdot_; }
 
 int PinocchioRobotSystem::GetQIdx(const int &joint_idx) const {
-  int idx = 6 + joint_idx;
+  int idx = 5 + joint_idx;
   return idx;
 }
 
 int PinocchioRobotSystem::GetQdotIdx(const int &joint_idx) const {
-  int idx = 5 + joint_idx;
+  int idx = 4 + joint_idx;
   return idx;
 }
 

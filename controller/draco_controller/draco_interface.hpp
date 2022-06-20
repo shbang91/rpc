@@ -9,19 +9,14 @@ class DracoStateProvider;
 
 class DracoSensorData {
 public:
-  DracoSensorData() {
-    imu_frame_quat_.setIdentity();
-    imu_ang_vel_.setZero();
-    joint_pos_ = Eigen::VectorXd::Zero(draco::n_adof);
-    joint_vel_ = Eigen::VectorXd::Zero(draco::n_adof);
-    b_lf_contact_ = false;
-    b_rf_contact_ = false;
-
-    base_joint_pos_.setZero();
-    base_joint_quat_.setZero();
-    base_joint_lin_vel_.setZero();
-    base_joint_ang_vel_.setZero();
-  };
+  DracoSensorData()
+      : imu_frame_quat_(0, 0, 0, 1), imu_ang_vel_(Eigen::Vector3d::Zero()),
+        joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
+        joint_vel_(Eigen::VectorXd::Zero(draco::n_adof)), b_lf_contact_(false),
+        b_rf_contact_(false), base_joint_pos_(Eigen::Vector3d::Zero()),
+        base_joint_quat_(0, 0, 0, 1),
+        base_joint_lin_vel_(Eigen::Vector3d::Zero()),
+        base_joint_ang_vel_(Eigen::Vector3d::Zero()){};
   virtual ~DracoSensorData() = default;
 
   Eigen::Vector4d imu_frame_quat_; // x, y, z, w order
@@ -40,11 +35,10 @@ public:
 
 class DracoCommand {
 public:
-  DracoCommand() {
-    joint_pos_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
-    joint_vel_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
-    joint_trq_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
-  };
+  DracoCommand()
+      : joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+        joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+        joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)){};
   virtual ~DracoCommand() = default;
 
   Eigen::VectorXd joint_pos_cmd_;
@@ -62,6 +56,7 @@ public:
 private:
   DracoStateEstimator *se_;
   DracoStateProvider *sp_;
-  int waiting_count_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
+
+  static constexpr int waiting_count_ = 10;
 };

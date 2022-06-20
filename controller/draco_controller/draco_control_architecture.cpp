@@ -19,17 +19,17 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       (b_sim) ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
   state_ =
       (b_sim) ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
-  b_state_first_visit_ = true;
 
   // initialize controller
   tci_container_ = new DracoTCIContainer(robot_);
   controller_ = new DracoController(tci_container_, robot_);
 
-  // initialize manager
-  floating_base_tm_ = new FloatingBaseTrajectoryManager(
-      tci_container_->com_task_, tci_container_->torso_ori_task_, robot_);
+  // TODO: Getter function
+  //  initialize manager
   upper_body_tm_ =
       new UpperBodyTrajetoryManager(tci_container_->upper_body_task_, robot_);
+  floating_base_tm_ = new FloatingBaseTrajectoryManager(
+      tci_container_->com_task_, tci_container_->torso_ori_task_, robot_);
 
   // initialize states
   state_machine_container_[draco_states::kInitialize] =
@@ -62,8 +62,11 @@ void DracoControlArchitecture::GetCommand(void *command) {
   if (!state_machine_container_[state_]->EndOfState()) {
     state_machine_container_[state_]->OneStep();
     // state independent upper body traj setting
+    std::cout << "1" << std::endl;
     upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
+    std::cout << "2" << std::endl;
     controller_->GetCommand(command);
+    std::cout << "3" << std::endl;
   } else {
     state_machine_container_[state_]->LastVisit();
     prev_state_ = state_;
