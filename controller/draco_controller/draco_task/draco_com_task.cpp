@@ -97,8 +97,7 @@ void DracoComTask::UpdateTaskJacobianDotQdot() {
   }
 }
 
-void DracoComTask::SetTaskParameters(const YAML::Node &node,
-                                     const bool &b_sim) {
+void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
     util::ReadParameter(node, "com_feedback_source", com_feedback_source_);
     util::ReadParameter(node, "com_height_target_source",

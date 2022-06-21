@@ -23,7 +23,9 @@ private:
   DracoControlArchitecture *ctrl_arch_;
   DracoStateProvider *sp_;
 
-  double duration_;
+  double standup_duration_;
   double target_height_;
   bool b_use_base_height_;
+
+  double rf_z_max_interp_duration_;
 };

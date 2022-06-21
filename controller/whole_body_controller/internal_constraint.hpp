@@ -1,26 +1,26 @@
 #pragma once
 #include <Eigen/Dense>
 
-#include "pnc/robot_system/robot_system.hpp"
-
+class PinocchioRobotSystem;
 class InternalConstraint {
 public:
-  InternalConstraint(RobotSystem *_robot, const int &_dim) {
-    robot_ = _robot;
-    dim_ = _dim;
-
+  InternalConstraint(PinocchioRobotSystem *robot, const int dim)
+      : robot_(robot), dim_(dim) {
     jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->n_qdot_);
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
   };
   virtual ~InternalConstraint();
 
-  virtual void UpdateInternalConstraintJacobian() = 0;
-  virtual void UpdateInternalConstraintJacobianDotQdot() = 0;
+  virtual void UpdateJacobian() = 0;
+  virtual void UpdateJacobianDotQdot() = 0;
 
-  Eigen::MatrixXd jacobian_;
-  Eigen::VectorXd jacobian_dot_q_dot_;
+  // getter
+  const Eigen::MatrixXd GetJacobian() { return jacobian_; }
+  const Eigen::VectorXd GetJacobianDotQdot() { return jacobian_dot_q_dot_; }
 
 protected:
-  RobotSystem *robot_;
+  PinocchioRobotSystem *robot_;
   int dim_;
+  Eigen::MatrixXd jacobian_;
+  Eigen::VectorXd jacobian_dot_q_dot_;
 };

@@ -11,6 +11,8 @@ class DracoController;
 class DracoTCIContainer;
 class FloatingBaseTrajectoryManager;
 class UpperBodyTrajetoryManager;
+class MaxNormalForceTrajectoryManager;
+class EndEffectorTrajectoryManager;
 class DracoStateProvider;
 
 class DracoControlArchitecture : public ControlArchitecture {
@@ -23,6 +25,10 @@ public:
   DracoTCIContainer *tci_container_;
   UpperBodyTrajetoryManager *upper_body_tm_;
   FloatingBaseTrajectoryManager *floating_base_tm_;
+  MaxNormalForceTrajectoryManager *lf_max_normal_froce_tm_;
+  MaxNormalForceTrajectoryManager *rf_max_normal_froce_tm_;
+  EndEffectorTrajectoryManager *lf_SE3_tm_;
+  EndEffectorTrajectoryManager *rf_SE3_tm_;
 
 private:
   DracoController *controller_;

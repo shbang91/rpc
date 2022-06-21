@@ -4,7 +4,9 @@
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
+#include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "util/util.hpp"
 
@@ -20,25 +22,47 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_ =
       (b_sim) ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
 
-  // initialize controller
+  //=============================================================
+  // initialize task, contact, controller
+  //=============================================================
   tci_container_ = new DracoTCIContainer(robot_);
   controller_ = new DracoController(tci_container_, robot_);
 
-  // TODO: Getter function
-  //  initialize manager
+  //=============================================================
+  // trajectory Managers
+  //=============================================================
+  //  initialize kinematics manager
   upper_body_tm_ =
       new UpperBodyTrajetoryManager(tci_container_->upper_body_task_, robot_);
   floating_base_tm_ = new FloatingBaseTrajectoryManager(
       tci_container_->com_task_, tci_container_->torso_ori_task_, robot_);
+  lf_SE3_tm_ = new EndEffectorTrajectoryManager(
+      tci_container_->lf_pos_task_, tci_container_->lf_ori_task_, robot_);
+  rf_SE3_tm_ = new EndEffectorTrajectoryManager(
+      tci_container_->rf_pos_task_, tci_container_->rf_ori_task_, robot_);
 
-  // initialize states
+  // initialize dynamics manager
+
+  double max_rf_z =
+      b_sim
+          ? util::ReadParameter<double>(cfg_["wbc"]["contact"], " max_rf_z")
+          : util::ReadParameter<double>(cfg_["wbc"]["contact"], "exp_max_rf_z");
+  lf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
+      tci_container_->lf_contact_, max_rf_z);
+  rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
+      tci_container_->rf_contact_, max_rf_z);
+
+  //=============================================================
+  // initialize state machines
+  //=============================================================
   state_machine_container_[draco_states::kInitialize] =
       new Initialize(draco_states::kInitialize, robot_, this);
   state_machine_container_[draco_states::kDoubleSupportStandUp] =
       new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
                                this);
   // state_machine_container_[draco_states::kDoubleSupportBalance] =
-  // new Balance(draco_states::kDoubleSupportBalance, robot_);
+  // new DoubleSupportBalance(draco_states::kDoubleSupportBalance,
+  // robot_);
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -62,11 +86,8 @@ void DracoControlArchitecture::GetCommand(void *command) {
   if (!state_machine_container_[state_]->EndOfState()) {
     state_machine_container_[state_]->OneStep();
     // state independent upper body traj setting
-    std::cout << "1" << std::endl;
     upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
-    std::cout << "2" << std::endl;
     controller_->GetCommand(command);
-    std::cout << "3" << std::endl;
   } else {
     state_machine_container_[state_]->LastVisit();
     prev_state_ = state_;

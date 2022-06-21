@@ -42,24 +42,28 @@ public:
   Eigen::VectorXd GetQ() const;
   Eigen::VectorXd GetQdot() const;
 
-  int GetQIdx(const int &joint_idx) const;
-  int GetQdotIdx(const int &joint_idx) const;
+  int GetQIdx(const int joint_idx) const;
+  int GetQdotIdx(const int joint_idx) const;
 
   Eigen::VectorXd GetJointPos() const;
   Eigen::VectorXd GetJointVel() const;
 
-  Eigen::Isometry3d GetLinkIsometry(const int &link_idx);
+  Eigen::Isometry3d GetLinkIsometry(const int link_idx);
   // function overloading
   Eigen::Isometry3d GetLinkIsometry(const int *link_idx);
   Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
-      const int &link_idx,
+      const int link_idx,
+      const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
+  // function overloading
+  Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
+      const int *link_idx,
       const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
 
   Eigen::Matrix<double, 6, Eigen::Dynamic>
-  GetLinkJacobian(const int &link_idx,
+  GetLinkJacobian(const int link_idx,
                   const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL);
   Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(
-      const int &link_idx,
+      const int link_idx,
       const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL);
 
   Eigen::Vector3d GetRobotComPos();

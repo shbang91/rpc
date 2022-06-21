@@ -25,17 +25,7 @@ public:
   void UpdateTaskJacobian() override;
   void UpdateTaskJacobianDotQdot() override;
 
-  void SetTaskParameters(const YAML::Node &node, const bool &b_sim) override;
-
-  // bool IsBaseHeightTarget() {
-  // return com_height_target_source_ == com_height_target_source::kBaseHeight
-  //? true
-  //: false;
-  //};
-  // bool IsComFeedback() {
-  // return com_feedback_source_ == com_feedback_source::kComFeedback ? true
-  //: false;
-  //};
+  void SetParameters(const YAML::Node &node, const bool b_sim) override;
 
 private:
   int com_feedback_source_;

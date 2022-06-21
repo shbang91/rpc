@@ -1,7 +1,9 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
+#include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
+#include "controller/whole_body_controller/force_task.hpp"
 
 DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
     : TCIContainer(robot) {
@@ -22,23 +24,45 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
       draco_joint::r_elbow_fe,    draco_joint::r_wrist_ps,
       draco_joint::r_wrist_pitch};
   upper_body_task_ = new SelectedJointTask(robot_, upper_body_jidx);
+  lf_pos_task_ = new LinkPosTask(robot_, draco_link::l_foot_contact);
+  rf_pos_task_ = new LinkPosTask(robot_, draco_link::r_foot_contact);
+  lf_ori_task_ = new LinkOriTask(robot_, draco_link::l_foot_contact);
+  rf_ori_task_ = new LinkOriTask(robot_, draco_link::r_foot_contact);
 
-  // wbc task list
+  // wbc task list w/o joint task
   task_container_.push_back(com_task_);
   task_container_.push_back(torso_ori_task_);
   task_container_.push_back(upper_body_task_);
+  task_container_.push_back(lf_pos_task_);
+  task_container_.push_back(rf_pos_task_);
+  task_container_.push_back(lf_ori_task_);
+  task_container_.push_back(rf_ori_task_);
 
   //=============================================================
   // Contacts List
   //=============================================================
+  lf_contact_ =
+      new SurfaceContact(robot_, draco_link::l_foot_contact, 0.5, 0.11, 0.04);
+  rf_contact_ =
+      new SurfaceContact(robot_, draco_link::r_foot_contact, 0.5, 0.11, 0.04);
+
+  contact_container_.push_back(lf_contact_);
+  contact_container_.push_back(rf_contact_);
 
   //=============================================================
   // InternalConstraints List
   //=============================================================
-  //
-  //
-  //
-  //
+  rolling_joint_constraint_ = new DracoRollingJointConstraint(robot_);
+
+  internal_constraint_list_.push_back(rolling_joint_constraint_);
+
+  //=============================================================
+  // Force Task List
+  //=============================================================
+  lf_reaction_force_task_ = new ForceTask(lf_contact_->GetDim());
+  rf_reaction_force_task_ = new ForceTask(rf_contact_->GetDim());
+  force_container_.push_back(lf_reaction_force_task_);
+  force_container_.push_back(rf_reaction_force_task_);
 
   //=============================================================
   // Tasks, Contacts parameter initialization
@@ -49,15 +73,37 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
 }
 
 DracoTCIContainer::~DracoTCIContainer() {
+  // task
   delete jpos_task_;
   delete com_task_;
   delete torso_ori_task_;
   delete upper_body_task_;
+  delete lf_pos_task_;
+  delete rf_pos_task_;
+  delete lf_ori_task_;
+  delete rf_ori_task_;
+  // contact
+  delete lf_contact_;
+  delete rf_contact_;
+  // internal constraint
+  delete rolling_joint_constraint_;
+  // force task
+  delete lf_reaction_force_task_;
+  delete rf_reaction_force_task_;
 }
 
 void DracoTCIContainer::_InitializeParameters(const YAML::Node &node,
-                                              const bool &b_sim) {
-  com_task_->SetTaskParameters(node["task"]["com_task"], b_sim);
-  torso_ori_task_->SetTaskParameters(node["task"]["torso_ori_task"], b_sim);
-  upper_body_task_->SetTaskParameters(node["task"]["upper_body_task"], b_sim);
+                                              const bool b_sim) {
+  // task
+  com_task_->SetParameters(node["task"]["com_task"], b_sim);
+  torso_ori_task_->SetParameters(node["task"]["torso_ori_task"], b_sim);
+  upper_body_task_->SetParameters(node["task"]["upper_body_task"], b_sim);
+  lf_pos_task_->SetParameters(node["task"]["foot_pos_task"], b_sim);
+  rf_pos_task_->SetParameters(node["task"]["foot_pos_task"], b_sim);
+  lf_ori_task_->SetParameters(node["task"]["foot_ori_task"], b_sim);
+  rf_ori_task_->SetParameters(node["task"]["foot_ori_task"], b_sim);
+
+  // contact
+  lf_contact_->SetParameters(node["contact"], b_sim);
+  rf_contact_->SetParameters(node["contact"], b_sim);
 }

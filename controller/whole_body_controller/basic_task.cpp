@@ -27,8 +27,6 @@ void JointTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
 
-void JointTask::SetTaskParameters(const YAML::Node &node, const bool &b_sim){};
-
 // Selected Joint Task
 SelectedJointTask::SelectedJointTask(
     PinocchioRobotSystem *robot, const std::vector<int> &joint_idx_container)
@@ -58,30 +56,13 @@ void SelectedJointTask::UpdateTaskJacobian() {
 void SelectedJointTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
-void SelectedJointTask::SetTaskParameters(const YAML::Node &node,
-                                          const bool &b_sim) {
-  try {
-    kp_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kp")
-                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
-    kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
-                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
-    task_component_hierarchy_ =
-        b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
-              : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
-  } catch (std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl
-              << std::endl;
-    std::exit(EXIT_FAILURE);
-  }
-};
+
 std::vector<int> SelectedJointTask::GetJointIdxContainer() {
   return this->joint_idx_container_;
 }
 
 // Link Position Task
-LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot,
-                         const int &target_link_idx)
+LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, const int target_link_idx)
     : Task(robot, 3, &target_link_idx) {
 
   target_link_idx_ = target_link_idx;
@@ -107,27 +88,22 @@ void LinkPosTask::UpdateTaskJacobianDotQdot() {
       robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
 }
 
-void LinkPosTask::SetTaskParameters(const YAML::Node &node,
-                                    const bool &b_sim){};
-
 // Link Orientation Task
-LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot,
-                         const int &target_link_idx)
+LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, const int target_link_idx)
     : Task(robot, 3, &target_link_idx) {
   target_link_idx_ = target_link_idx;
 }
 
 void LinkOriTask::UpdateOscCommand() {
-  Eigen::Quaternion<double> quat(
-      robot_->GetLinkIsometry(target_link_idx_).linear());
-  Eigen::Quaternion<double> des_quat(des_pos_[0], des_pos_[1], des_pos_[2],
-                                     des_pos_[3]);
+  Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_link_idx_).linear());
+  Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
+                              des_pos_[2]);
 
   util::AvoidQuatJump(des_quat, quat);
 
-  Eigen::Quaternion<double> quat_err = des_quat * quat.inverse();
+  Eigen::Quaterniond quat_err = des_quat * quat.inverse();
 
-  pos_ << quat.w(), quat.x(), quat.y(), quat.z();
+  pos_ << quat.w(), quat.vec();
   Eigen::Vector3d so3 = util::QuatToExp(quat_err);
   for (int i = 0; i < 3; ++i) {
     pos_err_[i] = so3[i];
@@ -147,22 +123,6 @@ void LinkOriTask::UpdateTaskJacobian() {
 void LinkOriTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ =
       robot_->GetLinkJacobianDotQdot(target_link_idx_).head(dim_);
-}
-void LinkOriTask::SetTaskParameters(const YAML::Node &node, const bool &b_sim) {
-  try {
-    kp_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kp")
-                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
-    kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
-                : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
-    task_component_hierarchy_ =
-        b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
-              : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
-  } catch (std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl
-              << std::endl;
-    std::exit(EXIT_FAILURE);
-  }
 }
 
 // Robot Center of Mass Task
@@ -186,4 +146,3 @@ void ComTask::UpdateTaskJacobian() { jacobian_ = robot_->GetComLinJacobian(); }
 void ComTask::UpdateTaskJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot();
 }
-void ComTask::SetTaskParameters(const YAML::Node &node, const bool &b_sim){};

@@ -4,14 +4,16 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "util/util.hpp"
 
 DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), duration_(0.),
-      target_height_(0.) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
+      standup_duration_(0.), target_height_(0.), rf_z_max_interp_duration_(0.) {
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -41,10 +43,12 @@ void DoubleSupportStandUp::FirstVisit() {
       robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
   Eigen::Quaterniond foot_interpol_quat = l_foot_quat.slerp(0.5, r_foot_quat);
 
-  // parallel to flat ground
+  // TODO: check torso orientation setup
+  //  parallel to local ground
   Eigen::Vector3d rot_z(0, 0, 1);
 
-  Eigen::Vector3d rot_y = foot_interpol_quat.toRotationMatrix().col(1);
+  Eigen::Vector3d rot_y =
+      foot_interpol_quat.normalized().toRotationMatrix().col(1);
   Eigen::Vector3d rot_x = rot_y.cross(rot_z);
   Eigen::Matrix3d target_torso_SO3;
   target_torso_SO3.col(0) = rot_x;
@@ -53,30 +57,34 @@ void DoubleSupportStandUp::FirstVisit() {
   Eigen::Quaterniond target_torso_quat(target_torso_SO3);
 
   ctrl_arch_->floating_base_tm_->InitializeFloatingBaseInterpolation(
-      target_com_pos, target_torso_quat.normalized(), duration_,
+      target_com_pos, target_torso_quat.normalized(), standup_duration_,
       b_use_base_height_);
 
-  // TODO:
   //  increase maximum normal reaction force
+  ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
+      rf_z_max_interp_duration_);
+  ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
+      rf_z_max_interp_duration_);
 }
 
 void DoubleSupportStandUp::OneStep() {
-  std::cout << "one step" << std::endl;
   state_machine_time_ = sp_->current_time_ - state_machine_time_;
 
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 
-  // TODO:
   // foot task
+  ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  ctrl_arch_->rf_SE3_tm_->UseCurrent();
 
-  // TODO:
   //  increase maximum normal reaction force
+  ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
+  ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}
 
 bool DoubleSupportStandUp::EndOfState() {
-  return (state_machine_time_ > duration_) ? true : false;
+  return (state_machine_time_ > standup_duration_) ? true : false;
 }
 
 StateId DoubleSupportStandUp::GetNextState() {
@@ -85,11 +93,13 @@ StateId DoubleSupportStandUp::GetNextState() {
 
 void DoubleSupportStandUp::InitializeParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "standup_duration", duration_);
+    util::ReadParameter(node, "standup_duration", standup_duration_);
     target_height_ =
         (b_use_base_height_)
             ? util::ReadParameter<double>(node, "target_base_height")
             : util::ReadParameter<double>(node, "target_com_height");
+    util::ReadParameter(node, "rf_z_max_interp_duration",
+                        rf_z_max_interp_duration_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

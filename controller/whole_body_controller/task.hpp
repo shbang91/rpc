@@ -7,10 +7,9 @@
 
 class Task {
 public:
-  Task(PinocchioRobotSystem *_robot, const int &dim,
+  Task(PinocchioRobotSystem *robot, const int dim,
        const int *target_idx = nullptr)
-      : dim_(dim) {
-    robot_ = _robot;
+      : robot_(robot), dim_(dim), target_idx_(target_idx) {
 
     des_pos_ = Eigen::VectorXd::Zero(dim_);
     des_vel_ = Eigen::VectorXd::Zero(dim_);
@@ -31,13 +30,11 @@ public:
     jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->GetNumQdot());
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 
-    task_component_hierarchy_ = Eigen::VectorXd::Zero(dim_);
-
-    target_idx_ = target_idx;
+    task_weight_ = Eigen::VectorXd::Zero(dim_);
   }
   virtual ~Task() = default;
 
-  // for orientation task, des_pos is a 4 dimensional vector [w,x,y,z]
+  // for orientation task, des_pos is a 4 dimensional vector [x,y,z,w]
   // for angular momentum task, des_pos is ignored
   void UpdateDesiredTask(const Eigen::VectorXd &des_pos,
                          const Eigen::VectorXd &des_vel,
@@ -48,12 +45,27 @@ public:
   }
 
   virtual void UpdateOscCommand() = 0;
-
   virtual void UpdateTaskJacobian() = 0;
   virtual void UpdateTaskJacobianDotQdot() = 0;
 
   // setter function
-  virtual void SetTaskParameters(const YAML::Node &node, const bool &b_sim) = 0;
+  // task gain, hierarchy
+  virtual void SetParameters(const YAML::Node &node, const bool b_sim) {
+    try {
+      kp_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kp")
+                  : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
+      kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
+                  : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
+      task_weight_ =
+          b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
+                : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
+    } catch (std::runtime_error &e) {
+      std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+                << __FILE__ << "]" << std::endl
+                << std::endl;
+      std::exit(EXIT_FAILURE);
+    }
+  }
 
   // getter function
   Eigen::VectorXd GetTaskDesiredPos() { return des_pos_; }
@@ -64,7 +76,8 @@ public:
 
 protected:
   PinocchioRobotSystem *robot_;
-  int dim_;
+  const int dim_;
+  const int *target_idx_;
 
   // measured quantities
   Eigen::VectorXd pos_;
@@ -87,7 +100,5 @@ protected:
   Eigen::MatrixXd jacobian_;
   Eigen::VectorXd jacobian_dot_q_dot_;
 
-  Eigen::VectorXd task_component_hierarchy_;
-
-  const int *target_idx_;
+  Eigen::VectorXd task_weight_;
 };

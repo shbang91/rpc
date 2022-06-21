@@ -33,7 +33,7 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
       sensor_data->imu_frame_quat_(3), sensor_data->imu_frame_quat_(0),
       sensor_data->imu_frame_quat_(1), sensor_data->imu_frame_quat_(2));
   Eigen::Matrix3d base_joint_ori =
-      imu_quat.toRotationMatrix() * R_imu_base_com_;
+      imu_quat.normalized().toRotationMatrix() * R_imu_base_com_;
 
   // Update robot model only with base orientation
   robot_->UpdateRobotModel(

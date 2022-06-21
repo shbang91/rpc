@@ -3,6 +3,7 @@
 class PinocchioRobotSystem;
 class DracoTCIContainer;
 class DracoStateProvider;
+class IHWBC;
 
 class DracoController {
 public:
@@ -16,4 +17,6 @@ private:
   PinocchioRobotSystem *robot_;
   DracoTCIContainer *tci_container_;
   DracoStateProvider *sp_;
+
+  IHWBC ihwbc_;
 };

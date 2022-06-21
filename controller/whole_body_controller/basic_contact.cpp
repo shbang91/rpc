@@ -2,7 +2,7 @@
 
 // Point Contact
 PointContact::PointContact(PinocchioRobotSystem *robot,
-                           const int &target_link_idx, const double &mu)
+                           const int target_link_idx, const double mu)
     : Contact(robot, 3, target_link_idx, mu) {
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(6, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(6);
@@ -38,10 +38,22 @@ void PointContact::UpdateConeConstraint() {
   cone_constraint_vector_[5] = -rf_z_max_;
 }
 
+void PointContact::SetParameters(const YAML::Node &node, const bool b_sim) {
+  try {
+    mu_ = b_sim ? util::ReadParameter<double>(node, "mu")
+                : util::ReadParameter<double>(node, "exp_mu");
+  } catch (std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+}
+
 // Surface Contact
 SurfaceContact::SurfaceContact(PinocchioRobotSystem *robot,
-                               const int &target_link_idx, const double &mu,
-                               const double &x, const double &y)
+                               const int target_link_idx, const double mu,
+                               const double x, const double y)
     : Contact(robot, 6, target_link_idx, mu), x_(x), y_(y) {
 
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(16 + 2, dim_);
@@ -150,4 +162,20 @@ void SurfaceContact::UpdateConeConstraint() {
       cone_constraint_matrix_ * aug_R_world_local.transpose();
 
   cone_constraint_vector_[17] = -rf_z_max_;
+}
+
+void SurfaceContact::SetParameters(const YAML::Node &node, const bool b_sim) {
+  try {
+    mu_ = b_sim ? util::ReadParameter<double>(node, "mu")
+                : util::ReadParameter<double>(node, "exp_mu");
+    x_ = b_sim ? util::ReadParameter<double>(node, "foot_half_length")
+               : util::ReadParameter<double>(node, "exp_foot_half_length");
+    y_ = b_sim ? util::ReadParameter<double>(node, "foot_half_width")
+               : util::ReadParameter<double>(node, "exp_foot_half_width");
+  } catch (std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
 }

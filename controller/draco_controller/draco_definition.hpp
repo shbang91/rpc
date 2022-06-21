@@ -117,6 +117,6 @@ constexpr int r_wrist_pitch = 28;
 } // namespace draco_joint
 
 namespace draco {
-constexpr int n_dof = 33;
+constexpr int n_qdot = 33;
 constexpr int n_adof = 27;
 } // namespace draco

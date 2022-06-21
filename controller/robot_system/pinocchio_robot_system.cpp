@@ -141,12 +141,12 @@ void PinocchioRobotSystem::_UpdateCentroidalQuantities() {
 Eigen::VectorXd PinocchioRobotSystem::GetQ() const { return this->q_; }
 Eigen::VectorXd PinocchioRobotSystem::GetQdot() const { return this->qdot_; }
 
-int PinocchioRobotSystem::GetQIdx(const int &joint_idx) const {
+int PinocchioRobotSystem::GetQIdx(const int joint_idx) const {
   int idx = 5 + joint_idx;
   return idx;
 }
 
-int PinocchioRobotSystem::GetQdotIdx(const int &joint_idx) const {
+int PinocchioRobotSystem::GetQdotIdx(const int joint_idx) const {
   int idx = 4 + joint_idx;
   return idx;
 }
@@ -167,6 +167,16 @@ Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int &link_idx) {
   return ret;
 }
 
+Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkSpatialVel(
+    const int link_idx, const pinocchio::ReferenceFrame &ref) const {
+  Eigen::Matrix<double, 6, 1> ret;
+  pinocchio::Motion fv =
+      pinocchio::getFrameVelocity(model_, data_, link_idx, ref);
+  ret.segment(0, 3) = fv.angular();
+  ret.segment(3, 3) = fv.linear();
+  return ret;
+}
+
 // function overloading
 Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int *link_idx) {
   Eigen::Isometry3d ret;
@@ -177,18 +187,19 @@ Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int *link_idx) {
   return ret;
 }
 
+// function overloading
 Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkSpatialVel(
-    const int &link_idx, const pinocchio::ReferenceFrame &ref) const {
+    const int *link_idx, const pinocchio::ReferenceFrame &ref) const {
   Eigen::Matrix<double, 6, 1> ret;
   pinocchio::Motion fv =
-      pinocchio::getFrameVelocity(model_, data_, link_idx, ref);
+      pinocchio::getFrameVelocity(model_, data_, *link_idx, ref);
   ret.segment(0, 3) = fv.angular();
   ret.segment(3, 3) = fv.linear();
   return ret;
 }
 
 Eigen::Matrix<double, 6, Eigen::Dynamic>
-PinocchioRobotSystem::GetLinkJacobian(const int &link_idx,
+PinocchioRobotSystem::GetLinkJacobian(const int link_idx,
                                       const pinocchio::ReferenceFrame &ref) {
   pinocchio::computeJointJacobians(model_, data_, q_);
 
@@ -281,7 +292,7 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
   }
 
   std::cout << "============ draco ================" << std::endl;
-  std::cout << "constexpr int n_dof = " << qdot_.size() << ";" << std::endl;
+  std::cout << "constexpr int n_qdot = " << qdot_.size() << ";" << std::endl;
   std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ << ";"
             << std::endl;
   exit(0);
