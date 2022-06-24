@@ -17,14 +17,14 @@ void MaxNormalForceTrajectoryManager::InitializeRampToMax(
     const double interp_duration) {
   interp_duration_ = interp_duration;
   fin_max_rf_z_ = max_rf_z_;
-  init_max_rf_z_ = contact_->GetMaxFz();
+  init_max_rf_z_ = contact_->MaxFz();
 }
 
 void MaxNormalForceTrajectoryManager::InitializeRampToMin(
     const double interp_duration) {
   interp_duration_ = interp_duration;
   fin_max_rf_z_ = min_rf_z_;
-  init_max_rf_z_ = contact_->GetMaxFz();
+  init_max_rf_z_ = contact_->MaxFz();
 }
 
 void MaxNormalForceTrajectoryManager::UpdateRampToMax(

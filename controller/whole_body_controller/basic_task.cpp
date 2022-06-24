@@ -1,7 +1,7 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 
 JointTask::JointTask(PinocchioRobotSystem *robot)
-    : Task(robot, robot->GetNumActiveDof()) {
+    : Task(robot, robot->NumActiveDof()) {
   util::PrettyConstructor(3, "JointTask");
 }
 
@@ -16,14 +16,12 @@ void JointTask::UpdateOscCommand() {
   osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
-void JointTask::UpdateTaskJacobian() {
-  jacobian_.block(0, robot_->GetNumFloatDof(), dim_,
-                  robot_->GetNumActiveDof()) =
-      Eigen::MatrixXd::Identity(robot_->GetNumActiveDof(),
-                                robot_->GetNumActiveDof());
+void JointTask::UpdateJacobian() {
+  jacobian_.block(0, robot_->NumFloatDof(), dim_, robot_->NumActiveDof()) =
+      Eigen::MatrixXd::Identity(robot_->NumActiveDof(), robot_->NumActiveDof());
 }
 
-void JointTask::UpdateTaskJacobianDotQdot() {
+void JointTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
 
@@ -46,24 +44,24 @@ void SelectedJointTask::UpdateOscCommand() {
   }
 }
 
-void SelectedJointTask::UpdateTaskJacobian() {
+void SelectedJointTask::UpdateJacobian() {
   for (unsigned int i = 0; i < dim_; ++i) {
     int idx = robot_->GetQdotIdx(joint_idx_container_[i]);
     jacobian_(i, idx) = 1.;
   }
 }
 
-void SelectedJointTask::UpdateTaskJacobianDotQdot() {
+void SelectedJointTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
 
-std::vector<int> SelectedJointTask::GetJointIdxContainer() {
+std::vector<int> SelectedJointTask::JointIdxContainer() {
   return this->joint_idx_container_;
 }
 
 // Link Position Task
-LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, const int target_link_idx)
-    : Task(robot, 3, &target_link_idx) {
+LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_link_idx)
+    : Task(robot, 3) {
 
   target_link_idx_ = target_link_idx;
 }
@@ -78,19 +76,19 @@ void LinkPosTask::UpdateOscCommand() {
   osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
-void LinkPosTask::UpdateTaskJacobian() {
+void LinkPosTask::UpdateJacobian() {
   jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
-                  .block(dim_, 0, dim_, robot_->GetNumQdot());
+                  .block(dim_, 0, dim_, robot_->NumQdot());
 }
 
-void LinkPosTask::UpdateTaskJacobianDotQdot() {
+void LinkPosTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ =
       robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
 }
 
 // Link Orientation Task
-LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, const int target_link_idx)
-    : Task(robot, 3, &target_link_idx) {
+LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_link_idx)
+    : Task(robot, 3) {
   target_link_idx_ = target_link_idx;
 }
 
@@ -115,12 +113,12 @@ void LinkOriTask::UpdateOscCommand() {
   osc_cmd_ = des_acc_ = kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
-void LinkOriTask::UpdateTaskJacobian() {
+void LinkOriTask::UpdateJacobian() {
   jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
-                  .block(0, 0, dim_, robot_->GetNumQdot());
+                  .block(0, 0, dim_, robot_->NumQdot());
 }
 
-void LinkOriTask::UpdateTaskJacobianDotQdot() {
+void LinkOriTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ =
       robot_->GetLinkJacobianDotQdot(target_link_idx_).head(dim_);
 }
@@ -141,8 +139,8 @@ void ComTask::UpdateOscCommand() {
   osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
-void ComTask::UpdateTaskJacobian() { jacobian_ = robot_->GetComLinJacobian(); }
+void ComTask::UpdateJacobian() { jacobian_ = robot_->GetComLinJacobian(); }
 
-void ComTask::UpdateTaskJacobianDotQdot() {
+void ComTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot();
 }

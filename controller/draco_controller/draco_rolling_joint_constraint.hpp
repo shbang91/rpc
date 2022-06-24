@@ -6,6 +6,6 @@ public:
   DracoRollingJointConstraint(PinocchioRobotSystem *robot);
   virtual ~DracoRollingJointConstraint() = default;
 
-  void UpdateInternalConstraintJacobian() override;
-  void UpdateInternalConstraintJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 };

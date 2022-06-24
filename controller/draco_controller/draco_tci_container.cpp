@@ -1,5 +1,6 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
@@ -54,22 +55,21 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   rolling_joint_constraint_ = new DracoRollingJointConstraint(robot_);
 
-  internal_constraint_list_.push_back(rolling_joint_constraint_);
+  internal_constraint_container_.push_back(rolling_joint_constraint_);
 
   //=============================================================
   // Force Task List
   //=============================================================
-  lf_reaction_force_task_ = new ForceTask(lf_contact_->GetDim());
-  rf_reaction_force_task_ = new ForceTask(rf_contact_->GetDim());
-  force_container_.push_back(lf_reaction_force_task_);
-  force_container_.push_back(rf_reaction_force_task_);
+  lf_reaction_force_task_ = new ForceTask(lf_contact_->Dim());
+  rf_reaction_force_task_ = new ForceTask(rf_contact_->Dim());
+  force_task_container_.push_back(lf_reaction_force_task_);
+  force_task_container_.push_back(rf_reaction_force_task_);
 
   //=============================================================
   // Tasks, Contacts parameter initialization
   //=============================================================
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
-  this->_InitializeParameters(cfg["wbc"], b_sim);
+  cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  this->_InitializeParameters();
 }
 
 DracoTCIContainer::~DracoTCIContainer() {
@@ -92,18 +92,25 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete rf_reaction_force_task_;
 }
 
-void DracoTCIContainer::_InitializeParameters(const YAML::Node &node,
-                                              const bool b_sim) {
+void DracoTCIContainer::_InitializeParameters() {
+  bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
   // task
-  com_task_->SetParameters(node["task"]["com_task"], b_sim);
-  torso_ori_task_->SetParameters(node["task"]["torso_ori_task"], b_sim);
-  upper_body_task_->SetParameters(node["task"]["upper_body_task"], b_sim);
-  lf_pos_task_->SetParameters(node["task"]["foot_pos_task"], b_sim);
-  rf_pos_task_->SetParameters(node["task"]["foot_pos_task"], b_sim);
-  lf_ori_task_->SetParameters(node["task"]["foot_ori_task"], b_sim);
-  rf_ori_task_->SetParameters(node["task"]["foot_ori_task"], b_sim);
+  com_task_->SetParameters(cfg_["wbc"]["task"]["com_task"], b_sim);
+  torso_ori_task_->SetParameters(cfg_["wbc"]["task"]["torso_ori_task"], b_sim);
+  upper_body_task_->SetParameters(cfg_["wbc"]["task"]["upper_body_task"],
+                                  b_sim);
+  lf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
+  rf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
+  lf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
+  rf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
 
   // contact
-  lf_contact_->SetParameters(node["contact"], b_sim);
-  rf_contact_->SetParameters(node["contact"], b_sim);
+  lf_contact_->SetParameters(cfg_["wbc"]["contact"], b_sim);
+  rf_contact_->SetParameters(cfg_["wbc"]["contact"], b_sim);
+
+  // force task
+  lf_reaction_force_task_->SetParameters(cfg_["wbc"]["task"]["foot_rf_task"],
+                                         b_sim);
+  rf_reaction_force_task_->SetParameters(cfg_["wbc"]["task"]["foot_rf_task"],
+                                         b_sim);
 }

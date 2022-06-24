@@ -1,5 +1,6 @@
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "util/util.hpp"
 
 DracoRollingJointConstraint::DracoRollingJointConstraint(
     PinocchioRobotSystem *robot)
@@ -20,4 +21,6 @@ void DracoRollingJointConstraint::UpdateJacobian() {
   jacobian_(0, r_knee_fe_jd) = 1.;
 }
 
-void DracoRollingJointConstraint::UpdateJacobianDotQdot() {}
+void DracoRollingJointConstraint::UpdateJacobianDotQdot() {
+  jacobian_dot_q_dot_.setZero();
+}

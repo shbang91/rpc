@@ -84,14 +84,15 @@ void DoubleSupportStandUp::OneStep() {
 void DoubleSupportStandUp::LastVisit() {}
 
 bool DoubleSupportStandUp::EndOfState() {
-  return (state_machine_time_ > standup_duration_) ? true : false;
+  // return (state_machine_time_ > standup_duration_) ? true : false;
+  return false;
 }
 
 StateId DoubleSupportStandUp::GetNextState() {
-  return draco_states::kDoubleSupportBalance;
+  // return draco_states::kDoubleSupportBalance;
 }
 
-void DoubleSupportStandUp::InitializeParameters(const YAML::Node &node) {
+void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
   try {
     util::ReadParameter(node, "standup_duration", standup_duration_);
     target_height_ =

@@ -7,9 +7,8 @@
 
 class Task {
 public:
-  Task(PinocchioRobotSystem *robot, const int dim,
-       const int *target_idx = nullptr)
-      : robot_(robot), dim_(dim), target_idx_(target_idx) {
+  Task(PinocchioRobotSystem *robot, const int dim)
+      : robot_(robot), dim_(dim), target_idx_(0) {
 
     des_pos_ = Eigen::VectorXd::Zero(dim_);
     des_vel_ = Eigen::VectorXd::Zero(dim_);
@@ -27,26 +26,26 @@ public:
 
     osc_cmd_ = Eigen::VectorXd::Zero(dim_);
 
-    jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->GetNumQdot());
+    jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->NumQdot());
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 
-    task_weight_ = Eigen::VectorXd::Zero(dim_);
+    weight_ = Eigen::VectorXd::Zero(dim_);
   }
   virtual ~Task() = default;
 
   // for orientation task, des_pos is a 4 dimensional vector [x,y,z,w]
   // for angular momentum task, des_pos is ignored
-  void UpdateDesiredTask(const Eigen::VectorXd &des_pos,
-                         const Eigen::VectorXd &des_vel,
-                         const Eigen::VectorXd &des_acc) {
+  void UpdateDesired(const Eigen::VectorXd &des_pos,
+                     const Eigen::VectorXd &des_vel,
+                     const Eigen::VectorXd &des_acc) {
     des_pos_ = des_pos;
     des_vel_ = des_vel;
     des_acc_ = des_acc;
   }
 
   virtual void UpdateOscCommand() = 0;
-  virtual void UpdateTaskJacobian() = 0;
-  virtual void UpdateTaskJacobianDotQdot() = 0;
+  virtual void UpdateJacobian() = 0;
+  virtual void UpdateJacobianDotQdot() = 0;
 
   // setter function
   // task gain, hierarchy
@@ -56,9 +55,9 @@ public:
                   : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
       kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
                   : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
-      task_weight_ =
-          b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
-                : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
+      weight_ = b_sim
+                    ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
+                    : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
                 << __FILE__ << "]" << std::endl
@@ -68,16 +67,21 @@ public:
   }
 
   // getter function
-  Eigen::VectorXd GetTaskDesiredPos() { return des_pos_; }
-  Eigen::VectorXd GetTaskDesiredVel() { return des_vel_; }
-  Eigen::VectorXd GetTaskDesiredAcc() { return des_acc_; }
+  Eigen::VectorXd DesiredPos() const { return des_pos_; }
+  Eigen::VectorXd DesiredVel() const { return des_vel_; }
+  Eigen::VectorXd DesiredAcc() const { return des_acc_; }
 
-  const int *GetTargetIdx() { return target_idx_; }
+  Eigen::MatrixXd Jacobian() const { return jacobian_; }
+  Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
+  Eigen::VectorXd Weight() const { return weight_; }
+  Eigen::VectorXd OscCommand() const { return osc_cmd_; }
+
+  int TargetIdx() const { return target_idx_; }
 
 protected:
   PinocchioRobotSystem *robot_;
-  const int dim_;
-  const int *target_idx_;
+  int dim_;
+  int target_idx_;
 
   // measured quantities
   Eigen::VectorXd pos_;
@@ -100,5 +104,5 @@ protected:
   Eigen::MatrixXd jacobian_;
   Eigen::VectorXd jacobian_dot_q_dot_;
 
-  Eigen::VectorXd task_weight_;
+  Eigen::VectorXd weight_;
 };

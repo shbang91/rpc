@@ -1,4 +1,5 @@
 #pragma once
+#include "util/util.hpp"
 
 class PinocchioRobotSystem;
 class DracoTCIContainer;
@@ -18,5 +19,8 @@ private:
   DracoTCIContainer *tci_container_;
   DracoStateProvider *sp_;
 
-  IHWBC ihwbc_;
+  IHWBC *ihwbc_;
+
+  YAML::Node cfg_;
+  void _InitializeParameters();
 };

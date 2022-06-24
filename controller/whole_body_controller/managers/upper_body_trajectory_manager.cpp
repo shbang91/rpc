@@ -13,7 +13,7 @@ void UpperBodyTrajetoryManager::UseNominalUpperBodyJointPos(
   // extract upper body joint in order and set desired
   std::vector<int> upper_body_jidx(
       (static_cast<SelectedJointTask *>(upper_body_task_))
-          ->GetJointIdxContainer());
+          ->JointIdxContainer());
 
   // std::cout << "upper body jidx vector" << std::endl;
   // for (const auto &v : upper_body_jidx)
@@ -24,7 +24,7 @@ void UpperBodyTrajetoryManager::UseNominalUpperBodyJointPos(
     nominal_upper_body_jpos[i] =
         robot_->GetQ()[robot_->GetQIdx(upper_body_jidx[i])];
 
-  upper_body_task_->UpdateDesiredTask(
+  upper_body_task_->UpdateDesired(
       nominal_upper_body_jpos, Eigen::VectorXd::Zero(upper_body_jidx.size()),
       Eigen::VectorXd::Zero(upper_body_jidx.size()));
 }

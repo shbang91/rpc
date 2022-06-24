@@ -25,5 +25,6 @@ public:
   ForceTask *rf_reaction_force_task_;
 
 private:
-  void _InitializeParameters(const YAML::Node &node, const bool b_sim);
+  YAML::Node cfg_;
+  void _InitializeParameters();
 };

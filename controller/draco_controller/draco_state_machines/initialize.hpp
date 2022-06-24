@@ -16,7 +16,7 @@ public:
 
   StateId GetNextState() override;
 
-  void InitializeParameters(const YAML::Node &node) override;
+  void SetParameters(const YAML::Node &node) override;
 
 private:
   DracoControlArchitecture *ctrl_arch_;

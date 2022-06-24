@@ -12,8 +12,8 @@ Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
   util::PrettyConstructor(2, "Initialize");
 
   sp_ = DracoStateProvider::GetStateProvider();
-  target_joint_pos_ = Eigen::VectorXd::Zero(robot_->GetNumActiveDof());
-  init_joint_pos_ = Eigen::VectorXd::Zero(robot_->GetNumActiveDof());
+  target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
+  init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 }
 
 void Initialize::FirstVisit() {
@@ -39,7 +39,7 @@ void Initialize::OneStep() {
     des_joint_pos[i] = util::SmoothAcc(init_joint_pos_[i], target_joint_pos_[i],
                                        duration_, state_machine_time_);
   }
-  ctrl_arch_->tci_container_->jpos_task_->UpdateDesiredTask(
+  ctrl_arch_->tci_container_->jpos_task_->UpdateDesired(
       des_joint_pos, des_joint_vel, des_joint_acc);
 }
 
@@ -53,7 +53,7 @@ StateId Initialize::GetNextState() {
   return draco_states::kDoubleSupportStandUp;
 }
 
-void Initialize::InitializeParameters(const YAML::Node &node) {
+void Initialize::SetParameters(const YAML::Node &node) {
   try {
     util::ReadParameter(node, "init_duration", duration_);
     util::ReadParameter(node, "target_joint_pos", target_joint_pos_);

@@ -8,12 +8,12 @@ PointContact::PointContact(PinocchioRobotSystem *robot,
   cone_constraint_vector_ = Eigen::VectorXd::Zero(6);
 }
 
-void PointContact::UpdateContactJacobian() {
+void PointContact::UpdateJacobian() {
   jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
-                  .block(dim_, 0, dim_, robot_->GetNumQdot());
+                  .block(dim_, 0, dim_, robot_->NumQdot());
 }
 
-void PointContact::UpdateContactJacobianDotQdot() {
+void PointContact::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ =
       robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
 }
@@ -35,6 +35,7 @@ void PointContact::UpdateConeConstraint() {
   cone_constraint_matrix_ =
       cone_constraint_matrix_ * rot_world_local.transpose();
 
+  // -Fz >= -rf_z_max
   cone_constraint_vector_[5] = -rf_z_max_;
 }
 
@@ -59,11 +60,11 @@ SurfaceContact::SurfaceContact(PinocchioRobotSystem *robot,
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(16 + 2, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(16 + 2);
 }
-void SurfaceContact::UpdateContactJacobian() {
+void SurfaceContact::UpdateJacobian() {
   jacobian_ = robot_->GetLinkJacobian(target_link_idx_);
 }
 
-void SurfaceContact::UpdateContactJacobianDotQdot() {
+void SurfaceContact::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetLinkJacobianDotQdot(target_link_idx_);
 }
 
@@ -161,6 +162,7 @@ void SurfaceContact::UpdateConeConstraint() {
   cone_constraint_matrix_ =
       cone_constraint_matrix_ * aug_R_world_local.transpose();
 
+  // -Fz >= -rf_z_max
   cone_constraint_vector_[17] = -rf_z_max_;
 }
 

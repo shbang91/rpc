@@ -77,6 +77,13 @@ wbc:
       exp_kp : [20., 20., 20.]
       exp_kd : [1., 1., 1.]
 
+    foot_rf_task:
+      weight_at_contact: [0., 0., 0., 0., 0., 0.] ## trq, force order
+      weight_at_swing: [0., 0., 0., 0., 0., 0.] ## trq, force order
+
+      exp_weight_at_contact: [0., 0., 0., 0., 0., 0.]
+      exp_weight_at_swing: [0., 0., 0., 0., 0., 0.]
+
   contact:
     ## sim params
     mu: 0.5
@@ -84,15 +91,16 @@ wbc:
     foot_half_length: 0.11
     foot_half_width: 0.04
 
-    w_rf: 0.
-
     ## exp params
     exp_mu: 0.5
     exp_max_rf_z: 1000.
     exp_foot_half_length: 0.11
     exp_foot_half_width: 0.04
 
-    exp_w_rf: 0.
+  qp:
+    lambda_qddot: 1e-7 ##regularization
+    lambda_rf: 1e-6 ##regularization
+    b_trq_limit: false
 
 
 state_machine:

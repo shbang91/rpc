@@ -7,8 +7,8 @@ public:
                const double mu);
   virtual ~PointContact() = default;
 
-  void UpdateContactJacobian() override;
-  void UpdateContactJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
   void UpdateConeConstraint() override;
   void SetParameters(const YAML::Node &node, const bool b_sim) override;
 };
@@ -19,8 +19,8 @@ public:
                  const double mu, const double x, const double y);
   virtual ~SurfaceContact() = default;
 
-  void UpdateContactJacobian() override;
-  void UpdateContactJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
   void UpdateConeConstraint() override;
   void SetParameters(const YAML::Node &node, const bool b_sim) override;
 

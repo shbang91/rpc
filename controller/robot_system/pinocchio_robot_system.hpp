@@ -50,14 +50,14 @@ public:
 
   Eigen::Isometry3d GetLinkIsometry(const int link_idx);
   // function overloading
-  Eigen::Isometry3d GetLinkIsometry(const int *link_idx);
+  // Eigen::Isometry3d GetLinkIsometry(int *link_idx);
   Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
       const int link_idx,
       const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
   // function overloading
-  Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
-      const int *link_idx,
-      const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
+  // Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
+  // int *link_idx,
+  // const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
 
   Eigen::Matrix<double, 6, Eigen::Dynamic>
   GetLinkJacobian(const int link_idx,
@@ -87,9 +87,13 @@ public:
   Eigen::Matrix<double, Eigen::Dynamic, 2> joint_trq_limits_;
 
   // getter function
-  int GetNumQdot() const;
-  int GetNumActiveDof() const;
-  int GetNumFloatDof() const;
+  int NumQdot() const;
+  int NumActiveDof() const;
+  int NumFloatDof() const;
+
+  Eigen::Matrix<double, Eigen::Dynamic, 2> TrqLimit() const {
+    return joint_trq_limits_;
+  }
 
 private:
   void _Initialize();

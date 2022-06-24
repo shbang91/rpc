@@ -15,8 +15,8 @@ public:
 
   void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian() override;
-  void UpdateTaskJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 };
 
 class SelectedJointTask : public Task {
@@ -27,10 +27,10 @@ public:
 
   void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian() override;
-  void UpdateTaskJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 
-  std::vector<int> GetJointIdxContainer();
+  std::vector<int> JointIdxContainer();
 
 private:
   std::vector<int> joint_idx_container_;
@@ -38,13 +38,13 @@ private:
 
 class LinkPosTask : public Task {
 public:
-  LinkPosTask(PinocchioRobotSystem *robot, const int target_link);
+  LinkPosTask(PinocchioRobotSystem *robot, int target_link);
   virtual ~LinkPosTask() = default;
 
   void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian() override;
-  void UpdateTaskJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 
 private:
   int target_link_idx_;
@@ -52,13 +52,13 @@ private:
 
 class LinkOriTask : public Task {
 public:
-  LinkOriTask(PinocchioRobotSystem *robot, const int target_link);
+  LinkOriTask(PinocchioRobotSystem *robot, int target_link);
   virtual ~LinkOriTask() = default;
 
   void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian() override;
-  void UpdateTaskJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 
 private:
   int target_link_idx_;
@@ -71,6 +71,6 @@ public:
 
   void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian() override;
-  void UpdateTaskJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 };

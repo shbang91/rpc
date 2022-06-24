@@ -22,8 +22,8 @@ public:
 
   void UpdateOscCommand() override;
 
-  void UpdateTaskJacobian() override;
-  void UpdateTaskJacobianDotQdot() override;
+  void UpdateJacobian() override;
+  void UpdateJacobianDotQdot() override;
 
   void SetParameters(const YAML::Node &node, const bool b_sim) override;
 

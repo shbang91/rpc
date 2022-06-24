@@ -69,22 +69,22 @@ void DracoComTask::UpdateOscCommand() {
   }
 }
 
-void DracoComTask::UpdateTaskJacobian() {
+void DracoComTask::UpdateJacobian() {
   if (com_height_target_source_ == com_height_target_source::kComHeight) {
     jacobian_ = robot_->GetComLinJacobian();
   } else if (com_height_target_source_ ==
              com_height_target_source::kBaseHeight) {
-    jacobian_.block(0, 0, 2, robot_->GetNumQdot()) =
-        robot_->GetComLinJacobian().block(0, 0, 2, robot_->GetNumQdot());
-    jacobian_.block(2, 0, 1, robot_->GetNumQdot()) =
+    jacobian_.block(0, 0, 2, robot_->NumQdot()) =
+        robot_->GetComLinJacobian().block(0, 0, 2, robot_->NumQdot());
+    jacobian_.block(2, 0, 1, robot_->NumQdot()) =
         robot_->GetLinkJacobian(draco_link::torso_com_link)
-            .block(5, 0, 1, robot_->GetNumQdot());
+            .block(5, 0, 1, robot_->NumQdot());
   } else {
     throw std::invalid_argument("No Matching CoM Task Jacobian");
   }
 }
 
-void DracoComTask::UpdateTaskJacobianDotQdot() {
+void DracoComTask::UpdateJacobianDotQdot() {
   if (com_height_target_source_ == com_height_target_source::kComHeight) {
     jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot();
   } else if (com_height_target_source_ ==
@@ -106,12 +106,12 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
       if (com_feedback_source_ == com_feedback_source::kComFeedback) {
         util::ReadParameter(node, "kp", kp_);
         util::ReadParameter(node, "kd", kd_);
-        util::ReadParameter(node, "weight", task_component_hierarchy_);
+        util::ReadParameter(node, "weight", weight_);
       } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
         util::ReadParameter(node, "icp_kp", kp_);
         util::ReadParameter(node, "icp_kd", kd_);
         util::ReadParameter(node, "icp_ki", ki_);
-        util::ReadParameter(node, "icp_weight", task_component_hierarchy_);
+        util::ReadParameter(node, "icp_weight", weight_);
       } else {
         throw std::invalid_argument("No Matching CoM Feedback Source");
       }
@@ -119,12 +119,12 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
       if (com_feedback_source_ == com_feedback_source::kComFeedback) {
         util::ReadParameter(node, "exp_kp", kp_);
         util::ReadParameter(node, "exp_kd", kd_);
-        util::ReadParameter(node, "exp_weight", task_component_hierarchy_);
+        util::ReadParameter(node, "exp_weight", weight_);
       } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
         util::ReadParameter(node, "exp_icp_kp", kp_);
         util::ReadParameter(node, "exp_icp_kd", kd_);
         util::ReadParameter(node, "exp_icp_ki", ki_);
-        util::ReadParameter(node, "exp_icp_weight", task_component_hierarchy_);
+        util::ReadParameter(node, "exp_icp_weight", weight_);
       } else {
         throw std::invalid_argument("No Matching CoM Feedback Source");
       }

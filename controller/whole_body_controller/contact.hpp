@@ -12,24 +12,28 @@ public:
       : robot_(robot), dim_(dim), target_link_idx_(target_link_idx), mu_(mu),
         rf_z_max_(0.001) {
 
-    jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->GetNumQdot());
+    jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->NumQdot());
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
   };
   virtual ~Contact() = default;
 
-  virtual void UpdateContactJacobian() = 0;
-  virtual void UpdateContactJacobianDotQdot() = 0;
+  virtual void UpdateJacobian() = 0;
+  virtual void UpdateJacobianDotQdot() = 0;
   virtual void UpdateConeConstraint() = 0;
 
-  // setter function
+  // setter
   // contact mu, rf_z_max
   virtual void SetParameters(const YAML::Node &node, const bool b_sim) = 0;
-
-  // rf_z_max getter & setter function
-  const double GetMaxFz() { return rf_z_max_; }
   void SetMaxFz(const double rf_z_max) { rf_z_max_ = rf_z_max; }
 
-  const int GetDim() { return dim_; }
+  // getter
+  double MaxFz() const { return rf_z_max_; }
+  int Dim() const { return dim_; }
+
+  Eigen::MatrixXd Jacobian() const { return jacobian_; }
+  Eigen::VectorXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
+  Eigen::MatrixXd UfMatrix() const { return cone_constraint_matrix_; }
+  Eigen::VectorXd UfVector() const { return cone_constraint_vector_; }
 
 protected:
   PinocchioRobotSystem *robot_;

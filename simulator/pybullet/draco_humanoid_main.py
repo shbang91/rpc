@@ -396,10 +396,10 @@ while (True):
 
     print("trq command printout")
     print(rpc_trq_command)
-    print("jpos command printout")
-    print(rpc_joint_pos_command)
-    print("jpos command printout")
-    print(rpc_joint_vel_command)
+    # print("jpos command printout")
+    # print(rpc_joint_pos_command)
+    # print("jpos command printout")
+    # print(rpc_joint_vel_command)
 
     #step simulation
     pb.stepSimulation()

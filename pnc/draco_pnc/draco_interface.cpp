@@ -37,7 +37,7 @@ DracoInterface::DracoInterface() : Interface() {
 DracoInterface::~DracoInterface() {
   delete robot_;
   delete se_;
-  // delete control_architecture_;
+  delete control_architecture_;
 }
 
 void DracoInterface::GetCommand(void *_sensor_data, void *_command_data) {
