@@ -23,4 +23,6 @@ private:
 
   YAML::Node cfg_;
   void _InitializeParameters();
+
+  bool b_int_constrinat_first_visit_;
 };

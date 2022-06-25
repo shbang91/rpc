@@ -24,7 +24,7 @@ public:
     kd_ = Eigen::VectorXd::Zero(dim_);
     ki_ = Eigen::VectorXd::Zero(dim_);
 
-    osc_cmd_ = Eigen::VectorXd::Zero(dim_);
+    op_cmd_ = Eigen::VectorXd::Zero(dim_);
 
     jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->NumQdot());
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
@@ -43,7 +43,7 @@ public:
     des_acc_ = des_acc;
   }
 
-  virtual void UpdateOscCommand() = 0;
+  virtual void UpdateOpCommand() = 0;
   virtual void UpdateJacobian() = 0;
   virtual void UpdateJacobianDotQdot() = 0;
 
@@ -74,7 +74,7 @@ public:
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
   Eigen::VectorXd Weight() const { return weight_; }
-  Eigen::VectorXd OscCommand() const { return osc_cmd_; }
+  Eigen::VectorXd OpCommand() const { return op_cmd_; }
 
   int TargetIdx() const { return target_idx_; }
 
@@ -99,7 +99,7 @@ protected:
   Eigen::VectorXd des_vel_;
   Eigen::VectorXd des_acc_;
 
-  Eigen::VectorXd osc_cmd_;
+  Eigen::VectorXd op_cmd_;
 
   Eigen::MatrixXd jacobian_;
   Eigen::VectorXd jacobian_dot_q_dot_;

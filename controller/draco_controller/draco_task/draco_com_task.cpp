@@ -11,7 +11,7 @@ DracoComTask::DracoComTask(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoComTask::UpdateOscCommand() {
+void DracoComTask::UpdateOpCommand() {
   if (com_feedback_source_ == com_feedback_source::kComFeedback) {
     Eigen::Vector3d com_pos = robot_->GetRobotComPos();
     Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
@@ -34,7 +34,7 @@ void DracoComTask::UpdateOscCommand() {
     pos_err_ = des_pos_ - pos_;
     vel_err_ = des_vel_ - vel_;
 
-    osc_cmd_ =
+    op_cmd_ =
         des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 
   } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
@@ -61,8 +61,8 @@ void DracoComTask::UpdateOscCommand() {
         sp_->dcm_.head(2) + omega * des_dcm_dot +
         kp_.head(2).cwiseProduct(sp_->dcm_.head(2) - des_dcm);
 
-    osc_cmd_.head(2) = omega * omega * (com_pos.head(2) - des_cmp);
-    osc_cmd_[2] =
+    op_cmd_.head(2) = omega * omega * (com_pos.head(2) - des_cmp);
+    op_cmd_[2] =
         kp_[2] * (des_pos_[2] - pos_[2]) + kd_[2] * (des_vel_[2] - vel_[2]);
   } else {
     throw std::invalid_argument("No Matching Feedback Source on CoM Task");

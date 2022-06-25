@@ -6,14 +6,14 @@ JointTask::JointTask(PinocchioRobotSystem *robot)
 }
 
 // not being used
-void JointTask::UpdateOscCommand() {
+void JointTask::UpdateOpCommand() {
   pos_ = robot_->GetJointPos();
   pos_err_ = des_pos_ - pos_;
 
   vel_ = robot_->GetJointVel();
   vel_err_ = des_vel_ - vel_;
 
-  osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void JointTask::UpdateJacobian() {
@@ -32,7 +32,7 @@ SelectedJointTask::SelectedJointTask(
   joint_idx_container_ = joint_idx_container;
 }
 
-void SelectedJointTask::UpdateOscCommand() {
+void SelectedJointTask::UpdateOpCommand() {
   for (unsigned int i = 0; i < dim_; ++i) {
     pos_[i] = robot_->GetQ()(robot_->GetQIdx(joint_idx_container_[i]));
     pos_err_[i] = des_pos_[i] - pos_[i];
@@ -40,7 +40,7 @@ void SelectedJointTask::UpdateOscCommand() {
     vel_[i] = robot_->GetQdot()(robot_->GetQdotIdx(joint_idx_container_[i]));
     vel_err_[i] = des_vel_[i] - vel_[i];
 
-    osc_cmd_[i] = des_acc_[i] + kp_[i] * pos_err_[i] + kd_[i] * vel_err_[i];
+    op_cmd_[i] = des_acc_[i] + kp_[i] * pos_err_[i] + kd_[i] * vel_err_[i];
   }
 }
 
@@ -66,14 +66,14 @@ LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_link_idx)
   target_link_idx_ = target_link_idx;
 }
 
-void LinkPosTask::UpdateOscCommand() {
+void LinkPosTask::UpdateOpCommand() {
   pos_ = robot_->GetLinkIsometry(target_link_idx_).translation();
   pos_err_ = des_pos_ - pos_;
 
   vel_ = robot_->GetLinkSpatialVel(target_link_idx_).tail(dim_);
   vel_err_ = des_vel_ - vel_;
 
-  osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void LinkPosTask::UpdateJacobian() {
@@ -92,7 +92,7 @@ LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_link_idx)
   target_link_idx_ = target_link_idx;
 }
 
-void LinkOriTask::UpdateOscCommand() {
+void LinkOriTask::UpdateOpCommand() {
   Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_link_idx_).linear());
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
@@ -110,7 +110,7 @@ void LinkOriTask::UpdateOscCommand() {
   vel_ = robot_->GetLinkSpatialVel(target_link_idx_).head(dim_);
   vel_err_ = des_vel_ - vel_;
 
-  osc_cmd_ = des_acc_ = kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  op_cmd_ = des_acc_ = kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void LinkOriTask::UpdateJacobian() {
@@ -126,7 +126,7 @@ void LinkOriTask::UpdateJacobianDotQdot() {
 // Robot Center of Mass Task
 ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {}
 
-void ComTask::UpdateOscCommand() {
+void ComTask::UpdateOpCommand() {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();
   Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
 
@@ -136,7 +136,7 @@ void ComTask::UpdateOscCommand() {
   vel_ << com_vel[0], com_vel[1], com_vel[2];
   vel_err_ = des_vel_ - vel_;
 
-  osc_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void ComTask::UpdateJacobian() { jacobian_ = robot_->GetComLinJacobian(); }

@@ -49,20 +49,26 @@ public:
   Eigen::VectorXd GetJointVel() const;
 
   Eigen::Isometry3d GetLinkIsometry(const int link_idx);
-  // function overloading
-  // Eigen::Isometry3d GetLinkIsometry(int *link_idx);
-  Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
+  Eigen::Matrix<double, 6, 1>
+  GetLinkSpatialVel(const int link_idx,
+                    const pinocchio::ReferenceFrame &ref =
+                        pinocchio::LOCAL_WORLD_ALIGNED) const;
+
+  Eigen::Matrix<double, 6, Eigen::Dynamic> GetLinkJacobian(
+      const int link_idx,
+      const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(
+      const int link_idx,
+      const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL_WORLD_ALIGNED);
+
+  Eigen::Matrix<double, 6, 1> GetLinkBodySpatialVel(
       const int link_idx,
       const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
-  // function overloading
-  // Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(
-  // int *link_idx,
-  // const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL) const;
 
   Eigen::Matrix<double, 6, Eigen::Dynamic>
-  GetLinkJacobian(const int link_idx,
-                  const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL);
-  Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(
+  GetLinkBodyJacobian(const int link_idx,
+                      const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL);
+  Eigen::Matrix<double, 6, 1> GetLinkBodyJacobianDotQdot(
       const int link_idx,
       const pinocchio::ReferenceFrame &ref = pinocchio::LOCAL);
 

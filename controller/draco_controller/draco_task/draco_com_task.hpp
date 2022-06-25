@@ -20,7 +20,7 @@ public:
 
   virtual ~DracoComTask() = default;
 
-  void UpdateOscCommand() override;
+  void UpdateOpCommand() override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;

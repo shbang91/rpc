@@ -12,7 +12,8 @@
 
 DracoController::DracoController(DracoTCIContainer *tci_container,
                                  PinocchioRobotSystem *robot)
-    : tci_container_(tci_container), robot_(robot) {
+    : tci_container_(tci_container), robot_(robot),
+      b_int_constrinat_first_visit_(true) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -74,7 +75,7 @@ void DracoController::GetCommand(void *command) {
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
     for (const auto &task : tci_container_->task_container_) {
-      task->UpdateOscCommand();
+      task->UpdateOpCommand();
       task->UpdateJacobian();
       task->UpdateJacobianDotQdot();
     }
@@ -87,13 +88,12 @@ void DracoController::GetCommand(void *command) {
     }
     // iterate once b/c jacobian does not change at all depending on
     // configuration
-    static bool b_int_constrinat_first_visit(true);
-    if (b_int_constrinat_first_visit) {
+    if (b_int_constrinat_first_visit_) {
       for (const auto &internal_constraint :
            tci_container_->internal_constraint_container_) {
         internal_constraint->UpdateJacobian();
         internal_constraint->UpdateJacobianDotQdot();
-        b_int_constrinat_first_visit = false;
+        b_int_constrinat_first_visit_ = false;
       }
     }
 
@@ -119,7 +119,6 @@ void DracoController::GetCommand(void *command) {
     // TODO: joint integrator for real experiment
 
     static_cast<DracoCommand *>(command)->joint_trq_cmd_ = ihwbc_->TrqCommand();
-    ;
   }
 }
 

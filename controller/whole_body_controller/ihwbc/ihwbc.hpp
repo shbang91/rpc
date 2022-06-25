@@ -13,7 +13,7 @@ class IHWBC {
 public:
   IHWBC(const Eigen::MatrixXd &Sa, const Eigen::MatrixXd *Sf = NULL,
         const Eigen::MatrixXd *Sv = NULL);
-  virtual ~IHWBC();
+  virtual ~IHWBC() = default;
 
   void UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
                      const Eigen::VectorXd &cori, const Eigen::VectorXd &grav);
@@ -67,7 +67,11 @@ protected:
   bool b_floating_;
   bool b_contact_;
 
+  // ihwbc solve method firstvisit
+  bool b_first_visit_;
+
   int dim_contact_;
+  int dim_cone_constraint_;
 
   // optimization regularization parameters
   double lambda_qddot_;

@@ -6,12 +6,13 @@
 
 IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
              const Eigen::MatrixXd *sv)
-    : sa_(sa), dim_contact_(0), b_contact_(true), lambda_qddot_(0.),
-      lambda_rf_(0.) {
+    : sa_(sa), dim_contact_(0), dim_cone_constraint_(0), b_contact_(true),
+      lambda_qddot_(0.), lambda_rf_(0.), b_first_visit_(true) {
 
   num_qdot_ = sa_.cols();
+  num_active_ = sa.rows();
 
-  if (!sf) {
+  if (sf) {
     sf_ = *sf;
     b_floating_ = true;
     num_float_ = sf_.rows();
@@ -21,7 +22,7 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
     num_float_ = 0;
   }
 
-  if (!sv) {
+  if (sv) {
     sv_ = *sv;
     b_passive_ = true;
     num_passive_ = sv_.rows();
@@ -39,8 +40,6 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
   snf_.rightCols(num_qdot_ - num_float_) =
       Eigen::MatrixXd::Identity(num_qdot_ - num_float_, num_qdot_ - num_float_);
 }
-
-IHWBC::~IHWBC() {}
 
 void IHWBC::UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
                           const Eigen::VectorXd &cori,
@@ -71,10 +70,10 @@ void IHWBC::Solve(
   // task cost
   cost_t_mat.setZero(num_qdot_, num_qdot_);
   cost_t_vec.setZero(num_qdot_);
-  for (const auto &task : task_container) {
+  for (auto task : task_container) {
     Eigen::MatrixXd jt = task->Jacobian();
     Eigen::VectorXd jtdot_qdot = task->JacobianDotQdot();
-    Eigen::VectorXd des_xddot = task->OscCommand();
+    Eigen::VectorXd des_xddot = task->OpCommand();
     Eigen::MatrixXd weight_mat = task->Weight().asDiagonal();
 
     cost_t_mat += jt.transpose() * weight_mat * jt;
@@ -83,11 +82,12 @@ void IHWBC::Solve(
   cost_t_mat += lambda_qddot_ * A_; // regularization term
 
   // // check contact dimension
-  static bool b_first_visit(true);
-  if (b_first_visit) {
-    for (const auto &contact : contact_container)
+  if (b_first_visit_) {
+    for (auto contact : contact_container) {
       dim_contact_ += contact->Dim();
-    b_first_visit = false;
+      dim_cone_constraint_ += contact->UfVector().size();
+      b_first_visit_ = false;
+    }
   }
 
   cost_mat.setZero(num_qdot_ + dim_contact_, num_qdot_ + dim_contact_);
@@ -99,7 +99,7 @@ void IHWBC::Solve(
     cost_rf_mat.setZero(dim_contact_, dim_contact_);
     cost_rf_vec.setZero(dim_contact_);
     int row_idx(0);
-    for (const auto &force_task : force_task_container) {
+    for (auto force_task : force_task_container) {
       // lfoot, rfoot order & wrench (torque, force order)
       Eigen::MatrixXd weight_mat = force_task->Weight().asDiagonal();
       Eigen::VectorXd desired_rf = force_task->DesiredRf();
@@ -140,7 +140,7 @@ void IHWBC::Solve(
     ji_mat_transpose_lambda_int_jidot_qdot_vec.setZero(num_qdot_);
 
     int row_idx(0);
-    for (const auto &int_constraint : internal_constraint_container) {
+    for (auto int_constraint : internal_constraint_container) {
       Eigen::MatrixXd ji = int_constraint->Jacobian();
       Eigen::VectorXd jidot_qdot = int_constraint->JacobianDotQdot();
       int dim = int_constraint->Dim();
@@ -178,14 +178,19 @@ void IHWBC::Solve(
   Eigen::VectorXd uf_vec;
   if (b_contact_) {
     // contact exist
+    jc_mat.setZero(dim_contact_, num_qdot_);
+    uf_mat.setZero(dim_cone_constraint_, dim_contact_);
+    uf_vec.setZero(dim_cone_constraint_);
+
     int row_idx(0);
-    for (const auto &contact : contact_container) {
+    for (auto contact : contact_container) {
       Eigen::MatrixXd jc = contact->Jacobian();
       Eigen::MatrixXd cone_mat = contact->UfMatrix();
       Eigen::VectorXd cone_vec = contact->UfVector();
       int dim = contact->Dim();
 
       jc_mat.middleRows(row_idx, dim) = jc;
+
       uf_mat.middleRows(row_idx, dim) = cone_mat;
       uf_vec.segment(row_idx, dim) = cone_vec;
       row_idx += dim;
@@ -298,24 +303,17 @@ void IHWBC::Solve(
   //=============================================================
   // inequality constraint setup
   //=============================================================
-  // Uf >= fz
+  // Uf >= contact_cone_vec
   Eigen::MatrixXd ineq_mat;
   Eigen::VectorXd ineq_vec;
   if (!b_trq_limit_) {
     if (b_contact_) {
       // trq limit : x, contact: o
-      Eigen::MatrixXd ineq_contact_mat;
-      Eigen::VectorXd ineq_contact_vec;
-      int dim_cone_constraint = uf_mat.rows();
+      ineq_mat.setZero(dim_cone_constraint_, num_qdot_ + dim_contact_);
+      ineq_vec.setZero(dim_cone_constraint_);
 
-      ineq_contact_mat.setZero(dim_cone_constraint, num_qdot_ + dim_contact_);
-      ineq_contact_vec.setZero(dim_cone_constraint);
-
-      ineq_contact_mat.rightCols(dim_contact_) = uf_mat;
-      ineq_contact_vec.tail(dim_cone_constraint) = -uf_vec;
-
-      ineq_mat = ineq_contact_mat;
-      ineq_vec = ineq_contact_vec;
+      ineq_mat.rightCols(dim_contact_) = uf_mat;
+      ineq_vec = -uf_vec;
     } else {
       // trq limit: x, contact: x
       ineq_mat.setZero(0, num_qdot_);
@@ -359,13 +357,12 @@ void IHWBC::Solve(
       // trq limit: o, contact: o
       Eigen::MatrixXd ineq_contact_mat;
       Eigen::VectorXd ineq_contact_vec;
-      int dim_cone_constraint = uf_mat.rows();
 
-      ineq_contact_mat.setZero(dim_cone_constraint, num_qdot_ + dim_contact_);
-      ineq_contact_vec.setZero(dim_cone_constraint);
+      ineq_contact_mat.setZero(dim_cone_constraint_, num_qdot_ + dim_contact_);
+      ineq_contact_vec.setZero(dim_cone_constraint_);
 
       ineq_contact_mat.rightCols(dim_contact_) = uf_mat;
-      ineq_contact_vec.tail(dim_cone_constraint) = -uf_vec;
+      ineq_contact_vec.tail(dim_cone_constraint_) = -uf_vec;
 
       ineq_mat.setZero(ineq_trq_mat.rows() + ineq_contact_mat.rows(),
                        num_qdot_ + dim_contact_);
@@ -415,16 +412,19 @@ void IHWBC::Solve(
   // compute torque command
   if (b_contact_) {
     // contact: o
-    trq_cmd_ = sa_ni_trc_bar.transpose() * snf_ *
-               (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) -
-                (jc_mat * ni).transpose() * rf_sol_ +
-                ji_mat_transpose_lambda_int_jidot_qdot_vec);
+    trq_cmd = sa_ni_trc_bar.transpose() * snf_ *
+              (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) -
+               (jc_mat * ni).transpose() * rf_sol_ +
+               ji_mat_transpose_lambda_int_jidot_qdot_vec);
   } else {
     // contact: x
-    trq_cmd_ = sa_ni_trc_bar.transpose() * snf_ *
-               (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) +
-                ji_mat_transpose_lambda_int_jidot_qdot_vec);
+    trq_cmd = sa_ni_trc_bar.transpose() * snf_ *
+              (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) +
+               ji_mat_transpose_lambda_int_jidot_qdot_vec);
   }
+
+  qddot_cmd = sa_ * qddot_sol_;
+  rf_cmd = rf_sol_;
 }
 
 void IHWBC::_SetQPCost(const Eigen::MatrixXd &cost_mat,
