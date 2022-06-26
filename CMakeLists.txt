@@ -84,7 +84,7 @@ add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
 
-#add_subdirectory(pnc)
+add_subdirectory(pnc)
 
 ##==================================================
 ## Configuration File

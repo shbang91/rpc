@@ -12,8 +12,8 @@
 #include <pinocchio/parsers/urdf.hpp>
 
 #include <Eigen/Dense>
+#include <map>
 #include <string>
-#include <unordered_map>
 
 /*
  *  Pinnochio considers floating base with 7 positions and 6 velocities with the
@@ -121,8 +121,8 @@ private:
   int n_adof_;
   int n_float_;
 
-  std::unordered_map<std::string, double> joint_idx_map_;
-  std::unordered_map<std::string, double> link_idx_map_;
+  std::map<double, std::string> joint_idx_map_;
+  std::map<double, std::string> link_idx_map_;
 
   double total_mass_;
 };

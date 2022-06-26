@@ -44,7 +44,7 @@ void PinocchioRobotSystem::_Initialize() {
     std::string frame_name = model_.frames[i].name;
     if (frame_name != "universe" && frame_name != "root_joint")
       if (i % 2 == 0)
-        link_idx_map_[frame_name] = floor(i / 2 - 1);
+        link_idx_map_[model_.getFrameId(frame_name)] = frame_name;
   }
   // std::cout << "link_idx_map" << std::endl;
   // for (const auto &pair : link_idx_map_)
@@ -55,11 +55,8 @@ void PinocchioRobotSystem::_Initialize() {
     total_mass_ += model_.inertias[i].mass();
     std::string joint_name = model_.names[i];
     if (joint_name != "universe" && joint_name != "root_joint")
-      joint_idx_map_[joint_name] = i - 2; // joint map excluding fixed joint
+      joint_idx_map_[i - 2] = joint_name; // joint map excluding fixed joint
   }
-  // std::cout << "joint_idx_map" << std::endl;
-  // for (const auto &pair : joint_idx_map_)
-  // std::cout << pair.first << ":" << pair.second << std::endl;
   assert(n_adof_ == joint_idx_map_.size());
 
   joint_pos_limits_.resize(n_adof_, 2);
@@ -141,12 +138,12 @@ Eigen::VectorXd PinocchioRobotSystem::GetQ() const { return this->q_; }
 Eigen::VectorXd PinocchioRobotSystem::GetQdot() const { return this->qdot_; }
 
 int PinocchioRobotSystem::GetQIdx(const int joint_idx) const {
-  int idx = 5 + joint_idx;
+  int idx = 7 + joint_idx;
   return idx;
 }
 
 int PinocchioRobotSystem::GetQdotIdx(const int joint_idx) const {
-  int idx = 4 + joint_idx;
+  int idx = 6 + joint_idx;
   return idx;
 }
 
@@ -292,16 +289,25 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
   std::cout << "=======================" << std::endl;
 
   std::cout << "============ draco link ================" << std::endl;
-  for (pinocchio::FrameIndex i = 1;
-       i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
-    std::cout << "constexpr int " << model_.frames[i].name << " = "
-              << model_.getFrameId(model_.frames[i].name) << ";" << std::endl;
+  // for (pinocchio::FrameIndex i = 1;
+  // i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
+  // std::cout << "constexpr int " << model_.frames[i].name << " = "
+  //<< model_.getFrameId(model_.frames[i].name) << ";" << std::endl;
+  //}
+  for (auto iter = link_idx_map_.begin(); iter != link_idx_map_.end(); ++iter) {
+    std::cout << "constexpr int " << iter->second << " = " << iter->first << ";"
+              << std::endl;
   }
   std::cout << "============ draco joint ================" << std::endl;
-  for (pinocchio::JointIndex i = 1;
-       i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
-    std::cout << "constexpr int " << model_.names[i] << " = "
-              << model_.getJointId(model_.names[i]) << ";" << std::endl;
+  // for (pinocchio::JointIndex i = 1;
+  // i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
+  // std::cout << "constexpr int " << model_.names[i] << " = "
+  //<< model_.getJointId(model_.names[i]) << ";" << std::endl;
+  //}
+  for (auto iter = joint_idx_map_.begin(); iter != joint_idx_map_.end();
+       ++iter) {
+    std::cout << "constexpr int " << iter->second << " = " << iter->first << ";"
+              << std::endl;
   }
 
   std::cout << "============ draco ================" << std::endl;
