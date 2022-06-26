@@ -4,7 +4,7 @@
 #include <dart/utils/urdf/urdf.hpp>
 #include <dart/utils/utils.hpp>
 
-#include "pnc/robot_system/robot_system.hpp"
+#include "controller/robot_system/robot_system.hpp"
 
 /*
  *  Dart considers floating base with 6 positions and 6 velocities with the

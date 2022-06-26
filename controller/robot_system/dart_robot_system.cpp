@@ -1,4 +1,4 @@
-#include "pnc/robot_system/dart_robot_system.hpp"
+#include "controller/robot_system/dart_robot_system.hpp"
 #include "util/util.hpp"
 
 DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,

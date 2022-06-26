@@ -7,15 +7,6 @@
                                     #dart-robot-system
                                     #rj-module)
 
-#add_executable(pinocchio_test pinocchio_robot_system_test.cpp)
-#target_link_libraries(pinocchio_test pinocchio-robot-system)
-
-#add_executable(draco_test pinocchio_robot_system_draco_test.cpp)
-#target_link_libraries(draco_test pinocchio-robot-system)
-
-#add_executable(dart_test dart_robot_system_test.cpp)
-#target_link_libraries(dart_test dart-robot-system)
-
 add_executable(draco_dart_test draco_dart_robot_system_test.cpp)
 target_link_libraries(draco_dart_test dart-robot-system)
 

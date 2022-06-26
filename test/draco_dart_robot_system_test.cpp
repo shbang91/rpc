@@ -3,7 +3,7 @@
 #include <string>
 
 #include "configuration.hpp"
-#include "pnc/robot_system/dart_robot_system.hpp"
+#include "controller/robot_system/dart_robot_system.hpp"
 
 constexpr double PI = 3.141592653589793238463;
 
