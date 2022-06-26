@@ -1,2 +1,0 @@
-pybind11_add_module(draco_interface_pybind draco_interface_pybind.cpp)
-target_link_libraries(draco_interface_pybind PRIVATE draco-pnc)
