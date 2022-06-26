@@ -31,6 +31,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   rf_ori_task_ = new LinkOriTask(robot_, draco_link::r_foot_contact);
 
   // wbc task list w/o joint task
+  task_container_.clear();
   task_container_.push_back(com_task_);
   task_container_.push_back(torso_ori_task_);
   task_container_.push_back(upper_body_task_);
@@ -43,10 +44,11 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   // Contacts List
   //=============================================================
   lf_contact_ =
-      new SurfaceContact(robot_, draco_link::l_foot_contact, 0.5, 0.11, 0.04);
+      new SurfaceContact(robot_, draco_link::l_foot_contact, 0.3, 0.11, 0.04);
   rf_contact_ =
-      new SurfaceContact(robot_, draco_link::r_foot_contact, 0.5, 0.11, 0.04);
+      new SurfaceContact(robot_, draco_link::r_foot_contact, 0.3, 0.11, 0.04);
 
+  contact_container_.clear();
   contact_container_.push_back(lf_contact_);
   contact_container_.push_back(rf_contact_);
 
@@ -55,6 +57,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   rolling_joint_constraint_ = new DracoRollingJointConstraint(robot_);
 
+  internal_constraint_container_.clear();
   internal_constraint_container_.push_back(rolling_joint_constraint_);
 
   //=============================================================
@@ -62,6 +65,8 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   lf_reaction_force_task_ = new ForceTask(lf_contact_->Dim());
   rf_reaction_force_task_ = new ForceTask(rf_contact_->Dim());
+
+  force_task_container_.clear();
   force_task_container_.push_back(lf_reaction_force_task_);
   force_task_container_.push_back(rf_reaction_force_task_);
 

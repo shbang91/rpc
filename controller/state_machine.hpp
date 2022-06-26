@@ -20,7 +20,7 @@ public:
 
   virtual void SetParameters(const YAML::Node &node) = 0;
 
-  const StateId GetStateId() { return this->state_id_; }
+  StateId State() const { return this->state_id_; }
 
 protected:
   StateId state_id_;

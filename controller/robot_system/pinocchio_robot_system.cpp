@@ -103,8 +103,7 @@ void PinocchioRobotSystem::UpdateRobotModel(
     const Eigen::VectorXd &joint_vel, bool b_update_centroid) {
   if (!b_fixed_base_) {
     q_.segment(0, 3) = base_joint_pos;
-    q_.segment(3, 4) << base_joint_quat.x(), base_joint_quat.y(),
-        base_joint_quat.z(), base_joint_quat.w();
+    q_.segment(3, 4) << base_joint_quat.normalized().coeffs();
     q_.tail(n_q_ - 7) = joint_pos;
 
     Eigen::Matrix3d rot_w_basejoint =
@@ -167,34 +166,34 @@ Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int link_idx) {
   return ret;
 }
 
-Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkSpatialVel(
-    const int link_idx, const pinocchio::ReferenceFrame &ref) const {
+Eigen::Matrix<double, 6, 1>
+PinocchioRobotSystem::GetLinkSpatialVel(const int link_idx) const {
   Eigen::Matrix<double, 6, 1> ret;
-  pinocchio::Motion fv =
-      pinocchio::getFrameVelocity(model_, data_, link_idx, ref);
-  ret.segment(0, 3) = fv.angular();
-  ret.segment(3, 3) = fv.linear();
+  pinocchio::Motion fv = pinocchio::getFrameVelocity(
+      model_, data_, link_idx, pinocchio::LOCAL_WORLD_ALIGNED);
+  ret.head<3>() = fv.angular();
+  ret.tail<3>() = fv.linear();
   return ret;
 }
 
 Eigen::Matrix<double, 6, Eigen::Dynamic>
-PinocchioRobotSystem::GetLinkJacobian(const int link_idx,
-                                      const pinocchio::ReferenceFrame &ref) {
+PinocchioRobotSystem::GetLinkJacobian(const int link_idx) {
   pinocchio::computeJointJacobians(model_, data_, q_);
 
   Eigen::MatrixXd jac(6, n_qdot_);
-  pinocchio::getFrameJacobian(model_, data_, link_idx, ref, jac);
+  pinocchio::getFrameJacobian(model_, data_, link_idx,
+                              pinocchio::LOCAL_WORLD_ALIGNED, jac);
   Eigen::MatrixXd ret(6, n_qdot_);
   ret.topRows(3) = jac.bottomRows(3);
   ret.bottomRows(3) = jac.topRows(3);
   return ret;
 }
 
-Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkJacobianDotQdot(
-    const int link_idx, const pinocchio::ReferenceFrame &ref) {
+Eigen::Matrix<double, 6, 1>
+PinocchioRobotSystem::GetLinkJacobianDotQdot(const int link_idx) {
   pinocchio::forwardKinematics(model_, data_, q_, qdot_, 0 * qdot_);
-  pinocchio::Motion fa =
-      pinocchio::getFrameClassicalAcceleration(model_, data_, link_idx, ref);
+  pinocchio::Motion fa = pinocchio::getFrameClassicalAcceleration(
+      model_, data_, link_idx, pinocchio::LOCAL_WORLD_ALIGNED);
 
   Eigen::Matrix<double, 6, 1> ret;
   ret.segment(0, 3) = fa.angular();
@@ -203,34 +202,33 @@ Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkJacobianDotQdot(
   return ret;
 }
 
-Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkBodySpatialVel(
-    const int link_idx, const pinocchio::ReferenceFrame &ref) const {
+Eigen::Matrix<double, 6, 1>
+PinocchioRobotSystem::GetLinkBodySpatialVel(const int link_idx) const {
   Eigen::Matrix<double, 6, 1> ret;
   pinocchio::Motion fv =
-      pinocchio::getFrameVelocity(model_, data_, link_idx, ref);
+      pinocchio::getFrameVelocity(model_, data_, link_idx, pinocchio::LOCAL);
   ret.segment(0, 3) = fv.angular();
   ret.segment(3, 3) = fv.linear();
   return ret;
 }
 
 Eigen::Matrix<double, 6, Eigen::Dynamic>
-PinocchioRobotSystem::GetLinkBodyJacobian(
-    const int link_idx, const pinocchio::ReferenceFrame &ref) {
+PinocchioRobotSystem::GetLinkBodyJacobian(const int link_idx) {
   pinocchio::computeJointJacobians(model_, data_, q_);
 
   Eigen::MatrixXd jac(6, n_qdot_);
-  pinocchio::getFrameJacobian(model_, data_, link_idx, ref, jac);
+  pinocchio::getFrameJacobian(model_, data_, link_idx, pinocchio::LOCAL, jac);
   Eigen::MatrixXd ret(6, n_qdot_);
   ret.topRows(3) = jac.bottomRows(3);
   ret.bottomRows(3) = jac.topRows(3);
   return ret;
 }
 
-Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkBodyJacobianDotQdot(
-    const int link_idx, const pinocchio::ReferenceFrame &ref) {
+Eigen::Matrix<double, 6, 1>
+PinocchioRobotSystem::GetLinkBodyJacobianDotQdot(const int link_idx) {
   pinocchio::forwardKinematics(model_, data_, q_, qdot_, 0 * qdot_);
-  pinocchio::Motion fa =
-      pinocchio::getFrameClassicalAcceleration(model_, data_, link_idx, ref);
+  pinocchio::Motion fa = pinocchio::getFrameClassicalAcceleration(
+      model_, data_, link_idx, pinocchio::LOCAL);
 
   Eigen::Matrix<double, 6, 1> ret;
   ret.segment(0, 3) = fa.angular();

@@ -32,7 +32,6 @@ public:
 
 private:
   DracoController *controller_;
-
   DracoStateProvider *sp_;
 
   void _InitializeParameters() override;

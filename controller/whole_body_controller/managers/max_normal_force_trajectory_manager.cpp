@@ -30,9 +30,10 @@ void MaxNormalForceTrajectoryManager::InitializeRampToMin(
 void MaxNormalForceTrajectoryManager::UpdateRampToMax(
     const double state_machine_time) {
   double rf_z_max = (state_machine_time <= interp_duration_)
-                        ? (fin_max_rf_z_ - init_max_rf_z_) / interp_duration_ *
-                              state_machine_time
-                        : max_rf_z_;
+                        ? init_max_rf_z_ + (fin_max_rf_z_ - init_max_rf_z_) /
+                                               interp_duration_ *
+                                               state_machine_time
+                        : fin_max_rf_z_;
 
   contact_->SetMaxFz(rf_z_max);
 }
@@ -40,9 +41,10 @@ void MaxNormalForceTrajectoryManager::UpdateRampToMax(
 void MaxNormalForceTrajectoryManager::UpdateRampToMin(
     const double state_machine_time) {
   double rf_z_max = (state_machine_time <= interp_duration_)
-                        ? (fin_max_rf_z_ - init_max_rf_z_) / interp_duration_ *
-                              state_machine_time
-                        : min_rf_z_;
+                        ? init_max_rf_z_ + (fin_max_rf_z_ - init_max_rf_z_) /
+                                               interp_duration_ *
+                                               state_machine_time
+                        : fin_max_rf_z_;
 
   contact_->SetMaxFz(rf_z_max);
 }

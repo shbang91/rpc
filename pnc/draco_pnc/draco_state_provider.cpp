@@ -7,6 +7,7 @@ DracoStateProvider *DracoStateProvider::GetStateProvider() {
 
 DracoStateProvider::DracoStateProvider() {
   servo_dt_ = 0.001;
+  count_ = 0;
   current_time_ = 0.;
 
   stance_foot_ = "l_foot_contact";

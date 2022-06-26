@@ -1,6 +1,7 @@
 #pragma once
 #include "util/util.hpp"
 
+// for wrench task -> in order of torque, force
 class ForceTask {
 public:
   ForceTask(const int dim)

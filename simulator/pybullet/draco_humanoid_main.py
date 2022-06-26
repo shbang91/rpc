@@ -230,7 +230,7 @@ def set_init_config_pybullet_robot(robot):
     pb.resetJointState(robot, DracoJointIdx.r_elbow_fe, -np.pi / 2, 0.)
 
     # Lowerbody
-    hip_yaw_angle = 5
+    hip_yaw_angle = 0
     pb.resetJointState(robot, DracoJointIdx.l_hip_aa,
                        np.radians(hip_yaw_angle), 0.)
     pb.resetJointState(robot, DracoJointIdx.l_hip_fe, -np.pi / 4, 0.)
@@ -383,6 +383,13 @@ while (True):
     rpc_draco_sensor_data.b_lf_contact_ = b_lf_contact
     rpc_draco_sensor_data.b_rf_contact_ = b_rf_contact
 
+    ##Debugging
+    # l_foot_contact_link = pb.getLinkState(draco_humanoid,
+    # DracoLinkIdx.l_foot_contact, 1, 1)
+    # print("pybullet l_foot_conact iso")
+    # print(l_foot_contact_link[0])
+    # print(l_foot_contact_link[1])
+
     ##compute control command
     rpc_draco_interface.GetCommand(rpc_draco_sensor_data, rpc_draco_command)
 
@@ -391,11 +398,16 @@ while (True):
     rpc_joint_pos_command = rpc_draco_command.joint_pos_cmd_
     rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
 
+    ##TEST
+    # print(rpc_joint_pos_command)
+    # exit()
+    ##TEST
+
     #apply command to pybullet robot
     apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
 
-    print("trq command printout")
-    print(rpc_trq_command)
+    # print("trq command printout")
+    # print(rpc_trq_command)
     # print("jpos command printout")
     # print(rpc_joint_pos_command)
     # print("jpos command printout")

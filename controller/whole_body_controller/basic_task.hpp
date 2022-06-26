@@ -38,7 +38,7 @@ private:
 
 class LinkPosTask : public Task {
 public:
-  LinkPosTask(PinocchioRobotSystem *robot, int target_link);
+  LinkPosTask(PinocchioRobotSystem *robot, int target_idx);
   virtual ~LinkPosTask() = default;
 
   void UpdateOpCommand() override;
@@ -52,7 +52,7 @@ private:
 
 class LinkOriTask : public Task {
 public:
-  LinkOriTask(PinocchioRobotSystem *robot, int target_link);
+  LinkOriTask(PinocchioRobotSystem *robot, int target_idx);
   virtual ~LinkOriTask() = default;
 
   void UpdateOpCommand() override;

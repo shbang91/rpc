@@ -10,6 +10,7 @@ DracoStateProvider *DracoStateProvider::GetStateProvider() {
 
 DracoStateProvider::DracoStateProvider() {
   util::PrettyConstructor(1, "DracoStateProvider");
+  count_ = 0;
   current_time_ = 0.;
 
   stance_foot_ = draco_link::l_foot_contact;

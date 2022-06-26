@@ -9,24 +9,18 @@ EndEffectorTrajectoryManager::EndEffectorTrajectoryManager(
 }
 
 void EndEffectorTrajectoryManager::UseCurrent() {
-  // pos desired
-  // Eigen::VectorXd des_pos = Eigen::VectorXd::Zero(3);
-  // Eigen::VectorXd des_vel = Eigen::VectorXd::Zero(3);
 
-  // Eigen::VectorXd des_ori = Eigen::VectorXd::Zero(4);
-  // Eigen::VectorXd des_ang_vel = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_pos(3);
+  des_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
+  Eigen::VectorXd des_vel(3);
+  des_vel << robot_->GetLinkSpatialVel(pos_task_->TargetIdx()).tail<3>();
 
-  // TODO: check
-  Eigen::VectorXd des_pos =
-      robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
-  Eigen::VectorXd des_vel =
-      robot_->GetLinkSpatialVel(pos_task_->TargetIdx()).tail<3>();
   Eigen::Quaterniond des_ori_quat(
       robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear());
-  Eigen::VectorXd des_ang_vel =
-      robot_->GetLinkSpatialVel(ori_task_->TargetIdx()).head<3>();
-
-  Eigen::VectorXd des_ori(des_ori_quat.coeffs());
+  Eigen::VectorXd des_ori(4);
+  des_ori << des_ori_quat.normalized().coeffs();
+  Eigen::VectorXd des_ang_vel(3);
+  des_ang_vel << robot_->GetLinkSpatialVel(ori_task_->TargetIdx()).head<3>();
 
   pos_task_->UpdateDesired(des_pos, des_vel, Eigen::VectorXd::Zero(3));
   ori_task_->UpdateDesired(des_ori, des_ang_vel, Eigen::VectorXd::Zero(3));

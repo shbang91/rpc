@@ -17,8 +17,8 @@ void DracoRollingJointConstraint::UpdateJacobian() {
 
   jacobian_(0, l_knee_fe_jp) = -1.;
   jacobian_(0, l_knee_fe_jd) = 1.;
-  jacobian_(0, r_knee_fe_jp) = -1.;
-  jacobian_(0, r_knee_fe_jd) = 1.;
+  jacobian_(1, r_knee_fe_jp) = -1.;
+  jacobian_(1, r_knee_fe_jd) = 1.;
 }
 
 void DracoRollingJointConstraint::UpdateJacobianDotQdot() {

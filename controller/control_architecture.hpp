@@ -13,16 +13,16 @@ public:
   virtual void GetCommand(void *command) = 0;
 
   // getter
-  const int GetStateId() const { return this->state_; }
-  const int GetPrevStateId() const { return this->prev_state_; }
+  StateId State() const { return this->state_; }
+  StateId PrevState() const { return this->prev_state_; }
 
 protected:
   PinocchioRobotSystem *robot_;
   bool b_state_first_visit_;
 
   std::unordered_map<StateId, StateMachine *> state_machine_container_;
-  int state_;
-  int prev_state_;
+  StateId state_;
+  StateId prev_state_;
 
   YAML::Node cfg_;
   virtual void _InitializeParameters() = 0;

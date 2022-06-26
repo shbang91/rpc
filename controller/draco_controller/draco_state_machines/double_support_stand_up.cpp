@@ -27,7 +27,6 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
 }
 
 void DoubleSupportStandUp::FirstVisit() {
-  std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
   // desired com & orientation setting
@@ -68,7 +67,7 @@ void DoubleSupportStandUp::FirstVisit() {
 }
 
 void DoubleSupportStandUp::OneStep() {
-  state_machine_time_ = sp_->current_time_ - state_machine_time_;
+  state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 

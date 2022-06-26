@@ -33,7 +33,7 @@ SelectedJointTask::SelectedJointTask(
 }
 
 void SelectedJointTask::UpdateOpCommand() {
-  for (unsigned int i = 0; i < dim_; ++i) {
+  for (int i = 0; i < dim_; ++i) {
     pos_[i] = robot_->GetQ()(robot_->GetQIdx(joint_idx_container_[i]));
     pos_err_[i] = des_pos_[i] - pos_[i];
 
@@ -45,7 +45,7 @@ void SelectedJointTask::UpdateOpCommand() {
 }
 
 void SelectedJointTask::UpdateJacobian() {
-  for (unsigned int i = 0; i < dim_; ++i) {
+  for (int i = 0; i < dim_; ++i) {
     int idx = robot_->GetQdotIdx(joint_idx_container_[i]);
     jacobian_(i, idx) = 1.;
   }
@@ -56,71 +56,71 @@ void SelectedJointTask::UpdateJacobianDotQdot() {
 }
 
 std::vector<int> SelectedJointTask::JointIdxContainer() {
-  return this->joint_idx_container_;
+  return joint_idx_container_;
 }
 
 // Link Position Task
-LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_link_idx)
+LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
 
-  target_link_idx_ = target_link_idx;
+  target_idx_ = target_idx;
 }
 
 void LinkPosTask::UpdateOpCommand() {
-  pos_ = robot_->GetLinkIsometry(target_link_idx_).translation();
+  pos_ = robot_->GetLinkIsometry(target_idx_).translation();
   pos_err_ = des_pos_ - pos_;
 
-  vel_ = robot_->GetLinkSpatialVel(target_link_idx_).tail(dim_);
+  vel_ = robot_->GetLinkSpatialVel(target_idx_).tail(dim_);
   vel_err_ = des_vel_ - vel_;
 
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void LinkPosTask::UpdateJacobian() {
-  jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
+  jacobian_ = robot_->GetLinkJacobian(target_idx_)
                   .block(dim_, 0, dim_, robot_->NumQdot());
 }
 
 void LinkPosTask::UpdateJacobianDotQdot() {
-  jacobian_dot_q_dot_ =
-      robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
+  jacobian_dot_q_dot_ = robot_->GetLinkJacobianDotQdot(target_idx_).tail(dim_);
 }
 
 // Link Orientation Task
-LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_link_idx)
+LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
-  target_link_idx_ = target_link_idx;
+  target_idx_ = target_idx;
+  des_pos_.resize(4); // quaternion
+  pos_.resize(4);     // quaternion
 }
 
 void LinkOriTask::UpdateOpCommand() {
-  Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_link_idx_).linear());
+  Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
 
   util::AvoidQuatJump(des_quat, quat);
+  pos_ << quat.normalized().coeffs();
 
   Eigen::Quaterniond quat_err = des_quat * quat.inverse();
 
-  pos_ << quat.w(), quat.vec();
   Eigen::Vector3d so3 = util::QuatToExp(quat_err);
   for (int i = 0; i < 3; ++i) {
     pos_err_[i] = so3[i];
   }
 
-  vel_ = robot_->GetLinkSpatialVel(target_link_idx_).head(dim_);
+  vel_ = robot_->GetLinkSpatialVel(target_idx_).head(dim_);
   vel_err_ = des_vel_ - vel_;
 
   op_cmd_ = des_acc_ = kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void LinkOriTask::UpdateJacobian() {
-  jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
-                  .block(0, 0, dim_, robot_->NumQdot());
+  jacobian_ =
+      robot_->GetLinkJacobian(target_idx_).block(0, 0, dim_, robot_->NumQdot());
 }
 
 void LinkOriTask::UpdateJacobianDotQdot() {
-  jacobian_dot_q_dot_ =
-      robot_->GetLinkJacobianDotQdot(target_link_idx_).head(dim_);
+  jacobian_dot_q_dot_ = robot_->GetLinkJacobianDotQdot(target_idx_).head(dim_);
 }
 
 // Robot Center of Mass Task

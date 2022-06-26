@@ -7,7 +7,9 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
 
-DracoInterface::DracoInterface() : Interface() {
+#include "controller/draco_controller/draco_definition.hpp"
+
+DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   std::string border = "=";
   for (unsigned int i = 0; i < 79; ++i)
     border += "=";
@@ -39,9 +41,10 @@ DracoInterface::~DracoInterface() {
 }
 
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
+  sp_->count_ = count_;
   sp_->current_time_ = static_cast<double>(count_) * sp_->servo_dt_;
-  sp_->state_ = ctrl_arch_->GetStateId();
-  sp_->prev_state_ = ctrl_arch_->GetPrevStateId();
+  sp_->state_ = ctrl_arch_->State();
+  sp_->prev_state_ = ctrl_arch_->PrevState();
 
   DracoSensorData *draco_sensor_data =
       static_cast<DracoSensorData *>(sensor_data);
@@ -49,18 +52,47 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   if (count_ <= waiting_count_) {
     // for simulation without state estimator
-    // se_->UpdateGroundTruthSensorData(draco_sensor_data);
-    se_->InitializeSensorData(draco_sensor_data);
+    se_->UpdateGroundTruthSensorData(draco_sensor_data);
+    // se_->InitializeSensorData(draco_sensor_data);
     this->_SafeCommand(draco_sensor_data, draco_command);
+
+    // TEST
+    // std::cout << "rpc l_foot_contact iso" << std::endl;
+    // std::cout << robot_->GetLinkIsometry(draco_link::l_foot_contact)
+    //.translation()
+    //.transpose()
+    //<< std::endl;
+    // std::cout
+    //<< Eigen::Quaterniond(
+    // robot_->GetLinkIsometry(draco_link::l_foot_contact).linear())
+    //.coeffs()
+    //.transpose()
+    //<< std::endl;
   } else {
-    se_->UpdateSensorData(draco_sensor_data);
+    // for simulation without state estimator
+    se_->UpdateGroundTruthSensorData(draco_sensor_data);
+    // se_->UpdateSensorData(draco_sensor_data);
     ctrl_arch_->GetCommand(draco_command);
+
+    // TEST
+    // std::cout << "rpc l_foot_contact iso" << std::endl;
+    // std::cout << robot_->GetLinkIsometry(draco_link::l_foot_contact)
+    //.translation()
+    //.transpose()
+    //<< std::endl;
+    // std::cout
+    //<< Eigen::Quaterniond(
+    // robot_->GetLinkIsometry(draco_link::l_foot_contact).linear())
+    //.coeffs()
+    //.transpose()
+    //<< std::endl;
   }
 
   DracoDataManager *dm = DracoDataManager::GetDataManager();
   dm->data_->time_ = sp_->current_time_;
   dm->SendData();
 
+  std::cout << "count: " << count_ << std::endl;
   ++count_;
 }
 

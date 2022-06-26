@@ -9,6 +9,7 @@ public:
   // servo dt should be set outside of controller
   double servo_dt_;
 
+  int count_;
   double current_time_;
 
   int stance_foot_;

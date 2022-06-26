@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 from plot.helper import plot_vector_traj
 import ipdb
 
+st_idx = 10
+
 #read pkl data & save the data in containers
 time = []
 
@@ -51,33 +53,35 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
         except EOFError:
             break
 
-time = np.array(time)
+time = np.array(time)[st_idx:]
 
-base_joint_pos = np.stack(base_joint_pos, axis=0)
-base_joint_ori = np.stack(base_joint_ori, axis=0)
-base_joint_lin_vel = np.stack(base_joint_lin_vel, axis=0)
-base_joint_ang_vel = np.stack(base_joint_ang_vel, axis=0)
+base_joint_pos = np.stack(base_joint_pos, axis=0)[st_idx:, :]
+base_joint_ori = np.stack(base_joint_ori, axis=0)[st_idx:, :]
+base_joint_lin_vel = np.stack(base_joint_lin_vel, axis=0)[st_idx:, :]
+base_joint_ang_vel = np.stack(base_joint_ang_vel, axis=0)[st_idx:, :]
 
-est_base_joint_pos = np.stack(est_base_joint_pos, axis=0)
-est_base_joint_ori = np.stack(est_base_joint_ori, axis=0)
-est_base_joint_lin_vel = np.stack(est_base_joint_lin_vel, axis=0)
-est_base_joint_ang_vel = np.stack(est_base_joint_ang_vel, axis=0)
+est_base_joint_pos = np.stack(est_base_joint_pos, axis=0)[st_idx:, :]
+est_base_joint_ori = np.stack(est_base_joint_ori, axis=0)[st_idx:, :]
+est_base_joint_lin_vel = np.stack(est_base_joint_lin_vel, axis=0)[st_idx:, :]
+est_base_joint_ang_vel = np.stack(est_base_joint_ang_vel, axis=0)[st_idx:, :]
 
-plot_vector_traj(time, base_joint_pos, None, ['x', 'y', 'z'], 'g',
-                 'base_joint_pos')
-plot_vector_traj(time, base_joint_ori, None, ['x', 'y', 'z', 'w'], 'g',
-                 'base_joint_ori')
-plot_vector_traj(time, base_joint_lin_vel, None, ['x', 'y', 'z'], 'g',
-                 'base_joint_lin_vel')
-plot_vector_traj(time, base_joint_ang_vel, None, ['x', 'y', 'z'], 'g',
-                 'base_joint_ang_vel')
+axes = plot_vector_traj(time, base_joint_pos, None, ['x', 'y', 'z'], 'g',
+                        'base_joint_pos')
+plot_vector_traj(time, est_base_joint_pos, None, ['x', 'y', 'z'], 'k', None,
+                 axes)
 
-plot_vector_traj(time, est_base_joint_pos, None, ['x', 'y', 'z'], 'g',
-                 'est_base_joint_pos')
-plot_vector_traj(time, est_base_joint_ori, None, ['x', 'y', 'z', 'w'], 'g',
-                 'est_base_joint_ori')
-plot_vector_traj(time, est_base_joint_lin_vel, None, ['x', 'y', 'z'], 'g',
-                 'est_base_joint_lin_vel')
-plot_vector_traj(time, est_base_joint_ang_vel, None, ['x', 'y', 'z'], 'g',
-                 'est_base_joint_ang_vel')
+axes = plot_vector_traj(time, base_joint_ori, None, ['x', 'y', 'z', 'w'], 'g',
+                        'base_joint_ori')
+plot_vector_traj(time, est_base_joint_ori, None, ['x', 'y', 'z', 'w'], 'k',
+                 None, axes)
+
+axes = plot_vector_traj(time, base_joint_lin_vel, None, ['x', 'y', 'z'], 'g',
+                        'base_joint_lin_vel')
+plot_vector_traj(time, est_base_joint_lin_vel, None, ['x', 'y', 'z'], 'k',
+                 None, axes)
+
+axes = plot_vector_traj(time, base_joint_ang_vel, None, ['x', 'y', 'z'], 'g',
+                        'base_joint_ang_vel')
+plot_vector_traj(time, est_base_joint_ang_vel, None, ['x', 'y', 'z'], 'k',
+                 None, axes)
 plt.show()

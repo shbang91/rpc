@@ -9,9 +9,13 @@
 DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
     : robot_(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
       global_leg_odometry_(Eigen::Vector3d::Zero()),
-      prev_base_joint_pos_(Eigen::Vector3d::Zero()) {
+      prev_base_joint_pos_(Eigen::Vector3d::Zero()), b_first_visit_(true) {
   util::PrettyConstructor(1, "DracoStateEstimator");
   sp_ = DracoStateProvider::GetStateProvider();
+
+  R_imu_base_com_ =
+      robot_->GetLinkIsometry(draco_link::torso_imu).linear().transpose() *
+      robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
 }
 
 void DracoStateEstimator::InitializeSensorData(DracoSensorData *sensor_data) {
@@ -21,23 +25,15 @@ void DracoStateEstimator::InitializeSensorData(DracoSensorData *sensor_data) {
 void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
 
   // Estimate floating base orientation
-  static bool b_first_visit(true);
-  if (b_first_visit) {
-    R_imu_base_com_ =
-        robot_->GetLinkIsometry(draco_link::torso_imu).linear().transpose() *
-        robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
-    b_first_visit = false;
-  }
-
   Eigen::Quaterniond imu_quat(
-      sensor_data->imu_frame_quat_(3), sensor_data->imu_frame_quat_(0),
-      sensor_data->imu_frame_quat_(1), sensor_data->imu_frame_quat_(2));
+      sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
+      sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
   Eigen::Matrix3d base_joint_ori =
       imu_quat.normalized().toRotationMatrix() * R_imu_base_com_;
 
   // Update robot model only with base orientation
   robot_->UpdateRobotModel(
-      Eigen::Vector3d::Zero(), Eigen::Quaterniond(base_joint_ori),
+      Eigen::Vector3d::Zero(), Eigen::Quaterniond(base_joint_ori).normalized(),
       Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
       sensor_data->joint_pos_, sensor_data->joint_vel_, true);
 
@@ -57,10 +53,9 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   // estimate position
   Eigen::Vector3d base_joint_pos = global_leg_odometry_ - anchor_frame_pos;
 
-  static bool first_visit2(true);
-  if (first_visit2) {
+  if (b_first_visit_) {
     prev_base_joint_pos_ = base_joint_pos;
-    first_visit2 = false;
+    b_first_visit_ = false;
   }
 
   // estimate base linear velocity
@@ -72,10 +67,10 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   prev_base_joint_pos_ = base_joint_pos;
 
   // Update robot model with full estimate
-  robot_->UpdateRobotModel(base_joint_pos, Eigen::Quaterniond(base_joint_ori),
-                           base_joint_lin_vel, sensor_data->imu_ang_vel_,
-                           sensor_data->joint_pos_, sensor_data->joint_vel_,
-                           true);
+  robot_->UpdateRobotModel(
+      base_joint_pos, Eigen::Quaterniond(base_joint_ori).normalized(),
+      base_joint_lin_vel, sensor_data->imu_ang_vel_, sensor_data->joint_pos_,
+      sensor_data->joint_vel_, true);
 
   // foot contact switch
   sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
@@ -87,10 +82,14 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   DracoDataManager *dm = DracoDataManager::GetDataManager();
   dm->data_->est_base_joint_pos_ = base_joint_pos;
   Eigen::Quaterniond base_joint_quat(base_joint_ori);
-  dm->data_->est_base_joint_ori_ << base_joint_quat.x(), base_joint_quat.y(),
-      base_joint_quat.z(), base_joint_quat.w();
+  dm->data_->est_base_joint_ori_ << base_joint_quat.normalized().coeffs();
   dm->data_->est_base_joint_lin_vel_ = base_joint_lin_vel;
   dm->data_->est_base_joint_ang_vel_ = sensor_data->imu_ang_vel_;
+
+  dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
+  dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
+  dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
+  dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
 
   // compute dcm
   this->_ComputeDCM();
@@ -115,11 +114,11 @@ void DracoStateEstimator::_ComputeDCM() {
 void DracoStateEstimator::UpdateGroundTruthSensorData(
     DracoSensorData *sensor_data) {
   Eigen::Vector4d base_joint_ori = sensor_data->base_joint_quat_;
-  Eigen::Quaterniond base_joint_quat(base_joint_ori(3), base_joint_ori(0),
-                                     base_joint_ori(1), base_joint_ori(2));
+  Eigen::Quaterniond base_joint_quat(base_joint_ori[3], base_joint_ori[0],
+                                     base_joint_ori[1], base_joint_ori[2]);
 
   robot_->UpdateRobotModel(
-      sensor_data->base_joint_pos_, base_joint_quat,
+      sensor_data->base_joint_pos_, base_joint_quat.normalized(),
       sensor_data->base_joint_lin_vel_, sensor_data->base_joint_ang_vel_,
       sensor_data->joint_pos_, sensor_data->joint_vel_, true);
 

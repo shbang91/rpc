@@ -33,27 +33,27 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   int num_active(std::count(act_list.begin(), act_list.end(), true));
   int num_passive(num_qdot - num_active - num_float);
 
-  Eigen::MatrixXd Sa = Eigen::MatrixXd::Zero(num_active, num_qdot);
-  Eigen::MatrixXd Sf = Eigen::MatrixXd::Zero(num_float, num_qdot);
-  Eigen::MatrixXd Sv = Eigen::MatrixXd::Zero(num_passive, num_qdot);
+  Eigen::MatrixXd sa = Eigen::MatrixXd::Zero(num_active, num_qdot);
+  Eigen::MatrixXd sf = Eigen::MatrixXd::Zero(num_float, num_qdot);
+  Eigen::MatrixXd sv = Eigen::MatrixXd::Zero(num_passive, num_qdot);
 
   int j(0), k(0), e(0);
   for (int i(0); i < act_list.size(); ++i) {
     if (act_list[i]) {
-      Sa(j, i) = 1.;
+      sa(j, i) = 1.;
       ++j;
     } else {
       if (i < num_float) {
-        Sf(k, i) = 1.;
+        sf(k, i) = 1.;
         ++k;
       } else {
-        Sv(e, i) = 1.;
+        sv(e, i) = 1.;
         ++e;
       }
     }
   }
 
-  ihwbc_ = new IHWBC(Sa, &Sf, &Sv);
+  ihwbc_ = new IHWBC(sa, &sf, &sv);
 
   // initialize iwbc parameters
   cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
@@ -74,13 +74,13 @@ void DracoController::GetCommand(void *command) {
   } else {
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
-    for (const auto &task : tci_container_->task_container_) {
-      task->UpdateOpCommand();
+    for (auto task : tci_container_->task_container_) {
       task->UpdateJacobian();
       task->UpdateJacobianDotQdot();
+      task->UpdateOpCommand();
     }
     int rf_dim(0);
-    for (const auto &contact : tci_container_->contact_container_) {
+    for (auto contact : tci_container_->contact_container_) {
       contact->UpdateJacobian();
       contact->UpdateJacobianDotQdot();
       contact->UpdateConeConstraint();
@@ -89,7 +89,7 @@ void DracoController::GetCommand(void *command) {
     // iterate once b/c jacobian does not change at all depending on
     // configuration
     if (b_int_constrinat_first_visit_) {
-      for (const auto &internal_constraint :
+      for (auto internal_constraint :
            tci_container_->internal_constraint_container_) {
         internal_constraint->UpdateJacobian();
         internal_constraint->UpdateJacobianDotQdot();
@@ -107,18 +107,30 @@ void DracoController::GetCommand(void *command) {
 
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
 
-    Eigen::VectorXd qddot_cmd(robot_->NumQdot());
-    Eigen::VectorXd rf_cmd(rf_dim);
-    Eigen::VectorXd trq_cmd(robot_->NumActiveDof());
+    Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
+    Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
+    Eigen::VectorXd wbc_trq_cmd = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 
-    ihwbc_->Solve(
-        tci_container_->task_container_, tci_container_->contact_container_,
-        tci_container_->internal_constraint_container_,
-        tci_container_->force_task_container_, qddot_cmd, rf_cmd, trq_cmd);
+    ihwbc_->Solve(tci_container_->task_container_,
+                  tci_container_->contact_container_,
+                  tci_container_->internal_constraint_container_,
+                  tci_container_->force_task_container_, wbc_qddot_cmd,
+                  wbc_rf_cmd, wbc_trq_cmd);
+
+    Eigen::MatrixXd sa = ihwbc_->Sa();
+    Eigen::VectorXd joint_trq_cmd =
+        sa.rightCols(sa.cols() - 6).transpose() * wbc_trq_cmd;
+
+    std::cout << "wbc qddot:" << std::endl;
+    std::cout << wbc_qddot_cmd << std::endl;
+    std::cout << "wbc rf cmd: " << std::endl;
+    std::cout << wbc_rf_cmd << std::endl;
+    std::cout << "jtrq cmd" << std::endl;
+    std::cout << joint_trq_cmd << std::endl;
 
     // TODO: joint integrator for real experiment
 
-    static_cast<DracoCommand *>(command)->joint_trq_cmd_ = ihwbc_->TrqCommand();
+    static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd;
   }
 }
 

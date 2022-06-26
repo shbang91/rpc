@@ -78,6 +78,19 @@ public:
 
   int TargetIdx() const { return target_idx_; }
 
+  // Debug
+  void Debug() {
+    std::cout << "=================================" << std::endl;
+    std::cout << "des_xddot: " << op_cmd_.transpose() << std::endl;
+    std::cout << "pos_err: " << pos_err_.transpose() << std::endl;
+    std::cout << "des_pos: " << des_pos_.transpose() << std::endl;
+    std::cout << "pos: " << pos_.transpose() << std::endl;
+    std::cout << "vel_err: " << vel_err_.transpose() << std::endl;
+    std::cout << "des_vel: " << des_vel_.transpose() << std::endl;
+    std::cout << "vel: " << vel_.transpose() << std::endl;
+    std::cout << "task_weight: " << weight_.transpose() << std::endl;
+  }
+
 protected:
   PinocchioRobotSystem *robot_;
   int dim_;

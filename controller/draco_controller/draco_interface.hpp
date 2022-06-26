@@ -58,5 +58,5 @@ private:
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
 
-  static constexpr int waiting_count_ = 10;
+  int waiting_count_;
 };

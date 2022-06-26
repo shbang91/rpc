@@ -26,4 +26,6 @@ private:
 
   Eigen::Vector3d global_leg_odometry_;
   Eigen::Vector3d prev_base_joint_pos_;
+
+  bool b_first_visit_;
 };
