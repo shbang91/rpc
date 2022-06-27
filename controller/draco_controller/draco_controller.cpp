@@ -119,12 +119,12 @@ void DracoController::GetCommand(void *command) {
     // Eigen::VectorXd joint_trq_cmd =
     // sa.rightCols(sa.cols() - 6).transpose() * wbc_trq_cmd;
 
-    std::cout << "wbc qddot:" << std::endl;
-    std::cout << wbc_qddot_cmd.transpose() << std::endl;
-    std::cout << "wbc rf cmd: " << std::endl;
-    std::cout << wbc_rf_cmd.transpose() << std::endl;
-    std::cout << "jtrq cmd" << std::endl;
-    std::cout << wbc_trq_cmd.transpose() << std::endl;
+    // std::cout << "wbc qddot:" << std::endl;
+    // std::cout << wbc_qddot_cmd.transpose() << std::endl;
+    // std::cout << "wbc rf cmd: " << std::endl;
+    // std::cout << wbc_rf_cmd.transpose() << std::endl;
+    // std::cout << "jtrq cmd" << std::endl;
+    // std::cout << wbc_trq_cmd.transpose() << std::endl;
 
     // TODO: joint integrator for real experiment
 

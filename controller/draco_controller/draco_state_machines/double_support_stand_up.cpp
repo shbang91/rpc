@@ -65,14 +65,6 @@ void DoubleSupportStandUp::FirstVisit() {
       rf_z_max_interp_duration_);
   ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
-
-  // TEST
-  // std::cout << "joint pos" << std::endl;
-  // std::cout << robot_->GetJointPos() << std::endl;
-
-  // std::cout << "l foot jac" << std::endl;
-  // std::cout << robot_->GetLinkJacobian(draco_link::l_foot_contact) <<
-  // std::endl; exit(0);
 }
 
 void DoubleSupportStandUp::OneStep() {

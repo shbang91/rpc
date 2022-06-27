@@ -54,8 +54,6 @@ void PinocchioRobotSystem::_Initialize() {
        i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
     total_mass_ += model_.inertias[i].mass();
     std::string joint_name = model_.names[i];
-    std::cout << "joint idx order" << std::endl;
-
     if (joint_name != "universe" && joint_name != "root_joint")
       joint_idx_map_[i - 2] = joint_name; // joint map excluding fixed joint
   }
@@ -167,7 +165,7 @@ Eigen::Isometry3d PinocchioRobotSystem::GetLinkIsometry(const int link_idx) {
 
 Eigen::Matrix<double, 6, 1>
 PinocchioRobotSystem::GetLinkSpatialVel(const int link_idx) const {
-  Eigen::Matrix<double, 6, 1> ret;
+  Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
   pinocchio::Motion fv = pinocchio::getFrameVelocity(
       model_, data_, link_idx, pinocchio::LOCAL_WORLD_ALIGNED);
   ret.head<3>() = fv.angular();
@@ -179,10 +177,12 @@ Eigen::Matrix<double, 6, Eigen::Dynamic>
 PinocchioRobotSystem::GetLinkJacobian(const int link_idx) {
   pinocchio::computeJointJacobians(model_, data_, q_);
 
-  Eigen::MatrixXd jac(6, n_qdot_);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jac =
+      Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
   pinocchio::getFrameJacobian(model_, data_, link_idx,
                               pinocchio::LOCAL_WORLD_ALIGNED, jac);
-  Eigen::MatrixXd ret(6, n_qdot_);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> ret =
+      Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
   ret.topRows(3) = jac.bottomRows(3);
   ret.bottomRows(3) = jac.topRows(3);
   return ret;
@@ -194,7 +194,7 @@ PinocchioRobotSystem::GetLinkJacobianDotQdot(const int link_idx) {
   pinocchio::Motion fa = pinocchio::getFrameClassicalAcceleration(
       model_, data_, link_idx, pinocchio::LOCAL_WORLD_ALIGNED);
 
-  Eigen::Matrix<double, 6, 1> ret;
+  Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
   ret.segment(0, 3) = fa.angular();
   ret.segment(3, 3) = fa.linear();
 
@@ -203,7 +203,7 @@ PinocchioRobotSystem::GetLinkJacobianDotQdot(const int link_idx) {
 
 Eigen::Matrix<double, 6, 1>
 PinocchioRobotSystem::GetLinkBodySpatialVel(const int link_idx) const {
-  Eigen::Matrix<double, 6, 1> ret;
+  Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
   pinocchio::Motion fv =
       pinocchio::getFrameVelocity(model_, data_, link_idx, pinocchio::LOCAL);
   ret.segment(0, 3) = fv.angular();
@@ -215,9 +215,11 @@ Eigen::Matrix<double, 6, Eigen::Dynamic>
 PinocchioRobotSystem::GetLinkBodyJacobian(const int link_idx) {
   pinocchio::computeJointJacobians(model_, data_, q_);
 
-  Eigen::MatrixXd jac(6, n_qdot_);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jac =
+      Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
   pinocchio::getFrameJacobian(model_, data_, link_idx, pinocchio::LOCAL, jac);
-  Eigen::MatrixXd ret(6, n_qdot_);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> ret =
+      Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
   ret.topRows(3) = jac.bottomRows(3);
   ret.bottomRows(3) = jac.topRows(3);
   return ret;
@@ -229,7 +231,7 @@ PinocchioRobotSystem::GetLinkBodyJacobianDotQdot(const int link_idx) {
   pinocchio::Motion fa = pinocchio::getFrameClassicalAcceleration(
       model_, data_, link_idx, pinocchio::LOCAL);
 
-  Eigen::Matrix<double, 6, 1> ret;
+  Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
   ret.segment(0, 3) = fa.angular();
   ret.segment(3, 3) = fa.linear();
 
@@ -301,17 +303,16 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
               << std::endl;
   }
   std::cout << "============ draco joint ================" << std::endl;
-  for (pinocchio::JointIndex i = 1;
-       i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
-    std::cout << "constexpr int " << model_.names[i] << " = "
-              << model_.getJointId(model_.names[i]) << ";" << std::endl;
-  }
-  // for (auto iter = joint_idx_map_.begin(); iter != joint_idx_map_.end();
-  //++iter) {
-  // std::cout << "constexpr int " << iter->second << " = " << iter->first <<
-  // ";"
-  //<< std::endl;
+  // for (pinocchio::JointIndex i = 1;
+  // i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
+  // std::cout << "constexpr int " << model_.names[i] << " = "
+  //<< model_.getJointId(model_.names[i]) << ";" << std::endl;
   //}
+  for (auto iter = joint_idx_map_.begin(); iter != joint_idx_map_.end();
+       ++iter) {
+    std::cout << "constexpr int " << iter->second << " = " << iter->first << ";"
+              << std::endl;
+  }
 
   std::cout << "============ draco ================" << std::endl;
   std::cout << "constexpr int n_qdot = " << qdot_.size() << ";" << std::endl;

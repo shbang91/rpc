@@ -7,7 +7,7 @@ class Config(object):
     INITIAL_BASE_JOINT_POS = [0., 0., 1.5 - 0.757]
     INITIAL_BASE_JOINT_QUAT = [0., 0., 0.7071, 0.7071]
 
-    PRINT_ROBOT_INFO = True
+    PRINT_ROBOT_INFO = False
 
 
 class DracoLinkIdx(object):

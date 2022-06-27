@@ -389,15 +389,6 @@ while (True):
     rpc_draco_sensor_data.b_rf_contact_ = b_rf_contact
 
     ##Debugging
-    l_foot_contact_link = pb.getLinkState(draco_humanoid,
-                                          DracoLinkIdx.l_foot_contact, 1, 1)
-    print("=================Pybullet=====================")
-    print(" l_foot_conact iso")
-    print(l_foot_contact_link[0])
-    print(l_foot_contact_link[1])
-    print("l_foot_vel")
-    print(l_foot_contact_link[6])
-    print(l_foot_contact_link[7])
 
     ##compute control command
     rpc_draco_interface.GetCommand(rpc_draco_sensor_data, rpc_draco_command)
@@ -406,11 +397,6 @@ while (True):
     rpc_trq_command = rpc_draco_command.joint_trq_cmd_
     rpc_joint_pos_command = rpc_draco_command.joint_pos_cmd_
     rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
-
-    ##TEST
-    # print(rpc_joint_pos_command)
-    # exit()
-    ##TEST
 
     #apply command to pybullet robot
     apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
