@@ -54,6 +54,8 @@ void PinocchioRobotSystem::_Initialize() {
        i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
     total_mass_ += model_.inertias[i].mass();
     std::string joint_name = model_.names[i];
+    std::cout << "joint idx order" << std::endl;
+
     if (joint_name != "universe" && joint_name != "root_joint")
       joint_idx_map_[i - 2] = joint_name; // joint map excluding fixed joint
   }
@@ -299,16 +301,17 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
               << std::endl;
   }
   std::cout << "============ draco joint ================" << std::endl;
-  // for (pinocchio::JointIndex i = 1;
-  // i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
-  // std::cout << "constexpr int " << model_.names[i] << " = "
-  //<< model_.getJointId(model_.names[i]) << ";" << std::endl;
-  //}
-  for (auto iter = joint_idx_map_.begin(); iter != joint_idx_map_.end();
-       ++iter) {
-    std::cout << "constexpr int " << iter->second << " = " << iter->first << ";"
-              << std::endl;
+  for (pinocchio::JointIndex i = 1;
+       i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
+    std::cout << "constexpr int " << model_.names[i] << " = "
+              << model_.getJointId(model_.names[i]) << ";" << std::endl;
   }
+  // for (auto iter = joint_idx_map_.begin(); iter != joint_idx_map_.end();
+  //++iter) {
+  // std::cout << "constexpr int " << iter->second << " = " << iter->first <<
+  // ";"
+  //<< std::endl;
+  //}
 
   std::cout << "============ draco ================" << std::endl;
   std::cout << "constexpr int n_qdot = " << qdot_.size() << ";" << std::endl;

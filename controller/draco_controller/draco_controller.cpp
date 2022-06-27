@@ -104,39 +104,40 @@ void DracoController::GetCommand(void *command) {
     Eigen::MatrixXd Ainv = robot_->GetMassMatrix().inverse();
     Eigen::VectorXd cori = robot_->GetCoriolis();
     Eigen::VectorXd grav = robot_->GetGravity();
-
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
 
     Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
     Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
     Eigen::VectorXd wbc_trq_cmd = Eigen::VectorXd::Zero(robot_->NumActiveDof());
-
     ihwbc_->Solve(tci_container_->task_container_,
                   tci_container_->contact_container_,
                   tci_container_->internal_constraint_container_,
                   tci_container_->force_task_container_, wbc_qddot_cmd,
                   wbc_rf_cmd, wbc_trq_cmd);
 
-    Eigen::MatrixXd sa = ihwbc_->Sa();
-    Eigen::VectorXd joint_trq_cmd =
-        sa.rightCols(sa.cols() - 6).transpose() * wbc_trq_cmd;
+    // Eigen::MatrixXd sa = ihwbc_->Sa();
+    // Eigen::VectorXd joint_trq_cmd =
+    // sa.rightCols(sa.cols() - 6).transpose() * wbc_trq_cmd;
 
     std::cout << "wbc qddot:" << std::endl;
-    std::cout << wbc_qddot_cmd << std::endl;
+    std::cout << wbc_qddot_cmd.transpose() << std::endl;
     std::cout << "wbc rf cmd: " << std::endl;
-    std::cout << wbc_rf_cmd << std::endl;
+    std::cout << wbc_rf_cmd.transpose() << std::endl;
     std::cout << "jtrq cmd" << std::endl;
-    std::cout << joint_trq_cmd << std::endl;
+    std::cout << wbc_trq_cmd.transpose() << std::endl;
 
     // TODO: joint integrator for real experiment
 
-    static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd;
+    static_cast<DracoCommand *>(command)->joint_trq_cmd_ = wbc_trq_cmd;
   }
 }
 
 void DracoController::_InitializeParameters() {
   ihwbc_->SetParameters(cfg_["wbc"]);
   if (ihwbc_->IsTrqLimit()) {
+    std::cout << "------------------------------------" << std::endl;
+    std::cout << "Torque Limits are considred in WBC" << std::endl;
+    std::cout << "------------------------------------" << std::endl;
     Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit = robot_->TrqLimit();
     ihwbc_->SetTrqLimit(trq_limit);
   }

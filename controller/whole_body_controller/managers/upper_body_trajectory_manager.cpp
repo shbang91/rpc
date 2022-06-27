@@ -16,8 +16,7 @@ void UpperBodyTrajetoryManager::UseNominalUpperBodyJointPos(
 
   Eigen::VectorXd nominal_upper_body_jpos(upper_body_jidx.size());
   for (int i(0); i < upper_body_jidx.size(); ++i)
-    nominal_upper_body_jpos[i] =
-        robot_->GetQ()[robot_->GetQIdx(upper_body_jidx[i])];
+    nominal_upper_body_jpos[i] = nominal_jpos[upper_body_jidx[i]];
 
   upper_body_task_->UpdateDesired(
       nominal_upper_body_jpos, Eigen::VectorXd::Zero(upper_body_jidx.size()),

@@ -29,6 +29,9 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   // set control frequency
   sp_->servo_dt_ = util::ReadParameter<double>(cfg, "servo_dt");
 
+  sp_->b_lf_contact_ = true;
+  sp_->b_rf_contact_ = true;
+
   // initalize data publisher
   DracoDataManager::GetDataManager()->InitializeSocket(
       util::ReadParameter<std::string>(cfg, "ip_address"));
@@ -54,6 +57,29 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // for simulation without state estimator
     se_->UpdateGroundTruthSensorData(draco_sensor_data);
     // se_->InitializeSensorData(draco_sensor_data);
+    //  TEST
+    std::cout << "=====================PNC============================="
+              << std::endl;
+    Eigen::Isometry3d lfoot_iso =
+        robot_->GetLinkIsometry(draco_link::l_foot_contact);
+    std::cout << "==========PnC=============" << std::endl;
+    std::cout << lfoot_iso.translation().transpose() << std::endl;
+    std::cout << Eigen::Quaternion<double>(lfoot_iso.linear()).coeffs()
+              << std::endl;
+    std::cout << "foot jac at the very beginning phase" << std::endl;
+    std::cout << robot_->GetLinkJacobian(draco_link::l_foot_contact)
+              << std::endl;
+    std::cout << "jac x qdot" << std::endl;
+    std::cout << (robot_->GetLinkJacobian(draco_link::l_foot_contact) *
+                  robot_->GetQdot())
+                     .transpose()
+              << std::endl;
+
+    std::cout << "foot vel : " << std::endl;
+    std::cout
+        << (robot_->GetLinkSpatialVel(draco_link::l_foot_contact)).transpose()
+        << std::endl;
+
     this->_SafeCommand(draco_sensor_data, draco_command);
 
     // TEST
@@ -72,6 +98,30 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // for simulation without state estimator
     se_->UpdateGroundTruthSensorData(draco_sensor_data);
     // se_->UpdateSensorData(draco_sensor_data);
+
+    Eigen::Isometry3d lfoot_iso =
+        robot_->GetLinkIsometry(draco_link::l_foot_contact);
+    std::cout << "==========PnC=============" << std::endl;
+    std::cout << lfoot_iso.translation().transpose() << std::endl;
+    std::cout << Eigen::Quaternion<double>(lfoot_iso.linear()).coeffs()
+              << std::endl;
+
+    std::cout << "=====================PNC============================="
+              << std::endl;
+    std::cout << "foot jac at the very beginning phase" << std::endl;
+    std::cout << robot_->GetLinkJacobian(draco_link::l_foot_contact)
+              << std::endl;
+    std::cout << "jac x qdot" << std::endl;
+    std::cout << (robot_->GetLinkJacobian(draco_link::l_foot_contact) *
+                  robot_->GetQdot())
+                     .transpose()
+              << std::endl;
+
+    std::cout << "foot vel : " << std::endl;
+    std::cout
+        << (robot_->GetLinkSpatialVel(draco_link::l_foot_contact)).transpose()
+        << std::endl;
+
     ctrl_arch_->GetCommand(draco_command);
 
     // TEST
@@ -92,6 +142,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   dm->data_->time_ = sp_->current_time_;
   dm->SendData();
 
+  std::cout << "=====================done================" << std::endl;
   std::cout << "count: " << count_ << std::endl;
   ++count_;
 }

@@ -34,10 +34,10 @@ SelectedJointTask::SelectedJointTask(
 
 void SelectedJointTask::UpdateOpCommand() {
   for (int i = 0; i < dim_; ++i) {
-    pos_[i] = robot_->GetQ()(robot_->GetQIdx(joint_idx_container_[i]));
+    pos_[i] = robot_->GetQ()[robot_->GetQIdx(joint_idx_container_[i])];
     pos_err_[i] = des_pos_[i] - pos_[i];
 
-    vel_[i] = robot_->GetQdot()(robot_->GetQdotIdx(joint_idx_container_[i]));
+    vel_[i] = robot_->GetQdot()[robot_->GetQdotIdx(joint_idx_container_[i])];
     vel_err_[i] = des_vel_[i] - vel_[i];
 
     op_cmd_[i] = des_acc_[i] + kp_[i] * pos_err_[i] + kd_[i] * vel_err_[i];

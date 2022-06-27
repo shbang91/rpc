@@ -76,8 +76,12 @@ void IHWBC::Solve(
     Eigen::VectorXd des_xddot = task->OpCommand();
     Eigen::MatrixXd weight_mat = task->Weight().asDiagonal();
 
-    std::cout << "task jac: " << std::endl;
-    std::cout << jt << std::endl;
+    // std::cout
+    //<< "--------------------------------------------------------------"
+    //<< std::endl;
+    // std::cout << "jt" << std::endl;
+    // std::cout << jt << std::endl;
+
     // Debug Task
     // task->Debug();
 
@@ -107,15 +111,16 @@ void IHWBC::Solve(
     for (auto force_task : force_task_container) {
       // lfoot, rfoot order & wrench (torque, force order)
       Eigen::MatrixXd weight_mat = force_task->Weight().asDiagonal();
-      Eigen::VectorXd desired_rf = force_task->DesiredRf();
+      Eigen::VectorXd des_rf = force_task->DesiredRf();
       int dim = force_task->Dim();
 
       cost_rf_mat.block(row_idx, row_idx, dim, dim) = weight_mat;
-      cost_rf_vec.segment(row_idx, dim) = -desired_rf.transpose() * weight_mat;
+      cost_rf_vec.segment(row_idx, dim) = -des_rf.transpose() * weight_mat;
       row_idx += dim;
     }
     cost_rf_mat +=
-        lambda_rf_ * Eigen::MatrixXd::Identity(dim_contact_, dim_contact_);
+        lambda_rf_ *
+        Eigen::MatrixXd::Identity(dim_contact_, dim_contact_); // regularization
 
     cost_mat.topLeftCorner(cost_t_mat.rows(), cost_t_mat.cols()) = cost_t_mat;
     cost_mat.bottomRightCorner(cost_rf_mat.rows(), cost_rf_mat.cols()) =
@@ -132,17 +137,16 @@ void IHWBC::Solve(
   //=============================================================
 
   // internal constraints setup
-  Eigen::MatrixXd ji, ni,
-      sa_ni_trc_bar; // TODO: sa_ni_trc_bar using just pseudo inv (not
-                     // dynamically consistent pseudo inv)
-  Eigen::VectorXd jidot_qdot_vec, ji_transpose_lambda_int_jidot_qdot_vec;
+  Eigen::MatrixXd ji = Eigen::MatrixXd::Zero(num_passive_, num_qdot_);
+  Eigen::VectorXd jidot_qdot_vec = Eigen::VectorXd(num_passive_);
+  Eigen::VectorXd ji_transpose_lambda_int_jidot_qdot_vec =
+      Eigen::VectorXd::Zero(num_qdot_);
+
+  Eigen::MatrixXd ni;
+  Eigen::MatrixXd sa_ni_trc_bar; // TODO: sa_ni_trc_bar using just pseudo inv
+                                 // (not dynamically consistent pseudo inv)
   if (b_passive_) {
     // exist passive joint
-
-    ji.setZero(num_passive_, num_qdot_);
-    jidot_qdot_vec.setZero(num_passive_);
-    ji_transpose_lambda_int_jidot_qdot_vec.setZero(num_qdot_);
-
     int row_idx(0);
     for (auto ic : internal_constraint_container) {
       Eigen::MatrixXd j_i = ic->Jacobian();
@@ -154,13 +158,13 @@ void IHWBC::Solve(
       row_idx += dim;
     }
 
-    Eigen::MatrixXd ji_bar = util::WeightedPseudoInverse(ji, Ainv_, 0.0001);
-    ni = Eigen::MatrixXd::Identity(num_qdot_, num_qdot_) - ji_bar * ji;
-
     Eigen::MatrixXd lambda_int_inv = ji * Ainv_ * ji.transpose();
     ji_transpose_lambda_int_jidot_qdot_vec =
         ji.transpose() * util::PseudoInverse(lambda_int_inv, 0.0001) *
         jidot_qdot_vec;
+
+    Eigen::MatrixXd ji_bar = util::WeightedPseudoInverse(ji, Ainv_, 0.0001);
+    ni = Eigen::MatrixXd::Identity(num_qdot_, num_qdot_) - ji_bar * ji;
 
     // compuationally efficient pseudo inverse for trq calc (exclude floating
     // base)
@@ -168,7 +172,7 @@ void IHWBC::Solve(
         (sa_ * ni).rightCols(num_active_ + num_passive_);
     Eigen::MatrixXd Ainv_trc = Ainv_.bottomRightCorner(
         num_active_ + num_passive_, num_active_ + num_passive_);
-    sa_ni_trc_bar = util::WeightedPseudoInverse(sa_ni_trc, Ainv_trc, 0.0001);
+    sa_ni_trc_bar = util::WeightedPseudoInverse(sa_ni_trc, Ainv_trc, 0.00001);
     // util::PseudoInverse(sa_ni_trc, 0.0001);
 
   } else {
@@ -428,13 +432,15 @@ void IHWBC::Solve(
   // compute torque command
   if (b_contact_) {
     // contact: o
-    trq_cmd = sa_ni_trc_bar.transpose() * snf_ *
+    trq_cmd = sa_.rightCols(num_qdot_ - num_float_).transpose() *
+              sa_ni_trc_bar.transpose() * snf_ *
               (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) -
                (jc * ni).transpose() * rf_sol_ +
                ji_transpose_lambda_int_jidot_qdot_vec);
   } else {
     // contact: x
-    trq_cmd = sa_ni_trc_bar.transpose() * snf_ *
+    trq_cmd = sa_.rightCols(num_qdot_ - num_float_).transpose() *
+              sa_ni_trc_bar.transpose() * snf_ *
               (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) +
                ji_transpose_lambda_int_jidot_qdot_vec);
   }

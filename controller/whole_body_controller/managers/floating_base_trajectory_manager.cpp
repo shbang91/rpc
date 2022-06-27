@@ -20,14 +20,15 @@ void FloatingBaseTrajectoryManager::InitializeFloatingBaseInterpolation(
   duration_ = duration;
   init_com_pos_ = robot_->GetRobotComPos();
   target_com_pos_ = target_com_pos;
-  target_com_pos_[2] =
-      b_use_base_height ? robot_->GetLinkIsometry(torso_ori_task_->TargetIdx())
-                              .translation()[2]
-                        : target_com_pos_[2];
+  // target_com_pos_[2] =
+  // b_use_base_height ? robot_->GetLinkIsometry(torso_ori_task_->TargetIdx())
+  //.translation()[2]
+  //: target_com_pos_[2];
 
   init_torso_quat_ = Eigen::Quaterniond(
       robot_->GetLinkIsometry(torso_ori_task_->TargetIdx()).linear());
-  exp_err_ = util::QuatToExp(target_torso_quat * init_torso_quat_.inverse());
+  exp_err_ = util::QuatToExp(target_torso_quat.normalized() *
+                             init_torso_quat_.normalized().inverse());
 }
 
 void FloatingBaseTrajectoryManager::UpdateDesired(
@@ -50,10 +51,13 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
 
   Eigen::Quaterniond des_torso_quat =
       util::ExpToQuat(exp_err_ * t) * init_torso_quat_;
-  Eigen::VectorXd des_torso_quat_vec(des_torso_quat.normalized().coeffs());
+  Eigen::VectorXd des_torso_quat_vec(4);
+  des_torso_quat_vec << des_torso_quat.normalized().coeffs();
 
-  Eigen::VectorXd des_torso_ang_vel(exp_err_ * t_dot);
-  Eigen::VectorXd des_torso_ang_acc(exp_err_ * t_ddot);
+  Eigen::VectorXd des_torso_ang_vel(3);
+  des_torso_ang_vel << exp_err_ * t_dot;
+  Eigen::VectorXd des_torso_ang_acc(3);
+  des_torso_ang_acc << exp_err_ * t_ddot;
 
   com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
   torso_ori_task_->UpdateDesired(des_torso_quat_vec, des_torso_ang_vel,
