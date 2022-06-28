@@ -61,8 +61,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
                                this);
   // state_machine_container_[draco_states::kDoubleSupportBalance] =
-  // new DoubleSupportBalance(draco_states::kDoubleSupportBalance,
-  // robot_);
+  // new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_);
 
   sp_ = DracoStateProvider::GetStateProvider();
 

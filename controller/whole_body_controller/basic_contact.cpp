@@ -9,13 +9,17 @@ PointContact::PointContact(PinocchioRobotSystem *robot,
 }
 
 void PointContact::UpdateJacobian() {
-  jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
+  // jacobian_ = robot_->GetLinkJacobian(target_link_idx_)
+  //.block(dim_, 0, dim_, robot_->NumQdot());
+  jacobian_ = robot_->GetLinkBodyJacobian(target_link_idx_)
                   .block(dim_, 0, dim_, robot_->NumQdot());
 }
 
 void PointContact::UpdateJacobianDotQdot() {
+  // jacobian_dot_q_dot_ =
+  // robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
   jacobian_dot_q_dot_ =
-      robot_->GetLinkJacobianDotQdot(target_link_idx_).tail(dim_);
+      robot_->GetLinkBodyJacobianDotQdot(target_link_idx_).tail(dim_);
 }
 
 void PointContact::UpdateConeConstraint() {
@@ -30,10 +34,10 @@ void PointContact::UpdateConeConstraint() {
   cone_constraint_matrix_(4, 2) = mu_;
   cone_constraint_matrix_(5, 2) = -1.;
 
-  Eigen::Matrix3d rot_world_local =
-      robot_->GetLinkIsometry(target_link_idx_).linear();
-  cone_constraint_matrix_ =
-      cone_constraint_matrix_ * rot_world_local.transpose();
+  // Eigen::Matrix3d rot_world_local =
+  // robot_->GetLinkIsometry(target_link_idx_).linear();
+  // cone_constraint_matrix_ =
+  // cone_constraint_matrix_ * rot_world_local.transpose();
 
   // -Fz >= -rf_z_max
   cone_constraint_vector_[5] = -rf_z_max_;
@@ -61,11 +65,13 @@ SurfaceContact::SurfaceContact(PinocchioRobotSystem *robot,
   cone_constraint_vector_ = Eigen::VectorXd::Zero(16 + 2);
 }
 void SurfaceContact::UpdateJacobian() {
-  jacobian_ = robot_->GetLinkJacobian(target_link_idx_);
+  // jacobian_ = robot_->GetLinkJacobian(target_link_idx_);
+  jacobian_ = robot_->GetLinkBodyJacobian(target_link_idx_);
 }
 
 void SurfaceContact::UpdateJacobianDotQdot() {
-  jacobian_dot_q_dot_ = robot_->GetLinkJacobianDotQdot(target_link_idx_);
+  // jacobian_dot_q_dot_ = robot_->GetLinkJacobianDotQdot(target_link_idx_);
+  jacobian_dot_q_dot_ = robot_->GetLinkBodyJacobianDotQdot(target_link_idx_);
 }
 
 void SurfaceContact::UpdateConeConstraint() {
@@ -153,14 +159,13 @@ void SurfaceContact::UpdateConeConstraint() {
   // ////////////////////////////////////////////////////
   cone_constraint_matrix_(17, 5) = -1.;
 
-  Eigen::MatrixXd aug_R_world_local = Eigen::MatrixXd::Zero(dim_, dim_);
-  aug_R_world_local.block(0, 0, 3, 3) =
-      robot_->GetLinkIsometry(target_link_idx_).linear();
-  aug_R_world_local.block(3, 3, 3, 3) =
-      robot_->GetLinkIsometry(target_link_idx_).linear();
-
-  cone_constraint_matrix_ =
-      cone_constraint_matrix_ * aug_R_world_local.transpose();
+  // Eigen::MatrixXd aug_R_world_local = Eigen::MatrixXd::Zero(dim_, dim_);
+  // aug_R_world_local.block(0, 0, 3, 3) =
+  // robot_->GetLinkIsometry(target_link_idx_).linear();
+  // aug_R_world_local.block(3, 3, 3, 3) =
+  // robot_->GetLinkIsometry(target_link_idx_).linear();
+  // cone_constraint_matrix_ =
+  // cone_constraint_matrix_ * aug_R_world_local.transpose();
 
   // -Fz >= -rf_z_max
   cone_constraint_vector_[17] = -rf_z_max_;

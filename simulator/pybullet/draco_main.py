@@ -253,7 +253,7 @@ def set_init_config_pybullet_robot(robot):
 pb.connect(pb.GUI)
 
 pb.resetDebugVisualizerCamera(cameraDistance=1.5,
-                              cameraYaw=210,
+                              cameraYaw=120,
                               cameraPitch=-30,
                               cameraTargetPosition=[0, 0, 0.5])
 ## sim physics setting
