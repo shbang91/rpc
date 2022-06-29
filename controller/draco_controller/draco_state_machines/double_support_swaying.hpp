@@ -26,4 +26,6 @@ private:
 
   Eigen::Vector3d amp_;
   Eigen::Vector3d freq_;
+
+  bool b_use_base_height_;
 };

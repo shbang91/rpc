@@ -19,6 +19,17 @@ DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
 void DoubleSupportBalance::FirstVisit() {
   std::cout << "draco_states: kDoubleSupportBalance" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
+
+  // reset flags
+  b_com_swaying_ = false;
+  b_lmpc_swaying_ = false;
+  b_nmpc_swaying_ = false;
+
+  b_dcm_walking_ = false;
+  b_lmpc_walking_ = false;
+  b_nmpc_walking_ = false;
+
+  b_static_walking_ = false;
 }
 
 void DoubleSupportBalance::OneStep() {
@@ -38,21 +49,12 @@ bool DoubleSupportBalance::EndOfState() {
              : false;
 }
 
-void DoubleSupportBalance::LastVisit() {
-  b_com_swaying_ = false;
-  b_lmpc_swaying_ = false;
-  b_nmpc_swaying_ = false;
-
-  b_dcm_walking_ = false;
-  b_lmpc_walking_ = false;
-  b_nmpc_walking_ = false;
-
-  b_static_walking_ = false;
-}
+void DoubleSupportBalance::LastVisit() {}
 
 StateId DoubleSupportBalance::GetNextState() {
-  if (b_com_swaying_)
+  if (b_com_swaying_) {
     return draco_states::kDoubleSupportSwaying;
+  }
   // if (b_lmpc_swaying_)
   // return draco_states::kComSwayingLmpc;
   // if (b_nmpc_swaying_)
