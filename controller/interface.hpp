@@ -1,4 +1,5 @@
 #pragma once
+#include "controller/interrupt.hpp"
 
 class PinocchioRobotSystem;
 class ControlArchitecture;
@@ -10,6 +11,8 @@ public:
   virtual ~Interface() = default;
 
   virtual void GetCommand(void *sensor_data, void *command) = 0;
+
+  Interrupt *interrupt_;
 
 protected:
   int count_;

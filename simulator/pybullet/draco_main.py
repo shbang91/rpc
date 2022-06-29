@@ -376,6 +376,11 @@ while (True):
     ##############################################################################
     ##############################################################################
 
+    # Get Keyboard Event
+    keys = pb.getKeyboardEvents()
+    if pybullet_util.is_key_triggered(keys, '1'):
+        rpc_draco_interface.interrupt_.PressOne()
+
     #get sensor data
     imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
         draco_humanoid)

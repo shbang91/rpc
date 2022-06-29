@@ -1,1 +1,3 @@
 add_subdirectory(draco_controller)
+
+pybind11_add_module(interrupt_py interrupt_pybind.cpp)

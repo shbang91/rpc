@@ -31,13 +31,11 @@ void DoubleSupportBalance::OneStep() {
 
 bool DoubleSupportBalance::EndOfState() {
   // TODO: add dcm walking condition(e.g., remaining footstep)
-  // return (b_com_swaying_ || b_lmpc_swaying_ || b_nmpc_swaying_ ||
-  // b_dcm_walking_ || b_lmpc_walking_ || b_nmpc_walking_ ||
-  // b_static_walking_)
-  //? true
-  //: false;
-
-  return false;
+  return (b_com_swaying_ || b_lmpc_swaying_ || b_nmpc_swaying_ ||
+          b_dcm_walking_ || b_lmpc_walking_ || b_nmpc_walking_ ||
+          b_static_walking_)
+             ? true
+             : false;
 }
 
 void DoubleSupportBalance::LastVisit() {

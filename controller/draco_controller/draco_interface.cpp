@@ -2,6 +2,7 @@
 #include "configuration.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_data_manager.hpp"
+#include "controller/draco_controller/draco_interrupt.hpp"
 #include "controller/draco_controller/draco_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
@@ -22,6 +23,8 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   se_ = new DracoStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);
   sp_ = DracoStateProvider::GetStateProvider();
+  interrupt_ =
+      new DracoInterrupt(static_cast<DracoControlArchitecture *>(ctrl_arch_));
 
   // get yaml node
   YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
@@ -41,6 +44,7 @@ DracoInterface::~DracoInterface() {
   delete robot_;
   delete se_;
   delete ctrl_arch_;
+  delete interrupt_;
 }
 
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
@@ -64,6 +68,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // se_->UpdateGroundTruthSensorData(draco_sensor_data);
     se_->UpdateSensorData(draco_sensor_data);
     ctrl_arch_->GetCommand(draco_command);
+    interrupt_->ProcessInterrupt();
   }
 
   DracoDataManager *dm = DracoDataManager::GetDataManager();

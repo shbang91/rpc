@@ -1,6 +1,5 @@
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
-//#include <pybind11/stl.h>
 
 #include "controller/draco_controller/draco_interface.hpp"
 
@@ -16,11 +15,15 @@ public:
 namespace py = pybind11;
 
 PYBIND11_MODULE(draco_interface_py, m) {
+  py::module::import("interrupt_py");
+
   py::class_<Interface, PyInterface>(m, "Interface")
       .def(py::init<>())
       .def("GetCommand", &Interface::GetCommand);
 
-  py::class_<DracoInterface, Interface>(m, "DracoInterface").def(py::init<>());
+  py::class_<DracoInterface, Interface>(m, "DracoInterface")
+      .def(py::init<>())
+      .def_readwrite("interrupt_", &DracoInterface::interrupt_);
 
   py::class_<DracoSensorData>(m, "DracoSensorData")
       .def(py::init<>())

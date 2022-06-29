@@ -15,6 +15,9 @@ public:
   // getter
   StateId State() const { return this->state_; }
   StateId PrevState() const { return this->prev_state_; }
+  std::unordered_map<StateId, StateMachine *> StateMachines() const {
+    return this->state_machine_container_;
+  }
 
 protected:
   PinocchioRobotSystem *robot_;
