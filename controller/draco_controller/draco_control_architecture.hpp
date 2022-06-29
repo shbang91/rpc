@@ -5,6 +5,7 @@ namespace draco_states {
 constexpr int kInitialize = 0;
 constexpr int kDoubleSupportStandUp = 1;
 constexpr int kDoubleSupportBalance = 2;
+constexpr int kDoubleSupportSwaying = 3;
 } // namespace draco_states
 
 class DracoController;

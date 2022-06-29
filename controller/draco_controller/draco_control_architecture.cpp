@@ -1,6 +1,8 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
@@ -60,8 +62,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kDoubleSupportStandUp] =
       new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
                                this);
-  // state_machine_container_[draco_states::kDoubleSupportBalance] =
-  // new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_);
+  state_machine_container_[draco_states::kDoubleSupportBalance] =
+      new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_,
+                               this);
+  state_machine_container_[draco_states::kDoubleSupportSwaying] =
+      new DoubleSupportSwaying(draco_states::kDoubleSupportSwaying, robot_,
+                               this);
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -71,15 +77,20 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 DracoControlArchitecture::~DracoControlArchitecture() {
   delete tci_container_;
   delete controller_;
+
+  // tm
   delete upper_body_tm_;
   delete floating_base_tm_;
   delete lf_SE3_tm_;
   delete rf_SE3_tm_;
   delete lf_max_normal_froce_tm_;
   delete rf_max_normal_froce_tm_;
+
+  // state machines
   delete state_machine_container_[draco_states::kInitialize];
   delete state_machine_container_[draco_states::kDoubleSupportStandUp];
-  // delete state_machine_container_[draco_states::kDoubleSupportBalance];
+  delete state_machine_container_[draco_states::kDoubleSupportBalance];
+  delete state_machine_container_[draco_states::kDoubleSupportSwaying];
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -107,4 +118,6 @@ void DracoControlArchitecture::_InitializeParameters() {
       cfg_["state_machine"]["initialize"]);
   state_machine_container_[draco_states::kDoubleSupportStandUp]->SetParameters(
       cfg_["state_machine"]["stand_up"]);
+  state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
+      cfg_["state_machine"]["com_swaying"]);
 }

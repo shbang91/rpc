@@ -50,28 +50,25 @@ double SmoothAcc(double ini, double end, double moving_duration,
   return ret;
 }
 
-void SinusoidTrajectory(double initTime_, const Eigen::VectorXd &midPoint_,
-                        const Eigen::VectorXd &amp_,
-                        const Eigen::VectorXd &freq_, double evalTime_,
-                        Eigen::VectorXd &p_, Eigen::VectorXd &v_,
-                        Eigen::VectorXd &a_, double smoothing_dur) {
-  int dim = midPoint_.size();
-  p_ = Eigen::VectorXd::Zero(dim);
-  v_ = Eigen::VectorXd::Zero(dim);
-  a_ = Eigen::VectorXd::Zero(dim);
-  for (int i = 0; i < dim; ++i) {
-    p_[i] = amp_[i] * sin(2 * M_PI * freq_[i] * (evalTime_ - initTime_)) +
-            midPoint_[i];
-    v_[i] = amp_[i] * 2 * M_PI * freq_[i] *
-            cos(2 * M_PI * freq_[i] * (evalTime_ - initTime_));
-    a_[i] = -amp_[i] * 2 * M_PI * freq_[i] * 2 * M_PI * freq_[i] *
-            sin(2 * M_PI * freq_[i] * (evalTime_ - initTime_));
+void SinusoidTrajectory(const Eigen::Vector3d &mid_point,
+                        const Eigen::Vector3d &amp, const Eigen::Vector3d &freq,
+                        double eval_time, Eigen::VectorXd &p,
+                        Eigen::VectorXd &v, Eigen::VectorXd &a,
+                        double smoothing_dur) {
+  p = Eigen::VectorXd::Zero(3);
+  v = Eigen::VectorXd::Zero(3);
+  a = Eigen::VectorXd::Zero(3);
+  for (int i = 0; i < 3; ++i) {
+    p[i] = amp[i] * sin(2 * M_PI * freq[i] * (eval_time)) + mid_point[i];
+    v[i] = amp[i] * 2 * M_PI * freq[i] * cos(2 * M_PI * freq[i] * (eval_time));
+    a[i] = -amp[i] * 2 * M_PI * freq[i] * 2 * M_PI * freq[i] *
+           sin(2 * M_PI * freq[i] * (eval_time));
   }
-  if (evalTime_ < (initTime_ + smoothing_dur)) {
-    double s = SmoothPos(0., 1., smoothing_dur, evalTime_ - initTime_);
-    for (int i = 0; i < dim; ++i) {
-      v_[i] *= s;
-      a_[i] *= s;
+  if (eval_time < smoothing_dur) {
+    double s = SmoothPos(0., 1., smoothing_dur, eval_time);
+    for (int i = 0; i < 3; ++i) {
+      v[i] *= s;
+      a[i] *= s;
     }
   }
 }

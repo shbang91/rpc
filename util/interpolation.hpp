@@ -18,11 +18,11 @@ double SmoothVel(double ini, double end, double moving_duration,
                  double curr_time);
 double SmoothAcc(double ini, double end, double moving_duration,
                  double curr_time);
-void SinusoidTrajectory(double initTime_, const Eigen::VectorXd &midPoint_,
-                        const Eigen::VectorXd &amp_,
-                        const Eigen::VectorXd &freq_, double evalTime_,
-                        Eigen::VectorXd &p_, Eigen::VectorXd &v_,
-                        Eigen::VectorXd &a_, double smoothing_dur = 1.0);
+void SinusoidTrajectory(const Eigen::Vector3d &mid_point,
+                        const Eigen::Vector3d &amp, const Eigen::Vector3d &freq,
+                        double eval_time, Eigen::VectorXd &p,
+                        Eigen::VectorXd &v, Eigen::VectorXd &a,
+                        double smoothing_dur = 1.0);
 double Smooth(double ini, double fin, double rat);
 } // namespace util
 

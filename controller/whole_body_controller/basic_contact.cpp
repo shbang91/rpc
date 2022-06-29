@@ -4,8 +4,10 @@
 PointContact::PointContact(PinocchioRobotSystem *robot,
                            const int target_link_idx, const double mu)
     : Contact(robot, 3, target_link_idx, mu) {
+
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(6, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(6);
+  util::PrettyConstructor(3, "PointContact");
 }
 
 void PointContact::UpdateJacobian() {
@@ -60,6 +62,7 @@ SurfaceContact::SurfaceContact(PinocchioRobotSystem *robot,
                                const int target_link_idx, const double mu,
                                const double x, const double y)
     : Contact(robot, 6, target_link_idx, mu), x_(x), y_(y) {
+  util::PrettyConstructor(3, "SurfaceContact");
 
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(16 + 2, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(16 + 2);

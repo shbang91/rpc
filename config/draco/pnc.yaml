@@ -109,8 +109,12 @@ state_machine:
       target_joint_pos: [0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., 0.523, 0., -1.57, 0., 0., 0., 0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 0.5
       target_com_height: 0.7
       target_base_height: 0.9
 
       rf_z_max_interp_duration: 0.1
+
+    com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.5, 0.] # [hz]

@@ -29,6 +29,7 @@ void JointTask::UpdateJacobianDotQdot() {
 SelectedJointTask::SelectedJointTask(
     PinocchioRobotSystem *robot, const std::vector<int> &joint_idx_container)
     : Task(robot, joint_idx_container.size()) {
+  util::PrettyConstructor(3, "SelectedJointTask");
   joint_idx_container_ = joint_idx_container;
 }
 
@@ -62,6 +63,7 @@ std::vector<int> SelectedJointTask::JointIdxContainer() {
 // Link Position Task
 LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
+  util::PrettyConstructor(3, "LinkPosTask");
 
   target_idx_ = target_idx;
 }
@@ -88,6 +90,7 @@ void LinkPosTask::UpdateJacobianDotQdot() {
 // Link Orientation Task
 LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
+  util::PrettyConstructor(3, "LinkOriTask");
   target_idx_ = target_idx;
   des_pos_.resize(4); // quaternion
   pos_.resize(4);     // quaternion
@@ -124,7 +127,9 @@ void LinkOriTask::UpdateJacobianDotQdot() {
 }
 
 // Robot Center of Mass Task
-ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {}
+ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
+  util::PrettyConstructor(3, "Com Task");
+}
 
 void ComTask::UpdateOpCommand() {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();

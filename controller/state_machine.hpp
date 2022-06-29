@@ -18,7 +18,7 @@ public:
 
   virtual StateId GetNextState() = 0;
 
-  virtual void SetParameters(const YAML::Node &node) = 0;
+  virtual void SetParameters(const YAML::Node &node){};
 
   StateId State() const { return this->state_id_; }
 

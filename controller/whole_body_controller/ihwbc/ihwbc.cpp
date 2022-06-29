@@ -8,6 +8,7 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
              const Eigen::MatrixXd *sv)
     : sa_(sa), dim_contact_(0), dim_cone_constraint_(0), b_contact_(true),
       lambda_qddot_(0.), lambda_rf_(0.), b_first_visit_(true) {
+  util::PrettyConstructor(3, "IHWBC");
 
   num_qdot_ = sa_.cols();
   num_active_ = sa.rows();
@@ -173,7 +174,9 @@ void IHWBC::Solve(
     Eigen::MatrixXd Ainv_trc = Ainv_.bottomRightCorner(
         num_active_ + num_passive_, num_active_ + num_passive_);
     sa_ni_trc_bar = util::WeightedPseudoInverse(sa_ni_trc, Ainv_trc, 0.00001);
-    // util::PseudoInverse(sa_ni_trc, 0.0001);
+    // sa_ni_trc_bar = util::PseudoInverse(
+    // sa_ni_trc,
+    // 0.0001); // TODO: only apply for Draco3 (due to internal constraint jac)
 
   } else {
     // no passive joint

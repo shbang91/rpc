@@ -6,7 +6,9 @@ class ForceTask {
 public:
   ForceTask(const int dim)
       : dim_(dim), rf_des_(Eigen::VectorXd::Zero(dim)),
-        weight_(Eigen::VectorXd::Zero(dim)){};
+        weight_(Eigen::VectorXd::Zero(dim)) {
+    util::PrettyConstructor(3, "ForceTask");
+  };
   virtual ~ForceTask() = default;
 
   // setter

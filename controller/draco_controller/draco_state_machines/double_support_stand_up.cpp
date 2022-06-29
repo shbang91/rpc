@@ -30,7 +30,17 @@ void DoubleSupportStandUp::FirstVisit() {
   std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
-  // desired com & orientation setting
+  // initial com & torso ori setting
+  Eigen::Vector3d init_com_pos = robot_->GetRobotComPos();
+  init_com_pos[2] =
+      b_use_base_height_
+          ? robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2]
+          : init_com_pos[2];
+
+  Eigen::Quaterniond init_torso_quat(
+      robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
+
+  // desired com & torso ori setting
   Eigen::Vector3d target_com_pos =
       (robot_->GetLinkIsometry(draco_link::l_foot_contact).translation() +
        robot_->GetLinkIsometry(draco_link::r_foot_contact).translation()) /
@@ -43,8 +53,7 @@ void DoubleSupportStandUp::FirstVisit() {
       robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
   Eigen::Quaterniond foot_interpol_quat = l_foot_quat.slerp(0.5, r_foot_quat);
 
-  // TODO: check torso orientation setup
-  //  parallel to local ground
+  //  parallel to world ground
   Eigen::Vector3d rot_z(0, 0, 1);
 
   Eigen::Vector3d rot_y =
@@ -56,9 +65,10 @@ void DoubleSupportStandUp::FirstVisit() {
   target_torso_SO3.col(2) = rot_z;
   Eigen::Quaterniond target_torso_quat(target_torso_SO3);
 
+  // initialize floating trajectory
   ctrl_arch_->floating_base_tm_->InitializeFloatingBaseInterpolation(
-      target_com_pos, target_torso_quat.normalized(), standup_duration_,
-      b_use_base_height_);
+      init_com_pos, target_com_pos, init_torso_quat.normalized(),
+      target_torso_quat.normalized(), standup_duration_);
 
   //  increase maximum normal reaction force
   ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
@@ -70,6 +80,7 @@ void DoubleSupportStandUp::FirstVisit() {
 void DoubleSupportStandUp::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
+  // com & torso ori task update
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 
   // foot task
@@ -84,8 +95,7 @@ void DoubleSupportStandUp::OneStep() {
 void DoubleSupportStandUp::LastVisit() {}
 
 bool DoubleSupportStandUp::EndOfState() {
-  // return (state_machine_time_ > standup_duration_) ? true : false;
-  return false;
+  return (state_machine_time_ > standup_duration_) ? true : false;
 }
 
 StateId DoubleSupportStandUp::GetNextState() {
