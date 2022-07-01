@@ -13,9 +13,9 @@ DracoInterrupt::DracoInterrupt(DracoControlArchitecture *ctrl_arch)
 
 void DracoInterrupt::ProcessInterrupt() {
   if (b_button_one) {
-    std::cout << "------------------------------" << std::endl;
-    std::cout << "button one pressed" << std::endl;
-    std::cout << "------------------------------" << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button one pressed: Do CoM Swaying " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
     if (ctrl_arch_->State() == draco_states::kDoubleSupportBalance) {
       static_cast<DoubleSupportBalance *>(
           ctrl_arch_->StateMachines()[draco_states::kDoubleSupportBalance])

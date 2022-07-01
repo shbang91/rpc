@@ -496,9 +496,9 @@ void IHWBC::_SolveQP() {
 
 void IHWBC::SetParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node["qp"], "lambda_qddot", lambda_qddot_);
-    util::ReadParameter(node["qp"], "lambda_rf", lambda_rf_);
-    util::ReadParameter(node["qp"], "b_trq_limit", b_trq_limit_);
+    util::ReadParameter(node, "lambda_qddot", lambda_qddot_);
+    util::ReadParameter(node, "lambda_rf", lambda_rf_);
+    util::ReadParameter(node, "b_trq_limit", b_trq_limit_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

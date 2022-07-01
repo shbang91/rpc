@@ -4,6 +4,9 @@ ip_address: "tcp://127.0.0.1:5557"
 
 b_sim: true ## if false, all the "exp_" parameters are used
 
+controller:
+  exp_smoothing_command_duration: 0.1 ## this only used when b_sim: false
+
 wbc:
   task:
     com_task:
@@ -118,5 +121,5 @@ state_machine:
     com_swaying:
       #amplitude: [0., 0.05, 0.] # [m]
       #frequency: [0., 0.6, 0.] # [hz]
-      amplitude: [0., 0., 0.05] # [m]
+      amplitude: [0., 0., 0.03] # [m]
       frequency: [0., 0., 1.] # [hz]

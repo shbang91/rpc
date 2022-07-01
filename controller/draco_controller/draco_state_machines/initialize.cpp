@@ -46,7 +46,7 @@ void Initialize::OneStep() {
 void Initialize::LastVisit() {}
 
 bool Initialize::EndOfState() {
-  return (state_machine_time_ > duration_) ? true : false;
+  return (state_machine_time_ >= duration_) ? true : false;
 }
 
 StateId Initialize::GetNextState() {

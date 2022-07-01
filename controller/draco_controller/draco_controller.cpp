@@ -9,11 +9,17 @@
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
+#include "util/interpolation.hpp"
 
 DracoController::DracoController(DracoTCIContainer *tci_container,
                                  PinocchioRobotSystem *robot)
     : tci_container_(tci_container), robot_(robot),
-      b_int_constrinat_first_visit_(true) {
+      joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+      joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+      joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+      b_int_constrinat_first_visit_(true), b_first_visit_(true),
+      b_smoothing_command_(false), smoothing_command_duration_(0.),
+      init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -55,9 +61,33 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
   ihwbc_ = new IHWBC(sa, &sf, &sv);
 
-  // initialize iwbc parameters
-  cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  this->_InitializeParameters();
+  // read yaml & set params
+  try {
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+
+    // initialize draco controller params
+    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
+    if (!b_sim) {
+      b_smoothing_command_ = true;
+      util::ReadParameter(cfg["controller"], "exp_smoothing_command_duration",
+                          smoothing_command_duration_);
+    }
+
+    // initialize iwbc qp params
+    ihwbc_->SetParameters(cfg["wbc"]["qp"]);
+    if (ihwbc_->IsTrqLimit()) {
+      std::cout << "------------------------------------" << std::endl;
+      std::cout << "Torque Limits are considred in WBC" << std::endl;
+      std::cout << "------------------------------------" << std::endl;
+      Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit = robot_->TrqLimit();
+      ihwbc_->SetTrqLimit(trq_limit);
+    }
+
+  } catch (std::runtime_error &e) {
+    std::cout << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+  }
 }
 
 DracoController::~DracoController() { delete ihwbc_; }
@@ -65,13 +95,17 @@ DracoController::~DracoController() { delete ihwbc_; }
 void DracoController::GetCommand(void *command) {
   if (sp_->state_ == draco_states::kInitialize) {
     // joint position control command
-    static_cast<DracoCommand *>(command)->joint_pos_cmd_ =
-        tci_container_->jpos_task_->DesiredPos();
-    static_cast<DracoCommand *>(command)->joint_vel_cmd_ =
-        tci_container_->jpos_task_->DesiredVel();
-    static_cast<DracoCommand *>(command)->joint_trq_cmd_ =
-        Eigen::VectorXd::Zero(draco::n_adof);
+    joint_pos_cmd_ = tci_container_->jpos_task_->DesiredPos();
+    joint_vel_cmd_ = tci_container_->jpos_task_->DesiredVel();
+    joint_trq_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
+
   } else {
+    // first visit for feedforward torque command
+    if (b_first_visit_ && b_smoothing_command_) {
+      init_joint_pos_ = robot_->GetJointPos();
+      smoothing_command_start_time_ = sp_->current_time_;
+      b_first_visit_ = false;
+    }
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
     for (auto task : tci_container_->task_container_) {
@@ -115,30 +149,31 @@ void DracoController::GetCommand(void *command) {
                   tci_container_->force_task_container_, wbc_qddot_cmd,
                   wbc_rf_cmd, wbc_trq_cmd);
 
-    // Eigen::MatrixXd sa = ihwbc_->Sa();
-    // Eigen::VectorXd joint_trq_cmd =
-    // sa.rightCols(sa.cols() - 6).transpose() * wbc_trq_cmd;
-
-    // std::cout << "wbc qddot:" << std::endl;
-    // std::cout << wbc_qddot_cmd.transpose() << std::endl;
-    // std::cout << "wbc rf cmd: " << std::endl;
-    // std::cout << wbc_rf_cmd.transpose() << std::endl;
-    // std::cout << "jtrq cmd" << std::endl;
-    // std::cout << wbc_trq_cmd.transpose() << std::endl;
-
     // TODO: joint integrator for real experiment
+    // joint_integrator_->Integrate()
 
-    static_cast<DracoCommand *>(command)->joint_trq_cmd_ = wbc_trq_cmd;
-  }
-}
+    // joint_pos_cmd_ = ;
+    // joint_vel_cmd_ = ;
+    joint_trq_cmd_ = wbc_trq_cmd;
 
-void DracoController::_InitializeParameters() {
-  ihwbc_->SetParameters(cfg_["wbc"]);
-  if (ihwbc_->IsTrqLimit()) {
-    std::cout << "------------------------------------" << std::endl;
-    std::cout << "Torque Limits are considred in WBC" << std::endl;
-    std::cout << "------------------------------------" << std::endl;
-    Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit = robot_->TrqLimit();
-    ihwbc_->SetTrqLimit(trq_limit);
+    if (b_smoothing_command_) {
+      // do smoothing command, only for real experiment
+      double s =
+          util::SmoothPos(0, 1, smoothing_command_duration_,
+                          sp_->current_time_ - smoothing_command_start_time_);
+
+      joint_pos_cmd_ = (1 - s) * init_joint_pos_ + s * joint_pos_cmd_;
+      joint_vel_cmd_ = s * joint_vel_cmd_;
+      joint_trq_cmd_ = s * joint_trq_cmd_;
+
+      if (sp_->current_time_ >=
+          smoothing_command_start_time_ + smoothing_command_duration_)
+        b_smoothing_command_ = false;
+    }
   }
+
+  // copy command to DracoCommand class
+  static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
+  static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
+  static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 }

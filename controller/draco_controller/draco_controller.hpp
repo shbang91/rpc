@@ -21,8 +21,15 @@ private:
 
   IHWBC *ihwbc_;
 
-  YAML::Node cfg_;
-  void _InitializeParameters();
+  Eigen::VectorXd joint_pos_cmd_;
+  Eigen::VectorXd joint_vel_cmd_;
+  Eigen::VectorXd joint_trq_cmd_;
 
   bool b_int_constrinat_first_visit_;
+
+  bool b_first_visit_;
+  bool b_smoothing_command_;
+  double smoothing_command_duration_;
+  double smoothing_command_start_time_;
+  Eigen::VectorXd init_joint_pos_;
 };
