@@ -11,7 +11,7 @@ DCMTrajectoryManager::DCMTrajectoryManager(DCMPlanner *dcm_planner,
     : dcm_planner_(dcm_planner), com_task_(com_task),
       torso_ori_task_(torso_ori_task), robot_(robot), lfoot_idx_(lfoot_idx),
       rfoot_idx_(rfoot_idx), current_foot_step_idx_(0),
-      robot_side_first_(end_effector::LFoot) {
+      first_swing_leg_(end_effector::LFoot) {
   util::PrettyConstructor(2, "DCMTrajectoryManager");
 }
 
@@ -144,22 +144,23 @@ void DCMTrajectoryManager::_ResetIndexAndClearFootSteps() {
 }
 
 void DCMTrajectoryManager::_AlternateLeg() {
-  robot_side_first_ = robot_side_first_ == end_effector::LFoot
-                          ? end_effector::RFoot
-                          : end_effector::LFoot;
+  first_swing_leg_ = first_swing_leg_ == end_effector::LFoot
+                         ? end_effector::RFoot
+                         : end_effector::LFoot;
 }
 
 void DCMTrajectoryManager::_PopulateWalkForward(const int n_steps,
-                                                const double forward_distance) {
+                                                const double forward_distance,
+                                                const int first_swing_leg) {
   _UpdateStartingStanceFeet();
 
   FootStep new_foot_step;
   FootStep current_mid_foot = current_mid_foot_;
 
   // left foot swing first
-  int swing_foot = end_effector::LFoot;
+  int swing_leg_side = first_swing_leg;
   for (int i(0); i < n_steps; ++i) {
-    if (swing_foot == end_effector::LFoot) {
+    if (swing_leg_side == end_effector::LFoot) {
       Eigen::Vector3d local_offset(static_cast<double>(i + 1) *
                                        forward_distance,
                                    nominal_footwidth_ / 2., 0.);
@@ -167,7 +168,7 @@ void DCMTrajectoryManager::_PopulateWalkForward(const int n_steps,
           current_mid_foot.GetPos() +
               current_mid_foot.GetRotMat() * local_offset,
           current_mid_foot.GetOrientation(), end_effector::LFoot);
-      swing_foot = end_effector::RFoot;
+      swing_leg_side = end_effector::RFoot;
     } else {
       Eigen::Vector3d local_offset(static_cast<double>(i + 1) *
                                        forward_distance,
@@ -176,13 +177,13 @@ void DCMTrajectoryManager::_PopulateWalkForward(const int n_steps,
           current_mid_foot.GetPos() +
               current_mid_foot.GetRotMat() * local_offset,
           current_mid_foot.GetOrientation(), end_effector::RFoot);
-      swing_foot = end_effector::LFoot;
+      swing_leg_side = end_effector::LFoot;
     }
     foot_step_list_.push_back(new_foot_step);
   }
 
   // add additional step forward to square the feet
-  if (swing_foot == end_effector::LFoot) {
+  if (swing_leg_side == end_effector::LFoot) {
     Eigen::Vector3d local_offset(static_cast<double>(n_steps) *
                                      forward_distance,
                                  nominal_footwidth_ / 2., 0.);
@@ -198,6 +199,97 @@ void DCMTrajectoryManager::_PopulateWalkForward(const int n_steps,
         current_mid_foot.GetOrientation(), end_effector::RFoot);
   }
   foot_step_list_.push_back(new_foot_step);
+}
+
+void DCMTrajectoryManager::_PopulateStepsInPlace(const int n_steps,
+                                                 const int first_swing_leg) {
+  _UpdateStartingStanceFeet();
+
+  FootStep new_foot_step;
+  FootStep current_mid_foot = current_mid_foot_;
+
+  int swing_leg_side = first_swing_leg;
+  for (int i(0); i < n_steps; ++i) {
+    if (swing_leg_side == end_effector::LFoot) {
+      Eigen::Vector3d local_offset(0., nominal_footwidth_ / 2., 0.);
+      new_foot_step.SetPosOriSide(
+          current_mid_foot.GetPos() +
+              current_mid_foot.GetRotMat() * local_offset,
+          current_mid_foot.GetOrientation(), end_effector::LFoot);
+      swing_leg_side = end_effector::RFoot;
+    } else {
+      Eigen::Vector3d local_offset(0., -nominal_footwidth_ / 2., 0.);
+      new_foot_step.SetPosOriSide(
+          current_mid_foot.GetPos() +
+              current_mid_foot.GetRotMat() * local_offset,
+          current_mid_foot.GetOrientation(), end_effector::RFoot);
+      swing_leg_side = end_effector::LFoot;
+    }
+    foot_step_list_.push_back(new_foot_step);
+  }
+}
+
+// always even n_steps to make both feet parallel
+void DCMTrajectoryManager::_PopulateRotateTurn(
+    const int n_steps, const double turn_radians_per_step) {
+  _UpdateStartingStanceFeet();
+
+  FootStep new_right_foot, new_left_foot;
+  FootStep rotated_mid_foot = current_mid_foot_;
+
+  Eigen::Quaterniond quat_increment_local(
+      Eigen::AngleAxisd(turn_radians_per_step, Eigen::Vector3d::UnitZ()));
+  Eigen::Vector3d local_offset(0., nominal_footwidth_ / 2., 0);
+  for (int i(0); i < n_steps; ++i) {
+    rotated_mid_foot.SetOri(quat_increment_local *
+                            rotated_mid_foot.GetOrientation());
+
+    new_left_foot.SetPosOriSide(
+        rotated_mid_foot.GetPos() + rotated_mid_foot.GetRotMat() * local_offset,
+        rotated_mid_foot.GetOrientation(), end_effector::LFoot);
+    new_right_foot.SetPosOriSide(
+        rotated_mid_foot.GetPos() +
+            rotated_mid_foot.GetRotMat() * -local_offset,
+        rotated_mid_foot.GetOrientation(), end_effector::RFoot);
+    if (turn_radians_per_step > 0) {
+      foot_step_list_.push_back(new_left_foot);
+      foot_step_list_.push_back(new_right_foot);
+    } else {
+      foot_step_list_.push_back(new_right_foot);
+      foot_step_list_.push_back(new_left_foot);
+    }
+  }
+}
+
+void DCMTrajectoryManager::_PopulateStrafe(const int n_steps,
+                                           const double strafe_distance) {
+  _UpdateStartingStanceFeet();
+
+  FootStep new_right_foot, new_left_foot;
+  FootStep strafed_mid_foot = current_mid_foot_;
+
+  Eigen::Vector3d strafe_vec(0., strafe_distance, 0.);
+  Eigen::Vector3d local_offset(0., nominal_footwidth_ / 2., 0.);
+  for (int i(0); i < n_steps; ++i) {
+    strafed_mid_foot.SetPos(strafed_mid_foot.GetPos() +
+                            strafed_mid_foot.GetRotMat() * strafe_vec);
+
+    new_left_foot.SetPosOriSide(
+        strafed_mid_foot.GetPos() + strafed_mid_foot.GetRotMat() * local_offset,
+        strafed_mid_foot.GetOrientation(), end_effector::LFoot);
+    new_right_foot.SetPosOriSide(
+        strafed_mid_foot.GetPos() +
+            strafed_mid_foot.GetRotMat() * -local_offset,
+        strafed_mid_foot.GetOrientation(), end_effector::RFoot);
+
+    if (strafe_distance > 0) {
+      foot_step_list_.push_back(new_left_foot);
+      foot_step_list_.push_back(new_right_foot);
+    } else {
+      foot_step_list_.push_back(new_right_foot);
+      foot_step_list_.push_back(new_left_foot);
+    }
+  }
 }
 
 void DCMTrajectoryManager::InitializeParameters(const YAML::Node &node) {

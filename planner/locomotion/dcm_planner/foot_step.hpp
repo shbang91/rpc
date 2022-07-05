@@ -24,8 +24,15 @@ public:
     foot_side_ = foot_side;
   }
 
-  void SetPosOri(const Eigen::Vector3d &pos, Eigen::Quaterniond &quat) {
+  void SetPosOri(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat) {
     pos_ = pos;
+    quat_ori_ = quat;
+    rot_ori_ = quat.toRotationMatrix();
+  }
+
+  void SetPos(const Eigen::Vector3d &pos) { pos_ = pos; }
+
+  void SetOri(const Eigen::Quaterniond &quat) {
     quat_ori_ = quat;
     rot_ori_ = quat.toRotationMatrix();
   }

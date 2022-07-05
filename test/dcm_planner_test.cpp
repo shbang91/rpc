@@ -43,7 +43,14 @@ int main() {
   // dcm tm initialize
   YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
   dcm_tm.InitializeParameters(cfg["dcm_walking"]);
-  dcm_tm.WalkForward();
+  // dcm_tm.WalkForward();
+  // dcm_tm.WalkBackward();
+  // dcm_tm.WalkInPlace();
+  // dcm_tm.TurnLeft();
+  // dcm_tm.TurnRight();
+  // dcm_tm.StrafeRight();
+  dcm_tm.StrafeLeft();
+
   Eigen::Vector3d init_dcm = robot.GetRobotComPos();
   Eigen::Vector3d init_dcm_vel = Eigen::Vector3d::Zero();
   Eigen::Quaterniond init_torso_quat(
