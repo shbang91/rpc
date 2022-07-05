@@ -30,21 +30,25 @@ class HermiteCurve {
 public:
   HermiteCurve();
   HermiteCurve(const double &start_pos, const double &start_vel,
-               const double &end_pos, const double &end_vel);
+               const double &end_pos, const double &end_vel,
+               const double &duration);
   ~HermiteCurve();
-  void Initialize(const double &start_pos, const double &start_vel,
-                  const double &end_pos, const double &end_vel);
-  double Evaluate(const double &s_in);
-  double EvaluateFirstDerivative(const double &s_in);
-  double EvaluateSecondDerivative(const double &s_in);
+  double Evaluate(const double &t_in);
+  double EvaluateFirstDerivative(const double &t_in);
+  double EvaluateSecondDerivative(const double &t_in);
 
 private:
-  double p1_;
-  double v1_;
-  double p2_;
-  double v2_;
+  double p1;
+  double v1;
+  double p2;
+  double v2;
+
+  double t_dur;
 
   double s_;
+
+  // by default clamps within 0 and 1.
+  double _Clamp(const double &t_in, double lo = 0.0, double hi = 1.0);
 };
 
 class HermiteCurveVec {
@@ -53,27 +57,32 @@ public:
   HermiteCurveVec(const Eigen::VectorXd &start_pos,
                   const Eigen::VectorXd &start_vel,
                   const Eigen::VectorXd &end_pos,
-                  const Eigen::VectorXd &end_vel);
+                  const Eigen::VectorXd &end_vel, const double &duration);
+  ~HermiteCurveVec();
 
   void Initialize(const Eigen::VectorXd &start_pos,
                   const Eigen::VectorXd &start_vel,
                   const Eigen::VectorXd &end_pos,
-                  const Eigen::VectorXd &end_vel);
-
-  ~HermiteCurveVec();
-  Eigen::VectorXd Evaluate(const double &s_in);
-  Eigen::VectorXd EvaluateFirstDerivative(const double &s_in);
-  Eigen::VectorXd EvaluateSecondDerivative(const double &s_in);
+                  const Eigen::VectorXd &end_vel, const double &duration);
+  Eigen::VectorXd Evaluate(const double &t_in);
+  Eigen::VectorXd EvaluateFirstDerivative(const double &t_in);
+  Eigen::VectorXd EvaluateSecondDerivative(const double &t_in);
 
 private:
-  Eigen::VectorXd p1_;
-  Eigen::VectorXd v1_;
-  Eigen::VectorXd p2_;
-  Eigen::VectorXd v2_;
+  Eigen::VectorXd p1;
+  Eigen::VectorXd v1;
+  Eigen::VectorXd p2;
+  Eigen::VectorXd v2;
 
-  std::vector<HermiteCurve> curves_;
-  Eigen::VectorXd output_;
+  double t_dur;
+
+  std::vector<HermiteCurve> curves;
+  Eigen::VectorXd output;
 };
+
+// Hermite Quaternion curve for global frame quaternion trajectory given
+// boundary conditions also computes global frame angular velocity and angular
+// acceleration for s \in [0,1]
 
 class HermiteQuaternionCurve {
 public:
@@ -81,32 +90,39 @@ public:
   HermiteQuaternionCurve(const Eigen::Quaterniond &quat_start,
                          const Eigen::Vector3d &angular_velocity_start,
                          const Eigen::Quaterniond &quat_end,
-                         const Eigen::Vector3d &angular_velocity_end);
+                         const Eigen::Vector3d &angular_velocity_end,
+                         double duration);
   ~HermiteQuaternionCurve();
 
   void Initialize(const Eigen::Quaterniond &quat_start,
                   const Eigen::Vector3d &angular_velocity_start,
                   const Eigen::Quaterniond &quat_end,
-                  const Eigen::Vector3d &angular_velocity_end);
+                  const Eigen::Vector3d &angular_velocity_end, double duration);
 
   // All values are expressed in "world frame"
-  void Evaluate(const double &s_in, Eigen::Quaterniond &quat_out);
-  void GetAngularVelocity(const double &s_in, Eigen::Vector3d &ang_vel_out);
-  void GetAngularAcceleration(const double &s_in, Eigen::Vector3d &ang_acc_out);
+  void Evaluate(const double &t_in, Eigen::Quaterniond &quat_out);
+  void GetAngularVelocity(const double &t_in, Eigen::Vector3d &ang_vel_out);
+  void GetAngularAcceleration(const double &t_in, Eigen::Vector3d &ang_acc_out);
 
 private:
+  double t_dur; // time duration
+
   Eigen::Quaterniond qa;   // Starting quaternion
   Eigen::Vector3d omega_a; // Starting Angular Velocity
   Eigen::Quaterniond qb;   // Ending quaternion
   Eigen::Vector3d omega_b; // Ending Angular velocity
 
+  void Initialize_data_structures();
+  HermiteCurveVec theta_ab; // so3
+  Eigen::Quaterniond delq;
+
+  ///////////////////////////////////////
+
   Eigen::AngleAxisd omega_a_aa; // axis angle representation of omega_a
   Eigen::AngleAxisd omega_b_aa; // axis angle representation of omega_b
 
-  void initialize_data_structures();
-
-  void computeBasis(const double &s_in); // computes the basis functions
-  void computeOmegas();
+  void ComputeBasis(const double &t_in); // computes the basis functions
+  void ComputeOmegas();
 
   Eigen::Quaterniond q0; // quat0
   Eigen::Quaterniond q1; // quat1
@@ -138,8 +154,7 @@ private:
   Eigen::Quaterniond qtmp2;
   Eigen::Quaterniond qtmp3;
 
-  // progression variable
-  double s_;
+  void PrintQuat(const Eigen::Quaterniond &quat);
 };
 
 class MinJerkCurve {

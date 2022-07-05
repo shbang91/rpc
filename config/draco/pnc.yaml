@@ -112,7 +112,7 @@ state_machine:
       target_joint_pos: [0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., 0.523, 0., -1.57, 0., 0., 0., 0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
 
     stand_up:
-      standup_duration: 1.0
+      standup_duration: 1.
       target_com_height: 0.7
       target_base_height: 0.9
 
@@ -123,3 +123,21 @@ state_machine:
       #frequency: [0., 0.6, 0.] # [hz]
       amplitude: [0., 0., 0.03] # [m]
       frequency: [0., 0., 1.] # [hz]
+
+dcm_walking:
+  com_height: 0.7 #same as the target_com_height in stand_up?
+  t_additional_init_trans: 0.
+  t_contact_trans: 0.45
+  t_swing: 0.55
+  percentage_settle: 0.9
+  alpha_ds: 0.5
+
+  nominal_footwidth: 0.2
+  nominal_forward_step: 0.1
+  nominal_backward_step: -0.1
+  nominal_turn_radians: 0.3
+  nominal_strafe_distance: 0.02
+  n_steps: 5
+
+lmpc_walking:
+

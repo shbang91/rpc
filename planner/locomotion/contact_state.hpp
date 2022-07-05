@@ -1,4 +1,5 @@
 #pragma once
+#include <Eigen/Dense>
 
 class ContactState {
 public:
@@ -8,7 +9,7 @@ public:
     position_(Eigen::Vector3d::Zero());
     orientation_(Eigen::Quaterniond::Identity());
   }
-  ~ContactState() {}
+  virtual ~ContactState() = default;
 
   // getter
   double GetContactActivationTime() { return time_ini_; }

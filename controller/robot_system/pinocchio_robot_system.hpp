@@ -69,6 +69,7 @@ public:
   Eigen::MatrixXd GetMassMatrix();
   Eigen::VectorXd GetGravity();
   Eigen::VectorXd GetCoriolis();
+  double GetTotalMass() const { return total_mass_; }
 
   // centroidal quantity getter
   Eigen::Matrix<double, 6, 6> GetIg() const;
