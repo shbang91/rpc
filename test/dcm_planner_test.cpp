@@ -43,22 +43,46 @@ int main() {
   // dcm tm initialize
   YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
   dcm_tm.InitializeParameters(cfg["dcm_walking"]);
-  // dcm_tm.WalkForward();
-  // dcm_tm.WalkBackward();
-  // dcm_tm.WalkInPlace();
-  // dcm_tm.TurnLeft();
-  // dcm_tm.TurnRight();
-  // dcm_tm.StrafeRight();
-  dcm_tm.StrafeLeft();
 
   Eigen::Vector3d init_dcm = robot.GetRobotComPos();
   Eigen::Vector3d init_dcm_vel = Eigen::Vector3d::Zero();
   Eigen::Quaterniond init_torso_quat(
       robot.GetLinkIsometry(draco_link::torso_com_link).linear());
+
+  dcm_tm.ForwardWalkMode();
   dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
                     init_dcm_vel);
-  // save dcm planning
-  dcm_tm.SaveSolution("1");
+  dcm_tm.GetDCMPlanner()->SaveSolution("1");
+
+  dcm_tm.BackwardWalkMode();
+  dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
+                    init_dcm_vel);
+  dcm_tm.GetDCMPlanner()->SaveSolution("2");
+
+  dcm_tm.InplaceWalkMode();
+  dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
+                    init_dcm_vel);
+  dcm_tm.GetDCMPlanner()->SaveSolution("3");
+
+  dcm_tm.LeftTurnWalkMode();
+  dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
+                    init_dcm_vel);
+  dcm_tm.GetDCMPlanner()->SaveSolution("4");
+
+  dcm_tm.RightTurnWalkMode();
+  dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
+                    init_dcm_vel);
+  dcm_tm.GetDCMPlanner()->SaveSolution("5");
+
+  dcm_tm.LeftStrafeWalkMode();
+  dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
+                    init_dcm_vel);
+  dcm_tm.GetDCMPlanner()->SaveSolution("6");
+
+  dcm_tm.RightStrafeWalkMode();
+  dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
+                    init_dcm_vel);
+  dcm_tm.GetDCMPlanner()->SaveSolution("7");
 
   return 0;
 }

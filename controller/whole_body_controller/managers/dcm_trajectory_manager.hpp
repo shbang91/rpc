@@ -8,6 +8,16 @@ constexpr int kInitial = 0;
 constexpr int kMidStep = 1;
 }; // namespace dcm_transfer_type
 
+namespace walking_primitive {
+constexpr int kFwdWalk = 0;
+constexpr int kBwdWalk = 1;
+constexpr int kInPlaceWalk = 2;
+constexpr int kRightTurn = 3;
+constexpr int kLeftTurn = 4;
+constexpr int kRightStrafe = 5;
+constexpr int kLeftStrafe = 6;
+} // namespace walking_primitive
+
 class DCMPlanner;
 class Task;
 class PinocchioRobotSystem;
@@ -25,50 +35,27 @@ public:
                   const Eigen::Quaterniond &init_torso_quat,
                   const Eigen::Vector3d &init_dcm_pos,
                   const Eigen::Vector3d &init_dcm_vel);
-  void UpdateDesired(const int current_time);
 
-  void SaveSolution(const std::string &file_name);
+  void UpdateDesired(const int current_time);
 
   // =====================================================================
   // footstep generation methods -> InitializeParameters method need to be
   // called before
   // =====================================================================
-  void WalkForward() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateWalkForward(n_steps_, nominal_forward_step_, first_swing_leg_);
-    _AlternateLeg();
+  void ForwardWalkMode() { walking_primitive_ = walking_primitive::kFwdWalk; }
+  void BackwardWalkMode() { walking_primitive_ = walking_primitive::kBwdWalk; }
+  void InplaceWalkMode() {
+    walking_primitive_ = walking_primitive::kInPlaceWalk;
   }
-
-  void WalkBackward() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateWalkForward(n_steps_, nominal_backward_step_, first_swing_leg_);
-    _AlternateLeg();
+  void LeftTurnWalkMode() { walking_primitive_ = walking_primitive::kLeftTurn; }
+  void RightTurnWalkMode() {
+    walking_primitive_ = walking_primitive::kRightTurn;
   }
-
-  void WalkInPlace() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateStepsInPlace(n_steps_, first_swing_leg_);
-    _AlternateLeg();
+  void LeftStrafeWalkMode() {
+    walking_primitive_ = walking_primitive::kLeftStrafe;
   }
-
-  void TurnRight() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateRotateTurn(n_steps_, -nominal_turn_radians_);
-  }
-
-  void TurnLeft() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateRotateTurn(n_steps_, nominal_turn_radians_);
-  }
-
-  void StrafeRight() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateStrafe(n_steps_, -nominal_strafe_distance_);
-  }
-
-  void StrafeLeft() {
-    _ResetIndexAndClearFootSteps();
-    _PopulateStrafe(n_steps_, nominal_strafe_distance_);
+  void RightStrafeWalkMode() {
+    walking_primitive_ = walking_primitive::kRightStrafe;
   }
 
   // =====================================================================
@@ -85,6 +72,9 @@ public:
     return current_foot_step_idx_ >= foot_step_list_.size() ? true : false;
   }
 
+  // getter
+  DCMPlanner *GetDCMPlanner() { return dcm_planner_; }
+
 private:
   DCMPlanner *dcm_planner_;
   Task *com_task_;
@@ -96,15 +86,13 @@ private:
   std::vector<FootStep> foot_step_list_;
   std::vector<FootStep> foot_step_preview_list_;
 
-  FootStep current_left_foot_;
-  FootStep current_right_foot_;
-  FootStep current_mid_foot_;
-
   int current_foot_step_idx_;
 
   int first_swing_leg_;
 
   // walking primitives
+  int walking_primitive_;
+
   double nominal_footwidth_ = 0.27;
   double nominal_forward_step_ = 0.25;
   double nominal_backward_step_ = -0.25;
@@ -112,20 +100,9 @@ private:
   double nominal_strafe_distance_ = 0.125;
   int n_steps_ = 3;
 
-  // for saving data
-  FootStep init_left_foot_;
-  FootStep init_right_foot_;
-
-  void _UpdateStartingStanceFeet();
+  // for footstep generation
   void _UpdateFootStepsPreviewList(const int max_foot_steps_preview);
 
-  // for footstep generation
   void _ResetIndexAndClearFootSteps();
   void _AlternateLeg();
-  void _PopulateWalkForward(const int n_steps, const double forward_distance,
-                            const int first_swing_leg);
-  void _PopulateStepsInPlace(const int n_steps, const int first_swing_leg);
-  void _PopulateRotateTurn(const int n_steps,
-                           const double turn_radians_per_step);
-  void _PopulateStrafe(const int n_steps, const double strafe_distance);
 };

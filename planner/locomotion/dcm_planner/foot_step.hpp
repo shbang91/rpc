@@ -1,6 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <iostream>
+#include <vector>
 
 #include "configuration.hpp"
 
@@ -46,6 +47,27 @@ public:
   Eigen::Vector3d GetPos() const { return pos_; }
   Eigen::Quaterniond GetOrientation() const { return quat_ori_; }
   Eigen::Matrix3d GetRotMat() const { return rot_ori_; }
+
+  // Footstep generation static method for utility function
+  static std::vector<FootStep>
+  GetFwdWalkFootStep(const int n_steps, const double forward_step_length,
+                     const double nominal_footwidth, const int first_swing_leg,
+                     const FootStep &current_mid_foot);
+
+  static std::vector<FootStep>
+  GetInPlaceWalkFootStep(const int n_steps, const double nominal_footwidth,
+                         const int first_swing_leg,
+                         const FootStep &current_mid_foot);
+
+  static std::vector<FootStep>
+  GetTurningFootStep(const int n_steps, const double turn_radians_per_step,
+                     const double nominal_footwidth,
+                     const FootStep &current_mid_foot);
+
+  static std::vector<FootStep>
+  GetStrafeFootStep(const int n_steps, const double strafe_distance,
+                    const double nominal_footwidth,
+                    const FootStep &current_mid_foot);
 
 private:
   Eigen::Vector3d pos_;

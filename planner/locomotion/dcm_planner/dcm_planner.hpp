@@ -50,6 +50,8 @@ public:
                               const Eigen::Vector3d &init_dcm,
                               const Eigen::Vector3d &init_dcm_vel);
 
+  void SaveSolution(const std::string &file_name);
+
   // setter
   void SetRobotMass(double mass) { mass_ = mass; }
   void SetComHeight(double height) {
@@ -92,7 +94,7 @@ private:
   Eigen::Quaterniond init_pelvis_quat_ = Eigen::Quaterniond::Identity();
 
   // -----------------------------------------------------
-  std::vector<FootStep> footstep_list_;
+  std::vector<FootStep> foot_step_list_;
   std::vector<Eigen::Vector3d> vrp_list_;
   std::vector<int> vrp_type_list_;
   std::map<int, int> vrp_index_to_footstep_index_map_;

@@ -12,8 +12,8 @@ void DCMPlanner::InitializeFootStepsVrp(
     const std::vector<FootStep> &input_footstep_list,
     const FootStep &init_foot_stance, const bool b_clear_vrp_list) {
 
-  footstep_list_ = input_footstep_list;
-  if (footstep_list_.size() == 0)
+  foot_step_list_ = input_footstep_list;
+  if (foot_step_list_.size() == 0)
     return;
 
   if (b_clear_vrp_list) {
@@ -405,7 +405,7 @@ void DCMPlanner::_ComputeRefPelvisOri() {
     // swing state
     if (vrp_type_list_[step_idx] == vrp_type::kRFootSwing ||
         vrp_type_list_[step_idx] == vrp_type::kLFootSwing) {
-      target_step = footstep_list_[step_counter];
+      target_step = foot_step_list_[step_counter];
       if (target_step.GetFootSide() == end_effector::LFoot) {
         stance_step = prev_right_stance_foot;
         prev_left_stance_foot = target_step;
@@ -752,5 +752,143 @@ void DCMPlanner::SetParams(const YAML::Node &node) {
               << __FILE__ << "]" << std::endl
               << std::endl;
     std::exit(EXIT_FAILURE);
+  }
+}
+
+void DCMPlanner::SaveSolution(const std::string &file_name) {
+  try {
+    double t_step(0.01);
+    int n_node = std::floor((t_tot_dur_) / t_step);
+
+    YAML::Node cfg;
+
+    // =====================================================================
+    // Temporal Parameters
+    // =====================================================================
+    cfg["temporal_parameters"]["initial_time"] = t_start_;
+    cfg["temporal_parameters"]["final_time"] = t_start_ + t_tot_dur_;
+    cfg["temporal_parameters"]["time_step"] = t_step;
+    cfg["temporal_parameters"]["t_ds"] = t_ds_;
+    cfg["temporal_parameters"]["t_ss"] = t_ss_;
+    cfg["temporal_parameters"]["t_transfer"] = t_transfer_;
+
+    // =====================================================================
+    // Contact Information
+    // =====================================================================
+    Eigen::MatrixXd curr_rfoot_pos = Eigen::MatrixXd::Zero(1, 3);
+    Eigen::MatrixXd curr_rfoot_quat = Eigen::MatrixXd::Zero(1, 4);
+    Eigen::MatrixXd curr_lfoot_pos = Eigen::MatrixXd::Zero(1, 3);
+    Eigen::MatrixXd curr_lfoot_quat = Eigen::MatrixXd::Zero(1, 4);
+    for (int i = 0; i < 3; ++i) {
+      curr_rfoot_pos(0, i) = initial_right_stance_foot_.GetPos()[i];
+      curr_lfoot_pos(0, i) = initial_left_stance_foot_.GetPos()[i];
+    }
+    curr_rfoot_quat(0, 0) = initial_right_stance_foot_.GetOrientation().w();
+    curr_rfoot_quat(0, 1) = initial_right_stance_foot_.GetOrientation().x();
+    curr_rfoot_quat(0, 2) = initial_right_stance_foot_.GetOrientation().y();
+    curr_rfoot_quat(0, 3) = initial_right_stance_foot_.GetOrientation().z();
+
+    curr_lfoot_quat(0, 0) = initial_left_stance_foot_.GetOrientation().w();
+    curr_lfoot_quat(0, 1) = initial_left_stance_foot_.GetOrientation().x();
+    curr_lfoot_quat(0, 2) = initial_left_stance_foot_.GetOrientation().y();
+    curr_lfoot_quat(0, 3) = initial_left_stance_foot_.GetOrientation().z();
+
+    int n_rf(0);
+    int n_lf(0);
+    for (int i(0); i < foot_step_list_.size(); ++i) {
+      if (foot_step_list_[i].GetFootSide() == end_effector::LFoot) {
+        n_lf += 1;
+      } else {
+        n_rf += 1;
+      }
+    }
+    Eigen::MatrixXd rfoot_pos = Eigen::MatrixXd::Zero(n_rf, 3);
+    Eigen::MatrixXd rfoot_quat = Eigen::MatrixXd::Zero(n_rf, 4);
+    Eigen::MatrixXd lfoot_pos = Eigen::MatrixXd::Zero(n_lf, 3);
+    Eigen::MatrixXd lfoot_quat = Eigen::MatrixXd::Zero(n_lf, 4);
+    int rf_id(0);
+    int lf_id(0);
+    for (int i(0); i < foot_step_list_.size(); ++i) {
+      if (foot_step_list_[i].GetFootSide() == end_effector::RFoot) {
+        for (int j(0); j < 3; ++j) {
+          rfoot_pos(rf_id, j) = foot_step_list_[i].GetPos()[j];
+        }
+        rfoot_quat(rf_id, 0) = foot_step_list_[i].GetOrientation().w();
+        rfoot_quat(rf_id, 1) = foot_step_list_[i].GetOrientation().x();
+        rfoot_quat(rf_id, 2) = foot_step_list_[i].GetOrientation().y();
+        rfoot_quat(rf_id, 3) = foot_step_list_[i].GetOrientation().z();
+        rf_id += 1;
+      } else {
+        for (int j(0); j < 3; ++j) {
+          lfoot_pos(lf_id, j) = foot_step_list_[i].GetPos()[j];
+        }
+        lfoot_quat(lf_id, 0) = foot_step_list_[i].GetOrientation().w();
+        lfoot_quat(lf_id, 1) = foot_step_list_[i].GetOrientation().x();
+        lfoot_quat(lf_id, 2) = foot_step_list_[i].GetOrientation().y();
+        lfoot_quat(lf_id, 3) = foot_step_list_[i].GetOrientation().z();
+        lf_id += 1;
+      }
+    }
+
+    cfg["contact"]["curr_right_foot"]["pos"] = curr_rfoot_pos;
+    cfg["contact"]["curr_right_foot"]["ori"] = curr_rfoot_quat;
+    cfg["contact"]["curr_left_foot"]["pos"] = curr_lfoot_pos;
+    cfg["contact"]["curr_left_foot"]["ori"] = curr_lfoot_quat;
+    cfg["contact"]["right_foot"]["pos"] = rfoot_pos;
+    cfg["contact"]["right_foot"]["ori"] = rfoot_quat;
+    cfg["contact"]["left_foot"]["pos"] = lfoot_pos;
+    cfg["contact"]["left_foot"]["ori"] = lfoot_quat;
+
+    // =====================================================================
+    // Reference Trajectory
+    // =====================================================================
+    Eigen::MatrixXd dcm_pos_ref = Eigen::MatrixXd::Zero(n_node, 3);
+    Eigen::MatrixXd dcm_vel_ref = Eigen::MatrixXd::Zero(n_node, 3);
+    Eigen::MatrixXd com_pos_ref = Eigen::MatrixXd::Zero(n_node, 3);
+    Eigen::MatrixXd com_vel_ref = Eigen::MatrixXd::Zero(n_node, 3);
+    Eigen::MatrixXd vrp_ref = Eigen::MatrixXd::Zero(n_node, 3);
+    Eigen::MatrixXd t_traj = Eigen::MatrixXd::Zero(n_node, 1);
+
+    double t(t_start_);
+    Eigen::Vector3d temp_vec;
+    for (int i(0); i < n_node; ++i) {
+      t_traj(i, 0) = t;
+      temp_vec = this->GetRefDCM(t);
+      for (int j(0); j < 3; ++j) {
+        dcm_pos_ref(i, j) = temp_vec(j);
+      }
+      temp_vec = this->GetRefDCMVel(t);
+      for (int j(0); j < 3; ++j) {
+        dcm_vel_ref(i, j) = temp_vec(j);
+      }
+      temp_vec = this->GetRefCoMPos(t);
+      for (int j(0); j < 3; ++j) {
+        com_pos_ref(i, j) = temp_vec(j);
+      }
+      temp_vec = this->GetRefCoMVel(t);
+      for (int j(0); j < 3; ++j) {
+        com_vel_ref(i, j) = temp_vec(j);
+      }
+      temp_vec = this->GetRefVrp(t);
+      for (int j(0); j < 3; ++j) {
+        vrp_ref(i, j) = temp_vec(j);
+      }
+      t += t_step;
+    }
+
+    cfg["reference"]["dcm_pos"] = dcm_pos_ref;
+    cfg["reference"]["dcm_vel"] = dcm_vel_ref;
+    cfg["reference"]["com_pos"] = com_pos_ref;
+    cfg["reference"]["com_vel"] = com_vel_ref;
+    cfg["reference"]["vrp"] = vrp_ref;
+    cfg["reference"]["time"] = t_traj;
+
+    std::string full_path = THIS_COM + std::string("experiment_data/") +
+                            file_name + std::string(".yaml");
+    std::ofstream file_out(full_path);
+    file_out << cfg;
+
+  } catch (YAML::ParserException &e) {
+    std::cerr << e.what() << std::endl;
   }
 }
