@@ -3,12 +3,7 @@
 #include "util/util.hpp"
 #include <Eigen/Dense>
 
-namespace dcm_transfer_type {
-constexpr int kInitial = 0;
-constexpr int kMidStep = 1;
-}; // namespace dcm_transfer_type
-
-namespace walking_primitive {
+namespace dcm_walking_primitive {
 constexpr int kFwdWalk = 0;
 constexpr int kBwdWalk = 1;
 constexpr int kInPlaceWalk = 2;
@@ -16,7 +11,7 @@ constexpr int kRightTurn = 3;
 constexpr int kLeftTurn = 4;
 constexpr int kRightStrafe = 5;
 constexpr int kLeftStrafe = 6;
-} // namespace walking_primitive
+} // namespace dcm_walking_primitive
 
 class DCMPlanner;
 class Task;
@@ -42,20 +37,26 @@ public:
   // footstep generation methods -> InitializeParameters method need to be
   // called before
   // =====================================================================
-  void ForwardWalkMode() { walking_primitive_ = walking_primitive::kFwdWalk; }
-  void BackwardWalkMode() { walking_primitive_ = walking_primitive::kBwdWalk; }
-  void InplaceWalkMode() {
-    walking_primitive_ = walking_primitive::kInPlaceWalk;
+  void ForwardWalkMode() {
+    walking_primitive_ = dcm_walking_primitive::kFwdWalk;
   }
-  void LeftTurnWalkMode() { walking_primitive_ = walking_primitive::kLeftTurn; }
+  void BackwardWalkMode() {
+    walking_primitive_ = dcm_walking_primitive::kBwdWalk;
+  }
+  void InplaceWalkMode() {
+    walking_primitive_ = dcm_walking_primitive::kInPlaceWalk;
+  }
+  void LeftTurnWalkMode() {
+    walking_primitive_ = dcm_walking_primitive::kLeftTurn;
+  }
   void RightTurnWalkMode() {
-    walking_primitive_ = walking_primitive::kRightTurn;
+    walking_primitive_ = dcm_walking_primitive::kRightTurn;
   }
   void LeftStrafeWalkMode() {
-    walking_primitive_ = walking_primitive::kLeftStrafe;
+    walking_primitive_ = dcm_walking_primitive::kLeftStrafe;
   }
   void RightStrafeWalkMode() {
-    walking_primitive_ = walking_primitive::kRightStrafe;
+    walking_primitive_ = dcm_walking_primitive::kRightStrafe;
   }
 
   // =====================================================================
@@ -83,6 +84,7 @@ private:
   int lfoot_idx_;
   int rfoot_idx_;
 
+  bool b_first_visit_;
   std::vector<FootStep> foot_step_list_;
   std::vector<FootStep> foot_step_preview_list_;
 
@@ -102,7 +104,6 @@ private:
 
   // for footstep generation
   void _UpdateFootStepsPreviewList(const int max_foot_steps_preview);
-
   void _ResetIndexAndClearFootSteps();
   void _AlternateLeg();
 };

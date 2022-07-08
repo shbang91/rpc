@@ -183,7 +183,7 @@ void DCMPlanner::_ComputeDCMStates() {
         _ComputeEndDCMAccDS(step_idx, (1 - alpha_ds_) * t_ds_);
   }
 
-  // recompute first DS polynomial boundary conditions again TODO: check this
+  // recompute first DS polynomial boundary conditions again TODO: don't need it
   end_dcm_pos_DS_list_[0] =
       _ComputeEndDCMPosDS(0, t_transfer_ + alpha_ds_ * t_ds_);
   end_dcm_vel_DS_list_[0] =

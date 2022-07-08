@@ -11,6 +11,11 @@ constexpr int kTransfer = 3;
 constexpr int kEnd = 4;
 } // namespace vrp_type
 
+namespace dcm_transfer_type {
+constexpr int kInitial = 0;
+constexpr int kMidStep = 1;
+}; // namespace dcm_transfer_type
+
 class DCMPlanner : public Planner {
 public:
   DCMPlanner();
