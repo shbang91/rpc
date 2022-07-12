@@ -75,9 +75,21 @@ public:
   double GetContactTransitionTime() const { return t_ds_; }
   double GetSwingTime() const { return t_ss_; }
   double GetAlpha() const { return alpha_ds_; }
-  double GetSettleTime() const { return b_ * log(1. - percentage_settle_); }
+  double GetSettleTime() const { return -b_ * log(1. - percentage_settle_); }
   double GetTotalTrajTime() const { return t_tot_dur_; }
 
+  // getter used in state machines
+  double GetInitialContactTransferTime() const {
+    return t_transfer_ + t_ds_ + (1 - alpha_ds_) * t_ds_;
+  }
+  double GetMidStepContactTransferTime() const { return t_ds_; }
+  double GetFinalContactTransferTime() const {
+    return t_ds_ + -b_ * log(1. - percentage_settle_);
+  }
+  double GetNormalForceRampUpTime() const { return alpha_ds_ * t_ds_; }
+  double GetNormalForceRampDownTime() const { return (1. - alpha_ds_) * t_ds_; }
+
+  // getter desired trajectories
   Eigen::Vector3d GetRefDCM(const double current_time) const;
   Eigen::Vector3d GetRefDCMVel(const double current_time) const;
   Eigen::Vector3d GetRefCoMPos(const int current_time) const;

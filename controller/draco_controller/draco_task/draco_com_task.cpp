@@ -41,7 +41,8 @@ void DracoComTask::UpdateOpCommand() {
     Eigen::Vector3d com_pos = robot_->GetRobotComPos();
     Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
 
-    double omega = sqrt(9.81 / des_pos_[2]); // TODO: base height / com height?
+    double omega =
+        sqrt(9.81 / des_pos_[2]); // TODO:  should be desired com height
     Eigen::Vector2d des_dcm = des_pos_.head(2) + des_vel_.head(2) / omega;
     Eigen::Vector2d des_dcm_dot = des_vel_.head(2) + des_acc_.head(2) / omega;
 
@@ -102,6 +103,12 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     util::ReadParameter(node, "com_feedback_source", com_feedback_source_);
     util::ReadParameter(node, "com_height_target_source",
                         com_height_target_source_);
+    // TODO:
+    sp_->b_use_base_height_ =
+        com_height_target_source_ == com_height_target_source::kBaseHeight
+            ? true
+            : false;
+
     if (b_sim) {
       if (com_feedback_source_ == com_feedback_source::kComFeedback) {
         util::ReadParameter(node, "kp", kp_);

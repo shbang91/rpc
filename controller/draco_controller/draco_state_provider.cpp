@@ -25,4 +25,6 @@ DracoStateProvider::DracoStateProvider() {
 
   state_ = draco_states::kInitialize;
   prev_state_ = draco_states::kInitialize;
+
+  b_use_base_height_ = false;
 }

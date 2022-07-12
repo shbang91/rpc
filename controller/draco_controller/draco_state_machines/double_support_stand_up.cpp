@@ -17,13 +17,6 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
-
-  // check if desired com height is using base height
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  int height_source = util::ReadParameter<int>(cfg["wbc"]["task"]["com_task"],
-                                               "com_height_target_source");
-  b_use_base_height_ =
-      height_source == com_height_target_source::kBaseHeight ? true : false;
 }
 
 void DoubleSupportStandUp::FirstVisit() {
@@ -32,10 +25,9 @@ void DoubleSupportStandUp::FirstVisit() {
 
   // initial com & torso ori setting
   Eigen::Vector3d init_com_pos = robot_->GetRobotComPos();
-  init_com_pos[2] =
-      b_use_base_height_
-          ? robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2]
-          : init_com_pos[2];
+  if (sp_->b_use_base_height_)
+    init_com_pos[2] =
+        robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
 
   Eigen::Quaterniond init_torso_quat(
       robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
@@ -106,7 +98,7 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
   try {
     util::ReadParameter(node, "standup_duration", standup_duration_);
     target_height_ =
-        (b_use_base_height_)
+        (sp_->b_use_base_height_)
             ? util::ReadParameter<double>(node, "target_base_height")
             : util::ReadParameter<double>(node, "target_com_height");
     util::ReadParameter(node, "rf_z_max_interp_duration",

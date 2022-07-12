@@ -190,30 +190,3 @@ void DCMTrajectoryManager::_AlternateLeg() {
                          ? end_effector::RFoot
                          : end_effector::LFoot;
 }
-
-// TODO: remove this
-double DCMTrajectoryManager::GetInitialContactTransferTime() const {
-  return dcm_planner_->GetTransferTime() +
-         dcm_planner_->GetContactTransitionTime() +
-         (1 - dcm_planner_->GetAlpha()) *
-             dcm_planner_->GetContactTransitionTime();
-}
-
-double DCMTrajectoryManager::GetMidStepContactTransferTime() const {
-  return dcm_planner_->GetContactTransitionTime();
-}
-
-double DCMTrajectoryManager::GetFinalContactTransferTime() const {
-  return dcm_planner_->GetContactTransitionTime() +
-         dcm_planner_->GetSettleTime();
-}
-double DCMTrajectoryManager::GetSwingTime() const {
-  return dcm_planner_->GetSwingTime();
-}
-double DCMTrajectoryManager::GetNormalForceRampUpTime() const {
-  return dcm_planner_->GetAlpha() * dcm_planner_->GetContactTransitionTime();
-}
-double DCMTrajectoryManager::GetNormalForceRampDownTime() const {
-  return (1. - dcm_planner_->GetAlpha()) *
-         dcm_planner_->GetContactTransitionTime();
-}

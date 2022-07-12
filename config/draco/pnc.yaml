@@ -61,22 +61,26 @@ wbc:
     foot_pos_task:
       ## sim params
       weight : [40., 40., 40.]
+      weight_at_swing : [20., 20., 20.]
       kp : [300., 300., 300.]
       kd : [30., 30., 30.]
 
       ## exp params
       exp_weight : [40., 40., 40.]
+      exp_weight_at_swing : [20., 20., 20.]
       exp_kp : [100., 100., 250.]
       exp_kd : [1., 1., 1.]
 
     foot_ori_task:
       ## sim params
       weight : [40., 40., 40.]
+      weight_at_swing : [20., 20., 20.]
       kp : [300., 300., 300.]
       kd : [30., 30., 30.]
 
       ## exp params
       exp_weight : [40., 40., 40.]
+      exp_weight_at_swing : [20., 20., 20.]
       exp_kp : [20., 20., 20.]
       exp_kd : [1., 1., 1.]
 

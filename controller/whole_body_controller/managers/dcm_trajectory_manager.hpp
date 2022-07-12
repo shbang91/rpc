@@ -62,12 +62,7 @@ public:
   // =====================================================================
   // methods to be used in finite state machines
   // =====================================================================
-  double GetInitialContactTransferTime() const;
-  double GetMidStepContactTransferTime() const;
-  double GetFinalContactTransferTime() const;
-  double GetSwingTime() const;
-  double GetNormalForceRampUpTime() const;
-  double GetNormalForceRampDownTime() const;
+  // TODO: move this API inside DCM Planner
   void IncrementStepIndex() { ++current_foot_step_idx_; }
   bool NoRemainingSteps() {
     return current_foot_step_idx_ >= foot_step_list_.size() ? true : false;
