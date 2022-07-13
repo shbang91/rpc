@@ -17,12 +17,16 @@ from plot.data_saver import *
 # import pinocchio as pin
 # from pinocchio.visualize import MeshcatVisualizer
 
+import json
 import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_visualize", type=bool, default=False)
 args = parser.parse_args()
 
+##==========================================================================
+##Socket initialize
+##==========================================================================
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
 
@@ -36,6 +40,10 @@ with open("config/draco/pnc.yaml", "r") as yaml_file:
 
 socket.connect(ip_address)
 socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
+pj_context = zmq.Context()
+pj_socket = pj_context.socket(zmq.PUB)
+pj_socket.bind("tcp://*:9872")
 
 msg = pnc_msg()
 
@@ -80,6 +88,9 @@ while True:
     data_saver.add('est_base_joint_ang_vel', list(msg.est_base_joint_ang_vel))
 
     data_saver.advance()
+
+    ## publish back to plot juggler
+    pj_socket.send_string(json.dumps(data_saver.history))
 
     if args.b_visualize:
         vis_q[0:3] = np.array(msg.base_joint_pos)
