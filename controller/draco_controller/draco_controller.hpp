@@ -32,4 +32,8 @@ private:
   double smoothing_command_duration_;
   double smoothing_command_start_time_;
   Eigen::VectorXd init_joint_pos_;
+
+  int data_save_freq_;
+
+  void _SaveData();
 };

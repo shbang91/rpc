@@ -22,6 +22,11 @@ public:
   Eigen::Vector4d est_base_joint_ori_;
   Eigen::Vector3d est_base_joint_lin_vel_;
   Eigen::Vector3d est_base_joint_ang_vel_;
+
+  Eigen::VectorXd des_com_pos_;
+  Eigen::VectorXd act_com_pos_;
+  Eigen::VectorXd des_com_vel_;
+  Eigen::VectorXd act_com_vel_;
 };
 
 // Singleton class

@@ -71,6 +71,9 @@ public:
   Eigen::VectorXd DesiredVel() const { return des_vel_; }
   Eigen::VectorXd DesiredAcc() const { return des_acc_; }
 
+  Eigen::VectorXd CurrentPos() const { return pos_; }
+  Eigen::VectorXd CurrentVel() const { return vel_; }
+
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
   Eigen::VectorXd Weight() const { return weight_; }

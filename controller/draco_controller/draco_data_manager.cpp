@@ -39,7 +39,6 @@ void DracoDataManager::SendData() {
   for (int i = 0; i < data_->joint_positions_.size(); ++i) {
     msg.add_joint_positions(data_->joint_positions_[i]);
   }
-
   for (int i = 0; i < 3; ++i) {
     msg.add_est_base_joint_pos(data_->est_base_joint_pos_[i]);
     msg.add_est_base_joint_ori(data_->est_base_joint_ori_[i]);
@@ -47,6 +46,22 @@ void DracoDataManager::SendData() {
     msg.add_est_base_joint_ang_vel(data_->est_base_joint_ang_vel_[i]);
   }
   msg.add_est_base_joint_ori(data_->est_base_joint_ori_[3]);
+
+  for (int i(0); i < 3; ++i) {
+    msg.add_des_com_pos(data_->des_com_pos_[i]);
+    msg.add_act_com_pos(data_->act_com_pos_[i]);
+    msg.add_des_com_vel(data_->des_com_vel_[i]);
+    msg.add_act_com_vel(data_->act_com_vel_[i]);
+  }
+
+  // TODO:TEST
+  // draco::msg_list msg_list;
+
+  // draco::fb_msg *fb_msg = msg_list.add_fb();
+  // draco::fb_msg::base_joint_pos *bjoint_pos = fb_msg->add_bjoint_pos();
+  // for (int i(0); i < 3; ++i)
+  // bjoint_pos->add_xyz(data_->base_joint_pos_[i]);
+  // TODO:TEST
 
   // serialize msg in string type
   std::string encoded_msg;
@@ -58,18 +73,17 @@ void DracoDataManager::SendData() {
   socket_->send(zmq_msg);
 }
 
-DracoData::DracoData() {
-  time_ = 0.;
-
-  base_joint_pos_ = Eigen::Vector3d::Zero();
-  base_joint_ori_ = Eigen::Vector4d::Zero();
-  base_joint_lin_vel_ = Eigen::Vector3d::Zero();
-  base_joint_ang_vel_ = Eigen::Vector3d::Zero();
-
-  joint_positions_ = Eigen::VectorXd::Zero(27);
-
-  est_base_joint_pos_ = Eigen::Vector3d::Zero();
-  est_base_joint_ori_ = Eigen::Vector4d::Zero();
-  est_base_joint_lin_vel_ = Eigen::Vector3d::Zero();
-  est_base_joint_ang_vel_ = Eigen::Vector3d::Zero();
-}
+DracoData::DracoData()
+    : time_(0.), base_joint_pos_(Eigen::Vector3d ::Zero()),
+      base_joint_ori_(Eigen::Vector4d::Zero()),
+      base_joint_lin_vel_(Eigen::Vector3d::Zero()),
+      base_joint_ang_vel_(Eigen::Vector3d::Zero()),
+      est_base_joint_pos_(Eigen::Vector3d::Zero()),
+      est_base_joint_ori_(Eigen::Vector4d::Zero()),
+      est_base_joint_lin_vel_(Eigen::Vector3d::Zero()),
+      est_base_joint_ang_vel_(Eigen::Vector3d::Zero()),
+      joint_positions_(Eigen::VectorXd::Zero(27)),
+      des_com_pos_(Eigen::VectorXd::Zero(3)),
+      act_com_pos_(Eigen::VectorXd::Zero(3)),
+      des_com_vel_(Eigen::VectorXd::Zero(3)),
+      act_com_vel_(Eigen::VectorXd::Zero(3)) {}

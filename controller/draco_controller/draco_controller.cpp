@@ -1,5 +1,6 @@
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_data_manager.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
@@ -19,7 +20,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       b_int_constrinat_first_visit_(true), b_first_visit_(true),
       b_smoothing_command_(false), smoothing_command_duration_(0.),
-      init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
+      init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
+      data_save_freq_(0) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -64,6 +66,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   // read yaml & set params
   try {
     YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+    data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
 
     // initialize draco controller params
     bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
@@ -176,4 +179,17 @@ void DracoController::GetCommand(void *command) {
   static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
   static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
   static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
+
+  if (sp_->count_ % data_save_freq_ == 0)
+    this->_SaveData();
+}
+
+void DracoController::_SaveData() {
+  DracoDataManager *dm = DracoDataManager::GetDataManager();
+
+  // task data
+  dm->data_->des_com_pos_ = tci_container_->com_task_->DesiredPos();
+  dm->data_->act_com_pos_ = tci_container_->com_task_->CurrentPos();
+  dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
+  dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
 }

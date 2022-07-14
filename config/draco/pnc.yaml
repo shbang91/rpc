@@ -3,6 +3,7 @@ servo_dt: 0.00125
 ip_address: "tcp://127.0.0.1:5557"
 
 b_sim: true ## if false, all the "exp_" parameters are used
+data_save_freq: 1
 
 controller:
   exp_smoothing_command_duration: 0.1 ## this only used when b_sim: false
@@ -123,10 +124,10 @@ state_machine:
       rf_z_max_interp_duration: 0.1
 
     com_swaying:
-      #amplitude: [0., 0.05, 0.] # [m]
-      #frequency: [0., 0.6, 0.] # [hz]
-      amplitude: [0., 0., 0.03] # [m]
-      frequency: [0., 0., 1.] # [hz]
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.7, 0.] # [hz]
+      #amplitude: [0., 0., 0.03] # [m]
+      #frequency: [0., 0., 1.] # [hz]
 
 dcm_walking:
   com_height: 0.7 #same as the target_com_height in stand_up?

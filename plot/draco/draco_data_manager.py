@@ -74,7 +74,7 @@ while True:
     ##print pnc msg
     # print(msg)
 
-    ##save data in pkl file
+    #save data in pkl file
     data_saver.add('time', msg.time)
 
     data_saver.add('base_joint_pos', list(msg.base_joint_pos))
@@ -86,6 +86,19 @@ while True:
     data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
     data_saver.add('est_base_joint_lin_vel', list(msg.est_base_joint_lin_vel))
     data_saver.add('est_base_joint_ang_vel', list(msg.est_base_joint_ang_vel))
+
+    data_saver.add('des_com_pos', list(msg.des_com_pos))
+    data_saver.add('act_com_pos', list(msg.act_com_pos))
+    data_saver.add('des_com_vel', list(msg.des_com_vel))
+    data_saver.add('act_com_vel', list(msg.act_com_vel))
+
+
+    ##TODO: TEST
+
+    # fb_msg = msg.fb
+    # print(fb_msg.bjoint_pos)
+    ##TODO: TEST
+
 
     data_saver.advance()
 

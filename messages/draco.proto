@@ -16,4 +16,23 @@ message pnc_msg {
   repeated float est_base_joint_ori = 8;
   repeated float est_base_joint_lin_vel = 9;
   repeated float est_base_joint_ang_vel = 10;
+
+  repeated float des_com_pos = 11;
+  repeated float act_com_pos = 12;
+  repeated float des_com_vel = 13;
+  repeated float act_com_vel = 14;
 }
+
+// TODO:
+// message msg_list {
+// optional float time = 1;
+// repeated fb_msg fb = 2;
+//}
+
+// message fb_msg {
+// message base_joint_pos { repeated float xyz = 1; }
+// message base_joint_ori { repeated float xyzw = 1; }
+
+// repeated base_joint_pos bjoint_pos = 1;
+// repeated base_joint_ori bjoint_ori = 2;
+//}
