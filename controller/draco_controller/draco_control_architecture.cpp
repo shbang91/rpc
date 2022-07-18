@@ -9,6 +9,7 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/mpc_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -48,6 +49,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   dcm_tm_ = new DCMTrajectoryManager(
       dcm_planner_, tci_container_->com_task_, tci_container_->torso_ori_task_,
       robot_, draco_link::l_foot_contact, draco_link::r_foot_contact);
+
+  mpc_tm_ = new MPCTrajectoryManager(tci_container_->com_task_, tci_container_->torso_ori_task_,
+                                     robot_, draco_link::l_foot_contact, draco_link::r_foot_contact);
   lf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->lf_pos_task_, tci_container_->lf_ori_task_, robot_);
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(
@@ -117,6 +121,17 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 
   this->_InitializeParameters();
+
+  // ZMQ Sockets (MPC comms)
+  context_pub_ = new zmq::context_t(1);
+  publisher_ = new zmq::socket_t(*context_pub_, ZMQ_PUB);
+  publisher_->bind("tcp://127.0.0.2:5557");
+  footstep_list_index_ = -2;
+
+  context_sub_ = new zmq::context_t(1);
+  subscriber_ = new zmq::socket_t(*context_sub_, ZMQ_SUB);
+  subscriber_->connect("tcp://127.0.0.3:5557");
+  subscriber_->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);
 }
 
 DracoControlArchitecture::~DracoControlArchitecture() {

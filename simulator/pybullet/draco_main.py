@@ -22,6 +22,10 @@ import copy
 
 import draco_interface_py
 
+import rospy
+from rosgraph_msgs.msg import Clock
+from ttictoc import tic, toc
+
 
 def get_sensor_data_from_pybullet(robot):
 
@@ -331,12 +335,17 @@ t = 0
 dt = Config.CONTROLLER_DT
 count = 0
 
+# rospy.init_node('draco_main')
+# sim_time_pub = rospy.Publisher('/clock', Clock, queue_size=10)
+
+
 while (True):
 
     ###############################################################################
     #Debugging Purpose
     ##############################################################################
     ##debugging state estimator by calculating groundtruth basejoint states
+
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
     rot_world_basecom = util.quat_to_rot(base_com_quat)
@@ -380,6 +389,8 @@ while (True):
     keys = pb.getKeyboardEvents()
     if pybullet_util.is_key_triggered(keys, '1'):
         rpc_draco_interface.interrupt_.PressOne()
+    elif pybullet_util.is_key_triggered(keys, 'w'):
+        rpc_draco_interface.interrupt_.PressW()
 
     #get sensor data
     imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
@@ -404,6 +415,7 @@ while (True):
     rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
 
     #apply command to pybullet robot
+
     apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
 
     # print("trq command printout")
@@ -412,6 +424,13 @@ while (True):
     # print(rpc_joint_pos_command)
     # print("jpos command printout")
     # print(rpc_joint_vel_command)
+
+    time.sleep(dt)
+    t += dt
+    count += 1
+    # sim_time = Clock()
+    # sim_time.clock = rospy.Time(t)
+    # sim_time_pub.publish(sim_time)
 
     #step simulation
     pb.stepSimulation()

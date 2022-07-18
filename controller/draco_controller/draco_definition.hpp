@@ -1,5 +1,8 @@
 #pragma once
 
+#include <unordered_map>>
+#include <map>
+
 namespace draco_link {
 constexpr int torso_link = 2;
 constexpr int l_hip_ie_link = 4;
@@ -77,3 +80,4 @@ namespace draco {
 constexpr int n_qdot = 33;
 constexpr int n_adof = 27;
 } // namespace draco
+

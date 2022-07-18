@@ -3,7 +3,7 @@ servo_dt: 0.00125
 ip_address: "tcp://127.0.0.1:5557"
 
 b_sim: true ## if false, all the "exp_" parameters are used
-data_save_freq: 1
+data_save_freq: 1000
 
 controller:
   exp_smoothing_command_duration: 0.1 ## this only used when b_sim: false

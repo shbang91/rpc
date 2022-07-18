@@ -11,6 +11,8 @@
 #include <pinocchio/fwd.hpp>
 #include <pinocchio/parsers/urdf.hpp>
 
+#include <controller/robot_system/robot_system.hpp>
+
 #include <Eigen/Dense>
 #include <map>
 #include <string>
@@ -23,7 +25,7 @@
  *  base joint frame acting on the base joint frame.
  */
 
-class PinocchioRobotSystem {
+class PinocchioRobotSystem{
 public:
   PinocchioRobotSystem(const std::string &urdf_file,
                        const std::string &package_dir, const bool b_fixed_base,

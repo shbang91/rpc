@@ -12,6 +12,8 @@
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
 #include "util/interpolation.hpp"
 
+#include <chrono>
+
 DracoController::DracoController(DracoTCIContainer *tci_container,
                                  PinocchioRobotSystem *robot)
     : tci_container_(tci_container), robot_(robot),
@@ -96,6 +98,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 DracoController::~DracoController() { delete ihwbc_; }
 
 void DracoController::GetCommand(void *command) {
+    auto tic = std::chrono::high_resolution_clock::now();
   if (sp_->state_ == draco_states::kInitialize) {
     // joint position control command
     joint_pos_cmd_ = tci_container_->jpos_task_->DesiredPos();
@@ -142,6 +145,9 @@ void DracoController::GetCommand(void *command) {
     Eigen::VectorXd cori = robot_->GetCoriolis();
     Eigen::VectorXd grav = robot_->GetGravity();
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
+    auto toc = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> fsec = toc - tic;
+    std::cout << fsec.count() << std::endl;
 
     Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
     Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);

@@ -1,6 +1,7 @@
 #include "controller/draco_controller/draco_interrupt.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
+#include "controller/whole_body_controller/managers/mpc_trajectory_manager.hpp"
 
 DracoInterrupt::DracoInterrupt(DracoControlArchitecture *ctrl_arch)
     : Interrupt(), ctrl_arch_(ctrl_arch) {
@@ -23,6 +24,21 @@ void DracoInterrupt::ProcessInterrupt() {
     } else {
       std::cout << "Wait Until Balance State" << std::endl;
     }
+  }
+
+  else if (b_button_w)
+  {
+      std::cout << "-----------------------------------" << std::endl;
+      std::cout << " button W pressed: Do Forward Walk " << std::endl;
+      std::cout << "-----------------------------------" << std::endl;
+      if (ctrl_arch_->State() == draco_states::kDoubleSupportBalance)
+      {
+          ctrl_arch_->mpc_tm_->walkForward();
+      }
+      else
+      {
+          std::cout << "Wait Until Balance State" << std::endl;
+      }
   }
 
   this->_ResetFlags();
