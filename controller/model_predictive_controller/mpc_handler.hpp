@@ -1,5 +1,6 @@
 #pragma once
 #include "planner/locomotion/contact_state.hpp"
+#include <zmq.hpp>
 #include <vector>
 
 class MPCInputData {
@@ -18,7 +19,7 @@ public:
   }
   virtual ~MPCInputData() = default;
 
-protected:
+public:
   // contact planning info
   std::vector<ContactState> l_foot_state_;
   std::vector<ContactState> r_foot_state_;
@@ -67,19 +68,37 @@ class PinocchioRobotSystem;
 
 class MPCHandler {
 public:
-  MPCHandler(PinocchioRobotSystem *robot) { robot_ = robot; }
+  MPCHandler(PinocchioRobotSystem *robot)
+  {
+      robot_ = robot;
+
+      // ZMQ Sockets (MPC comms)
+      context_pub_ = new zmq::context_t(1);
+      publisher_ = new zmq::socket_t(*context_pub_, ZMQ_PUB);
+      publisher_->bind("tcp://127.0.0.2:5557");
+
+      context_sub_ = new zmq::context_t(1);
+      subscriber_ = new zmq::socket_t(*context_sub_, ZMQ_SUB);
+      subscriber_->connect("tcp://127.0.0.3:5557");
+      subscriber_->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);
+  }
   virtual ~MPCHandler() = default;
 
   void SolveMPC() {
     _GetMPCInputData();
     _SendData(); // zmq & protobuf
   }
-  bool RecieveSolution() { _GetMPCOutputData(); } // zmq & protobuf
+  void ReceiveSolution() { _GetMPCOutputData(); } // zmq & protobuf
 
 protected:
   PinocchioRobotSystem *robot_;
-  MPCInputData *input_data_;
-  MPCOutputData *output_data_;
+  MPCInputData input_data_;
+  MPCOutputData output_data_;
+
+  zmq::context_t *context_pub_;
+  zmq::context_t *context_sub_;
+  zmq::socket_t *publisher_;
+  zmq::socket_t *subscriber_;
 
   virtual void _GetMPCInputData() = 0;
   virtual void _GetMPCOutputData() = 0;
