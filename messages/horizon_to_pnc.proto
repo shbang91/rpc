@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package HORIZON_TO_PNC;
+
+message Position {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Velocity {
+    float xdot = 1;
+    float ydot = 2;
+    float zdot = 3;
+}
+
+message Acceleration {
+    float xddot = 1;
+    float yddot = 2;
+    float zddot = 3;
+}
+
+message BaseOrientation {
+    float ori_x = 1;
+    float ori_y = 2;
+    float ori_z = 3;
+    float ori_w = 4;
+}
+
+message BaseAngularVelocity {
+    float omega_x = 1;
+    float omega_y = 2;
+    float omega_z = 3;
+}
+
+message BaseAngularAcceleration {
+    float omega_dot_x = 1;
+    float omega_dot_y = 2;
+    float omega_dot_z = 3;
+}
+
+message FootPos {
+    repeated Position pos = 1;
+}
+
+message FootVel {
+    repeated Velocity vel = 1;
+}
+
+message FootAcc {
+    repeated Acceleration acc = 1;
+}
+
+message Force {
+    string link_name = 1;
+    float f_x = 2;
+    float f_y = 3;
+    float f_z = 4;
+}
+
+message ForceFoot {
+    repeated Force force = 1;
+}
+
+message MPCResult {
+    repeated Position com = 1;
+    repeated Velocity com_vel = 2;
+    repeated Acceleration com_acc = 3;
+    repeated BaseOrientation ori = 4;
+    repeated BaseAngularVelocity omega = 5;
+    repeated BaseAngularAcceleration omega_dot = 6;
+    repeated FootPos left_foot_pos = 7;
+    repeated FootVel left_foot_vel = 8;
+    repeated FootAcc left_foot_acc = 9;
+    repeated FootPos right_foot_pos = 10;
+    repeated FootVel right_foot_vel = 11;
+    repeated FootAcc right_foot_acc = 12;
+    repeated ForceFoot force_right = 13;
+    repeated ForceFoot force_left = 14;
+}
