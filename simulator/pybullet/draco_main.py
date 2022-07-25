@@ -267,7 +267,7 @@ pb.setGravity(0, 0, -9.81)
 
 ## robot spawn & initial kinematics and dynamics setting
 pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco_modified.urdf",
+draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco_point_contact.urdf",
                              Config.INITIAL_BASE_JOINT_POS,
                              Config.INITIAL_BASE_JOINT_QUAT,
                              useFixedBase=0)
@@ -335,11 +335,13 @@ t = 0
 dt = Config.CONTROLLER_DT
 count = 0
 
-# rospy.init_node('draco_main')
-# sim_time_pub = rospy.Publisher('/clock', Clock, queue_size=10)
+rospy.init_node('draco_main')
+sim_time_pub = rospy.Publisher('/clock', Clock, queue_size=10)
 
 
-while (True):
+
+while not rospy.is_shutdown():
+    tic()
 
     ###############################################################################
     #Debugging Purpose
@@ -428,9 +430,9 @@ while (True):
     time.sleep(dt)
     t += dt
     count += 1
-    # sim_time = Clock()
-    # sim_time.clock = rospy.Time(t)
-    # sim_time_pub.publish(sim_time)
+    sim_time = Clock()
+    sim_time.clock = rospy.Time(t)
+    sim_time_pub.publish(sim_time)
 
     #step simulation
     pb.stepSimulation()

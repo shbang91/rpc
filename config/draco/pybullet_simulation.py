@@ -41,16 +41,24 @@ class DracoLinkIdx(object):
     l_ankle_fe_link = 26
     l_ankle_ie_link = 27
     l_foot_contact = 28
-    r_hip_ie_link = 29
-    r_hip_aa_link = 30
-    r_hip_fe_link = 31
-    r_knee_fe_lp = 32
-    r_knee_adj_link = 33
-    r_knee_fe_ld = 34
-    r_ankle_fe_link = 35
-    r_ankle_ie_link = 36
-    r_foot_contact = 37
-    torso_imu = 38
+    l_foot_contact_upper_left = 29
+    l_foot_contact_upper_right = 30
+    l_foot_contact_lower_left = 31
+    l_foot_contact_lower_right = 32
+    r_hip_ie_link = 33
+    r_hip_aa_link = 34
+    r_hip_fe_link = 35
+    r_knee_fe_lp = 36
+    r_knee_adj_link = 37
+    r_knee_fe_ld = 38
+    r_ankle_fe_link = 39
+    r_ankle_ie_link = 40
+    r_foot_contact = 41
+    r_foot_contact_upper_left = 42
+    r_foot_contact_upper_right = 43
+    r_foot_contact_lower_left = 44
+    r_foot_contact_lower_right = 45
+    torso_imu = 46
 
 
 class DracoJointIdx(object):
@@ -74,10 +82,10 @@ class DracoJointIdx(object):
     l_knee_fe_jd = 25
     l_ankle_fe = 26
     l_ankle_ie = 27
-    r_hip_ie = 29
-    r_hip_aa = 30
-    r_hip_fe = 31
-    r_knee_fe_jp = 32
-    r_knee_fe_jd = 34
-    r_ankle_fe = 35
-    r_ankle_ie = 36
+    r_hip_ie = 33
+    r_hip_aa = 34
+    r_hip_fe = 35
+    r_knee_fe_jp = 36
+    r_knee_fe_jd = 38
+    r_ankle_fe = 39
+    r_ankle_ie = 40
