@@ -17,6 +17,7 @@ public:
   Eigen::Vector3d base_joint_ang_vel_;
 
   Eigen::VectorXd joint_positions_;
+  Eigen::VectorXd torques_;
 
   Eigen::Vector3d est_base_joint_pos_;
   Eigen::Vector4d est_base_joint_ori_;

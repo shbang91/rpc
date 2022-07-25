@@ -18,6 +18,8 @@
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "util/util.hpp"
 
+#include "build/messages/horizon_to_pnc.pb.h"
+
 DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     : ControlArchitecture(robot) {
   util::PrettyConstructor(1, "DracoControlArchitecture");
@@ -50,8 +52,11 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       dcm_planner_, tci_container_->com_task_, tci_container_->torso_ori_task_,
       robot_, draco_link::l_foot_contact, draco_link::r_foot_contact);
 
-  mpc_tm_ = new MPCTrajectoryManager(tci_container_->com_task_, tci_container_->torso_ori_task_,
-                                     robot_, draco_link::l_foot_contact, draco_link::r_foot_contact);
+  // Non-Linear MPC
+//  mpc_tm_ = new MPCTrajectoryManager(tci_container_, robot_, draco_link::l_foot_contact, draco_link::r_foot_contact);
+
+  horizon_handler_ = new NMPCHandler(robot_, tci_container_, draco_link::l_foot_contact, draco_link::r_foot_contact);
+
   lf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->lf_pos_task_, tci_container_->lf_ori_task_, robot_);
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(
@@ -121,17 +126,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 
   this->_InitializeParameters();
-
-  // ZMQ Sockets (MPC comms)
-  context_pub_ = new zmq::context_t(1);
-  publisher_ = new zmq::socket_t(*context_pub_, ZMQ_PUB);
-  publisher_->bind("tcp://127.0.0.2:5557");
-  footstep_list_index_ = -2;
-
-  context_sub_ = new zmq::context_t(1);
-  subscriber_ = new zmq::socket_t(*context_sub_, ZMQ_SUB);
-  subscriber_->connect("tcp://127.0.0.3:5557");
-  subscriber_->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);
 }
 
 DracoControlArchitecture::~DracoControlArchitecture() {
@@ -147,6 +141,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete lf_max_normal_froce_tm_;
   delete rf_max_normal_froce_tm_;
   delete dcm_tm_;
+  delete horizon_handler_;
 
   // hm
   delete lf_pos_hm_;
@@ -163,22 +158,41 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionStart];
 }
 
-void DracoControlArchitecture::GetCommand(void *command) {
-  if (b_state_first_visit_) {
-    state_machine_container_[state_]->FirstVisit();
-    b_state_first_visit_ = false;
-  }
+void DracoControlArchitecture::GetCommand(void *command)
+{
+//  if(sp_->count_ % 100 == 0)
+//      std::couts << sp_->count_ << std::endl;
 
-  if (!state_machine_container_[state_]->EndOfState()) {
-    state_machine_container_[state_]->OneStep();
-    // state independent upper body traj setting
-    upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
-    controller_->GetCommand(command);
-  } else {
-    state_machine_container_[state_]->LastVisit();
-    prev_state_ = state_;
-    state_ = state_machine_container_[state_]->GetNextState();
-    b_state_first_visit_ = true;
+  if (sp_->count_ < 1000)
+  {
+    if (b_state_first_visit_) {
+      state_machine_container_[state_]->FirstVisit();
+      b_state_first_visit_ = false;
+    }
+
+    if (!state_machine_container_[state_]->EndOfState()) {
+      state_machine_container_[state_]->OneStep();
+      // state independent upper body traj setting
+      upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
+      controller_->GetCommand(command);
+    }
+    else {
+      state_machine_container_[state_]->LastVisit();
+      prev_state_ = state_;
+      state_ = state_machine_container_[state_]->GetNextState();
+      b_state_first_visit_ = true;
+    }
+  }
+  horizon_handler_->SetFootstepToPublish(sp_->count_);
+  if (!horizon_handler_->footstep_to_publish_.empty())
+  {
+    horizon_handler_->SolveMPC();
+    horizon_handler_->ReceiveSolution();
+    if (horizon_handler_->solutionReceived() && sp_->count_ > 1000)
+    {
+      horizon_handler_->UpdateDesired();
+      controller_->GetCommand(command);
+    }
   }
 }
 

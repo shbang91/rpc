@@ -1,15 +1,13 @@
-#include <controller/whole_body_controller/managers/mpc_trajectory_manager.hpp>
+#include "controller/whole_body_controller/managers/mpc_trajectory_manager.hpp"
 
-MPCTrajectoryManager::MPCTrajectoryManager(Task* _com_task,
-                                           Task* _base_ori_task,
-                                           PinocchioRobotSystem* _robot,
-                                           int _lfoot_id,
-                                           int _rfoot_id):
-com_task_(_com_task),
-base_ori_task_(_base_ori_task),
-robot_(_robot),
-lfoot_id_(_lfoot_id),
-rfoot_id_(_rfoot_id)
+MPCTrajectoryManager::MPCTrajectoryManager(TCIContainer *tci_container,
+                                           PinocchioRobotSystem *robot,
+                                           int lfoot_id,
+                                           int rfoot_id):
+tci_container_(tci_container),
+robot_(robot),
+lfoot_id_(lfoot_id),
+rfoot_id_(rfoot_id)
 {
     util::PrettyConstructor(2, "MPCTrajectoryManager");
 
@@ -29,8 +27,8 @@ void MPCTrajectoryManager::paramInitialization(const YAML::Node &node)
   try {
     // Load DCM Parameters
     util::ReadParameter(node, "com_height", nominal_com_height_);
-    util::ReadParameter(node, "t_contact_trans", t_contact_transition_);
-    util::ReadParameter(node, "t_swing", t_swing_);
+    util::ReadParameter(node, "t_double_support", t_contact_transition_);
+    util::ReadParameter(node, "t_single_support", t_swing_);
 
     // Load Walking Primitives Parameters
     util::ReadParameter(node, "nominal_footwidth", nominal_footwidth_);

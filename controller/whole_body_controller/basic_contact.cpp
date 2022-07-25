@@ -7,6 +7,11 @@ PointContact::PointContact(PinocchioRobotSystem *robot,
 
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(6, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(6);
+
+  /// No max force constraint
+//  cone_constraint_matrix_ = Eigen::MatrixXd::Zero(5, dim_);
+//  cone_constraint_vector_ = Eigen::VectorXd(5);
+
   util::PrettyConstructor(3, "PointContact");
 }
 
@@ -34,6 +39,7 @@ void PointContact::UpdateConeConstraint() {
   cone_constraint_matrix_(3, 2) = mu_;
   cone_constraint_matrix_(4, 1) = -1.;
   cone_constraint_matrix_(4, 2) = mu_;
+  /// Uncomment for max force constraint
   cone_constraint_matrix_(5, 2) = -1.;
 
   // Eigen::Matrix3d rot_world_local =
@@ -42,6 +48,8 @@ void PointContact::UpdateConeConstraint() {
   // cone_constraint_matrix_ * rot_world_local.transpose();
 
   // -Fz >= -rf_z_max
+
+  /// Uncomment for max force constraint
   cone_constraint_vector_[5] = -rf_z_max_;
 }
 

@@ -83,6 +83,7 @@ DracoData::DracoData()
       est_base_joint_lin_vel_(Eigen::Vector3d::Zero()),
       est_base_joint_ang_vel_(Eigen::Vector3d::Zero()),
       joint_positions_(Eigen::VectorXd::Zero(27)),
+      torques_(Eigen::VectorXd::Zero(27)),
       des_com_pos_(Eigen::VectorXd::Zero(3)),
       act_com_pos_(Eigen::VectorXd::Zero(3)),
       des_com_vel_(Eigen::VectorXd::Zero(3)),

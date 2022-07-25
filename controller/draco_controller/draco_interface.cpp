@@ -18,7 +18,7 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   util::PrettyConstructor(0, "DracoInterface");
 
   robot_ =
-      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_point_contact.urdf",
                                THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);

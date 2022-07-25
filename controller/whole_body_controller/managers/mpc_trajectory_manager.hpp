@@ -1,17 +1,17 @@
 #pragma once
 
-#include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
-#include "controller/whole_body_controller/basic_task.hpp"
+#include "controller/whole_body_controller/tci_container.hpp"
+#include "controller/draco_controller/draco_definition.hpp"
+#include "util/util.hpp"
 
 class MPCTrajectoryManager {
 public:
-    MPCTrajectoryManager(Task* _com_task,
-                         Task* _base_ori_task,
-                         PinocchioRobotSystem* _robot,
-                         int _l_foot_id,
-                         int _r_foot_id);
+    MPCTrajectoryManager(TCIContainer *tci_container,
+                         PinocchioRobotSystem *robot,
+                         int lfoot_id,
+                         int rfoot_id);
     ~MPCTrajectoryManager();
 
     /// Read params from YAML file
@@ -47,8 +47,7 @@ private:
     // Private member objects
     PinocchioRobotSystem *robot_;
 
-    Task *com_task_;
-    Task *base_ori_task_;
+    TCIContainer *tci_container_;
 
     int lfoot_id_, rfoot_id_;
 

@@ -1,3 +1,3 @@
 add_subdirectory(lmpc)
-#add_subdirectory(nmpc)
+add_subdirectory(nmpc)
 

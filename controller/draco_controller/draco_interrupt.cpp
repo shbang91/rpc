@@ -33,7 +33,7 @@ void DracoInterrupt::ProcessInterrupt() {
       std::cout << "-----------------------------------" << std::endl;
       if (ctrl_arch_->State() == draco_states::kDoubleSupportBalance)
       {
-          ctrl_arch_->mpc_tm_->walkForward();
+          ctrl_arch_->horizon_handler_->walkForward();
       }
       else
       {

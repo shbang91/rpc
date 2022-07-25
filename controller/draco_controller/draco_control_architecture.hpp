@@ -1,6 +1,7 @@
 #pragma once
 #include "controller/control_architecture.hpp"
 
+#include "controller/model_predictive_controller/nmpc/nmpc_handler.hpp"
 #include <zmq.hpp>
 
 
@@ -28,7 +29,7 @@ class DCMTrajectoryManager;
 class MPCTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
-class Footstep;
+class FootStep;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
@@ -46,7 +47,7 @@ public:
   EndEffectorTrajectoryManager *lf_SE3_tm_;
   EndEffectorTrajectoryManager *rf_SE3_tm_;
   DCMTrajectoryManager *dcm_tm_;
-  MPCTrajectoryManager *mpc_tm_;
+  NMPCHandler *horizon_handler_;
 
   TaskHierarchyManager *lf_pos_hm_;
   TaskHierarchyManager *lf_ori_hm_;
@@ -57,13 +58,6 @@ private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
-
-  int footstep_list_index_;
-  std::vector<Footstep>::iterator init_it, end_it;
-  zmq::context_t* context_pub_;
-  zmq::context_t* context_sub_;
-  zmq::socket_t* publisher_;
-  zmq::socket_t* subscriber_;
 
   void _InitializeParameters() override;
 };
