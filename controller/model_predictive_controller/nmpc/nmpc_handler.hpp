@@ -46,7 +46,6 @@ public:
   void walkForward();
 
   void SetFootstepToPublish(const int count);
-  void IsNew(const bool is_new);
 
   bool solutionReceived() const { return solution_received_; }
 
@@ -60,6 +59,10 @@ private:
   void _GetMPCInputData() override;
   void _GetMPCOutputData() override;
   void _SendData() override;
+
+  // sender time parameters
+  double T_, ctrl_dt_;
+  int n_nodes_;
 
   std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFoot(int foot);
   Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot);

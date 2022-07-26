@@ -736,6 +736,12 @@
       </geometry>
       <material name="black"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="package://meshes/torso_link3.obj"/>
+      </geometry>
+    </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00363703 -0.00531284 -0.0260652"/>
       <mass value="0.162"/>

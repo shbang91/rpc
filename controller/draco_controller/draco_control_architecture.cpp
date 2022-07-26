@@ -188,6 +188,7 @@ void DracoControlArchitecture::GetCommand(void *command)
   {
     horizon_handler_->SolveMPC();
     horizon_handler_->ReceiveSolution();
+    upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
     if (horizon_handler_->solutionReceived() && sp_->count_ > 1000)
     {
       horizon_handler_->UpdateDesired();

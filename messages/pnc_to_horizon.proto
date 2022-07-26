@@ -14,10 +14,9 @@ message Contact {
 }
 
 message DracoState {
-    repeated float joint_positions = 1;
-    repeated float joint_velocities = 2;
-
-    repeated Contact contacts = 3;
-    bool is_new = 4;
+    repeated Contact contacts = 1;
+    bool is_new = 2;
+    repeated float com_pos = 3;
+    repeated float com_vel = 4;
 }
 

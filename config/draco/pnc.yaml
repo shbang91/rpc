@@ -15,7 +15,7 @@ wbc:
       com_height_target_source: 0 # 0: com height / 1: base height
 
       ## sim params
-      weight : [20., 20., 20.]
+      weight : [100., 100., 100.]
       kp : [200., 200., 200.]
       kd : [10., 10., 5.]
       icp_weight : [20., 20., 20.] # only used when feedback source : 1
@@ -94,7 +94,7 @@ wbc:
 
   contact:
     ## sim params
-    mu: 0.3
+    mu: 0.8
     max_rf_z: 1000.
     foot_half_length: 0.08
     foot_half_width: 0.04
@@ -118,7 +118,7 @@ state_machine:
 
     stand_up:
       standup_duration: 1.
-      target_com_height: 0.7
+      target_com_height: 0.6
       target_base_height: 0.9
 
       rf_z_max_interp_duration: 0.1
@@ -130,7 +130,7 @@ state_machine:
       #frequency: [0., 0., 1.] # [hz]
 
 dcm_walking:
-  com_height: 0.7 #same as the target_com_height in stand_up?
+  com_height: 0.5 #same as the target_com_height in stand_up?
   t_additional_init_trans: 0.
   t_contact_trans: 0.45
   t_swing: 0.55

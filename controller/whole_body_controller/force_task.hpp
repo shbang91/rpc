@@ -13,6 +13,11 @@ public:
 
   // setter
   void UpdateDesired(const Eigen::VectorXd &rf_des) { rf_des_ = rf_des; };
+  void SetWeight(const double w)
+  {
+      weight_.setIdentity();
+      weight_ *= w;
+  }
 
   // getter
   Eigen::VectorXd DesiredRf() const { return rf_des_; }
