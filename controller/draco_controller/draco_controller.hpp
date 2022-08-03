@@ -35,5 +35,7 @@ private:
 
   int data_save_freq_;
 
+  int count_;
+
   void _SaveData();
 };

@@ -24,9 +24,21 @@ rfoot_id_(rfoot_id)
     robot_side_first_ = end_effector::LFoot;
     solution_received_ = false;
 
-    T_ = 5.0;
+    T_ = 2.;
     n_nodes_ = 20;
     ctrl_dt_ = 0.00125;
+
+    // Initialize vectors for linear interpolation
+    old_lf_force_.setZero(6);   old_rf_force_.setZero(6);
+
+    old_com_pos_.setZero(3);    old_com_vel_.setZero(3);    old_com_acc_.setZero(3);
+    old_base_ori_.setZero(4);   old_base_vel_.setZero(3);   old_base_acc_.setZero(3);
+    old_lf_pos_.setZero(3);     old_lf_vel_.setZero(3);     old_lf_acc_.setZero(3);
+    old_rf_pos_.setZero(3);     old_rf_vel_.setZero(3);     old_rf_acc_.setZero(3);
+
+    interp_count_ = 0;
+
+    logger_ = XBot:: MatLogger2::MakeLogger("/tmp/tasks_references");
 }
 
 void NMPCHandler::paramInitialization(const YAML::Node &node)
@@ -143,10 +155,11 @@ void NMPCHandler::_resetStepIndex()
 
 void NMPCHandler::SetFootstepToPublish(const int count)
 {
+    count_ = count;
     if(!footstep_list.empty())
     {
         is_new_ = true;
-        // Update the next footstep reference every T = 1s
+        // Update the next footstep reference every T seconds
         /// Problem: simulation time is slower than actual time!
         if(count % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ < int(footstep_list.size() - 4))
         {
@@ -170,7 +183,7 @@ void NMPCHandler::SetFootstepToPublish(const int count)
         }
 
         // Create Protobuf message
-        if (count % int(T_ / n_nodes_ / ctrl_dt_) == 0) // && footstep_list_index_ >= 0)
+        if (count % int(T_ / n_nodes_ / ctrl_dt_) == 0)
         {
             if (count % int(T_ / ctrl_dt_) != 0)
                 is_new_ = false;
@@ -254,11 +267,42 @@ void NMPCHandler::_GetMPCOutputData()
     if(temp_res.com_size() > 0)
     {
         solution_received_ = true;
+        if (mpc_res_.com_size() > 0)
+        {
+            old_mpc_res_.CopyFrom(mpc_res_);
+        }
+        else
+        {
+            old_mpc_res_.CopyFrom(temp_res);
+        }
+        // Update old references for interpolation
+        auto old_left_foot = _ConvertFoot(draco_link::l_foot_contact, old_mpc_res_, 1);
+        old_lf_force_ = _ConvertFootForces(std::get<0>(old_left_foot), draco_link::l_foot_contact, old_mpc_res_, 1);
+
+        auto old_right_foot = _ConvertFoot(draco_link::r_foot_contact, old_mpc_res_, 1);
+        old_rf_force_ = _ConvertFootForces(std::get<0>(old_right_foot), draco_link::r_foot_contact, old_mpc_res_, 1);
+
+        old_com_pos_ << old_mpc_res_.com(1).x(), old_mpc_res_.com(1).y(), old_mpc_res_.com(1).z();
+        old_com_vel_ << old_mpc_res_.com_vel(1).xdot(), old_mpc_res_.com_vel(1).ydot(), old_mpc_res_.com_vel(1).zdot();
+        old_com_acc_ << old_mpc_res_.com_acc(1).xddot(), old_mpc_res_.com_acc(1).yddot(), old_mpc_res_.com_acc(1).zddot();
+
+        old_lf_pos_ = std::get<0>(old_left_foot);
+        old_lf_vel_ = std::get<1>(old_left_foot);
+        old_lf_acc_ = std::get<2>(old_left_foot);
+
+        old_rf_pos_ = std::get<0>(old_right_foot);
+        old_rf_vel_ = std::get<1>(old_right_foot);
+        old_rf_acc_ = std::get<2>(old_right_foot);
+
         mpc_res_.CopyFrom(temp_res);
+        interp_count_ = 0;
+
+        auto right_foot_ref = _ConvertFoot(draco_link::r_foot_contact, mpc_res_, 1);
+        auto new_rf_force = _ConvertFootForces(std::get<0>(right_foot_ref), draco_link::r_foot_contact, mpc_res_, 1);
     }
 }
 
-std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_ConvertFoot(int foot)
+std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_ConvertFoot(int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index)
 {
     HORIZON_TO_PNC::FootPos foot_pos;
     HORIZON_TO_PNC::FootVel foot_vel;
@@ -271,15 +315,15 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_Conv
 
     if (foot == draco_link::l_foot_contact)
     {
-        foot_pos = mpc_res_.left_foot_pos(1);
-        foot_vel = mpc_res_.left_foot_vel(1);
-        foot_acc = mpc_res_.left_foot_acc(1);
+        foot_pos = mpc_res.left_foot_pos(index);
+        foot_vel = mpc_res.left_foot_vel(index);
+        foot_acc = mpc_res.left_foot_acc(index);
     }
     else if (foot == draco_link::r_foot_contact)
     {
-        foot_pos = mpc_res_.right_foot_pos(1);
-        foot_vel = mpc_res_.right_foot_vel(1);
-        foot_acc = mpc_res_.right_foot_acc(1);
+        foot_pos = mpc_res.right_foot_pos(index);
+        foot_vel = mpc_res.right_foot_vel(index);
+        foot_acc = mpc_res.right_foot_acc(index);
     }
     else
         throw std::runtime_error("[NMPCHandler: convertFoot()]: Wrong link selected!");
@@ -299,7 +343,7 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_Conv
     return std::make_tuple(pos, vel, acc);
 }
 
-Eigen::Matrix<double, 6, 1> NMPCHandler::_ConvertFootForces(Eigen::Vector3d foot_center, int foot)
+Eigen::Matrix<double, 6, 1> NMPCHandler::_ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index)
 {
     HORIZON_TO_PNC::ForceFoot force_foot;
     HORIZON_TO_PNC::FootPos foot_pos;
@@ -308,23 +352,24 @@ Eigen::Matrix<double, 6, 1> NMPCHandler::_ConvertFootForces(Eigen::Vector3d foot
 
     if (foot == draco_link::l_foot_contact)
     {
-        force_foot = mpc_res_.force_left(1);
-        foot_pos = mpc_res_.left_foot_pos(1);
+        force_foot = mpc_res.force_left(index);
+        foot_pos = mpc_res.left_foot_pos(index);
 
     }
     else if (foot == draco_link::r_foot_contact)
     {
-        force_foot = mpc_res_.force_right(1);
-        foot_pos = mpc_res_.right_foot_pos(1);
+        force_foot = mpc_res.force_right(index);
+        foot_pos = mpc_res.right_foot_pos(index);
     }
     else
         throw std::runtime_error("[NMPCHandler: convertFootForces()]: Wrong link selected!");
 
     for (int i = 0; i < force_foot.force_size(); i++)
     {
+        // TODO: CHECK!!
         Eigen::Vector3d arm = Eigen::Vector3d(foot_pos.pos(i).x(), foot_pos.pos(i).y(), foot_pos.pos(i).z()) - foot_center;
-        wrench.block<3, 1>(3, 0) += Eigen::Vector3d(force_foot.force(i).f_x(), force_foot.force(i).f_y(), force_foot.force(i).f_z());
-        wrench.block<3, 1>(0, 0) += arm.cross(Eigen::Vector3d(force_foot.force(i).f_x(), force_foot.force(i).f_y(), force_foot.force(i).f_z()));
+        wrench.tail<3>() += Eigen::Vector3d(force_foot.force(i).f_x(), force_foot.force(i).f_y(), force_foot.force(i).f_z());
+        wrench.head<3>() += arm.cross(Eigen::Vector3d(force_foot.force(i).f_x(), force_foot.force(i).f_y(), force_foot.force(i).f_z()));
     }
 
     Eigen::Matrix<double, 6, 6> w_T_b;
@@ -337,56 +382,94 @@ Eigen::Matrix<double, 6, 1> NMPCHandler::_ConvertFootForces(Eigen::Vector3d foot
     return wrench;
 }
 
+Eigen::VectorXd NMPCHandler::_LinearInterpolation(Eigen::VectorXd start, Eigen::VectorXd goal)
+{
+    int index = count_ % int(T_ / n_nodes_ / ctrl_dt_);
+    Eigen::VectorXd res = start + (goal - start) / int(T_ / n_nodes_ / ctrl_dt_) * interp_count_;
+
+    for (int i = 0; i < res.size(); i++)
+    {
+        if (goal(i) - start(i) > 0 && res(i) > goal(i))
+            res(i) = goal(i);
+        else if (goal(i) - start(i) < 0 && res(i) < goal(i))
+            res(i) = goal(i);
+    }
+
+    return res;
+}
+
 bool NMPCHandler::UpdateDesired()
 {
-//    std::cout << "starting updating" << std::endl;
     // Update com
-    int index_ref = 1;
-    tci_container_->task_map_["com_task"]->UpdateDesired(Eigen::Vector3d(mpc_res_.com(index_ref).x(), mpc_res_.com(index_ref).y(), mpc_res_.com(index_ref).z()),
-                                                         Eigen::Vector3d(mpc_res_.com_vel(index_ref).xdot(), mpc_res_.com_vel(index_ref).ydot(), mpc_res_.com_vel(index_ref).zdot()),
-                                                         Eigen::Vector3d(mpc_res_.com_acc(index_ref).xddot(), mpc_res_.com_acc(index_ref).yddot(), mpc_res_.com_acc(index_ref).zddot()));
+    Eigen::Vector3d com_pos_ref = _LinearInterpolation(old_com_pos_, Eigen::Vector3d(mpc_res_.com(1).x(), mpc_res_.com(1).y(), mpc_res_.com(1).z()));
+    Eigen::Vector3d com_vel_ref = _LinearInterpolation(old_com_vel_, Eigen::Vector3d(mpc_res_.com_vel(1).xdot(), mpc_res_.com_vel(1).ydot(), mpc_res_.com_vel(1).zdot()));
+    Eigen::Vector3d com_acc_ref = _LinearInterpolation(old_com_acc_, Eigen::Vector3d(mpc_res_.com_acc(1).xddot(), mpc_res_.com_acc(1).yddot(), mpc_res_.com_acc(1).zddot()));
+    tci_container_->task_map_["com_task"]->UpdateDesired(com_pos_ref, com_vel_ref, com_acc_ref);
 
-//    std::cout << "com updated: " << mpc_res_.com(0).x() << ", " << mpc_res_.com(0).y() << ", " << mpc_res_.com(0).z() << std::endl;
+    logger_->add("unfiltered_com_pos_ref", Eigen::Vector3d(mpc_res_.com(1).x(), mpc_res_.com(1).y(), mpc_res_.com(1).z()));
+    logger_->add("unfiltered_com_vel_ref", Eigen::Vector3d(mpc_res_.com_vel(1).xdot(), mpc_res_.com_vel(1).ydot(), mpc_res_.com_vel(1).zdot()));
+    logger_->add("unfiltered_com_acc_ref", Eigen::Vector3d(mpc_res_.com_acc(1).xddot(), mpc_res_.com_acc(1).yddot(), mpc_res_.com_acc(1).zddot()));
+    logger_->add("com_pos_ref", com_pos_ref);
+    logger_->add("com_vel_ref", com_vel_ref);
+    logger_->add("com_acc_ref", com_acc_ref);
+
 
     // Update torso orientation
-    tci_container_->task_map_["torso_ori_task"]->UpdateDesired(Eigen::Vector4d(mpc_res_.ori(index_ref).ori_x(), mpc_res_.ori(index_ref).ori_y(), mpc_res_.ori(index_ref).ori_z(), mpc_res_.ori(index_ref).ori_w()),
-                                                               Eigen::Vector3d(mpc_res_.omega(index_ref).omega_x(), mpc_res_.omega(index_ref).omega_y(), mpc_res_.omega(index_ref).omega_z()),
-                                                               Eigen::Vector3d(mpc_res_.omega_dot(index_ref).omega_dot_x(), mpc_res_.omega_dot(index_ref).omega_dot_y(), mpc_res_.omega_dot(index_ref).omega_dot_z()));
+    tci_container_->task_map_["torso_ori_task"]->UpdateDesired(Eigen::Vector4d(mpc_res_.ori(1).ori_x(), mpc_res_.ori(1).ori_y(), mpc_res_.ori(1).ori_z(), mpc_res_.ori(1).ori_w()),
+                                                               Eigen::Vector3d(mpc_res_.omega(1).omega_x(), mpc_res_.omega(1).omega_y(), mpc_res_.omega(1).omega_z()),
+                                                               Eigen::Vector3d(mpc_res_.omega_dot(1).omega_dot_x(), mpc_res_.omega_dot(1).omega_dot_y(), mpc_res_.omega_dot(1).omega_dot_z()));
 
 
     // Update left foot
-    auto left_foot_ref = _ConvertFoot(draco_link::l_foot_contact);
-//    std::cout << "left foot pose converted" << std::endl;
-    tci_container_->task_map_["lf_pos_task"]->UpdateDesired(std::get<0>(left_foot_ref),
-                                                            std::get<1>(left_foot_ref),
-                                                            std::get<2>(left_foot_ref));
+    auto left_foot_ref = _ConvertFoot(draco_link::l_foot_contact, mpc_res_, 1);
+    Eigen::Vector3d lf_pos_ref = _LinearInterpolation(old_lf_pos_, std::get<0>(left_foot_ref));
+    Eigen::Vector3d lf_vel_ref = _LinearInterpolation(old_lf_vel_, std::get<1>(left_foot_ref));
+    Eigen::Vector3d lf_acc_ref = _LinearInterpolation(old_lf_acc_, std::get<2>(left_foot_ref));
+    tci_container_->task_map_["lf_pos_task"]->UpdateDesired(lf_pos_ref, lf_vel_ref, lf_acc_ref);
+
     tci_container_->task_map_["lf_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0, 1),
                                                             Eigen::Vector3d(0, 0, 0),
                                                             Eigen::Vector3d(0, 0, 0));
-//    std::cout << "left foot pose updated: " << std::get<0>(left_foot_ref).transpose() << std::endl;
 
-    auto left_force_ref = _ConvertFootForces(std::get<0>(left_foot_ref), draco_link::l_foot_contact);
-//    std::cout << "left foot force converted" << std::endl;
-    tci_container_->force_task_map_["lf_reaction_force_task"]->SetWeight(100);
-    tci_container_->force_task_map_["lf_reaction_force_task"]->UpdateDesired(left_force_ref);
-//    std::cout << "left foot force updated: " << left_force_ref(5) << std::endl;
+    auto left_force_ref = _ConvertFootForces(std::get<0>(left_foot_ref), draco_link::l_foot_contact, mpc_res_, 1);
+    tci_container_->force_task_map_["lf_reaction_force_task"]->UpdateDesired(_LinearInterpolation(old_lf_force_, left_force_ref));
 
     // Update right foot
-    auto right_foot_ref = _ConvertFoot(draco_link::r_foot_contact);
-//    std::cout << "right foot pose converted" << std::endl;
-    tci_container_->task_map_["rf_pos_task"]->UpdateDesired(std::get<0>(right_foot_ref),
-                                                            std::get<1>(right_foot_ref),
-                                                            std::get<2>(right_foot_ref));
+    auto right_foot_ref = _ConvertFoot(draco_link::r_foot_contact, mpc_res_, 1);
+    Eigen::Vector3d rf_pos_ref = _LinearInterpolation(old_rf_pos_, std::get<0>(right_foot_ref));
+    Eigen::Vector3d rf_vel_ref = _LinearInterpolation(old_rf_vel_, std::get<1>(right_foot_ref));
+    Eigen::Vector3d rf_acc_ref = _LinearInterpolation(old_rf_acc_, std::get<2>(right_foot_ref));
+
+    tci_container_->task_map_["rf_pos_task"]->UpdateDesired(rf_pos_ref, rf_vel_ref, rf_acc_ref);
+
+
+
     tci_container_->task_map_["rf_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0, 1),
                                                             Eigen::Vector3d(0, 0, 0),
                                                             Eigen::Vector3d(0, 0, 0));
-//    std::cout << "right foot pose updated: " << std::get<0>(right_foot_ref).transpose() << std::endl;
 
-    auto right_force_ref = _ConvertFootForces(std::get<0>(right_foot_ref), draco_link::r_foot_contact);
-//    std::cout << "right foot force converted" << std::endl;
-    tci_container_->force_task_map_["rf_reaction_force_task"]->SetWeight(100);
-    tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(right_force_ref);
-//    std::cout << "right foot force updated: " << right_force_ref(5) << std::endl;
+    auto right_force_ref = _ConvertFootForces(std::get<0>(right_foot_ref), draco_link::r_foot_contact, mpc_res_, 1);
+    tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(_LinearInterpolation(old_rf_force_, right_force_ref));
+    logger_->add("unfiltered_lf_pos_ref", std::get<0>(left_foot_ref));
+    logger_->add("unfiltered_lf_vel_ref", std::get<1>(left_foot_ref));
+    logger_->add("unfiltered_lf_acc_ref", std::get<2>(left_foot_ref));
+    logger_->add("lf_pos_ref", lf_pos_ref);
+    logger_->add("lf_vel_ref", lf_vel_ref);
+    logger_->add("lf_acc_ref", lf_acc_ref);
+    logger_->add("unfiltered_left_force_ref", left_force_ref);
+    logger_->add("left_force_ref", _LinearInterpolation(old_lf_force_, left_force_ref));
+    logger_->add("unfiltered_rf_pos_ref", std::get<0>(right_foot_ref));
+    logger_->add("unfiltered_rf_vel_ref", std::get<1>(right_foot_ref));
+    logger_->add("unfiltered_rf_acc_ref", std::get<2>(right_foot_ref));
+    logger_->add("rf_pos_ref", rf_pos_ref);
+    logger_->add("rf_vel_ref", rf_vel_ref);
+    logger_->add("rf_acc_ref", rf_acc_ref);
+    logger_->add("unfiltered_right_force_ref", right_force_ref);
+    logger_->add("right_force_ref", _LinearInterpolation(old_rf_force_, right_force_ref));
+    logger_->add("time", count_ * ctrl_dt_);
+
+    interp_count_++;
+
     return true;
 }
 

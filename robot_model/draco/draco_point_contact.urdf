@@ -695,25 +695,25 @@
     </inertial>
   </link>
   <joint name="l_foot_contact_frame_upper_left" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1 0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="0.08 0.04 0.0"/>
     <parent link="l_foot_contact"/>
     <child link="l_foot_contact_upper_left"/>
   </joint>
   <link name="l_foot_contact_upper_left"/>
   <joint name="l_foot_contact_frame_upper_right" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1 -0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="0.08 -0.04 0.0"/>
     <parent link="l_foot_contact"/>
     <child link="l_foot_contact_upper_right"/>
   </joint>
   <link name="l_foot_contact_upper_right"/>
   <joint name="l_foot_contact_frame_lower_left" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.1 0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="-0.08 0.04 0.0"/>
     <parent link="l_foot_contact"/>
     <child link="l_foot_contact_lower_left"/>
   </joint>
   <link name="l_foot_contact_lower_left"/>
   <joint name="l_foot_contact_frame_lower_right" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.1 -0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="-0.08 -0.04 0.0"/>
     <parent link="l_foot_contact"/>
     <child link="l_foot_contact_lower_right"/>
   </joint>
@@ -940,25 +940,25 @@
     </inertial>
   </link>
   <joint name="r_foot_contact_frame_upper_left" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1 0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="0.08 0.04 0.0"/>
     <parent link="r_foot_contact"/>
     <child link="r_foot_contact_upper_left"/>
   </joint>
   <link name="r_foot_contact_upper_left"/>
   <joint name="r_foot_contact_frame_upper_right" type="fixed">
-    <origin rpy="0 0 0" xyz="0.1 -0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="0.08 -0.04 0.0"/>
     <parent link="r_foot_contact"/>
     <child link="r_foot_contact_upper_right"/>
   </joint>
   <link name="r_foot_contact_upper_right"/>
   <joint name="r_foot_contact_frame_lower_left" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.1 0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="-0.08 0.04 0.0"/>
     <parent link="r_foot_contact"/>
     <child link="r_foot_contact_lower_left"/>
   </joint>
   <link name="r_foot_contact_lower_left"/>
   <joint name="r_foot_contact_frame_lower_right" type="fixed">
-    <origin rpy="0 0 0" xyz="-0.1 -0.05 0.0"/>
+    <origin rpy="0 0 0" xyz="-0.08 -0.04 0.0"/>
     <parent link="r_foot_contact"/>
     <child link="r_foot_contact_lower_right"/>
   </joint>

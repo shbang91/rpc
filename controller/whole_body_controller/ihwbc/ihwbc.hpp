@@ -30,6 +30,7 @@ public:
   // getter
   bool IsTrqLimit() const { return b_trq_limit_; }
   Eigen::MatrixXd Sa() const { return sa_; }
+  Eigen::VectorXd RFSol() const { return rf_sol_; }
 
   // setter
   void SetTrqLimit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &trq_limit) {

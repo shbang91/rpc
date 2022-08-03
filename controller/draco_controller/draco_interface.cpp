@@ -59,14 +59,14 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   if (count_ <= waiting_count_) {
     // for simulation without state estimator
-    // se_->UpdateGroundTruthSensorData(draco_sensor_data);
-    se_->InitializeSensorData(draco_sensor_data);
+     se_->UpdateGroundTruthSensorData(draco_sensor_data);
+//    se_->InitializeSensorData(draco_sensor_data);
     this->_SafeCommand(draco_sensor_data, draco_command);
 
   } else {
     // for simulation without state estimator
-    // se_->UpdateGroundTruthSensorData(draco_sensor_data);
-    se_->UpdateSensorData(draco_sensor_data);
+     se_->UpdateGroundTruthSensorData(draco_sensor_data);
+//    se_->UpdateSensorData(draco_sensor_data);
     ctrl_arch_->GetCommand(draco_command);
     interrupt_->ProcessInterrupt();
   }

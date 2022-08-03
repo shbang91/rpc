@@ -16,6 +16,7 @@ public:
 
     pos_ = Eigen::VectorXd::Zero(dim_);
     vel_ = Eigen::VectorXd::Zero(dim_);
+    acc_ = Eigen::VectorXd::Zero(dim_);
 
     pos_err_ = Eigen::VectorXd::Zero(dim_);
     vel_err_ = Eigen::VectorXd::Zero(dim_);
@@ -73,6 +74,7 @@ public:
 
   Eigen::VectorXd CurrentPos() const { return pos_; }
   Eigen::VectorXd CurrentVel() const { return vel_; }
+  Eigen::VectorXd CurrentAcc() const { return acc_; }
 
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
@@ -106,6 +108,7 @@ protected:
   // measured quantities
   Eigen::VectorXd pos_;
   Eigen::VectorXd vel_;
+  Eigen::VectorXd acc_;
 
   Eigen::VectorXd pos_err_;
   Eigen::VectorXd vel_err_;

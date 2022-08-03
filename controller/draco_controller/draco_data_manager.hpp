@@ -17,7 +17,6 @@ public:
   Eigen::Vector3d base_joint_ang_vel_;
 
   Eigen::VectorXd joint_positions_;
-  Eigen::VectorXd torques_;
 
   Eigen::Vector3d est_base_joint_pos_;
   Eigen::Vector4d est_base_joint_ori_;
@@ -28,6 +27,21 @@ public:
   Eigen::VectorXd act_com_pos_;
   Eigen::VectorXd des_com_vel_;
   Eigen::VectorXd act_com_vel_;
+
+  Eigen::VectorXd des_lf_pos_;
+  Eigen::VectorXd act_lf_pos_;
+  Eigen::VectorXd des_rf_pos_;
+  Eigen::VectorXd act_rf_pos_;
+
+  Eigen::VectorXd des_lf_vel_;
+  Eigen::VectorXd act_lf_vel_;
+  Eigen::VectorXd des_rf_vel_;
+  Eigen::VectorXd act_rf_vel_;
+
+  Eigen::VectorXd des_lf_force_;
+  Eigen::VectorXd act_lf_force_;
+  Eigen::VectorXd des_rf_force_;
+  Eigen::VectorXd act_rf_force_;
 };
 
 // Singleton class

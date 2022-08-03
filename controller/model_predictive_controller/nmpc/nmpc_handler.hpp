@@ -1,6 +1,8 @@
 #pragma once
 
 #include "controller/model_predictive_controller/mpc_handler.hpp"
+#include "controller/whole_body_controller/basic_task.hpp"
+#include "controller/whole_body_controller/force_task.hpp"
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
 
@@ -14,6 +16,9 @@
 // Proto custom messages
 #include "build/messages/pnc_to_horizon.pb.h"
 #include "build/messages/horizon_to_pnc.pb.h"
+
+// MatLogger2
+#include <matlogger2/matlogger2.h>
 
 
 class PinocchioRobotSystem;
@@ -54,27 +59,38 @@ public:
   std::vector<FootStep> footstep_list;
   std::vector<FootStep> footstep_to_publish_;
 
-
 private:
   void _GetMPCInputData() override;
   void _GetMPCOutputData() override;
   void _SendData() override;
 
+  XBot::MatLogger2::Ptr logger_;
+
+  Eigen::VectorXd _LinearInterpolation(Eigen::VectorXd start, Eigen::VectorXd goal);
+
   // sender time parameters
   double T_, ctrl_dt_;
   int n_nodes_;
+  int count_, interp_count_;
 
-  std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFoot(int foot);
-  Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot);
+  std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFoot(int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
+  Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
 
   int footstep_list_index_;
   bool is_new_;
   std::vector<FootStep>::iterator init_it, end_it;
 
   zmq::message_t update_;
-  HORIZON_TO_PNC::MPCResult mpc_res_;
+  HORIZON_TO_PNC::MPCResult mpc_res_, old_mpc_res_;
   NMPCOutputData nmpc_output_data_;
   bool solution_received_;
+
+  // Old reference for interpolation
+  Eigen::VectorXd old_lf_force_, old_rf_force_;
+  Eigen::VectorXd old_com_pos_, old_com_vel_, old_com_acc_;
+  Eigen::VectorXd old_base_ori_, old_base_vel_, old_base_acc_;
+  Eigen::VectorXd old_lf_pos_, old_lf_vel_, old_lf_acc_;
+  Eigen::VectorXd old_rf_pos_, old_rf_vel_, old_rf_acc_;
 
   /// MPC Trajectory Managing
   // Reset step indices and vectors

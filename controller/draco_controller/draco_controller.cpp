@@ -9,6 +9,7 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
+#include "controller/whole_body_controller/force_task.hpp"
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
 #include "util/interpolation.hpp"
 
@@ -91,6 +92,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
               << __FILE__ << "]" << std::endl
               << std::endl;
   }
+  count_ = 0;
 }
 
 DracoController::~DracoController() { delete ihwbc_; }
@@ -193,5 +195,19 @@ void DracoController::_SaveData() {
   dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
   dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
 
-  dm->data_->torques_ = joint_trq_cmd_;
+  dm->data_->des_lf_pos_ = tci_container_->lf_pos_task_->DesiredPos();
+  dm->data_->act_lf_pos_ = tci_container_->lf_pos_task_->CurrentPos();
+  dm->data_->des_rf_pos_ = tci_container_->rf_pos_task_->DesiredPos();
+  dm->data_->act_rf_pos_ = tci_container_->rf_pos_task_->CurrentPos();
+
+//  dm->data_->des_lf_vel_ = tci_container_->lf_pos_task_->DesiredVel();
+//  dm->data_->act_lf_vel_ = tci_container_->lf_pos_task_->CurrentVel();
+//  dm->data_->des_rf_vel_ = tci_container_->rf_pos_task_->DesiredVel();
+//  dm->data_->des_rf_vel_ = tci_container_->rf_pos_task_->CurrentVel();
+
+  dm->data_->des_lf_force_ = tci_container_->lf_reaction_force_task_->DesiredRf();
+  dm->data_->act_lf_force_ = ihwbc_->RFSol().head(6);
+  dm->data_->des_rf_force_ = tci_container_->rf_reaction_force_task_->DesiredRf();
+  dm->data_->act_rf_force_ = ihwbc_->RFSol().tail(6);
+
 }

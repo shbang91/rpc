@@ -2,6 +2,7 @@ import os
 import sys
 
 import rospy
+from rosgraph_msgs.msg import Clock
 import ttictoc
 from horizon import problem, variables
 from horizon.utils import utils, kin_dyn, mat_storer
@@ -26,8 +27,10 @@ sys.path.append(cwd + '/build/messages')
 from pnc_to_horizon_pb2 import *
 from horizon_to_pnc_pb2 import *
 
+
 global set_bool
 global is_callback_done
+global time_mpc
 
 class bcolors:
     HEADER = '\033[95m'
@@ -68,6 +71,10 @@ def callback(contact_sequence, robot_state, msg):
     global is_callback_done
     set_bool = msg.is_new
     is_callback_done = True
+
+def clock_callback(msg):
+    global time_mpc
+    time_mpc = msg.clock.to_sec()
 
 def generateSolutionMessage(solution):
     res_msg = MPCResult()
@@ -162,20 +169,21 @@ def fromContactSequenceToFrames(contact):
     rot = R.from_quat(contact['ori'])
     matrix_rot = rot.as_matrix()
 
-    upper_left = np.array(contact['pos']) + np.dot(matrix_rot, np.array([0.1, 0.05, 0.0]))
-    upper_right = np.array(contact['pos']) + np.dot(matrix_rot, np.array([0.1, -0.05, 0.0]))
-    lower_left = np.array(contact['pos']) + np.dot(matrix_rot, np.array([-0.1, 0.05, 0.0]))
-    lower_right = np.array(contact['pos']) + np.dot(matrix_rot, np.array([-0.1, -0.05, 0.0]))
+    upper_left = np.array(contact['pos']) + np.dot(matrix_rot, np.array([0.08, 0.04, 0.0]))
+    upper_right = np.array(contact['pos']) + np.dot(matrix_rot, np.array([0.08, -0.04, 0.0]))
+    lower_left = np.array(contact['pos']) + np.dot(matrix_rot, np.array([-0.08, 0.04, 0.0]))
+    lower_right = np.array(contact['pos']) + np.dot(matrix_rot, np.array([-0.08, -0.04, 0.0]))
 
     return list(upper_left) + list(upper_right) + list(lower_left) + list(lower_right)
 
 class steps_phase:
-    def __init__(self, f, c_ref, cdot, r, r_ref, rdot_ref, T, nodes, number_of_legs, contact_model, max_force, max_velocity):
+    def __init__(self, f, c_ref, cdot, r, r_ref, rdot, rdot_ref, T, nodes, number_of_legs, contact_model, max_force, max_velocity):
         self.f = f
         self.c_ref = c_ref
         self.cdot = cdot
         self.r = r
         self.r_ref = r_ref
+        self.rdot = rdot
         self.rdot_ref = rdot_ref
 
         self.number_of_legs = number_of_legs
@@ -216,17 +224,7 @@ class steps_phase:
             self.l_f_bounds.append([max_force, max_force, max_force])
             self.l_cdot_bounds.append([0., 0., 0.])
         # self.l_f_bounds.append([max_force, max_force, max_force])
-        # self.l_cdot_bounds.append([0., 0., 0.])
-
-        #COM SWING
-        self.r_swing = []
-        self.rdot_swing = []
-        sin = 0.05 * np.sin(np.linspace(0, 2 * np.pi, self.nodes + 1))
-        cos = 0.05 * (2 * np.pi / T) * np.cos(np.linspace(0, 2 * np.pi, self.nodes + 1))
-        for k in range(self.nodes):
-            self.r_swing.append([0., -0.1 + sin[k], 0.6])
-            self.rdot_swing.append([0., cos[k], 0.])
-
+        self.l_cdot_bounds.append([0., 0., 0.])
 
         self.r_f_bounds = []
         self.r_cdot_bounds = []
@@ -236,14 +234,26 @@ class steps_phase:
         for k in range(0, 8):  # 8 nodes down (other step)
             self.r_f_bounds.append([max_force, max_force, max_force])
             self.r_cdot_bounds.append([0., 0., 0.])
-        for k in range(0, 1):  # 2 nodes down
+        for k in range(0, 2):  # 2 nodes down
             self.r_f_bounds.append([max_force, max_force, max_force])
             self.r_cdot_bounds.append([0., 0., 0.])
-        for k in range(0, 9):  # 8 nodes step
+        for k in range(0, 8):  # 8 nodes step
             self.r_f_bounds.append([0., 0., 0.])
             self.r_cdot_bounds.append([max_velocity, max_velocity, max_velocity])
         # self.r_f_bounds.append([max_force, max_force, max_force])
-        # self.r_cdot_bounds.append([0., 0., 0.])
+        self.r_cdot_bounds.append([0., 0., 0.])
+
+        #COM SWING
+        self.r_swing = []
+        self.rdot_swing = []
+        sin = 0.05 * np.sin(np.linspace(0, 2 * np.pi, self.nodes + 1))
+        cos = 0.05 * (2 * np.pi / T) * np.cos(np.linspace(0, 2 * np.pi, self.nodes + 1))
+        for k in range(self.nodes):
+            ''' use this when setting the left foot as world '''
+            # self.r_swing.append([0., -0.1 + sin[k], 0.6])
+            ''' use this when using pybullet world '''
+            self.r_swing.append([0.05, sin[k], 0.6])
+            self.rdot_swing.append([0., cos[k], 0.])
 
         self.action = ""
 
@@ -258,7 +268,7 @@ class steps_phase:
             exit()
 
         self.contact_positions = []
-        sin = 0.1 * np.sin(np.linspace(0, np.pi, 10))
+        sin = 0.05 * np.sin(np.linspace(0, np.pi, 10))
         for k in range(0, 2):  # 2 nodes down
             self.contact_positions.append(current_contacts)
             self.contact_positions[-1][2::3] = [0] * number_of_contacts
@@ -271,8 +281,8 @@ class steps_phase:
         for k in range(0, 8):  # 8 nodes step
             self.contact_positions.append(next_contacts[:])
             self.contact_positions[-1][2::3] = [0] * self.contact_model + [sin[k+1]] * self.contact_model
-
-        self.contact_positions.append(next_contacts)
+        self.contact_positions.append(next_contacts[:])
+        # self.contact_positions.append(next_contacts)
 
         self.stance_contact_position = []
         self.stance_contact_velocity = []
@@ -305,15 +315,15 @@ class steps_phase:
             for i in range(0, contact_model):
                 self.c_ref[i].assign(self.contact_positions[0][(i * 3):(i * 3 + 3)], nodes=self.nodes)
                 self.moveLeftParam(self.c_ref[i])
-                self.f[i].setBounds(-1. * np.array(self.l_f_bounds[0]), np.array(self.l_f_bounds[0]), nodes=self.nodes - 1)
-                self.cdot[i].setBounds(-1 * np.array(self.l_cdot_bounds[0]), np.array(self.l_cdot_bounds[0]), nodes = self.nodes)
+                self.f[i].setBounds(-1. * np.array(self.l_f_bounds[0]), np.array(self.l_f_bounds[0]), nodes=self.nodes-1)
+                self.cdot[i].setBounds(-1 * np.array(self.l_cdot_bounds[0]), np.array(self.l_cdot_bounds[0]), nodes=self.nodes)
                 self.moveLeftInput(self.cdot[i])
                 self.moveLeftControl(self.f[i])
 
             for i in range(contact_model, contact_model * number_of_legs):
                 self.c_ref[i].assign(self.contact_positions[0][(i * 3):(i * 3 + 3)], nodes=self.nodes)
                 self.moveLeftParam(self.c_ref[i])
-                self.f[i].setBounds(-1. * np.array(self.r_f_bounds[0]), np.array(self.r_f_bounds[0]), nodes=self.nodes - 1)
+                self.f[i].setBounds(-1. * np.array(self.r_f_bounds[0]), np.array(self.r_f_bounds[0]), nodes=self.nodes-1)
                 self.cdot[i].setBounds(-1 * np.array(self.r_cdot_bounds[0]), np.array(self.r_cdot_bounds[0]), nodes=self.nodes)
                 self.moveLeftInput(self.cdot[i])
                 self.moveLeftControl(self.f[i])
@@ -424,8 +434,8 @@ def publishFootsteps(contact_sequence):
         marker.id = contact + 2
         marker.action = Marker.ADD
         marker.type = Marker.CUBE
-        marker.scale.x = 0.2
-        marker.scale.y = 0.1
+        marker.scale.x = 0.16
+        marker.scale.y = 0.08
         marker.scale.z = 0.02
         marker.color.r = 1
         marker.color.g = 0
@@ -531,6 +541,8 @@ cpp_args = list()
 rospy.set_param("use_sim_time", True)
 start_srv = rospy.Service('start_service', Empty, start_service)
 
+rospy.Subscriber('/clock', Clock, clock_callback)
+
 '''
 MatLogger2
 '''
@@ -542,7 +554,7 @@ These parameters can not be tuned at the moment.
 """
 ns = 20
 prb = problem.Problem(ns, casadi_type=cs.SX)
-T = 5.
+T = 2.
 
 urdf_file = open(cwd + '/robot_model/draco/draco_point_contact_fb.urdf')
 urdf = urdf_file.read()
@@ -635,7 +647,7 @@ for i in range(0, nc):
 
     f[i] = prb.createInputVariable("f" + str(i), 3) # Contact i forces
 
-"""
+""" n
 Formulate discrete time dynamics using multiple_shooting and RK2 integrator
 """
 x, xdot = utils.double_integrator_with_floating_base(q.getVars(), qdot.getVars(), qddot.getVars(), base_velocity_reference_frame=cas_kin_dyn.CasadiKinDyn.LOCAL_WORLD_ALIGNED)
@@ -651,7 +663,7 @@ th = Transcriptor.make_method(transcription_method, prb, opts=transcription_opts
 Setting initial state, bounds and limits
 """
 
-max_contact_force = 1000.
+max_contact_force = 700.
 print(f"max_contact_force: {max_contact_force}")
 i = 0
 initial_foot_position = dict()
@@ -721,37 +733,41 @@ Set up some therms of the COST FUNCTION
 """
 rz_tracking is used to keep the com height around the initial value
 """
-rz_tracking_gain = prb.createParameter('rz_tracking', 1)
-rz_tracking_gain.assign(0)
+rz_tracking_gain = prb.createParameter('rz_tracking_gain', 1)
+rz_tracking_gain.assign(1e2)
 r_tracking = prb.createParameter('r_tracking', 1)
-r_tracking.assign(0)
+print(f"rz_tracking_gain: {rz_tracking_gain}")
 prb.createCost("rz_tracking", rz_tracking_gain * cs.sumsqr(r[2] - com[2]), nodes=range(1, ns+1))
-prb.createCost("r_final", r_tracking * cs.sumsqr(r - r_ref), nodes=range(1, ns+1))
+prb.createCost("r_tracking", r_tracking * cs.sumsqr(r - r_ref), nodes=range(1, ns+1))
 
 """
 o_tracking is used to keep the base orientation at identity, its gain is initialize at 0 and set to non-0 only when a button is pressed
 """
 Wo = prb.createParameter('Wo', 1)
-Wo.assign(1e3)
+Wo.assign(1e2)
 prb.createCost("o_tracking", Wo * cs.sumsqr(o - joint_init[3:7]), nodes=range(1, ns+1))
 
 """
 rdot_tracking is used to track a desired velocity of the CoM
 """
 rdot_tracking_gain = prb.createParameter('rdot_tracking', 1)
-rdot_tracking_gain.assign(0)
+rdot_tracking_gain.assign(1e2)
+print(f"rdot_tracking_gain: {rdot_tracking_gain}")
 prb.createCost("rdot_tracking", rdot_tracking_gain * cs.sumsqr(rdot - rdot_ref), nodes=range(1, ns+1))
+# rdot.setBounds([-10., -0.1, -10.], [10, 0.1, 10], nodes=range(0, ns+1))
+
 """
 w_tracking is used to track a desired angular velocity of the base
 """
-# w_tracking_gain = 1e-6
-# print(f"w_tracking_gain: {w_tracking_gain}")
-# prb.createCost("w_tracking", w_tracking_gain * cs.sumsqr(w - w_ref), nodes=range(1, ns+1))
+w_tracking_gain = 1e2
+print(f"w_tracking_gain: {w_tracking_gain}")
+prb.createCost("w_tracking", w_tracking_gain * cs.sumsqr(w - w_ref), nodes=range(1, ns+1))
 
 """
 min_qddot is to minimize the acceleration control effort
 """
-min_qddot_gain = 1e-5
+min_qddot_gain = prb.createParameter('min_qddot_gain', 1)
+min_qddot_gain.assign(1e-3)
 print(f"min_qddot_gain: {min_qddot_gain}")
 prb.createCost("min_qddot", min_qddot_gain * cs.sumsqr(qddot.getVars()), nodes=list(range(0, ns)))
 
@@ -761,7 +777,7 @@ Set up som CONSTRAINTS
 
 min_f_gain = prb.createParameter('min_f_gain', 1)
 min_f_gain.assign(1e-3)
-min_ctr_gain = 1e1
+min_ctr_gain = 1e2
 print(f"min_f_gain: {min_f_gain}")
 for i in range(0, nc):
     """
@@ -829,7 +845,7 @@ opts = {
         #'ipopt.magic_steps': 'yes',
         'ipopt.accept_every_trial_step': 'yes',
         'ipopt.tol': 0.001,
-        'ipopt.constr_viol_tol': 0.00000001,
+        'ipopt.constr_viol_tol': 0.001,
         'ipopt.max_iter': max_iteration,
         'ipopt.linear_solver': 'ma27',
         #'ipopt.warm_start_entire_iterate': 'yes',
@@ -862,7 +878,7 @@ robot_state['com_vel'] = solution['rdot'][:, 1]
 """
 Walking patter generator and scheduler
 """
-wpg = steps_phase(f, c_ref, cdot, r, r_ref, rdot_ref, T, ns, number_of_legs=number_of_legs, contact_model=contact_model, max_force=max_contact_force, max_velocity=5.0)
+wpg = steps_phase(f, c_ref, cdot, r, r_ref, rdot, rdot_ref, T, ns, number_of_legs=number_of_legs, contact_model=contact_model, max_force=max_contact_force, max_velocity=5.0)
 index = 0
 set_bool = False
 is_callback_done = False
@@ -928,14 +944,16 @@ while not rospy.is_shutdown():
             wpg.setContactPositions(current_positions, current_positions)
         if index > 30:
             # swinging
+            # rz_tracking_gain.assign(0)
             # r_tracking.assign(1e3)          # com position tracking
-            # rdot_tracking_gain.assign(1e-6)  # com velocity tracking
+            # rdot_tracking_gain.assign(1e2)  # com velocity tracking
             # Wo.assign(1e3)                  # base orientation tracking
             # min_f_gain.assign(1e-6)         # forces minimization
+            # min_qddot_gain.assign(1e-3)
             # wpg.set('swing')
 
             # stepping
-            r_tracking.assign(1e-6)  # com position tracking
+            r_tracking.assign(0)  # com position tracking
             rz_tracking_gain.assign(1e2) # com_z position tracking
             rdot_tracking_gain.assign(1e2)  # com velocity tracking
             Wo.assign(1e3)  # base orientation tracking
@@ -944,6 +962,7 @@ while not rospy.is_shutdown():
         else:
             rz_tracking_gain.assign(1e2)
             rdot_tracking_gain.assign(1e2)
+            min_f_gain.assign(1e-3)
             wpg.set('stand')
     else:
         # rdot_ref.assign([0.4, 0.0, 0.0], nodes=range(0, ns))
@@ -964,7 +983,7 @@ while not rospy.is_shutdown():
     tic()
     if not solver.solve():
         print(bcolors.FAIL + "Unable to solve!" + bcolors.ENDC)
-    logger.add('time', toc())
+    logger.add('solution_time', toc())
     solution = solver.getSolutionDict()
 
     """
@@ -997,18 +1016,21 @@ while not rospy.is_shutdown():
     srbd_msg.wrench.torque.z = srbd_0[5]
     srbd_pub.publish(srbd_msg)
 
-    logger.add('r', solution['r'][:, 0])
-    logger.add('r_ref', r_ref.getValues(0))
-    logger.add('rdot', solution['rdot'][:, 0])
-    logger.add('rdot_ref', rdot_ref.getValues(0))
-    logger.add('o', solution['o'][:, 0])
-    logger.add('w', solution['w'][:, 0])
-    logger.add('w_ref', w_ref.getValues(0))
+    index_to_save = 1
+    global time_mpc
+    logger.add('r', solution['r'][:, index_to_save])
+    logger.add('r_ref', r_ref.getValues(index_to_save))
+    logger.add('rdot', solution['rdot'][:, index_to_save])
+    logger.add('rdot_ref', rdot_ref.getValues(index_to_save))
+    logger.add('o', solution['o'][:, index_to_save])
+    logger.add('w', solution['w'][:, index_to_save])
+    logger.add('w_ref', w_ref.getValues(index_to_save))
+    logger.add('time_mpc', time_mpc)
     for j in range(nc):
-        logger.add('c' + str(j), solution['c' + str(j)][:, 0])
-        logger.add('f' + str(j), solution['f' + str(j)][:, 0])
-        logger.add('c_ref' + str(j), c_ref[j].getValues(0))
-        logger.add('cdot' + str(j), solution['cdot' + str(j)][:, 0])
+        logger.add('c' + str(j), solution['c' + str(j)][:, index_to_save])
+        logger.add('f' + str(j), solution['f' + str(j)][:, index_to_save])
+        logger.add('c_ref' + str(j), c_ref[j].getValues(index_to_save))
+        logger.add('cdot' + str(j), solution['cdot' + str(j)][:, index_to_save])
 
     '''
     Send MPC solution to pnc

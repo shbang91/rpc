@@ -30,6 +30,7 @@ class MPCTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
 class FootStep;
+class DracoDataManager;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:

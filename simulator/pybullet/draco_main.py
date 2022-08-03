@@ -427,7 +427,6 @@ while not rospy.is_shutdown():
     # print("jpos command printout")
     # print(rpc_joint_vel_command)
 
-    time.sleep(dt)
     t += dt
     count += 1
     sim_time = Clock()
@@ -438,5 +437,4 @@ while not rospy.is_shutdown():
     pb.stepSimulation()
     time.sleep(dt)
 
-    t += dt
     count += 1

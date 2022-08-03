@@ -52,6 +52,7 @@ public:
 
   Eigen::Isometry3d GetLinkIsometry(const int link_idx);
   Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(const int link_idx) const;
+  Eigen::Matrix<double, 6, 1> GetLinkSpatialAcc(const int link_idx) const;
 
   Eigen::Matrix<double, 6, Eigen::Dynamic> GetLinkJacobian(const int link_idx);
   Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(const int link_idx);

@@ -8,6 +8,7 @@
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
+#include "controller/draco_controller/draco_data_manager.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/mpc_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
@@ -160,9 +161,6 @@ DracoControlArchitecture::~DracoControlArchitecture() {
 
 void DracoControlArchitecture::GetCommand(void *command)
 {
-//  if(sp_->count_ % 100 == 0)
-//      std::couts << sp_->count_ << std::endl;
-
   if (sp_->count_ < 1000)
   {
     if (b_state_first_visit_) {
@@ -188,9 +186,9 @@ void DracoControlArchitecture::GetCommand(void *command)
   {
     horizon_handler_->SolveMPC();
     horizon_handler_->ReceiveSolution();
-    upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
     if (horizon_handler_->solutionReceived() && sp_->count_ > 1000)
     {
+      upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
       horizon_handler_->UpdateDesired();
       controller_->GetCommand(command);
     }

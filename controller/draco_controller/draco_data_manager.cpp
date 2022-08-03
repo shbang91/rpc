@@ -52,6 +52,24 @@ void DracoDataManager::SendData() {
     msg.add_act_com_pos(data_->act_com_pos_[i]);
     msg.add_des_com_vel(data_->des_com_vel_[i]);
     msg.add_act_com_vel(data_->act_com_vel_[i]);
+
+    msg.add_des_lf_pos(data_->des_lf_pos_[i]);
+    msg.add_act_lf_pos(data_->act_lf_pos_[i]);
+    msg.add_des_rf_pos(data_->des_rf_pos_[i]);
+    msg.add_act_rf_pos(data_->act_rf_pos_[i]);
+
+//    msg.add_des_lf_vel(data_->des_lf_vel_[i]);
+//    msg.add_act_lf_vel(data_->act_lf_vel_[i]);
+//    msg.add_des_rf_vel(data_->des_rf_vel_[i]);
+//    msg.add_act_rf_vel(data_->act_rf_vel_[i]);
+//    std::cout << "c" << std::endl;
+  }
+
+  for (int i(0); i < 6; ++i) {
+    msg.add_des_lf_force(data_->des_lf_force_[i]);
+    msg.add_act_lf_force(data_->act_lf_force_[i]);
+    msg.add_des_rf_force(data_->des_rf_force_[i]);
+    msg.add_act_rf_force(data_->act_rf_force_[i]);
   }
 
   // TODO:TEST
@@ -83,8 +101,15 @@ DracoData::DracoData()
       est_base_joint_lin_vel_(Eigen::Vector3d::Zero()),
       est_base_joint_ang_vel_(Eigen::Vector3d::Zero()),
       joint_positions_(Eigen::VectorXd::Zero(27)),
-      torques_(Eigen::VectorXd::Zero(27)),
       des_com_pos_(Eigen::VectorXd::Zero(3)),
       act_com_pos_(Eigen::VectorXd::Zero(3)),
       des_com_vel_(Eigen::VectorXd::Zero(3)),
-      act_com_vel_(Eigen::VectorXd::Zero(3)) {}
+      act_com_vel_(Eigen::VectorXd::Zero(3)),
+      des_lf_pos_(Eigen::VectorXd::Zero(3)),
+      act_lf_pos_(Eigen::VectorXd::Zero(3)),
+      des_rf_pos_(Eigen::VectorXd::Zero(3)),
+      act_rf_pos_(Eigen::VectorXd::Zero(3)),
+      des_lf_force_(Eigen::VectorXd::Zero(6)),
+      act_lf_force_(Eigen::VectorXd::Zero(6)),
+      des_rf_force_(Eigen::VectorXd::Zero(6)),
+      act_rf_force_(Eigen::VectorXd::Zero(6)){}

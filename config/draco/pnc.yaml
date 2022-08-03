@@ -3,7 +3,7 @@ servo_dt: 0.00125
 ip_address: "tcp://127.0.0.1:5557"
 
 b_sim: true ## if false, all the "exp_" parameters are used
-data_save_freq: 50
+data_save_freq: 1
 
 controller:
   exp_smoothing_command_duration: 0.1 ## this only used when b_sim: false
@@ -15,13 +15,13 @@ wbc:
       com_height_target_source: 0 # 0: com height / 1: base height
 
       ## sim params
-      weight : [100., 100., 100.]
-      kp : [200., 200., 200.]
-      kd : [10., 10., 5.]
+      weight : [60., 60., 60.]
+      kp : [400., 400., 400.]
+      kd : [15., 15., 50.]
       icp_weight : [20., 20., 20.] # only used when feedback source : 1
       icp_kp : [20., 20., 100.]
       icp_kd : [0., 0., 5.] # x, y will be ignored
-      icp_ki : [0.1, 0.1, 0.1] 
+      icp_ki : [0.1, 0.1, 0.1]
       time_constant : 5.
 
       ## exp params
@@ -31,7 +31,7 @@ wbc:
       exp_icp_weight : [20., 20., 20.] # only used when feedback source : 1
       exp_icp_kp : [10., 10., 100.]
       exp_icp_kd : [0., 0., 5.] # x, y will be ignored
-      exp_icp_ki : [0.1, 0.1, 0.1] 
+      exp_icp_ki : [0.1, 0.1, 0.1]
       exp_time_constant : 5.
 
     torso_ori_task:
@@ -87,14 +87,15 @@ wbc:
 
     foot_rf_task:
       weight_at_contact: [0., 0., 0., 0., 0., 0.] ## trq, force order
-      weight_at_swing: [0., 0., 0., 0., 0., 0.] ## trq, force order
+      # weight_at_swing: [0., 0., 0., 0., 0., 0.] ## trq, force order
+      weight_at_swing: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] ## trq, force order
 
       exp_weight_at_contact: [0., 0., 0., 0., 0., 0.]
       exp_weight_at_swing: [0., 0., 0., 0., 0., 0.]
 
   contact:
     ## sim params
-    mu: 0.8
+    mu: 0.5
     max_rf_z: 1000.
     foot_half_length: 0.08
     foot_half_width: 0.04
@@ -109,7 +110,6 @@ wbc:
     lambda_qddot: 1e-7 ##regularization
     lambda_rf: 1e-6 ##regularization
     b_trq_limit: false
-
 
 state_machine:
     initialize:
@@ -130,7 +130,7 @@ state_machine:
       #frequency: [0., 0., 1.] # [hz]
 
 dcm_walking:
-  com_height: 0.5 #same as the target_com_height in stand_up?
+  com_height: 0.6 #same as the target_com_height in stand_up?
   t_additional_init_trans: 0.
   t_contact_trans: 0.45
   t_swing: 0.55

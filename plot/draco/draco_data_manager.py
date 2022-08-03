@@ -49,6 +49,7 @@ msg = pnc_msg()
 
 data_saver = DataSaver()
 
+
 ##meshcat visualizer
 # if args.b_visualize:
 # model, collision_model, visual_model = pin.buildModelsFromUrdf(
@@ -92,6 +93,20 @@ while True:
     data_saver.add('des_com_vel', list(msg.des_com_vel))
     data_saver.add('act_com_vel', list(msg.act_com_vel))
 
+    data_saver.add('des_lf_pos', list(msg.des_lf_pos))
+    data_saver.add('act_lf_pos', list(msg.act_lf_pos))
+    data_saver.add('des_rf_pos', list(msg.des_rf_pos))
+    data_saver.add('act_rf_pos', list(msg.act_rf_pos))
+
+    data_saver.add('des_lf_vel', list(msg.des_lf_vel))
+    data_saver.add('act_lf_vel', list(msg.act_lf_vel))
+    data_saver.add('des_rf_vel', list(msg.des_rf_vel))
+    data_saver.add('act_rf_vel', list(msg.act_rf_vel))
+
+    data_saver.add('des_lf_force', list(msg.des_lf_force))
+    data_saver.add('act_lf_force', list(msg.act_lf_force))
+    data_saver.add('des_rf_force', list(msg.des_rf_force))
+    data_saver.add('act_rf_force', list(msg.act_rf_force))
 
     ##TODO: TEST
 

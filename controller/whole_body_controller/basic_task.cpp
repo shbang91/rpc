@@ -75,6 +75,8 @@ void LinkPosTask::UpdateOpCommand() {
   vel_ = robot_->GetLinkSpatialVel(target_idx_).tail(dim_);
   vel_err_ = des_vel_ - vel_;
 
+  acc_ = robot_->GetLinkSpatialAcc(target_idx_).tail(dim_);
+
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
@@ -113,6 +115,8 @@ void LinkOriTask::UpdateOpCommand() {
 
   vel_ = robot_->GetLinkSpatialVel(target_idx_).head(dim_);
   vel_err_ = des_vel_ - vel_;
+
+  acc_ = robot_->GetLinkSpatialAcc(target_idx_).head(dim_);
 
   op_cmd_ = des_acc_ = kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }

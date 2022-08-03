@@ -1,5 +1,6 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"

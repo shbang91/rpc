@@ -3,6 +3,7 @@
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -74,6 +75,16 @@ void DoubleSupportStandUp::OneStep() {
 
   // com & torso ori task update
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
+
+  Eigen::Matrix<double, 6, 1> balance_force_ref;
+//  if (state_machine_time_ > rf_z_max_interp_duration_*2)
+//  {
+//      ctrl_arch_->tci_container_->force_task_map_["lf_reaction_force_task"]->SetWeight(20);
+//      ctrl_arch_->tci_container_->force_task_map_["rf_reaction_force_task"]->SetWeight(20);
+//  }
+  balance_force_ref << 0, 0, 0, 0, 0, 184;
+  ctrl_arch_->tci_container_->force_task_map_["lf_reaction_force_task"]->UpdateDesired(balance_force_ref);
+  ctrl_arch_->tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(balance_force_ref);
 
   // foot task
   ctrl_arch_->lf_SE3_tm_->UseCurrent();

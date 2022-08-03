@@ -173,6 +173,14 @@ PinocchioRobotSystem::GetLinkSpatialVel(const int link_idx) const {
   return ret;
 }
 
+Eigen::Matrix<double, 6, 1> PinocchioRobotSystem::GetLinkSpatialAcc(const int link_idx) const {
+  Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
+  pinocchio::Motion fa = pinocchio::getFrameAcceleration(model_, data_, link_idx, pinocchio::LOCAL_WORLD_ALIGNED);
+  ret.head<3>() = fa.angular();
+  ret.tail<3>() = fa.linear();
+  return ret;
+}
+
 Eigen::Matrix<double, 6, Eigen::Dynamic>
 PinocchioRobotSystem::GetLinkJacobian(const int link_idx) {
   pinocchio::computeJointJacobians(model_, data_, q_);
