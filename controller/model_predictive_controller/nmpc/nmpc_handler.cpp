@@ -14,7 +14,8 @@ NMPCHandler::NMPCHandler(PinocchioRobotSystem *robot, TCIContainer* tci_containe
 MPCHandler(robot),
 tci_container_(tci_container),
 lfoot_id_(lfoot_id),
-rfoot_id_(rfoot_id)
+rfoot_id_(rfoot_id),
+first_visit_(true)
 {
     util::PrettyConstructor(2, "NMPCHandler");
 
@@ -113,6 +114,7 @@ void NMPCHandler::_populateStepForward()
     FootStep mid_footstep = mid_foot_stance_;
 
     footstep_list = FootStep::GetFwdWalkFootStep(n_steps_, nominal_forward_step_, nominal_footwidth_, robot_side_first_, mid_footstep);
+    std::cout << "Generated footstep_list with " << footstep_list.size() << " elements" << std::endl;
 
     if (robot_side_first_ == end_effector::LFoot)
     {
@@ -151,6 +153,7 @@ void NMPCHandler::_resetIndexAndClearFootsteps()
 void NMPCHandler::_resetStepIndex()
 {
     current_footstep_idx_ = 0;
+    footstep_list_index_ = 0;
 }
 
 void NMPCHandler::SetFootstepToPublish(const int count)
@@ -161,9 +164,10 @@ void NMPCHandler::SetFootstepToPublish(const int count)
         is_new_ = true;
         // Update the next footstep reference every T seconds
         /// Problem: simulation time is slower than actual time!
-        if(count % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ < int(footstep_list.size() - 4))
+        std::cout << count_ << std::endl;
+        if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ < int(footstep_list.size() - 4))
         {
-            std::cout << "COUNT A: " << count << std::endl;
+            std::cout << "COUNT A: " << count_ << std::endl;
             footstep_list_index_ += 2;
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 3 << " in a vector size of " << footstep_list.size() << std::endl;
             init_it = footstep_list.begin() + footstep_list_index_;
@@ -171,9 +175,9 @@ void NMPCHandler::SetFootstepToPublish(const int count)
             for (auto it = init_it; it != end_it; it++)
                 std::cout << it->GetPos().transpose() << std::endl;
         }
-        else if(count % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ >= int(footstep_list.size() - 4) && footstep_list_index_ < int(footstep_list.size() - 2))
+        else if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ >= int(footstep_list.size() - 4) && footstep_list_index_ < int(footstep_list.size() - 2))
         {
-            std::cout << "COUNT B: " << count << std::endl;
+            std::cout << "COUNT B: " << count_ << std::endl;
             footstep_list_index_ += 2;
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 1 << " in a vector size of " << footstep_list.size() << std::endl;
             init_it = footstep_list.begin() + footstep_list_index_;
@@ -183,9 +187,9 @@ void NMPCHandler::SetFootstepToPublish(const int count)
         }
 
         // Create Protobuf message
-        if (count % int(T_ / n_nodes_ / ctrl_dt_) == 0)
+        if (count_ % int(T_ / n_nodes_ / ctrl_dt_) == 0)
         {
-            if (count % int(T_ / ctrl_dt_) != 0)
+            if (count_ % int(T_ / ctrl_dt_) != 0)
                 is_new_ = false;
             std::vector<FootStep> fs(init_it, end_it);
             footstep_to_publish_ = fs;
@@ -194,18 +198,16 @@ void NMPCHandler::SetFootstepToPublish(const int count)
     else
     {
         is_new_ = false;
-        if(count % int(T_ / n_nodes_ / ctrl_dt_) == 0)
+        if(count_ % int(T_ / n_nodes_ / ctrl_dt_) == 0)
         {
-            FootStep initial_footstep_left, initial_footstep_right;
-            initial_footstep_left.SetLeftSide();
-            Eigen::Quaternion<double> q_left(robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
-            initial_footstep_left.SetPosOri(robot_->GetLinkIsometry(draco_link::l_foot_contact).translation(), q_left);
-            initial_footstep_right.SetRightSide();
-            Eigen::Quaternion<double> q_right(robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
-            initial_footstep_right.SetPosOri(robot_->GetLinkIsometry(draco_link::r_foot_contact).translation(), q_right);
+            if(first_visit_)
+            {
+                _updateStartingStance();
+                std::vector<FootStep> fs{left_foot_stance_, right_foot_stance_};
+                footstep_to_publish_ = fs;
 
-            std::vector<FootStep> fs{initial_footstep_left, initial_footstep_right};
-            footstep_to_publish_ = fs;
+                first_visit_ = false;
+            }
         }
     }
 }
@@ -432,7 +434,12 @@ bool NMPCHandler::UpdateDesired()
                                                             Eigen::Vector3d(0, 0, 0));
 
     auto left_force_ref = _ConvertFootForces(std::get<0>(left_foot_ref), draco_link::l_foot_contact, mpc_res_, 1);
-    tci_container_->force_task_map_["lf_reaction_force_task"]->UpdateDesired(_LinearInterpolation(old_lf_force_, left_force_ref));
+    auto left_force_ref_interpolated = _LinearInterpolation(old_lf_force_, left_force_ref);
+    if (left_force_ref_interpolated[5] == 0)
+        tci_container_->contact_map_["lf_contact"]->SetMaxFz(0);
+    else
+        tci_container_->contact_map_["lf_contact"]->SetMaxFz(1000);
+    tci_container_->force_task_map_["lf_reaction_force_task"]->UpdateDesired(left_force_ref_interpolated);
 
     // Update right foot
     auto right_foot_ref = _ConvertFoot(draco_link::r_foot_contact, mpc_res_, 1);
@@ -449,7 +456,14 @@ bool NMPCHandler::UpdateDesired()
                                                             Eigen::Vector3d(0, 0, 0));
 
     auto right_force_ref = _ConvertFootForces(std::get<0>(right_foot_ref), draco_link::r_foot_contact, mpc_res_, 1);
-    tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(_LinearInterpolation(old_rf_force_, right_force_ref));
+    auto right_force_ref_interpolated = _LinearInterpolation(old_rf_force_, right_force_ref);
+    if (right_force_ref_interpolated[5] == 0)
+        tci_container_->contact_map_["rf_contact"]->SetMaxFz(0);
+    else
+        tci_container_->contact_map_["rf_contact"]->SetMaxFz(1000);
+    tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(right_force_ref_interpolated);
+
+    // Add to logger
     logger_->add("unfiltered_lf_pos_ref", std::get<0>(left_foot_ref));
     logger_->add("unfiltered_lf_vel_ref", std::get<1>(left_foot_ref));
     logger_->add("unfiltered_lf_acc_ref", std::get<2>(left_foot_ref));

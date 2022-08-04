@@ -64,9 +64,9 @@ void DoubleSupportStandUp::FirstVisit() {
       target_torso_quat.normalized(), standup_duration_);
 
   //  increase maximum normal reaction force
-  ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
+  ctrl_arch_->lf_max_normal_force_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
-  ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
+  ctrl_arch_->rf_max_normal_force_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
 }
 
@@ -77,11 +77,6 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 
   Eigen::Matrix<double, 6, 1> balance_force_ref;
-//  if (state_machine_time_ > rf_z_max_interp_duration_*2)
-//  {
-//      ctrl_arch_->tci_container_->force_task_map_["lf_reaction_force_task"]->SetWeight(20);
-//      ctrl_arch_->tci_container_->force_task_map_["rf_reaction_force_task"]->SetWeight(20);
-//  }
   balance_force_ref << 0, 0, 0, 0, 0, 184;
   ctrl_arch_->tci_container_->force_task_map_["lf_reaction_force_task"]->UpdateDesired(balance_force_ref);
   ctrl_arch_->tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(balance_force_ref);
@@ -91,8 +86,8 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_SE3_tm_->UseCurrent();
 
   //  increase maximum normal reaction force
-  ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
-  ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
+  ctrl_arch_->lf_max_normal_force_tm_->UpdateRampToMax(state_machine_time_);
+  ctrl_arch_->rf_max_normal_force_tm_->UpdateRampToMax(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}

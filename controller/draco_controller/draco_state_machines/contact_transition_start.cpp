@@ -38,7 +38,7 @@ void ContactTransitionStart::FirstVisit() {
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
-    ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
+    ctrl_arch_->rf_max_normal_force_tm_->InitializeRampToMax(
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
   } else {
 
@@ -53,7 +53,7 @@ void ContactTransitionStart::FirstVisit() {
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
-    ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
+    ctrl_arch_->lf_max_normal_force_tm_->InitializeRampToMax(
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
   }
 
@@ -109,11 +109,11 @@ void ContactTransitionStart::OneStep() {
 
   // contact max normal force & foot task hierarchy update
   if (state_id_ == draco_states::kLFContactTransitionStart) {
-    ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
+    ctrl_arch_->rf_max_normal_force_tm_->UpdateRampToMax(state_machine_time_);
     ctrl_arch_->rf_pos_hm_->UpdateRampToMax(state_machine_time_);
     ctrl_arch_->rf_ori_hm_->UpdateRampToMax(state_machine_time_);
   } else {
-    ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
+    ctrl_arch_->lf_max_normal_force_tm_->UpdateRampToMax(state_machine_time_);
     ctrl_arch_->lf_pos_hm_->UpdateRampToMax(state_machine_time_);
     ctrl_arch_->lf_ori_hm_->UpdateRampToMax(state_machine_time_);
   }

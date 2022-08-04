@@ -43,8 +43,8 @@ public:
 
   UpperBodyTrajetoryManager *upper_body_tm_;
   FloatingBaseTrajectoryManager *floating_base_tm_;
-  MaxNormalForceTrajectoryManager *lf_max_normal_froce_tm_;
-  MaxNormalForceTrajectoryManager *rf_max_normal_froce_tm_;
+  MaxNormalForceTrajectoryManager *lf_max_normal_force_tm_;
+  MaxNormalForceTrajectoryManager *rf_max_normal_force_tm_;
   EndEffectorTrajectoryManager *lf_SE3_tm_;
   EndEffectorTrajectoryManager *rf_SE3_tm_;
   DCMTrajectoryManager *dcm_tm_;

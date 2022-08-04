@@ -22,7 +22,7 @@ for i = 1 : 3
     grid on
     plot(time, left_force_ref(3+i, :)); 
     ylabel(label(i))
-    legend('unfiltered', 'interpolated')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Left Foot Contact Force')
 
@@ -35,7 +35,7 @@ for i = 1 : 3
     grid on
     plot(time, right_force_ref(3+i, :)); 
     ylabel(label(i))
-    legend('unfiltered', 'interpolated')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Right Foot Contact Force')
 
@@ -62,7 +62,7 @@ for i = 1 : 3
     grid on
     plot(time, com_vel_ref(i, :)); 
     ylabel(label(i))
-    legend('mpc', 'rpc')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Com Velocity')
 
@@ -74,7 +74,7 @@ for i = 1 : 3
     grid on
     plot(time, com_acc_ref(i, :)); 
     ylabel(label(i))
-    legend('mpc', 'rpc')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Com Acceleration')
 
@@ -86,7 +86,7 @@ for i = 1 : 3
     grid on
     plot(time, lf_pos_ref(i, :)); 
     ylabel(label(i))
-    legend('mpc', 'rpc')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Left Foot Position')
 figure(7)
@@ -97,7 +97,7 @@ for i = 1 : 3
     grid on
     plot(time, lf_vel_ref(i, :)); 
     ylabel(label(i))
-    legend('mpc', 'rpc')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Left Foot Velocity')
 figure(8)
@@ -108,7 +108,7 @@ for i = 1 : 3
     grid on
     plot(time, lf_acc_ref(i, :)); 
     ylabel(label(i))
-    legend('mpc', 'rpc')
+    legend('not interpolated', 'interpolated')
 end
 sgtitle('Left Foot Acceleration')
 
@@ -117,3 +117,16 @@ stairs(solution_time)
 grid on
 title('Solution Time')
 fprintf('Average solution time: %s \n', sum(solution_time)/length(solution_time))
+
+fz_lf = zeros(size(f0,1), size(f0,2));
+for i = 1:3
+    fz_lf(i,:) = fz_lf(i,:) + f0(i,:) + f1(i,:) +f2(i,:) + f3(i,:);
+end
+
+figure(10)
+subplot(2,1,1)
+stairs(time_mpc, fz_lf(3,:))
+grid on
+subplot(2,1,2)
+stairs(time_mpc, c0(3,:))
+grid on

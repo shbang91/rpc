@@ -97,9 +97,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       b_sim
           ? util::ReadParameter<double>(cfg_["wbc"]["contact"], "max_rf_z")
           : util::ReadParameter<double>(cfg_["wbc"]["contact"], "exp_max_rf_z");
-  lf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
+  lf_max_normal_force_tm_ = new MaxNormalForceTrajectoryManager(
       tci_container_->lf_contact_, max_rf_z);
-  rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
+  rf_max_normal_force_tm_ = new MaxNormalForceTrajectoryManager(
       tci_container_->rf_contact_, max_rf_z);
 
   //=============================================================
@@ -139,8 +139,8 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete floating_base_tm_;
   delete lf_SE3_tm_;
   delete rf_SE3_tm_;
-  delete lf_max_normal_froce_tm_;
-  delete rf_max_normal_froce_tm_;
+  delete lf_max_normal_force_tm_;
+  delete rf_max_normal_force_tm_;
   delete dcm_tm_;
   delete horizon_handler_;
 

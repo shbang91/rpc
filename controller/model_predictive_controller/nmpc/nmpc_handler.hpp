@@ -77,7 +77,7 @@ private:
   Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
 
   int footstep_list_index_;
-  bool is_new_;
+  bool is_new_, first_visit_;
   std::vector<FootStep>::iterator init_it, end_it;
 
   zmq::message_t update_;

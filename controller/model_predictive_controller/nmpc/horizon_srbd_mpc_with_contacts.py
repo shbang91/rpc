@@ -223,7 +223,7 @@ class steps_phase:
         for k in range(0, 8):  # 8 nodes down (other step)
             self.l_f_bounds.append([max_force, max_force, max_force])
             self.l_cdot_bounds.append([0., 0., 0.])
-        # self.l_f_bounds.append([max_force, max_force, max_force])
+        self.l_f_bounds.append([max_force, max_force, max_force])
         self.l_cdot_bounds.append([0., 0., 0.])
 
         self.r_f_bounds = []
@@ -240,7 +240,7 @@ class steps_phase:
         for k in range(0, 8):  # 8 nodes step
             self.r_f_bounds.append([0., 0., 0.])
             self.r_cdot_bounds.append([max_velocity, max_velocity, max_velocity])
-        # self.r_f_bounds.append([max_force, max_force, max_force])
+        self.r_f_bounds.append([max_force, max_force, max_force])
         self.r_cdot_bounds.append([0., 0., 0.])
 
         #COM SWING
@@ -777,7 +777,8 @@ Set up som CONSTRAINTS
 
 min_f_gain = prb.createParameter('min_f_gain', 1)
 min_f_gain.assign(1e-3)
-min_ctr_gain = 1e2
+c_tracking_gain = prb.createParameter('c_tracking_gain', 1)
+c_tracking_gain.assign(1e2)
 print(f"min_f_gain: {min_f_gain}")
 for i in range(0, nc):
     """
@@ -788,7 +789,7 @@ for i in range(0, nc):
     """
     cz_tracking is used to track the z reference for the feet: notice that is a constraint
     """
-    prb.createCost("c_tracking" + str(i), min_ctr_gain * cs.sumsqr(c[i] - c_ref[i]))
+    prb.createCost("c_tracking" + str(i), c_tracking_gain * cs.sumsqr(c[i] - c_ref[i]))
 
 """
 Friction cones and force unilaterality constraint
@@ -916,11 +917,11 @@ while not rospy.is_shutdown():
     Set previous first element solution as bound for the variables to guarantee continuity
     """
     # open loop
-    # r.setBounds(solution['r'][:, 1], solution['r'][:, 1], 0)
-    # rdot.setBounds(solution['rdot'][:, 1], solution['rdot'][:, 1], 0)
+    r.setBounds(solution['r'][:, 1], solution['r'][:, 1], 0)
+    rdot.setBounds(solution['rdot'][:, 1], solution['rdot'][:, 1], 0)
     # closed loop
-    r.setBounds(robot_state['com_pos'], robot_state['com_pos'], 0)
-    rdot.setBounds(robot_state['com_vel'], robot_state['com_vel'], 0)
+    # r.setBounds(robot_state['com_pos'], robot_state['com_pos'], 0)
+    # rdot.setBounds(robot_state['com_vel'], robot_state['com_vel'], 0)
     o.setBounds(solution['o'][:, 1], solution['o'][:, 1], 0)
     w.setBounds(solution['w'][:, 1], solution['w'][:, 1], 0)
     for i in range(0, nc):
@@ -942,7 +943,7 @@ while not rospy.is_shutdown():
                                                         fromContactSequenceToFrames(contact_sequence[list(contact_sequence)[1]])
         if set_bool or index == 0:
             wpg.setContactPositions(current_positions, current_positions)
-        if index > 30:
+        # if index > 10:
             # swinging
             # rz_tracking_gain.assign(0)
             # r_tracking.assign(1e3)          # com position tracking
@@ -953,17 +954,18 @@ while not rospy.is_shutdown():
             # wpg.set('swing')
 
             # stepping
-            r_tracking.assign(0)  # com position tracking
-            rz_tracking_gain.assign(1e2) # com_z position tracking
-            rdot_tracking_gain.assign(1e2)  # com velocity tracking
-            Wo.assign(1e3)  # base orientation tracking
-            min_f_gain.assign(1e-3)  # forces minimization
-            wpg.set('step')
-        else:
-            rz_tracking_gain.assign(1e2)
-            rdot_tracking_gain.assign(1e2)
-            min_f_gain.assign(1e-3)
-            wpg.set('stand')
+            # r_tracking.assign(0)  # com position tracking
+            # rz_tracking_gain.assign(1e2) # com_z position tracking
+            # rdot_tracking_gain.assign(1e2)  # com velocity tracking
+            # Wo.assign(1e2)  # base orientation tracking
+            # min_f_gain.assign(1e-3)  # forces minimization
+            # c_tracking_gain.assign(1e3) # contact tracking
+            # wpg.set('step')
+        # else:
+        rz_tracking_gain.assign(1e2)
+        rdot_tracking_gain.assign(1e2)
+        min_f_gain.assign(1e-3)
+        wpg.set('stand')
     else:
         # rdot_ref.assign([0.4, 0.0, 0.0], nodes=range(0, ns))
         current_positions = fromContactSequenceToFrames(
@@ -975,6 +977,13 @@ while not rospy.is_shutdown():
 
         if set_bool or index == 0:
             wpg.setContactPositions(current_positions, next_positions)
+
+        r_tracking.assign(0)  # com position tracking
+        rz_tracking_gain.assign(1e2)  # com_z position tracking
+        rdot_tracking_gain.assign(1e2)  # com velocity tracking
+        Wo.assign(1e2)  # base orientation tracking
+        min_f_gain.assign(1e-3)  # forces minimization
+        c_tracking_gain.assign(1e3)  # contact tracking
         wpg.set('step')
 
     """
@@ -1028,7 +1037,8 @@ while not rospy.is_shutdown():
     logger.add('time_mpc', time_mpc)
     for j in range(nc):
         logger.add('c' + str(j), solution['c' + str(j)][:, index_to_save])
-        logger.add('f' + str(j), solution['f' + str(j)][:, index_to_save])
+        # logger.add('f' + str(j), solution['f' + str(j)][:, index_to_save])
+        logger.add('f' + str(j), f[j].getUpperBounds(index_to_save))
         logger.add('c_ref' + str(j), c_ref[j].getValues(index_to_save))
         logger.add('cdot' + str(j), solution['cdot' + str(j)][:, index_to_save])
 

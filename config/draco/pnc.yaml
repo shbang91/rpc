@@ -15,9 +15,9 @@ wbc:
       com_height_target_source: 0 # 0: com height / 1: base height
 
       ## sim params
-      weight : [60., 60., 60.]
-      kp : [400., 400., 400.]
-      kd : [15., 15., 50.]
+      weight : [40., 40., 60.]
+      kp : [200., 200., 300.]
+      kd : [15., 15., 20.]
       icp_weight : [20., 20., 20.] # only used when feedback source : 1
       icp_kp : [20., 20., 100.]
       icp_kd : [0., 0., 5.] # x, y will be ignored
@@ -61,23 +61,23 @@ wbc:
 
     foot_pos_task:
       ## sim params
-      weight : [40., 40., 40.]
-      weight_at_swing : [20., 20., 20.]
-      kp : [300., 300., 300.]
-      kd : [30., 30., 30.]
+      weight : [500, 500, 500]
+      weight_at_swing : [500., 500., 500.]
+      kp : [1000., 1000., 1000.]
+      kd : [100., 100., 100.]
 
       ## exp params
-      exp_weight : [40., 40., 40.]
-      exp_weight_at_swing : [20., 20., 20.]
-      exp_kp : [100., 100., 250.]
-      exp_kd : [1., 1., 1.]
+      exp_weight : [80, 100, 100]
+      exp_weight_at_swing : [100., 100., 100.]
+      exp_kp : [500., 500., 500.]
+      exp_kd : [20., 20., 20.]
 
     foot_ori_task:
       ## sim params
-      weight : [40., 40., 40.]
-      weight_at_swing : [20., 20., 20.]
-      kp : [300., 300., 300.]
-      kd : [30., 30., 30.]
+      weight : [500, 500, 500]
+      weight_at_swing : [500., 500., 500.]
+      kp : [1000., 1000., 1000.]
+      kd : [100., 100., 100.]
 
       ## exp params
       exp_weight : [40., 40., 40.]
@@ -88,7 +88,7 @@ wbc:
     foot_rf_task:
       weight_at_contact: [0., 0., 0., 0., 0., 0.] ## trq, force order
       # weight_at_swing: [0., 0., 0., 0., 0., 0.] ## trq, force order
-      weight_at_swing: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] ## trq, force order
+      weight_at_swing: [0.001, 0.001, 0.001, 0.001, 0.001, 0.001] ## trq, force order
 
       exp_weight_at_contact: [0., 0., 0., 0., 0., 0.]
       exp_weight_at_swing: [0., 0., 0., 0., 0., 0.]
