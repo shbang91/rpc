@@ -16,6 +16,7 @@ constexpr int kLFSingleSupportSwing = 6;
 constexpr int kRFContactTransitionStart = 7;
 constexpr int kRFContactTransitionEnd = 8;
 constexpr int kRFSingleSupportSwing = 9;
+constexpr int kWalking = 10;
 } // namespace draco_states
 
 class DracoController;

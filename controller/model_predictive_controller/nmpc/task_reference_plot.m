@@ -84,10 +84,15 @@ for i = 1 : 3
     stairs(time, unfiltered_lf_pos_ref(i, :))
     hold on 
     grid on
-    plot(time, lf_pos_ref(i, :)); 
+    plot(time, lf_pos_ref(i, :));
     ylabel(label(i))
     legend('not interpolated', 'interpolated')
 end
+subplot(3,1,3)
+plot(time_mpc, c_ref0(3, :))
+plot(time_mpc, c_ref1(3, :))
+plot(time_mpc, c_ref2(3, :))
+plot(time_mpc, c_ref3(3, :))
 sgtitle('Left Foot Position')
 figure(7)
 for i = 1 : 3    

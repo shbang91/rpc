@@ -114,7 +114,6 @@ void NMPCHandler::_populateStepForward()
     FootStep mid_footstep = mid_foot_stance_;
 
     footstep_list = FootStep::GetFwdWalkFootStep(n_steps_, nominal_forward_step_, nominal_footwidth_, robot_side_first_, mid_footstep);
-    std::cout << "Generated footstep_list with " << footstep_list.size() << " elements" << std::endl;
 
     if (robot_side_first_ == end_effector::LFoot)
     {
@@ -126,6 +125,10 @@ void NMPCHandler::_populateStepForward()
         footstep_list.insert(footstep_list.begin(), left_foot_stance_);
         footstep_list.insert(footstep_list.begin(), right_foot_stance_);
     }
+
+    // Assign iterators to keep the current foot position at the beginning of the walk
+    init_it = footstep_list.begin();
+    end_it = init_it + 2;
 }
 
 void NMPCHandler::_updateStartingStance()
@@ -164,29 +167,28 @@ void NMPCHandler::SetFootstepToPublish(const int count)
         is_new_ = true;
         // Update the next footstep reference every T seconds
         /// Problem: simulation time is slower than actual time!
-        std::cout << count_ << std::endl;
         if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ < int(footstep_list.size() - 4))
         {
             std::cout << "COUNT A: " << count_ << std::endl;
-            footstep_list_index_ += 2;
+
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 3 << " in a vector size of " << footstep_list.size() << std::endl;
             init_it = footstep_list.begin() + footstep_list_index_;
             end_it = footstep_list.begin() + footstep_list_index_ + 4;
             for (auto it = init_it; it != end_it; it++)
                 std::cout << it->GetPos().transpose() << std::endl;
+            footstep_list_index_ += 2;
         }
         else if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ >= int(footstep_list.size() - 4) && footstep_list_index_ < int(footstep_list.size() - 2))
         {
             std::cout << "COUNT B: " << count_ << std::endl;
-            footstep_list_index_ += 2;
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 1 << " in a vector size of " << footstep_list.size() << std::endl;
             init_it = footstep_list.begin() + footstep_list_index_;
             end_it = footstep_list.begin() + footstep_list_index_ + 2;
             for (auto it = init_it; it != end_it; it++)
                 std::cout << it->GetPos().transpose() << std::endl;
+            footstep_list_index_ += 2;
         }
 
-        // Create Protobuf message
         if (count_ % int(T_ / n_nodes_ / ctrl_dt_) == 0)
         {
             if (count_ % int(T_ / ctrl_dt_) != 0)

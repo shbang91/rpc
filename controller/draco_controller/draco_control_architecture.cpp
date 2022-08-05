@@ -206,4 +206,7 @@ void DracoControlArchitecture::_InitializeParameters() {
 
   // dcm planner params initialization
   dcm_tm_->InitializeParameters(cfg_["dcm_walking"]);
+
+  // nmpc walking params initialization
+  horizon_handler_->paramInitialization(cfg_["nmpc_walking"]);
 }
