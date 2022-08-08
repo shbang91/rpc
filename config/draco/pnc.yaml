@@ -125,9 +125,13 @@ state_machine:
 
     com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
-      frequency: [0., 0.7, 0.] # [hz]
+      frequency: [0., 0.5, 0.] # [hz]
       #amplitude: [0., 0., 0.03] # [m]
       #frequency: [0., 0., 1.] # [hz]
+
+    lmpc_com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.7, 0.] # [hz]
 
 dcm_walking:
   com_height: 0.7 #same as the target_com_height in stand_up?

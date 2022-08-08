@@ -25,7 +25,7 @@ void ContactTransitionStart::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
 
   if (state_id_ == draco_states::kLFContactTransitionStart) {
-
+    // stance foot lfoot
     std::cout << "kLFContactTransitionStart" << std::endl;
     // =====================================================================
     // task hierarchy manager initialize
@@ -41,7 +41,7 @@ void ContactTransitionStart::FirstVisit() {
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
   } else {
-
+    // stance foot rfoot
     std::cout << "kRFContactTransitionStart" << std::endl;
     // =====================================================================
     // task hierarchy manager initialize

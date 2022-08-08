@@ -5,9 +5,11 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
+#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -36,6 +38,13 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   controller_ = new DracoController(tci_container_, robot_);
 
   dcm_planner_ = new DCMPlanner();
+
+  // mpc handler
+  lmpc_handler_ = new LMPCHandler(
+      dcm_planner_, robot_, tci_container_->com_task_,
+      tci_container_->torso_ori_task_, tci_container_->lf_reaction_force_task_,
+      tci_container_->rf_reaction_force_task_, draco_link::l_foot_contact,
+      draco_link::r_foot_contact);
 
   //=============================================================
   // trajectory Managers
@@ -80,7 +89,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_pos_hm_ = new TaskHierarchyManager(
       tci_container_->rf_pos_task_, pos_weight_in_contact, pos_weight_in_swing);
   rf_ori_hm_ = new TaskHierarchyManager(
-      tci_container_->rf_ori_task_, pos_weight_in_contact, pos_weight_in_swing);
+      tci_container_->rf_ori_task_, ori_weight_in_contact, ori_weight_in_swing);
 
   // initialize dynamics manager
   double max_rf_z =
@@ -106,6 +115,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kDoubleSupportSwaying] =
       new DoubleSupportSwaying(draco_states::kDoubleSupportSwaying, robot_,
                                this);
+  // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc] =
+  // new DoubleSupportSwayingLmpc(draco_states::kDoubleSupportSwayingLmpc,
+  // robot_, this);
   state_machine_container_[draco_states::kLFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kLFContactTransitionStart,
                                  robot_, this);
@@ -144,6 +156,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kDoubleSupportStandUp];
   delete state_machine_container_[draco_states::kDoubleSupportBalance];
   delete state_machine_container_[draco_states::kDoubleSupportSwaying];
+  // delete state_machine_container_[draco_states::kDoubleSupportSwayingLmpc];
   delete state_machine_container_[draco_states::kLFContactTransitionStart];
   delete state_machine_container_[draco_states::kRFContactTransitionStart];
 }
@@ -175,6 +188,8 @@ void DracoControlArchitecture::_InitializeParameters() {
       cfg_["state_machine"]["stand_up"]);
   state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
       cfg_["state_machine"]["com_swaying"]);
+  // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc]
+  //->SetParameters(cfg_["state_machine"]["lmpc_com_swaying"]);
 
   // dcm planner params initialization
   dcm_tm_->InitializeParameters(cfg_["dcm_walking"]);

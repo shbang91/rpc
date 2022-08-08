@@ -52,9 +52,8 @@ bool DoubleSupportBalance::EndOfState() {
 void DoubleSupportBalance::LastVisit() {}
 
 StateId DoubleSupportBalance::GetNextState() {
-  if (b_com_swaying_) {
+  if (b_com_swaying_)
     return draco_states::kDoubleSupportSwaying;
-  }
   // if (b_lmpc_swaying_)
   // return draco_states::kComSwayingLmpc;
   // if (b_nmpc_swaying_)

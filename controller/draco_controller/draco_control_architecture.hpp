@@ -12,6 +12,7 @@ constexpr int kLFSingleSupportSwing = 6;
 constexpr int kRFContactTransitionStart = 7;
 constexpr int kRFContactTransitionEnd = 8;
 constexpr int kRFSingleSupportSwing = 9;
+constexpr int kDoubleSupportSwayingLmpc = 10;
 } // namespace draco_states
 
 class DracoController;
@@ -24,6 +25,7 @@ class EndEffectorTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
+class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
@@ -51,6 +53,7 @@ private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
+  LMPCHandler *lmpc_handler_;
 
   void _InitializeParameters() override;
 };
