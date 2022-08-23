@@ -25,9 +25,12 @@ first_visit_(true)
     robot_side_first_ = end_effector::LFoot;
     solution_received_ = false;
 
-    T_ = 2.;
+    T_ = 1.4;
     n_nodes_ = 20;
     ctrl_dt_ = 0.00125;
+    is_new_ = false;
+
+    std::cout <<  int(T_ / ctrl_dt_) << "      " << int(T_ / n_nodes_ / ctrl_dt_) << std::endl;
 
     // Initialize vectors for linear interpolation
     old_lf_force_.setZero(6);   old_rf_force_.setZero(6);
@@ -162,20 +165,20 @@ void NMPCHandler::_resetStepIndex()
 void NMPCHandler::SetFootstepToPublish(const int count)
 {
     count_ = count;
+
     if(!footstep_list.empty())
     {
-        is_new_ = true;
         // Update the next footstep reference every T seconds
         /// Problem: simulation time is slower than actual time!
         if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ < int(footstep_list.size() - 4))
         {
             std::cout << "COUNT A: " << count_ << std::endl;
-
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 3 << " in a vector size of " << footstep_list.size() << std::endl;
             init_it = footstep_list.begin() + footstep_list_index_;
             end_it = footstep_list.begin() + footstep_list_index_ + 4;
             for (auto it = init_it; it != end_it; it++)
                 std::cout << it->GetPos().transpose() << std::endl;
+            is_new_ = true;
             footstep_list_index_ += 2;
         }
         else if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ >= int(footstep_list.size() - 4) && footstep_list_index_ < int(footstep_list.size() - 2))
@@ -186,22 +189,27 @@ void NMPCHandler::SetFootstepToPublish(const int count)
             end_it = footstep_list.begin() + footstep_list_index_ + 2;
             for (auto it = init_it; it != end_it; it++)
                 std::cout << it->GetPos().transpose() << std::endl;
+            is_new_ = true;
             footstep_list_index_ += 2;
         }
 
-        if (count_ % int(T_ / n_nodes_ / ctrl_dt_) == 0)
-        {
+
+        if (count_ % int(T_ / n_nodes_ / ctrl_dt_ + 0.5) == 0)
+        {           
             if (count_ % int(T_ / ctrl_dt_) != 0)
+            {
+                std::cout << count_ << std::endl;
                 is_new_ = false;
+            }
             std::vector<FootStep> fs(init_it, end_it);
             footstep_to_publish_ = fs;
         }
     }
     else
     {
-        is_new_ = false;
         if(count_ % int(T_ / n_nodes_ / ctrl_dt_) == 0)
         {
+            is_new_ = false;
             if(first_visit_)
             {
                 _updateStartingStance();
@@ -464,6 +472,10 @@ bool NMPCHandler::UpdateDesired()
     else
         tci_container_->contact_map_["rf_contact"]->SetMaxFz(1000);
     tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(right_force_ref_interpolated);
+
+//    auto init_dcm_pos = robot_->GetRobotComPos();
+//    auto init_dcm_vel = robot_->GetRobotComLinVel();
+
 
     // Add to logger
     logger_->add("unfiltered_lf_pos_ref", std::get<0>(left_foot_ref));

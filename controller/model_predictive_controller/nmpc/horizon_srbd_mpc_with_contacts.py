@@ -70,6 +70,7 @@ def callback(contact_sequence, robot_state, msg):
     global set_bool
     global is_callback_done
     set_bool = msg.is_new
+    print(set_bool)
     is_callback_done = True
 
 def clock_callback(msg):
@@ -268,21 +269,45 @@ class steps_phase:
             exit()
 
         self.contact_positions = []
+        # TODO: linear interpolation on x and y axis required for walking
         sin = 0.05 * np.sin(np.linspace(0, np.pi, 10))
+        x_lf = np.linspace(current_contacts[0::3], next_contacts[0:3*self.contact_model][0::3] + current_contacts[3*self.contact_model:][0::3], 8)
+        y_lf = np.linspace(current_contacts[1::3], next_contacts[0:3*self.contact_model][1::3] + current_contacts[3*self.contact_model:][1::3], 8)
+        x_rf = np.linspace(next_contacts[0:3*self.contact_model][0::3] + current_contacts[3*self.contact_model:][0::3], next_contacts[0::3], 8)
+        y_rf = np.linspace(next_contacts[0:3*self.contact_model][1::3] + current_contacts[3*self.contact_model:][1::3], next_contacts[1::3], 8)
+        # print('x_lf')
+        # for x in x_lf:
+        #     print(x)
+        # print('y_lf')
+        # for y in y_lf:
+        #     print(y)
+        # print('x_rf')
+        # for x in x_rf:
+        #     print(x)
+        # print('y_rf')
+        # for y in y_rf:
+        #     print(y)
         for k in range(0, 2):  # 2 nodes down
             self.contact_positions.append(current_contacts)
             self.contact_positions[-1][2::3] = [0] * number_of_contacts
         for k in range(0, 8):  # 8 nodes step with left foot
             self.contact_positions.append(next_contacts[0:3*self.contact_model] + current_contacts[3*self.contact_model:])
+            self.contact_positions[-1][0::3] = x_lf[k]
+            self.contact_positions[-1][1::3] = y_lf[k]
             self.contact_positions[-1][2::3] = [sin[k+1]] * self.contact_model + [0] * self.contact_model
         for k in range(0, 2):  # 2 nodes down
             self.contact_positions.append(next_contacts[0:3*self.contact_model] + current_contacts[3*self.contact_model:])
             self.contact_positions[-1][2::3] = [0] * number_of_contacts
         for k in range(0, 8):  # 8 nodes step
             self.contact_positions.append(next_contacts[:])
+            self.contact_positions[-1][0::3] = x_rf[k]
+            self.contact_positions[-1][1::3] = y_rf[k]
             self.contact_positions[-1][2::3] = [0] * self.contact_model + [sin[k+1]] * self.contact_model
         self.contact_positions.append(next_contacts[:])
         # self.contact_positions.append(next_contacts)
+        # print('contact_positions after:')
+        # for p in self.contact_positions:
+        #     print(p)
 
         self.stance_contact_position = []
         self.stance_contact_velocity = []
@@ -554,7 +579,7 @@ These parameters can not be tuned at the moment.
 """
 ns = 20
 prb = problem.Problem(ns, casadi_type=cs.SX)
-T = 2.
+T = 1.4
 
 urdf_file = open(cwd + '/robot_model/draco/draco_point_contact_fb.urdf')
 urdf = urdf_file.read()
@@ -759,7 +784,8 @@ prb.createCost("rdot_tracking", rdot_tracking_gain * cs.sumsqr(rdot - rdot_ref),
 """
 w_tracking is used to track a desired angular velocity of the base
 """
-w_tracking_gain = 1e2
+w_tracking_gain = prb.createParameter('w_tracking_gain', 1)
+w_tracking_gain.assign(1e2)
 print(f"w_tracking_gain: {w_tracking_gain}")
 prb.createCost("w_tracking", w_tracking_gain * cs.sumsqr(w - w_ref), nodes=range(1, ns+1))
 
@@ -936,6 +962,8 @@ while not rospy.is_shutdown():
         c[i].setInitialGuess(solution['c' + str(i)])
         cdot[i].setInitialGuess(solution['cdot' + str(i)])
 
+    print(len(contact_sequence))
+
     if len(contact_sequence) == 2:
         init_pose_foot_dict[0] = contact_sequence[list(contact_sequence)[0]]
         init_pose_foot_dict[1] = contact_sequence[list(contact_sequence)[1]]
@@ -976,12 +1004,14 @@ while not rospy.is_shutdown():
             contact_sequence[list(contact_sequence)[3]])
 
         if set_bool or index == 0:
+            print('SETTING DIOCANEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
             wpg.setContactPositions(current_positions, next_positions)
 
         r_tracking.assign(0)  # com position tracking
         rz_tracking_gain.assign(1e2)  # com_z position tracking
         rdot_tracking_gain.assign(1e2)  # com velocity tracking
         Wo.assign(1e2)  # base orientation tracking
+        w_tracking_gain.assign(1e2)
         min_f_gain.assign(1e-3)  # forces minimization
         c_tracking_gain.assign(1e3)  # contact tracking
         wpg.set('step')
