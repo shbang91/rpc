@@ -13,7 +13,7 @@ import numpy as np
 from util.python_utils import pybullet_util
 from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
 
-import matplotlib.pyplot as plt
+from plot.data_saver import DataSaver
 
 INITIAL_POS = [0., 0., 1.]
 INITIAL_QUAT = [0., 0., 0., 1.]
@@ -54,9 +54,8 @@ if __name__ == '__main__':
                                True)
 
     nominal_inertia = robot_system._Ig[0:3, 0:3]
-    # print('====================')
-    # print('nominal inertia')
-    # print(nominal_inertia)
+
+    data_saver = DataSaver('draco_cii.pkl')
 
     for r_haa in np.linspace(-np.pi / 4., np.pi / 4, num=30, endpoint=True):
         for r_hfe in np.linspace(-np.pi / 3, 0., num=30, endpoint=True):
@@ -71,21 +70,22 @@ if __name__ == '__main__':
                 nominal_sensor_data['joint_vel'], True)
 
             inertia = robot_system._Ig[0:3, 0:3]
-            # print('====================')
-            # print('inertia')
-            # print(inertia)
 
             ## compute CII
-            print(np.dot(inertia, np.linalg.inv(nominal_inertia)))
             CII = np.linalg.det(
                 np.dot(inertia, np.linalg.inv(nominal_inertia)) - np.eye(3))
-            print("======CII======")
-            print(CII)
+            # print("======CII======")
+            # print(CII)
 
             ### for visualization
-            pb.resetJointState(draco, joint_id['r_hip_aa'], r_haa)
-            pb.resetJointState(draco, joint_id['r_hip_fe'], r_hfe)
+            # pb.resetJointState(draco, joint_id['r_hip_aa'], r_haa)
+            # pb.resetJointState(draco, joint_id['r_hip_fe'], r_hfe)
 
-            time.sleep(0.1)
+            # time.sleep(0.1)
 
             ## data save
+            data_saver.add('r_hip_aa', r_haa)
+            data_saver.add('r_hip_fe', r_hfe)
+            data_saver.add('cii', CII)
+            data_saver.advance()
+
