@@ -7,7 +7,7 @@ import multiprocessing as mp
 from tqdm import tqdm
 
 
-def PrettyPrint(ob):
+def pretty_print(ob):
     print(json.dumps(ob, indent=4))
 
 
