@@ -14,12 +14,13 @@ import ipdb
 
 cii_file_list = [
     cwd + '/experiment_data/draco_cii.pkl',
-    cwd + '/experiment_data/draco_cii2.pkl'
+    cwd + '/experiment_data/draco_cii2.pkl',
+    cwd + '/experiment_data/atlas_cii.pkl'
 ]
 
 draco_knee_0_cii = []
 draco_knee_60_cii = []
-# atlas_knee_0_cii = []
+atlas_knee_0_cii = []
 
 for cii_file in cii_file_list:
     with open(cii_file, 'rb') as file:
@@ -30,12 +31,15 @@ for cii_file in cii_file_list:
                     draco_knee_0_cii.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/draco_cii2.pkl':
                     draco_knee_60_cii.append(data['cii'])
+                elif cii_file == cwd + '/experiment_data/atlas_cii.pkl':
+                    atlas_knee_0_cii.append(data['cii'])
             except EOFError:
                 break
 
 pd_data = {
     'draco(knee 0)': draco_knee_0_cii,
-    'draco(knee 60)': draco_knee_60_cii
+    'draco(knee 60)': draco_knee_60_cii,
+    'atlas(knee 60)': atlas_knee_0_cii
 }
 
 df = pd.DataFrame(pd_data)
