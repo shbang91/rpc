@@ -36,11 +36,33 @@ if __name__ == '__main__':
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
         draco, INITIAL_POS, INITIAL_QUAT, False)
 
+    ## rolling contact joint constraint
+    # c1 = pb.createConstraint(draco,
+    # link_id['l_knee_fe_lp'],
+    # draco,
+    # link_id['l_knee_fe_ld'],
+    # jointType=pb.JOINT_GEAR,
+    # jointAxis=[0, 1, 0],
+    # parentFramePosition=[0, 0, 0],
+    # childFramePosition=[0, 0, 0])
+    # pb.changeConstraint(c1, gearRatio=-1, maxForce=500, erp=10)
+
+    # c2 = pb.createConstraint(draco,
+    # link_id['r_knee_fe_lp'],
+    # draco,
+    # link_id['r_knee_fe_ld'],
+    # jointType=pb.JOINT_GEAR,
+    # jointAxis=[0, 1, 0],
+    # parentFramePosition=[0, 0, 0],
+    # childFramePosition=[0, 0, 0])
+    # pb.changeConstraint(c2, gearRatio=-1, maxForce=500, erp=10)
+
     nominal_sensor_data = pybullet_util.get_sensor_data(
         draco, joint_id, link_id, pos_basejoint_to_basecom,
         rot_basejoint_to_basecom)
 
     joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
+    # joint_pos['r_knee_fe_jp'], joint_pos['r_knee_fe_jd'] = np.pi / 6, np.pi / 6
 
     robot_system = PinocchioRobotSystem(
         cwd + '/robot_model/draco/draco_modified.urdf',
@@ -55,12 +77,14 @@ if __name__ == '__main__':
 
     nominal_inertia = robot_system._Ig[0:3, 0:3]
 
-    data_saver = DataSaver('draco_cii.pkl')
+    data_saver = DataSaver('draco_cii2.pkl')
 
     for r_haa in np.linspace(-np.pi / 4., np.pi / 4, num=30, endpoint=True):
         for r_hfe in np.linspace(-np.pi / 3, 0., num=30, endpoint=True):
             joint_pos['r_hip_aa'] = r_haa
             joint_pos['r_hip_fe'] = r_hfe
+            joint_pos['r_knee_fe_jp'], joint_pos[
+                'r_knee_fe_jd'] = np.pi / 6, np.pi / 6
 
             robot_system.update_system(
                 nominal_sensor_data['base_joint_pos'],
@@ -78,14 +102,15 @@ if __name__ == '__main__':
             # print(CII)
 
             ### for visualization
-            # pb.resetJointState(draco, joint_id['r_hip_aa'], r_haa)
-            # pb.resetJointState(draco, joint_id['r_hip_fe'], r_hfe)
+            pb.resetJointState(draco, joint_id['r_hip_aa'], r_haa)
+            pb.resetJointState(draco, joint_id['r_hip_fe'], r_hfe)
+            pb.resetJointState(draco, joint_id['r_knee_fe_jp'], np.pi / 6)
+            pb.resetJointState(draco, joint_id['r_knee_fe_jd'], np.pi / 6)
 
-            # time.sleep(0.1)
+            time.sleep(0.01)
 
             ## data save
             data_saver.add('r_hip_aa', r_haa)
             data_saver.add('r_hip_fe', r_hfe)
             data_saver.add('cii', CII)
             data_saver.advance()
-
