@@ -26,25 +26,27 @@ if __name__ == '__main__':
                                   cameraPitch=-15,
                                   cameraTargetPosition=[0, 0, 1.])
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    ## spawn draco in pybullet for visualization
-    draco = pb.loadURDF(cwd + '/robot_model/draco/draco_modified.urdf',
+    ## spawn valkyrie in pybullet for visualization
+    valkyrie = pb.loadURDF(cwd + '/robot_model/valkyrie/valkyrie.urdf',
                         INITIAL_POS,
                         INITIAL_QUAT,
                         useFixedBase=True)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
-        draco, INITIAL_POS, INITIAL_QUAT, False)
+        valkyrie, INITIAL_POS, INITIAL_QUAT, False)
 
     nominal_sensor_data = pybullet_util.get_sensor_data(
-        draco, joint_id, link_id, pos_basejoint_to_basecom,
+        valkyrie, joint_id, link_id, pos_basejoint_to_basecom,
         rot_basejoint_to_basecom)
 
     joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
+    joint_pos['rightShoulderRoll'] = np.pi/2
+    joint_pos['leftShoulderRoll'] = -np.pi/2
 
-    robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/draco/draco_modified.urdf',
-        cwd + '/robot_model/draco', True, False)
+    robot_system = PinocchioRobotSystem(cwd + '/robot_model/valkyrie/valkyrie.urdf',
+                                        cwd + '/robot_model/valkyrie', True,
+                                        False)
 
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
@@ -53,16 +55,15 @@ if __name__ == '__main__':
                                joint_pos, nominal_sensor_data['joint_vel'],
                                True)
 
-    nominal_inertia = robot_system.Ig[0:3, 0:3]
+    nominal_inertia = robot_system._Ig[0:3, 0:3]
 
-    data_saver = DataSaver('draco_cii.pkl')
+    data_saver = DataSaver('valkyrie_cii.pkl')
 
     for r_haa in np.linspace(-np.pi / 4., np.pi / 4, num=30, endpoint=True):
         for r_hfe in np.linspace(-np.pi / 3, 0., num=30, endpoint=True):
-            joint_pos['r_hip_aa'] = r_haa
-            joint_pos['r_hip_fe'] = r_hfe
-            joint_pos['r_knee_fe_jp'], joint_pos[
-                'r_knee_fe_jd'] = -r_hfe, -r_hfe
+            joint_pos['rightHipRoll'] = r_haa
+            joint_pos['rightHipPitch'] = r_hfe
+            joint_pos['rightKneePitch'] = -2*r_hfe
 
             robot_system.update_system(
                 nominal_sensor_data['base_joint_pos'],
@@ -71,20 +72,21 @@ if __name__ == '__main__':
                 nominal_sensor_data['base_joint_ang_vel'], joint_pos,
                 nominal_sensor_data['joint_vel'], True)
 
-            inertia = robot_system.Ig[0:3, 0:3]
+            inertia = robot_system._Ig[0:3, 0:3]
 
-            ## compute CII
+            # compute CII
             CII = np.linalg.det(
                 np.dot(inertia, np.linalg.inv(nominal_inertia)) - np.eye(3))
 
-            ### for visualization
-            pb.resetJointState(draco, joint_id['r_hip_aa'], r_haa)
-            pb.resetJointState(draco, joint_id['r_hip_fe'], r_hfe)
-            pb.resetJointState(draco, joint_id['r_knee_fe_jp'], -r_hfe)
-            pb.resetJointState(draco, joint_id['r_knee_fe_jd'], -r_hfe)
+            # for visualization
+            pb.resetJointState(valkyrie, joint_id['rightShoulderRoll'], np.pi/2)
+            pb.resetJointState(valkyrie, joint_id['leftShoulderRoll'], -np.pi/2)
+            pb.resetJointState(valkyrie, joint_id['rightHipRoll'], r_haa)
+            pb.resetJointState(valkyrie, joint_id['rightHipPitch'], r_hfe)
+            pb.resetJointState(valkyrie, joint_id['rightKneePitch'], -2*r_hfe)
 
             time.sleep(0.01)
 
-            ## data save
+            # data save
             data_saver.add('cii', CII)
             data_saver.advance()
