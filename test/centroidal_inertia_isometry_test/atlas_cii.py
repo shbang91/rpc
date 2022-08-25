@@ -59,11 +59,15 @@ if __name__ == '__main__':
 
     data_saver = DataSaver('atlas_cii.pkl')
 
-    for r_haa in np.linspace(-np.pi / 4., np.pi / 4, num=30, endpoint=True):
-        for r_hfe in np.linspace(-np.pi / 3, 0., num=30, endpoint=True):
-            joint_pos['r_leg_hpx'] = r_haa
-            joint_pos['r_leg_hpy'] = r_hfe
-            joint_pos['r_leg_kny'] = -2*r_hfe
+    for haa in np.linspace(0., 30. * np.pi / 180., num=30, endpoint=True):
+        for hfe in np.linspace(-np.pi / 6., 0., num=30, endpoint=True):
+            joint_pos['r_leg_hpx'] = -haa
+            joint_pos['r_leg_hpy'] = hfe
+            joint_pos['r_leg_kny'] = -2 * hfe
+
+            joint_pos['l_leg_hpx'] = haa
+            joint_pos['l_leg_hpy'] = hfe
+            joint_pos['l_leg_kny'] = -2 * hfe
 
             robot_system.update_system(
                 nominal_sensor_data['base_joint_pos'],
@@ -76,14 +80,17 @@ if __name__ == '__main__':
 
             # compute CII
             CII = np.linalg.det(
-                np.dot(inertia, np.linalg.inv(nominal_inertia)) - np.eye(3))
+                np.dot(np.linalg.inv(inertia), nominal_inertia) - np.eye(3))
 
             # for visualization
             pb.resetJointState(atlas, joint_id['r_arm_shx'], np.pi / 2)
             pb.resetJointState(atlas, joint_id['l_arm_shx'], -np.pi / 2)
-            pb.resetJointState(atlas, joint_id['r_leg_hpx'], r_haa)
-            pb.resetJointState(atlas, joint_id['r_leg_hpy'], r_hfe)
-            pb.resetJointState(atlas, joint_id['r_leg_kny'], -2*r_hfe)
+            pb.resetJointState(atlas, joint_id['r_leg_hpx'], -haa)
+            pb.resetJointState(atlas, joint_id['r_leg_hpy'], hfe)
+            pb.resetJointState(atlas, joint_id['r_leg_kny'], -2 * hfe)
+            pb.resetJointState(atlas, joint_id['l_leg_hpx'], haa)
+            pb.resetJointState(atlas, joint_id['l_leg_hpy'], hfe)
+            pb.resetJointState(atlas, joint_id['l_leg_kny'], -2 * hfe)
 
             time.sleep(0.01)
 

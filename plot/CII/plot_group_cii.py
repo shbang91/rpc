@@ -14,12 +14,14 @@ import ipdb
 
 cii_file_list = [
     cwd + '/experiment_data/draco_cii.pkl',
+    cwd + '/experiment_data/draco_cii2.pkl',
     cwd + '/experiment_data/atlas_cii.pkl',
     cwd + '/experiment_data/valkyrie_cii.pkl',
     cwd + '/experiment_data/cassie_cii.pkl'
 ]
 
 draco_cii = []
+draco_cii2 = []
 atlas_cii = []
 valkyrie_cii = []
 cassie_cii = []
@@ -31,6 +33,8 @@ for cii_file in cii_file_list:
                 data = pickle.load(file)
                 if cii_file == cwd + '/experiment_data/draco_cii.pkl':
                     draco_cii.append(data['cii'])
+                elif cii_file == cwd + '/experiment_data/draco_cii2.pkl':
+                    draco_cii2.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/atlas_cii.pkl':
                     atlas_cii.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/valkyrie_cii.pkl':
@@ -42,9 +46,10 @@ for cii_file in cii_file_list:
 
 pd_data = {
     'draco': draco_cii,
+    # 'draco2': draco_cii2
     'atlas': atlas_cii,
-    'valkyrie': valkyrie_cii,
-    'cassie': cassie_cii
+    'valkyrie': valkyrie_cii
+    # 'cassie': cassie_cii
 }
 
 df = pd.DataFrame(pd_data)
@@ -52,7 +57,7 @@ df = pd.DataFrame(pd_data)
 fig, ax = plt.subplots()
 ax.grid(True)
 ax = sns.violinplot(data=df, color="lightgray", linewidth=3)
-ax = sns.stripplot(data=df, color='blue', jitter=True, alpha=0.8, zorder=1)
+# ax = sns.stripplot(data=df, color='blue', jitter=True, alpha=0.8, zorder=1)
 ax.set_ylabel('CII')
 
 plt.show()

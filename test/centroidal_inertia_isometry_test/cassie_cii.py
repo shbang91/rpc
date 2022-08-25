@@ -18,7 +18,7 @@ from plot.data_saver import DataSaver
 INITIAL_POS = [0., 0., 1.]
 INITIAL_QUAT = [0., 0., 0., 1.]
 
-VIDEO_RECORD = True
+VIDEO_RECORD = False
 
 if __name__ == '__main__':
     #pybullet env
@@ -36,14 +36,14 @@ if __name__ == '__main__':
         for f in os.listdir('video'):
             if f == "cassie_cii.mp4":
                 os.remove('video/' + f)
-        pb.startStateLogging(pb.STATE_LOGGING_VIDEO_MP4, "video/cassie_cii.mp4")
-
+        pb.startStateLogging(pb.STATE_LOGGING_VIDEO_MP4,
+                             "video/cassie_cii.mp4")
 
     ## spawn cassie in pybullet for visualization
     cassie = pb.loadURDF(cwd + '/robot_model/cassie/urdf/cassie.urdf',
-                        INITIAL_POS,
-                        INITIAL_QUAT,
-                        useFixedBase=True)
+                         INITIAL_POS,
+                         INITIAL_QUAT,
+                         useFixedBase=True)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
@@ -54,13 +54,12 @@ if __name__ == '__main__':
         rot_basejoint_to_basecom)
 
     joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-    joint_pos['toe_joint_left'] = -np.pi/2
-    joint_pos['toe_joint_right'] = -np.pi/2
+    joint_pos['toe_joint_left'] = -np.pi / 2
+    joint_pos['toe_joint_right'] = -np.pi / 2
 
-
-    robot_system = PinocchioRobotSystem(cwd + '/robot_model/cassie/urdf/cassie.urdf',
-                                        cwd + '/robot_model/cassie', True,
-                                        False)
+    robot_system = PinocchioRobotSystem(
+        cwd + '/robot_model/cassie/urdf/cassie.urdf',
+        cwd + '/robot_model/cassie', True, False)
 
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
@@ -73,11 +72,14 @@ if __name__ == '__main__':
 
     data_saver = DataSaver('cassie_cii.pkl')
 
-    for r_haa in np.linspace(-np.pi / 4., np.pi / 4, num=30, endpoint=True):
-        for r_hfe in np.linspace(-np.pi / 3, 0., num=30, endpoint=True):
-            joint_pos['hip_abduction_right'] = r_haa
-            joint_pos['hip_flexion_right'] = r_hfe
-            joint_pos['ankle_joint_right'] = -2.5*r_hfe
+    for haa in np.linspace(0., 50. * np.pi / 180., num=50, endpoint=True):
+        for hfe in np.linspace(-np.pi / 3., 0., num=50, endpoint=True):
+            joint_pos['hip_abduction_right'] = -haa
+            joint_pos['hip_flexion_right'] = hfe
+            joint_pos['ankle_joint_right'] = -2.5 * hfe
+            joint_pos['hip_abduction_left'] = haa
+            joint_pos['hip_flexion_left'] = hfe
+            joint_pos['ankle_joint_left'] = -2.5 * hfe
 
             robot_system.update_system(
                 nominal_sensor_data['base_joint_pos'],
@@ -90,16 +92,21 @@ if __name__ == '__main__':
 
             # compute CII
             CII = np.linalg.det(
-                np.dot(inertia, np.linalg.inv(nominal_inertia)) - np.eye(3))
+                np.dot(np.linalg.inv(inertia), nominal_inertia) - np.eye(3))
 
             # for visualization
-            pb.resetJointState(cassie, joint_id['toe_joint_left'], -np.pi/2)
-            pb.resetJointState(cassie, joint_id['toe_joint_right'], -np.pi/2)
-            pb.resetJointState(cassie, joint_id['hip_abduction_right'], r_haa)
-            pb.resetJointState(cassie, joint_id['hip_flexion_right'], r_hfe)
-            pb.resetJointState(cassie, joint_id['ankle_joint_right'], -2.5*r_hfe)
+            pb.resetJointState(cassie, joint_id['toe_joint_left'], -np.pi / 2)
+            pb.resetJointState(cassie, joint_id['toe_joint_right'], -np.pi / 2)
+            pb.resetJointState(cassie, joint_id['hip_abduction_right'], -haa)
+            pb.resetJointState(cassie, joint_id['hip_flexion_right'], hfe)
+            pb.resetJointState(cassie, joint_id['ankle_joint_right'],
+                               -2.5 * hfe)
+            pb.resetJointState(cassie, joint_id['hip_abduction_left'], haa)
+            pb.resetJointState(cassie, joint_id['hip_flexion_left'], hfe)
+            pb.resetJointState(cassie, joint_id['ankle_joint_left'],
+                               -2.5 * hfe)
 
-            time.sleep(0.01)
+            time.sleep(0.001)
 
             # data save
             data_saver.add('cii', CII)

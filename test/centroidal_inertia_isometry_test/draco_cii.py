@@ -57,12 +57,16 @@ if __name__ == '__main__':
 
     data_saver = DataSaver('draco_cii.pkl')
 
-    for r_haa in np.linspace(-np.pi / 4., np.pi / 4, num=30, endpoint=True):
-        for r_hfe in np.linspace(-np.pi / 3, 0., num=30, endpoint=True):
-            joint_pos['r_hip_aa'] = r_haa
-            joint_pos['r_hip_fe'] = r_hfe
+    for haa in np.linspace(0., 30. * np.pi / 180., num=30, endpoint=True):
+        for hfe in np.linspace(-30 * np.pi / 180., 0., num=30, endpoint=True):
+            joint_pos['r_hip_aa'] = -haa
+            joint_pos['r_hip_fe'] = hfe
             joint_pos['r_knee_fe_jp'], joint_pos[
-                'r_knee_fe_jd'] = -r_hfe, -r_hfe
+                'r_knee_fe_jd'] = -1.5 * hfe, -1.5 * hfe
+            joint_pos['l_hip_aa'] = -haa
+            joint_pos['l_hip_fe'] = hfe
+            joint_pos['l_knee_fe_jp'], joint_pos[
+                'l_knee_fe_jd'] = -1.5 * hfe, -1.5 * hfe
 
             robot_system.update_system(
                 nominal_sensor_data['base_joint_pos'],
@@ -75,15 +79,19 @@ if __name__ == '__main__':
 
             ## compute CII
             CII = np.linalg.det(
-                np.dot(inertia, np.linalg.inv(nominal_inertia)) - np.eye(3))
+                np.dot(np.linalg.inv(inertia), nominal_inertia) - np.eye(3))
 
             ### for visualization
-            pb.resetJointState(draco, joint_id['r_hip_aa'], r_haa)
-            pb.resetJointState(draco, joint_id['r_hip_fe'], r_hfe)
-            pb.resetJointState(draco, joint_id['r_knee_fe_jp'], -r_hfe)
-            pb.resetJointState(draco, joint_id['r_knee_fe_jd'], -r_hfe)
+            pb.resetJointState(draco, joint_id['r_hip_aa'], -haa)
+            pb.resetJointState(draco, joint_id['r_hip_fe'], hfe)
+            pb.resetJointState(draco, joint_id['r_knee_fe_jp'], -1.5 * hfe)
+            pb.resetJointState(draco, joint_id['r_knee_fe_jd'], -1.5 * hfe)
+            pb.resetJointState(draco, joint_id['l_hip_aa'], haa)
+            pb.resetJointState(draco, joint_id['l_hip_fe'], hfe)
+            pb.resetJointState(draco, joint_id['l_knee_fe_jp'], -1.5 * hfe)
+            pb.resetJointState(draco, joint_id['l_knee_fe_jd'], -1.5 * hfe)
 
-            time.sleep(0.01)
+            time.sleep(0.001)
 
             ## data save
             data_saver.add('cii', CII)
