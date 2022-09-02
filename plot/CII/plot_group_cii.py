@@ -46,7 +46,7 @@ for cii_file in cii_file_list:
 
 pd_data = {
     'draco': draco_cii,
-    # 'draco2': draco_cii2
+    # 'draco2': draco_cii2,
     'atlas': atlas_cii,
     'valkyrie': valkyrie_cii
     # 'cassie': cassie_cii

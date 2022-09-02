@@ -178,6 +178,12 @@ void IHWBC::Solve(
     // sa_ni_trc,
     // 0.0001); // TODO: only apply for Draco3 (due to internal constraint jac)
 
+    std::cout << "TEST============================" << std::endl;
+    std::cout << sa_ni_trc_bar * sa_ni_trc -
+                     ni.bottomRightCorner(num_active_ + num_passive_,
+                                          num_active_ + num_passive_)
+              << std::endl;
+
   } else {
     // no passive joint
     ni.setIdentity(num_qdot_, num_qdot_);
@@ -243,6 +249,12 @@ void IHWBC::Solve(
         eq_mat.bottomRows(num_passive_) = eq_int_mat;
         eq_vec.head(num_float_) = eq_float_vec;
         eq_vec.tail(num_passive_) = eq_int_vec;
+
+        // TEST
+        // eq_mat = eq_float_mat;
+        // eq_vec = eq_float_vec;
+
+        // TEST
 
         // std::cout <<
         // "======================================================="

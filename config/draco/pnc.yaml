@@ -108,7 +108,7 @@ wbc:
   qp:
     lambda_qddot: 1e-7 ##regularization
     lambda_rf: 1e-6 ##regularization
-    b_trq_limit: false
+    b_trq_limit: true
 
 
 state_machine:
