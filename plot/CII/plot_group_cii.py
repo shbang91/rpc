@@ -14,14 +14,14 @@ import ipdb
 
 cii_file_list = [
     cwd + '/experiment_data/draco_cii.pkl',
-    cwd + '/experiment_data/draco_cii2.pkl',
+    cwd + '/experiment_data/draco_cii_collocated.pkl',
     cwd + '/experiment_data/atlas_cii.pkl',
     cwd + '/experiment_data/valkyrie_cii.pkl',
     cwd + '/experiment_data/cassie_cii.pkl'
 ]
 
 draco_cii = []
-draco_cii2 = []
+draco_cii_collocated = []
 atlas_cii = []
 valkyrie_cii = []
 cassie_cii = []
@@ -33,8 +33,8 @@ for cii_file in cii_file_list:
                 data = pickle.load(file)
                 if cii_file == cwd + '/experiment_data/draco_cii.pkl':
                     draco_cii.append(data['cii'])
-                elif cii_file == cwd + '/experiment_data/draco_cii2.pkl':
-                    draco_cii2.append(data['cii'])
+                elif cii_file == cwd + '/experiment_data/draco_cii_collocated.pkl':
+                    draco_cii_collocated.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/atlas_cii.pkl':
                     atlas_cii.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/valkyrie_cii.pkl':
@@ -45,10 +45,10 @@ for cii_file in cii_file_list:
                 break
 
 pd_data = {
-    'draco': draco_cii,
-    # 'draco2': draco_cii2
-    'atlas': atlas_cii,
-    'valkyrie': valkyrie_cii
+    'draco (proximal actuation)': draco_cii,
+    'draco (collocated actuation)': draco_cii_collocated
+    # 'atlas': atlas_cii,
+    # 'valkyrie': valkyrie_cii
     # 'cassie': cassie_cii
 }
 

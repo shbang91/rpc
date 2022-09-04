@@ -36,6 +36,12 @@ if __name__ == '__main__':
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
         draco, INITIAL_POS, INITIAL_QUAT, False)
 
+    pb.resetBasePositionAndOrientation(draco ,[0,0,0], [0,0,0,1])
+    print(link_id["torso_com_link"])
+    print("torso link com pose")
+    print(pb.getLinkState(draco, link_id["torso_com_link"])[0])
+    exit(0)
+
     nominal_sensor_data = pybullet_util.get_sensor_data(
         draco, joint_id, link_id, pos_basejoint_to_basecom,
         rot_basejoint_to_basecom)
@@ -43,7 +49,7 @@ if __name__ == '__main__':
     joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
 
     robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/draco/draco_modified.urdf',
+        cwd + '/robot_model/draco/draco_modified_cii.urdf',
         cwd + '/robot_model/draco', True, False)
 
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
@@ -55,7 +61,7 @@ if __name__ == '__main__':
 
     nominal_inertia = robot_system.Ig[0:3, 0:3]
 
-    data_saver = DataSaver('draco_cii.pkl')
+    data_saver = DataSaver('draco_cii_collocated.pkl')
 
     for haa in np.linspace(0., 30. * np.pi / 180., num=30, endpoint=True):
         for hfe in np.linspace(-30 * np.pi / 180., 0., num=30, endpoint=True):
