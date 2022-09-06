@@ -62,6 +62,7 @@ EPOCH = 30
 
 ## 2-hidden layer Neural Network
 class NetWork(torch.nn.Module):
+
     def __init__(self, n_input, n_hidden_1, n_hidden_2, n_output):
         super(NetWork, self).__init__()
         self.layers = torch.nn.Sequential(
