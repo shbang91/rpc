@@ -36,11 +36,10 @@ if __name__ == '__main__':
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
         draco, INITIAL_POS, INITIAL_QUAT, False)
 
-    pb.resetBasePositionAndOrientation(draco ,[0,0,0], [0,0,0,1])
-    print(link_id["torso_com_link"])
-    print("torso link com pose")
-    print(pb.getLinkState(draco, link_id["torso_com_link"])[0])
-    exit(0)
+    # pb.resetBasePositionAndOrientation(draco ,[0,0,0], [0,0,0,1])
+    # print(link_id["torso_com_link"])
+    # print("torso link com pose")
+    # print(pb.getLinkState(draco, link_id["torso_com_link"])[0])
 
     nominal_sensor_data = pybullet_util.get_sensor_data(
         draco, joint_id, link_id, pos_basejoint_to_basecom,
