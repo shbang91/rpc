@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     data_saver = DataSaver('cassie_cii.pkl')
 
-    for haa in np.linspace(0., 50. * np.pi / 180., num=50, endpoint=True):
+    for haa in np.linspace(-15. * np.pi/180, 50. * np.pi / 180., num=50, endpoint=True):
         for hfe in np.linspace(-np.pi / 3., 0., num=50, endpoint=True):
             joint_pos['hip_abduction_right'] = -haa
             joint_pos['hip_flexion_right'] = hfe

@@ -41,8 +41,8 @@ if __name__ == '__main__':
         rot_basejoint_to_basecom)
 
     joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-    joint_pos['rightShoulderRoll'] = np.pi / 2
-    joint_pos['leftShoulderRoll'] = -np.pi / 2
+    # joint_pos['rightShoulderRoll'] = np.pi / 2
+    # joint_pos['leftShoulderRoll'] = -np.pi / 2
 
     robot_system = PinocchioRobotSystem(
         cwd + '/robot_model/valkyrie/valkyrie.urdf',
@@ -59,8 +59,10 @@ if __name__ == '__main__':
 
     data_saver = DataSaver('valkyrie_cii.pkl')
 
-    for haa in np.linspace(0., 30. * np.pi / 180., num=30, endpoint=True):
-        for hfe in np.linspace(-np.pi / 6., 0., num=30, endpoint=True):
+    # for haa in np.linspace(0., 30. * np.pi / 180., num=30, endpoint=True):
+        # for hfe in np.linspace(-np.pi / 6., 0., num=30, endpoint=True):
+    for haa in np.linspace(0. * np.pi/180, 50. * np.pi / 180., num=50, endpoint=True):
+        for hfe in np.linspace(-np.pi / 3., 0., num=50, endpoint=True):
             joint_pos['rightHipRoll'] = -haa
             joint_pos['rightHipPitch'] = hfe
             joint_pos['rightKneePitch'] = -2 * hfe
@@ -82,10 +84,10 @@ if __name__ == '__main__':
                 np.dot(np.linalg.inv(inertia), nominal_inertia) - np.eye(3))
 
             # for visualization
-            pb.resetJointState(valkyrie, joint_id['rightShoulderRoll'],
-                               np.pi / 2)
-            pb.resetJointState(valkyrie, joint_id['leftShoulderRoll'],
-                               -np.pi / 2)
+            # pb.resetJointState(valkyrie, joint_id['rightShoulderRoll'],
+                               # np.pi / 2)
+            # pb.resetJointState(valkyrie, joint_id['leftShoulderRoll'],
+                               # -np.pi / 2)
             pb.resetJointState(valkyrie, joint_id['rightHipRoll'], -haa)
             pb.resetJointState(valkyrie, joint_id['rightHipPitch'], hfe)
             pb.resetJointState(valkyrie, joint_id['rightKneePitch'], -2 * hfe)
