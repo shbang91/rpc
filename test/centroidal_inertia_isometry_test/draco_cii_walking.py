@@ -24,19 +24,19 @@ from plot.data_saver import DataSaver
 INITIAL_POS = [0., 0., 0.74]
 INITIAL_QUAT = [0., 0., 0., 1.]
 
+
 def set_initial_config(robot, joint_id):
-    pb.resetJointState(robot, joint_id["l_knee_fe_jp"], np.pi/4, 0.)
-    pb.resetJointState(robot, joint_id["l_knee_fe_jd"], np.pi/4, 0.)
+    pb.resetJointState(robot, joint_id["l_knee_adj"], np.pi / 2, 0.)
+    pb.resetJointState(robot, joint_id["r_knee_adj"], np.pi / 2, 0.)
 
-    pb.resetJointState(robot, joint_id["r_knee_fe_jp"], np.pi/4, 0.)
-    pb.resetJointState(robot, joint_id["r_knee_fe_jd"], np.pi/4, 0.)
+    pb.resetJointState(robot, joint_id["l_hip_fe"], -np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["r_hip_fe"], -np.pi / 4, 0.)
 
-    pb.resetJointState(robot, joint_id["l_hip_fe"], -np.pi/4, 0.)
-    pb.resetJointState(robot, joint_id["r_hip_fe"], -np.pi/4, 0.)
+    pb.resetJointState(robot, joint_id["l_ankle_fe"], -np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["r_ankle_fe"], -np.pi / 4, 0.)
 
-    pb.resetJointState(robot, joint_id["l_ankle_fe"], -np.pi/4, 0.)
-    pb.resetJointState(robot, joint_id["r_ankle_fe"], -np.pi/4, 0.)
-
+    pb.resetJointState(robot, joint_id["l_shoulder_aa"], np.pi / 2, 0.)
+    pb.resetJointState(robot, joint_id["r_shoulder_aa"], -np.pi / 2, 0.)
 
 
 if __name__ == "__main__":
@@ -49,30 +49,15 @@ if __name__ == "__main__":
 
     ## spawn draco in pybullet
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    robot = pb.loadURDF(cwd + '/robot_model/draco/draco_modified.urdf', INITIAL_POS, INITIAL_QUAT,
+    robot = pb.loadURDF(cwd + '/robot_model/draco/draco_ik.urdf',
+                        INITIAL_POS,
+                        INITIAL_QUAT,
                         useFixedBase=False)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     ## robot config
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
         robot, INITIAL_POS, INITIAL_QUAT, False)
-
-    set_initial_config(robot, joint_id)
-
-    nominal_sensor_data = pybullet_util.get_sensor_data(
-        robot, joint_id, link_id, pos_basejoint_to_basecom,
-        rot_basejoint_to_basecom)
-
-    nominal_joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-    print(nominal_joint_pos)
-    nominal_base_pos = np.copy(nominal_sensor_data['base_com_pos'])
-    nominal_base_quat = np.copy(nominal_sensor_data['base_com_quat'])
-    nominal_base_iso = liegroup.RpToTrans(util.quat_to_rot(nominal_base_quat),
-                                          nominal_base_pos)
-    nominal_rf_iso = np.copy(pybullet_util.get_link_iso(robot,
-                                                link_id['r_foot_contact']))
-    nominal_lf_iso = np.copy(pybullet_util.get_link_iso(robot,
-                                                link_id['l_foot_contact']))
 
     ## ik prep
     joint_screws_in_ee_at_home, ee_SE3_at_home = dict(), dict()
@@ -82,36 +67,57 @@ if __name__ == "__main__":
     leg_list = ['left_leg', 'right_leg']
 
     open_chain_joints_name_dict['left_leg'] = [
-        'l_hip_ie', 'l_hip_aa', 'l_hip_fe', 'l_knee_fe_jp', 'l_knee_fe_jd',
-        'l_ankle_fe', 'l_ankle_ie'
+        'l_hip_ie', 'l_hip_aa', 'l_hip_fe', 'l_knee_adj', 'l_ankle_fe',
+        'l_ankle_ie'
     ]
     open_chain_joints_name_dict['right_leg'] = [
-        'r_hip_ie', 'r_hip_aa', 'r_hip_fe', 'r_knee_fe_jp', 'r_knee_fe_jd',
-        'r_ankle_fe', 'r_ankle_ie'
+        'r_hip_ie', 'r_hip_aa', 'r_hip_fe', 'r_knee_adj', 'r_ankle_fe',
+        'r_ankle_ie'
     ]
 
     ee_links_name_dict['left_leg'] = 'l_foot_contact'
     ee_links_name_dict['right_leg'] = 'r_foot_contact'
 
-    base_links_name_dict['left_leg'] = 'torso_link'
-    base_links_name_dict['right_leg'] = 'torso_link'
+    base_links_name = 'torso_link'
 
     for leg in leg_list:
         joint_screws_in_ee_at_home[leg], ee_SE3_at_home[
             leg] = robot_kinematics.get_kinematics_config(
                 robot, joint_id, link_id, open_chain_joints_name_dict[leg],
-                base_links_name_dict[leg], ee_links_name_dict[leg])
+                base_links_name, ee_links_name_dict[leg])
+
+
+    ## set initial joint pos
+    set_initial_config(robot, joint_id)
+
+    ## get initial sensor data
+    nominal_sensor_data = pybullet_util.get_sensor_data(
+        robot, joint_id, link_id, pos_basejoint_to_basecom,
+        rot_basejoint_to_basecom)
+
+    nominal_joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
+    initial_joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
+    nominal_base_pos = np.copy(nominal_sensor_data['base_com_pos'])
+    nominal_base_quat = np.copy(nominal_sensor_data['base_com_quat'])
+    nominal_base_iso = liegroup.RpToTrans(util.quat_to_rot(nominal_base_quat),
+                                          nominal_base_pos)
+    nominal_rf_iso = np.copy(
+        pybullet_util.get_link_iso(robot, link_id['r_foot_contact']))
+    nominal_lf_iso = np.copy(
+        pybullet_util.get_link_iso(robot, link_id['l_foot_contact']))
 
     ## update virtual robot model
     robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/draco/draco_modified.urdf',
-        cwd + '/robot_model/draco', True, False)
+        cwd + '/robot_model/draco/draco_ik.urdf', cwd + '/robot_model/draco',
+        True, False)
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
                                nominal_sensor_data['base_joint_lin_vel'],
                                nominal_sensor_data['base_joint_ang_vel'],
                                nominal_joint_pos,
                                nominal_sensor_data['joint_vel'], True)
+
+
 
     ## calculate rotational CCRBI
     nominal_inertia = robot_system.Ig[0:3, 0:3]
@@ -140,12 +146,19 @@ if __name__ == "__main__":
 
     ## create swing foot trajectories
     ## sample one step boundary
-    swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
-    swing_height = np.random.uniform(SWING_HEIGHT_LB, SWING_HEIGHT_UB)
 
-    final_rf_pos = nominal_rf_iso[:3, 3] + np.random.uniform(
-        RFOOT_POS_DEV_LB, RFOOT_POS_DEV_UB)
-    final_rf_ea = np.random.uniform(FOOT_EA_LB, FOOT_EA_UB)
+    # swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
+    # swing_height = np.random.uniform(SWING_HEIGHT_LB, SWING_HEIGHT_UB)
+
+    swing_time = 0.5
+    swing_height = 0.05
+
+    # final_rf_pos = nominal_rf_iso[:3, 3] + np.random.uniform(
+    # RFOOT_POS_DEV_LB, RFOOT_POS_DEV_UB)
+    # final_rf_ea = np.random.uniform(FOOT_EA_LB, FOOT_EA_UB)
+
+    final_rf_pos = nominal_rf_iso[:3, 3] + np.array([0.10, 0, 0])
+    final_rf_ea = np.array([0., 0., 0.])
     final_rf_rot = util.euler_to_rot(final_rf_ea)
     final_rf_iso = liegroup.RpToTrans(final_rf_rot, final_rf_pos)
 
@@ -153,11 +166,18 @@ if __name__ == "__main__":
                                                0.5)
     mid_rf_iso[2, 3] += swing_height
     mid_rf_vel = (final_rf_iso[:3, 3] - nominal_rf_iso[:3, 3]) / swing_time
+
     mid_rf_vel[2] = 0.
 
     final_base_iso = interpolation.iso_interpolate(nominal_lf_iso,
                                                    final_rf_iso, 0.5)
-    final_base_iso[2,3] = nominal_base_pos[2]
+    final_base_iso[2, 3] = nominal_base_pos[2]
+
+    # print("nominal_rf:", nominal_rf_iso)
+    # print("final_rf_iso:", final_rf_iso)
+    # print("mid_rf_iso:", mid_rf_iso)
+    # print("final_base_iso:", final_base_iso)
+    # __import__('ipdb').set_trace()
 
     #### Create curves using one step boundary
     base_pos_curve = interpolation.HermiteCurveVec(nominal_base_iso[:3, 3],
@@ -195,23 +215,28 @@ if __name__ == "__main__":
         lf_pos = nominal_lf_iso[:3, 3]
         lf_quat = util.rot_to_quat(nominal_lf_iso[:3, :3])
 
+        print("rf_pos:", rf_pos)
+        print("lf_pos", lf_pos)
+        print("base_pos:", base_pos)
+
         #### calculate IK
         #### right foot
         T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat), base_pos)
 
         T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
         des_T_base_rf = np.dot(liegroup.TransInv(T_w_base), T_w_rf)
-        if t == 0:
-            rf_initial_guess = np.array([
-                nominal_joint_pos[joint_name]
-                for joint_name in open_chain_joints_name_dict['right_leg']
-            ])
+
+        rf_initial_guess = np.array([
+            initial_joint_pos[joint_name]
+            for joint_name in open_chain_joints_name_dict['right_leg']
+        ])
+
+        fk_result = robot_kinematics.FKinBody(ee_SE3_at_home['right_leg'], joint_screws_in_ee_at_home['right_leg'], rf_initial_guess)
+
 
         rf_joint_pos_sol, rf_ik_success = robot_kinematics.IKinBody(
             joint_screws_in_ee_at_home['right_leg'],
             ee_SE3_at_home['right_leg'], des_T_base_rf, rf_initial_guess)
-
-        # rf_initial_guess = rf_joint_pos_sol
 
         #### left foot
         T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
@@ -223,11 +248,10 @@ if __name__ == "__main__":
             ])
 
         lf_joint_pos_sol, lf_ik_success = robot_kinematics.IKinBody(
-            joint_screws_in_ee_at_home['left_leg'],
-            ee_SE3_at_home['left_leg'], des_T_base_lf, lf_initial_guess)
+            joint_screws_in_ee_at_home['left_leg'], ee_SE3_at_home['left_leg'],
+            des_T_base_lf, lf_initial_guess)
 
         # lf_initial_guess = lf_joint_pos_sol
-
 
         if rf_ik_success and lf_ik_success:
             print("IK solution found")
@@ -237,18 +261,26 @@ if __name__ == "__main__":
 
         #### set config in pybullet
         print("===================Before IK==================")
-        print([nominal_joint_pos[joint_name] for joint_name in open_chain_joints_name_dict['right_leg']])
-        for i, joint_name in enumerate(open_chain_joints_name_dict['right_leg']):
+        print([
+            nominal_joint_pos[joint_name]
+            for joint_name in open_chain_joints_name_dict['right_leg']
+        ])
+        for i, joint_name in enumerate(
+                open_chain_joints_name_dict['right_leg']):
             nominal_joint_pos[joint_name] = rf_joint_pos_sol[i]
-        for i, joint_name in enumerate(open_chain_joints_name_dict['left_leg']):
+        for i, joint_name in enumerate(
+                open_chain_joints_name_dict['left_leg']):
             nominal_joint_pos[joint_name] = lf_joint_pos_sol[i]
 
         # if t == 0:
-            # print("=========")
-            # print(nominal_joint_pos)
-            # exit(0)
+        # print("=========")
+        # print(nominal_joint_pos)
+        # exit(0)
         print("========================After=======================")
-        print([nominal_joint_pos[joint_name] for joint_name in open_chain_joints_name_dict['right_leg']])
-        pybullet_util.set_config(robot, joint_id, base_pos, base_quat, nominal_joint_pos)
+        print([
+            nominal_joint_pos[joint_name]
+            for joint_name in open_chain_joints_name_dict['right_leg']
+        ])
+        pybullet_util.set_config(robot, joint_id, base_pos, base_quat,
+                                 nominal_joint_pos)
         time.sleep(0.1)
-

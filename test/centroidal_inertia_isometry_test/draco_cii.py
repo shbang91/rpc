@@ -46,8 +46,8 @@ if __name__ == '__main__':
         rot_basejoint_to_basecom)
 
     joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-    joint_pos['r_shoulder_aa'] = -np.pi/2.
-    joint_pos['l_shoulder_aa'] = np.pi/2.
+    joint_pos['r_shoulder_aa'] = -np.pi / 2.
+    joint_pos['l_shoulder_aa'] = np.pi / 2.
 
     robot_system = PinocchioRobotSystem(
         cwd + '/robot_model/draco/draco_modified.urdf',
@@ -60,14 +60,16 @@ if __name__ == '__main__':
                                joint_pos, nominal_sensor_data['joint_vel'],
                                True)
 
-
     nominal_inertia = robot_system.Ig[0:3, 0:3]
 
     data_saver = DataSaver('draco_cii_prox.pkl')
 
     # for haa in np.linspace(0., 30. * np.pi / 180., num=30, endpoint=True):
-        # for hfe in np.linspace(-30 * np.pi / 180., 0., num=30, endpoint=True):
-    for haa in np.linspace(0. * np.pi/180, 50. * np.pi / 180., num=50, endpoint=True):
+    # for hfe in np.linspace(-30 * np.pi / 180., 0., num=30, endpoint=True):
+    for haa in np.linspace(0. * np.pi / 180,
+                           50. * np.pi / 180.,
+                           num=50,
+                           endpoint=True):
         for hfe in np.linspace(-np.pi / 3., 0., num=50, endpoint=True):
             joint_pos['r_hip_aa'] = -haa
             joint_pos['r_hip_fe'] = hfe
@@ -100,8 +102,8 @@ if __name__ == '__main__':
             pb.resetJointState(draco, joint_id['l_hip_fe'], hfe)
             pb.resetJointState(draco, joint_id['l_knee_fe_jp'], -1.5 * hfe)
             pb.resetJointState(draco, joint_id['l_knee_fe_jd'], -1.5 * hfe)
-            pb.resetJointState(draco, joint_id['r_shoulder_aa'], -np.pi/2.)
-            pb.resetJointState(draco, joint_id['l_shoulder_aa'], np.pi/2.)
+            pb.resetJointState(draco, joint_id['r_shoulder_aa'], -np.pi / 2.)
+            pb.resetJointState(draco, joint_id['l_shoulder_aa'], np.pi / 2.)
 
             time.sleep(0.001)
 
