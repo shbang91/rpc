@@ -26,17 +26,14 @@ INITIAL_QUAT = [0., 0., 0., 1.]
 
 
 def set_initial_config(robot, joint_id):
-    pb.resetJointState(robot, joint_id["l_knee_adj"], np.pi / 2, 0.)
-    pb.resetJointState(robot, joint_id["r_knee_adj"], np.pi / 2, 0.)
+    pb.resetJointState(robot, joint_id["leftKneePitch"], np.pi / 2, 0.)
+    pb.resetJointState(robot, joint_id["rightKneePitch"], np.pi / 2, 0.)
 
-    pb.resetJointState(robot, joint_id["l_hip_fe"], -np.pi / 4, 0.)
-    pb.resetJointState(robot, joint_id["r_hip_fe"], -np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["leftHipPitch"], -np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["rightHipPitch"], -np.pi / 4, 0.)
 
-    pb.resetJointState(robot, joint_id["l_ankle_fe"], -np.pi / 4, 0.)
-    pb.resetJointState(robot, joint_id["r_ankle_fe"], -np.pi / 4, 0.)
-
-    pb.resetJointState(robot, joint_id["l_shoulder_aa"], np.pi / 2, 0.)
-    pb.resetJointState(robot, joint_id["r_shoulder_aa"], -np.pi / 2, 0.)
+    pb.resetJointState(robot, joint_id["leftAnklePitch"], -np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["rightAnklePitch"], -np.pi / 4, 0.)
 
 
 if __name__ == "__main__":
@@ -49,7 +46,7 @@ if __name__ == "__main__":
 
     ## spawn draco in pybullet
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    robot = pb.loadURDF(cwd + '/robot_model/draco/draco_ik.urdf',
+    robot = pb.loadURDF(cwd + '/robot_model/valkyrie/valkyrie.urdf',
                         INITIAL_POS,
                         INITIAL_QUAT,
                         useFixedBase=False)
@@ -67,18 +64,18 @@ if __name__ == "__main__":
     leg_list = ['left_leg', 'right_leg']
 
     open_chain_joints_name_dict['left_leg'] = [
-        'l_hip_ie', 'l_hip_aa', 'l_hip_fe', 'l_knee_adj', 'l_ankle_fe',
-        'l_ankle_ie'
+        'leftHipYaw', 'leftHipRoll', 'leftHipPitch', 'leftKneePitch', 'leftAnklePitch',
+        'leftAnkleRoll'
     ]
     open_chain_joints_name_dict['right_leg'] = [
-        'r_hip_ie', 'r_hip_aa', 'r_hip_fe', 'r_knee_adj', 'r_ankle_fe',
-        'r_ankle_ie'
+        'rightHipYaw', 'rightHipRoll', 'rightHipPitch', 'rightKneePitch', 'rightAnklePitch',
+        'rightAnkleRoll'
     ]
 
-    ee_links_name_dict['left_leg'] = 'l_foot_contact'
-    ee_links_name_dict['right_leg'] = 'r_foot_contact'
+    ee_links_name_dict['left_leg'] = 'leftCOP_Frame'
+    ee_links_name_dict['right_leg'] = 'rightCOP_Frame'
 
-    base_links_name = 'torso_link'
+    base_links_name = 'pelvis'
 
     for leg in leg_list:
         joint_screws_in_ee_at_home[leg], ee_SE3_at_home[
@@ -89,6 +86,7 @@ if __name__ == "__main__":
 
     ## set initial joint pos
     set_initial_config(robot, joint_id)
+
 
     ## get initial sensor data
     nominal_sensor_data = pybullet_util.get_sensor_data(
@@ -101,14 +99,19 @@ if __name__ == "__main__":
     nominal_base_quat = np.copy(nominal_sensor_data['base_com_quat'])
     nominal_base_iso = liegroup.RpToTrans(util.quat_to_rot(nominal_base_quat),
                                           nominal_base_pos)
+    pelvis_height = pybullet_util.get_link_iso(robot, link_id['pelvis'])[2,3]
+    contact_height = pybullet_util.get_link_iso(robot, link_id['rightCOP_Frame'])[2,3]
+    print("distance btw pelvis and foot:", pelvis_height - contact_height )
+    __import__('ipdb').set_trace()
+
     nominal_rf_iso = np.copy(
-        pybullet_util.get_link_iso(robot, link_id['r_foot_contact']))
+        pybullet_util.get_link_iso(robot, link_id['rightCOP_Frame']))
     nominal_lf_iso = np.copy(
-        pybullet_util.get_link_iso(robot, link_id['l_foot_contact']))
+        pybullet_util.get_link_iso(robot, link_id['leftCOP_Frame']))
 
     ## update virtual robot model
     robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/draco/draco_ik_collocated.urdf', cwd + '/robot_model/draco',
+        cwd + '/robot_model/valkyrie/valkyrie.urdf', cwd + '/robot_model/valkyrie',
         True, False)
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
@@ -123,37 +126,14 @@ if __name__ == "__main__":
     nominal_inertia = robot_system.Ig[0:3, 0:3]
 
     ## data saver for RCCRBI
-    data_saver = DataSaver('draco_cii_collocated_walking_traj.pkl')
+    data_saver = DataSaver('valkyrie_cii_walking_traj.pkl')
 
     ## create operational space walking trajectories with parameters
     ## parameters: Foot SE(3), Swing height, Swing time, number of node
-
     ## motion boundary
-    SWING_TIME_LB, SWING_TIME_UB = 0.5, 1.
-    SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.1, 0.2
-
-    RFOOT_POS_DEV_LB = np.array([-0.1, -0.1, -0.05])
-    RFOOT_POS_DEV_UB = np.array([0.1, 0.1, 0.05])
-
-    FOOT_EA_LB = np.array(
-        [np.deg2rad(-5.), np.deg2rad(-15.),
-         np.deg2rad(-45.)])
-    FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.deg2rad(45.)])
-
-    ## create swing foot trajectories
-    ## sample one step boundary
-
-    # swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
-    # SWING_HEIGHT = np.random.uniform(SWING_HEIGHT_LB, SWING_HEIGHT_UB)
-
-
-    # final_rf_pos = nominal_rf_iso[:3, 3] + np.random.uniform(
-    # RFOOT_POS_DEV_LB, RFOOT_POS_DEV_UB)
-    # final_rf_ea = np.random.uniform(FOOT_EA_LB, FOOT_EA_UB)
-
     swing_time = 0.5
-    ONE_STEP_X_LB, ONE_STEP_X_UB = 0.1, 0.2
-    ONE_STEP_Y_LB, ONE_STEP_Y_UB = -0.1, 0.1
+    ONE_STEP_X_LB, ONE_STEP_X_UB = 0.3, 0.4
+    ONE_STEP_Y_LB, ONE_STEP_Y_UB = -0.2, 0.2
     SWING_HEIGHT = 0.05
     NUM_NODE_PER_SWING = 30
 
