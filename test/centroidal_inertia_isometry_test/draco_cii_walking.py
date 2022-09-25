@@ -26,8 +26,13 @@ INITIAL_QUAT = [0., 0., 0., 1.]
 
 
 def set_initial_config(robot, joint_id):
-    pb.resetJointState(robot, joint_id["l_knee_adj"], np.pi / 2, 0.)
-    pb.resetJointState(robot, joint_id["r_knee_adj"], np.pi / 2, 0.)
+    # pb.resetJointState(robot, joint_id["l_knee_adj"], np.pi / 2, 0.)
+    # pb.resetJointState(robot, joint_id["r_knee_adj"], np.pi / 2, 0.)
+
+    pb.resetJointState(robot, joint_id["l_knee_fe_jp"], np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["r_knee_fe_jp"], np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["l_knee_fe_jd"], np.pi / 4, 0.)
+    pb.resetJointState(robot, joint_id["r_knee_fe_jd"], np.pi / 4, 0.)
 
     pb.resetJointState(robot, joint_id["l_hip_fe"], -np.pi / 4, 0.)
     pb.resetJointState(robot, joint_id["r_hip_fe"], -np.pi / 4, 0.)
@@ -49,7 +54,8 @@ if __name__ == "__main__":
 
     ## spawn draco in pybullet
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    robot = pb.loadURDF(cwd + '/robot_model/draco/draco_ik.urdf',
+    # robot = pb.loadURDF(cwd + '/robot_model/draco/draco_ik.urdf',
+    robot = pb.loadURDF(cwd + '/robot_model/draco/draco_modified_cii.urdf',
                         INITIAL_POS,
                         INITIAL_QUAT,
                         useFixedBase=False)
@@ -66,14 +72,25 @@ if __name__ == "__main__":
 
     leg_list = ['left_leg', 'right_leg']
 
+    # open_chain_joints_name_dict['left_leg'] = [
+        # 'l_hip_ie', 'l_hip_aa', 'l_hip_fe', 'l_knee_adj', 'l_ankle_fe',
+        # 'l_ankle_ie'
+    # ]
+    # open_chain_joints_name_dict['right_leg'] = [
+        # 'r_hip_ie', 'r_hip_aa', 'r_hip_fe', 'r_knee_adj', 'r_ankle_fe',
+        # 'r_ankle_ie'
+    # ]
+
     open_chain_joints_name_dict['left_leg'] = [
-        'l_hip_ie', 'l_hip_aa', 'l_hip_fe', 'l_knee_adj', 'l_ankle_fe',
+        'l_hip_ie', 'l_hip_aa', 'l_hip_fe', 'l_knee_fe_jp', 'l_knee_fe_jd', 'l_ankle_fe',
         'l_ankle_ie'
     ]
     open_chain_joints_name_dict['right_leg'] = [
-        'r_hip_ie', 'r_hip_aa', 'r_hip_fe', 'r_knee_adj', 'r_ankle_fe',
+        'r_hip_ie', 'r_hip_aa', 'r_hip_fe', 'r_knee_fe_jp','r_knee_fe_jd', 'r_ankle_fe',
         'r_ankle_ie'
     ]
+
+
 
     ee_links_name_dict['left_leg'] = 'l_foot_contact'
     ee_links_name_dict['right_leg'] = 'r_foot_contact'
@@ -86,6 +103,10 @@ if __name__ == "__main__":
                 robot, joint_id, link_id, open_chain_joints_name_dict[leg],
                 base_links_name, ee_links_name_dict[leg])
 
+    leg_length = pybullet_util.get_link_iso(robot, link_id['l_hip_ie_link'])[2,3] - pybullet_util.get_link_iso(robot, link_id['r_foot_contact'])[2,3]
+    # print("==========leg_length===========")
+    # print(leg_length)
+    # __import__('ipdb').set_trace()
 
     ## set initial joint pos
     set_initial_config(robot, joint_id)
@@ -108,8 +129,9 @@ if __name__ == "__main__":
 
     ## update virtual robot model
     robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/draco/draco_ik_collocated.urdf', cwd + '/robot_model/draco',
-        True, False)
+        # cwd + '/robot_model/draco/draco_ik.urdf', cwd + '/robot_model/draco',
+        cwd + '/robot_model/draco/draco_modified_cii.urdf', cwd + '/robot_model/draco',
+        False, False)
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
                                nominal_sensor_data['base_joint_lin_vel'],
@@ -259,8 +281,8 @@ if __name__ == "__main__":
 
                 ## calculate inertia
                 robot_system.update_system(
-                        nominal_sensor_data['base_joint_pos'],
-                        nominal_sensor_data['base_joint_quat'],
+                        base_pos,
+                        base_quat,
                         nominal_sensor_data['base_joint_lin_vel'],
                         nominal_sensor_data['base_joint_ang_vel'], nominal_joint_pos,
                         nominal_sensor_data['joint_vel'], True)

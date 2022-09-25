@@ -20,7 +20,9 @@ cii_file_list = [
     cwd + '/experiment_data/cassie_cii.pkl',
     cwd + '/experiment_data/draco_cii_proximal_walking_traj.pkl',
     cwd + '/experiment_data/draco_cii_collocated_walking_traj.pkl',
-    cwd + '/experiment_data/valkyrie_cii_walking_traj.pkl'
+    cwd + '/experiment_data/valkyrie_cii_walking_traj.pkl',
+    cwd + '/experiment_data/hubo_cii_walking_traj.pkl',
+    cwd + '/experiment_data/atlas_cii_walking_traj.pkl'
 
 ]
 
@@ -32,6 +34,8 @@ cassie_cii = []
 draco_cii_one_step = []
 draco_cii_one_step_collocated = []
 valkyrie_cii_one_step = []
+hubo_cii_one_step = []
+atlas_cii_one_step = []
 
 for cii_file in cii_file_list:
     with open(cii_file, 'rb') as file:
@@ -54,6 +58,10 @@ for cii_file in cii_file_list:
                     draco_cii_one_step_collocated.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/valkyrie_cii_walking_traj.pkl':
                     valkyrie_cii_one_step.append(data['cii'])
+                elif cii_file == cwd + '/experiment_data/hubo_cii_walking_traj.pkl':
+                    hubo_cii_one_step.append(-1*data['cii'])
+                elif cii_file == cwd + '/experiment_data/atlas_cii_walking_traj.pkl':
+                    atlas_cii_one_step.append(-1 * data['cii'])
             except EOFError:
                 break
 
@@ -63,14 +71,18 @@ pd_data = {
     # 'atlas': atlas_cii,
     # 'valkyrie': valkyrie_cii,
     # 'cassie': cassie_cii
+    'atlas': atlas_cii_one_step,
+    'valkyrie': valkyrie_cii_one_step,
+    'hubo plus': hubo_cii_one_step,
     'draco(proximal)': draco_cii_one_step,
-    'draco(collocated)': draco_cii_one_step_collocated,
-    'valkyrie': valkyrie_cii_one_step
+    'draco(collocated)': draco_cii_one_step_collocated
 }
 
 print(len(draco_cii_one_step))
 print(len(draco_cii_one_step_collocated))
 print(len(valkyrie_cii_one_step))
+print(len(hubo_cii_one_step))
+print(len(atlas_cii_one_step))
 
 df = pd.DataFrame(pd_data)
 
