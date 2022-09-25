@@ -374,7 +374,10 @@ def get_camera_image(cam_target_pos, cam_dist, cam_yaw, cam_pitch, cam_roll,
 def is_key_triggered(keys, key):
     o = ord(key)
     if o in keys:
-        return keys[ord(key)] & pb.KEY_WAS_TRIGGERED
+        if o == 'f':
+            return keys[ord(key)] #& pb.KEY_WAS_TRIGGERED
+        else:
+            return keys[ord(key)] & pb.KEY_WAS_TRIGGERED
     return False
 
 
