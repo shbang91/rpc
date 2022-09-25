@@ -42,6 +42,27 @@ public:
   Eigen::VectorXd act_lf_force_;
   Eigen::VectorXd des_rf_force_;
   Eigen::VectorXd act_rf_force_;
+
+  Eigen::VectorXd des_torso_ori_;
+  Eigen::VectorXd act_torso_ori_;
+  Eigen::VectorXd des_torso_vel_;
+  Eigen::VectorXd act_torso_vel_;
+
+  // KF state estimator
+  // state estimator
+  Eigen::VectorXd base_quat_kf_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd base_euler_kf_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd base_pos_kf_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd base_vel_kf_ = Eigen::VectorXd::Zero(3);
+
+  Eigen::VectorXd base_com_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd base_com_quat_ = Eigen::VectorXd::Zero(4);
+
+  // feet contact status
+  bool lfoot_contact_ = false;
+  bool rfoot_contact_ = false;
+  bool lf_contact_ = false;
+  bool rf_contact_ = false;
 };
 
 // Singleton class

@@ -108,6 +108,11 @@ while True:
     data_saver.add('des_rf_force', list(msg.des_rf_force))
     data_saver.add('act_rf_force', list(msg.act_rf_force))
 
+    data_saver.add('des_torso_ori', list(msg.des_torso_ori))
+    data_saver.add('act_torso_ori', list(msg.act_torso_ori))
+    data_saver.add('des_torso_vel', list(msg.des_torso_vel))
+    data_saver.add('act_torso_vel', list(msg.act_torso_vel))
+
     ##TODO: TEST
 
     # fb_msg = msg.fb

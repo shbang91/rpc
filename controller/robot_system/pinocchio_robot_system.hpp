@@ -65,6 +65,7 @@ public:
 
   Eigen::Vector3d GetRobotComPos();
   Eigen::Vector3d GetRobotComLinVel();
+  Eigen::Vector3d GetRobotComPosLocal();
   Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobian();
   Eigen::Matrix<double, 3, 1> GetComLinJacobianDotQdot();
 

@@ -87,7 +87,7 @@ std::vector<FootStep> FootStep::GetFwdWalkFootStep(
         current_mid_foot.GetPos() + current_mid_foot.GetRotMat() * local_offset,
         current_mid_foot.GetOrientation(), end_effector::RFoot);
   }
-  foot_step_list.push_back(new_foot_step);
+//  foot_step_list.push_back(new_foot_step);
 
   return foot_step_list;
 }

@@ -13,10 +13,30 @@ message Contact {
     float ori_w = 8;
 }
 
+message ComPos {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message ComVel {
+    float xdot = 1;
+    float ydot = 2;
+    float zdot = 3;
+}
+
 message DracoState {
     repeated Contact contacts = 1;
     bool is_new = 2;
     repeated float com_pos = 3;
     repeated float com_vel = 4;
+    repeated float base_ori = 5;
+    repeated float base_vel = 6;
+    repeated float joint_pos = 7;
+    repeated float joint_vel = 8;
+    repeated ComPos init_com_pos = 9;
+    repeated ComVel init_com_vel = 10;
+    int32 footstep_index = 11;
+    int32 count = 12;
 }
 

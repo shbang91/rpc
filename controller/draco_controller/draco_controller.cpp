@@ -210,4 +210,9 @@ void DracoController::_SaveData() {
   dm->data_->des_rf_force_ = tci_container_->rf_reaction_force_task_->DesiredRf();
   dm->data_->act_rf_force_ = ihwbc_->RFSol().tail(6);
 
+  dm->data_->des_torso_ori_ = tci_container_->torso_ori_task_->DesiredPos();
+  dm->data_->act_torso_ori_ = tci_container_->torso_ori_task_->CurrentPos();
+  dm->data_->des_torso_vel_ = tci_container_->torso_ori_task_->DesiredVel();
+  dm->data_->act_torso_vel_ = tci_container_->torso_ori_task_->CurrentVel();
+
 }

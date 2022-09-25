@@ -31,6 +31,9 @@ SelectedJointTask::SelectedJointTask(
     : Task(robot, joint_idx_container.size()) {
   util::PrettyConstructor(3, "SelectedJointTask");
   joint_idx_container_ = joint_idx_container;
+  weight_ *= 1;
+  kp_ *= 2;
+  kd_ *= 1;
 }
 
 void SelectedJointTask::UpdateOpCommand() {

@@ -47,6 +47,15 @@ void DracoDataManager::SendData() {
   }
   msg.add_est_base_joint_ori(data_->est_base_joint_ori_[3]);
 
+  for (int i = 0; i < 3; ++i) {
+    msg.add_des_torso_ori(data_->des_torso_ori_[i]);
+    msg.add_act_torso_ori(data_->act_torso_ori_[i]);
+    msg.add_des_torso_vel(data_->des_torso_vel_[i]);
+    msg.add_act_torso_vel(data_->act_torso_vel_[i]);
+  }
+  msg.add_des_torso_ori(data_->des_torso_ori_[3]);
+  msg.add_act_torso_ori(data_->act_torso_ori_[3]);
+
   for (int i(0); i < 3; ++i) {
     msg.add_des_com_pos(data_->des_com_pos_[i]);
     msg.add_act_com_pos(data_->act_com_pos_[i]);
@@ -112,4 +121,8 @@ DracoData::DracoData()
       des_lf_force_(Eigen::VectorXd::Zero(6)),
       act_lf_force_(Eigen::VectorXd::Zero(6)),
       des_rf_force_(Eigen::VectorXd::Zero(6)),
-      act_rf_force_(Eigen::VectorXd::Zero(6)){}
+      act_rf_force_(Eigen::VectorXd::Zero(6)),
+      des_torso_ori_(Eigen::VectorXd::Zero(4)),
+      act_torso_ori_(Eigen::VectorXd::Zero(4)),
+      des_torso_vel_(Eigen::VectorXd::Zero(3)),
+      act_torso_vel_(Eigen::VectorXd::Zero(3)){}

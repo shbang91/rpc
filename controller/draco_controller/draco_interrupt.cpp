@@ -41,5 +41,35 @@ void DracoInterrupt::ProcessInterrupt() {
       }
   }
 
+  else if (b_button_d)
+  {
+      std::cout << "-----------------------------------" << std::endl;
+      std::cout << " button D pressed: Do Strafe Right " << std::endl;
+      std::cout << "-----------------------------------" << std::endl;
+      if (ctrl_arch_->State() == draco_states::kDoubleSupportBalance)
+      {
+          ctrl_arch_->horizon_handler_->walkSide(false);
+      }
+      else
+      {
+          std::cout << "Wait Until Balance State" << std::endl;
+      }
+  }
+
+  else if (b_button_a)
+  {
+      std::cout << "-----------------------------------" << std::endl;
+      std::cout << " button A pressed: Do Strafe Left " << std::endl;
+      std::cout << "-----------------------------------" << std::endl;
+      if (ctrl_arch_->State() == draco_states::kDoubleSupportBalance)
+      {
+          ctrl_arch_->horizon_handler_->walkSide(true);
+      }
+      else
+      {
+          std::cout << "Wait Until Balance State" << std::endl;
+      }
+  }
+
   this->_ResetFlags();
 }

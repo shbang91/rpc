@@ -8,6 +8,8 @@
 
 #include <tuple>
 
+#define GRAVITY 9.81
+
 using namespace google::protobuf::io;
 
 NMPCHandler::NMPCHandler(PinocchioRobotSystem *robot, TCIContainer* tci_container, int lfoot_id, int rfoot_id):
@@ -25,12 +27,10 @@ first_visit_(true)
     robot_side_first_ = end_effector::LFoot;
     solution_received_ = false;
 
-    T_ = 1.4;
+    T_ = 1.5;
     n_nodes_ = 20;
     ctrl_dt_ = 0.00125;
     is_new_ = false;
-
-    std::cout <<  int(T_ / ctrl_dt_) << "      " << int(T_ / n_nodes_ / ctrl_dt_) << std::endl;
 
     // Initialize vectors for linear interpolation
     old_lf_force_.setZero(6);   old_rf_force_.setZero(6);
@@ -41,6 +41,7 @@ first_visit_(true)
     old_rf_pos_.setZero(3);     old_rf_vel_.setZero(3);     old_rf_acc_.setZero(3);
 
     interp_count_ = 0;
+    c_ = 0;
 
     logger_ = XBot:: MatLogger2::MakeLogger("/tmp/tasks_references");
 }
@@ -52,8 +53,6 @@ void NMPCHandler::paramInitialization(const YAML::Node &node)
   try {
     // Load DCM Parameters
     util::ReadParameter(node, "com_height", nominal_com_height_);
-    util::ReadParameter(node, "t_double_support", t_contact_transition_);
-    util::ReadParameter(node, "t_single_support", t_swing_);
 
     // Load Walking Primitives Parameters
     util::ReadParameter(node, "nominal_footwidth", nominal_footwidth_);
@@ -62,6 +61,7 @@ void NMPCHandler::paramInitialization(const YAML::Node &node)
     util::ReadParameter(node, "nominal_turn_radians", nominal_turn_radians_);
     util::ReadParameter(node, "nominal_strafe_distance", nominal_strafe_distance_);
     util::ReadParameter(node, "n_steps", n_steps_);
+    util::ReadParameter(node, "time_horizon_length", T_);
 
   } catch (std::runtime_error &e) {
     std::cout << "Error reading parameter [" << e.what() << "] at file: ["
@@ -71,18 +71,84 @@ void NMPCHandler::paramInitialization(const YAML::Node &node)
   }
 }
 
+void NMPCHandler::SetDCMPos(Eigen::Vector3d dcm)
+{
+    dcm_ = dcm;
+}
+
 void NMPCHandler::walkInPlace()
 {
     _resetIndexAndClearFootsteps();
     _populateStepInPlace();
-//    _alternateLeg();
+    _generateDCMTrajectory();
 }
 
 void NMPCHandler::walkForward()
 {
     _resetIndexAndClearFootsteps();
     _populateStepForward();
-//    alternateLeg();
+    _generateDCMTrajectory();
+}
+
+void NMPCHandler::walkSide(bool left_side)
+{
+    _resetIndexAndClearFootsteps();
+    _populateSideWalk(left_side);
+    _generateDCMTrajectory();
+}
+
+void NMPCHandler::_generateDCMTrajectory()
+{
+    // define useful quantities
+    double T_step = T_/n_nodes_ * 10;
+    double dt = T_/n_nodes_;
+    double omega = std::sqrt(GRAVITY / nominal_com_height_);
+
+    // generate a DCM and a Com trajectory on n_nodes, assuming the ZMP is in the center of each foot and the
+    // DCM terminates on the final foot
+    std::vector<Eigen::Vector3d> dcm_pts(footstep_list.size());
+    std::vector<Eigen::Vector3d> dcm_trj;
+
+    dcm_pts.back() = footstep_list.back().GetPos();
+    for (int i = footstep_list.size() - 2; i > 0; i--)
+    {
+        Eigen::VectorXd new_dcm = footstep_list[i].GetPos() + (dcm_pts[i+1] - footstep_list[i].GetPos()) / std::exp(omega * T_step);
+        dcm_pts[i] = new_dcm;
+    }
+    dcm_pts[0] = mid_foot_stance_.GetPos();
+
+    // compute DCM trajectory
+    double time = dt;
+    for (int j = 1; j < dcm_pts.size() - 2; j+=2)
+    {
+        time = 0;
+        for (int i = 0; i <= 10; i++)
+        {
+            dcm_trj.push_back(std::exp(omega * time) * dcm_pts[j] + (1 - std::exp(omega * time)) * footstep_list[j].GetPos());
+            time += dt;
+        }
+
+        time = 0;
+        for (int i = 11; i <= 21; i++)
+        {
+            dcm_trj.push_back(std::exp(omega * time) * dcm_pts[j+1] + (1 - std::exp(omega * time)) * footstep_list[j+1].GetPos());
+            time += dt;
+        }
+
+    }
+    com_trj_.resize(dcm_trj.size());
+    com_dot_trj_.resize(dcm_trj.size());
+
+    // compute com trajectory from dcm trajectory
+    com_trj_[0] = tci_container_->task_map_["com_task"]->CurrentPos();
+    com_trj_[0][2] = nominal_com_height_;
+    com_dot_trj_[0] = tci_container_->task_map_["com_task"]->CurrentVel();
+    for (int i = 1; i < dcm_trj.size(); i++)
+    {
+        com_dot_trj_[i] = (-omega * com_trj_[i-1] + omega * dcm_trj[i-1]);
+        com_dot_trj_[i][2] = 0;
+        com_trj_[i] = dt * com_dot_trj_[i] + com_trj_[i-1];
+    }
 }
 
 void NMPCHandler::_populateStepInPlace()
@@ -134,6 +200,35 @@ void NMPCHandler::_populateStepForward()
     end_it = init_it + 2;
 }
 
+void NMPCHandler::_populateSideWalk(bool left_side)
+{
+    _updateStartingStance();
+
+    FootStep left_footstep = left_foot_stance_;
+    FootStep right_footstep = right_foot_stance_;
+    FootStep mid_footstep = mid_foot_stance_;
+
+    if (!left_side)
+        nominal_footwidth_ *= -1;
+
+    footstep_list = FootStep::GetStrafeFootStep(n_steps_, nominal_strafe_distance_, nominal_footwidth_, mid_foot_stance_);
+
+    if (robot_side_first_ == end_effector::LFoot)
+    {
+        footstep_list.insert(footstep_list.begin(), right_foot_stance_);
+        footstep_list.insert(footstep_list.begin(), left_foot_stance_);
+    }
+    else
+    {
+        footstep_list.insert(footstep_list.begin(), left_foot_stance_);
+        footstep_list.insert(footstep_list.begin(), right_foot_stance_);
+    }
+
+    // Assign iterators to keep the current foot position at the beginning of the walk
+    init_it = footstep_list.begin();
+    end_it = init_it + 2;
+}
+
 void NMPCHandler::_updateStartingStance()
 {
   Eigen::Vector3d lfoot_pos = robot_->GetLinkIsometry(lfoot_id_).translation();
@@ -160,6 +255,7 @@ void NMPCHandler::_resetStepIndex()
 {
     current_footstep_idx_ = 0;
     footstep_list_index_ = 0;
+    init_com_trj_index_ = 0;
 }
 
 void NMPCHandler::SetFootstepToPublish(const int count)
@@ -170,7 +266,7 @@ void NMPCHandler::SetFootstepToPublish(const int count)
     {
         // Update the next footstep reference every T seconds
         /// Problem: simulation time is slower than actual time!
-        if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ < int(footstep_list.size() - 4))
+        if(count_ % int(T_ / ctrl_dt_ + 0.5) == 0 && footstep_list_index_ < int(footstep_list.size() - 2))
         {
             std::cout << "COUNT A: " << count_ << std::endl;
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 3 << " in a vector size of " << footstep_list.size() << std::endl;
@@ -181,7 +277,7 @@ void NMPCHandler::SetFootstepToPublish(const int count)
             is_new_ = true;
             footstep_list_index_ += 2;
         }
-        else if(count_ % int(T_ / ctrl_dt_) == 0 && footstep_list_index_ >= int(footstep_list.size() - 4) && footstep_list_index_ < int(footstep_list.size() - 2))
+        else if(count_ % int(T_ / ctrl_dt_ + 0.5) == 0 && footstep_list_index_ >= int(footstep_list.size() - 2)&& footstep_list_index_ < int(footstep_list.size() - 1))
         {
             std::cout << "COUNT B: " << count_ << std::endl;
             std::cout << "Taking footsteps from " << footstep_list_index_ << " to " << footstep_list_index_ + 1 << " in a vector size of " << footstep_list.size() << std::endl;
@@ -193,21 +289,54 @@ void NMPCHandler::SetFootstepToPublish(const int count)
             footstep_list_index_ += 2;
         }
 
-
         if (count_ % int(T_ / n_nodes_ / ctrl_dt_ + 0.5) == 0)
         {           
-            if (count_ % int(T_ / ctrl_dt_) != 0)
+            if (count_ % int(T_ / ctrl_dt_ + 0.5) != 0)
             {
-                std::cout << count_ << std::endl;
                 is_new_ = false;
             }
             std::vector<FootStep> fs(init_it, end_it);
             footstep_to_publish_ = fs;
+
+            // Update com and com_dot sub-vector to be sent as the initial guess
+            if (footstep_list_index_ > 2)
+            {
+                com_trj_sv_.clear();
+                com_dot_trj_sv_.clear();
+                auto it_start = com_trj_.begin() + init_com_trj_index_;
+                auto it_end = com_trj_.begin() + init_com_trj_index_ + n_nodes_ + 1;
+                while(it_start != com_trj_.end() && it_start != it_end)
+                {
+                    com_trj_sv_.push_back(*it_start);
+                    it_start++;
+                }
+
+                it_start = com_dot_trj_.begin() + init_com_trj_index_;
+                it_end = com_dot_trj_.begin() + init_com_trj_index_ + n_nodes_ + 1;
+
+                while(it_start != com_dot_trj_.end() && it_start != it_end)
+                {
+                    com_dot_trj_sv_.push_back(*it_start);
+                    it_start++;
+                }
+
+                int res_size = n_nodes_ + 1 - com_trj_sv_.size();
+                while (res_size > 0)
+                {
+                    com_trj_sv_.push_back(*(com_trj_.end() - 1));
+                    com_dot_trj_sv_.push_back(Eigen::Vector3d(0., 0., 0.));
+                    res_size--;
+                }
+
+                if (init_com_trj_index_ < com_trj_.size())
+                    init_com_trj_index_++;
+
+            }
         }
     }
     else
     {
-        if(count_ % int(T_ / n_nodes_ / ctrl_dt_) == 0)
+        if(count_ % int(T_ / n_nodes_ / ctrl_dt_ + 0.5) == 0)
         {
             is_new_ = false;
             if(first_visit_)
@@ -215,9 +344,17 @@ void NMPCHandler::SetFootstepToPublish(const int count)
                 _updateStartingStance();
                 std::vector<FootStep> fs{left_foot_stance_, right_foot_stance_};
                 footstep_to_publish_ = fs;
-
                 first_visit_ = false;
             }
+//            else
+//            {
+//                if (count_ % int(T_ / ctrl_dt_) == 0)
+//                {
+//                    _updateStartingStance();
+//                    std::vector<FootStep> fs{left_foot_stance_, right_foot_stance_};
+//                    footstep_to_publish_ = fs;
+//                }
+//            }
         }
     }
 }
@@ -245,14 +382,51 @@ void NMPCHandler::_SendData()
       contact_msg->set_ori_w(footstep.GetOrientation().w());
     }
     // send robot state
-    Eigen::Vector3d com_pos = robot_->GetRobotComPos();
-    Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+    Eigen::Vector3d com_pos = tci_container_->task_map_["com_task"]->CurrentPos();
+    Eigen::Vector3d com_vel = tci_container_->task_map_["com_task"]->CurrentVel();
+    Eigen::Vector4d torso_ori = tci_container_->task_map_["torso_ori_task"]->CurrentPos();
+    Eigen::Vector3d torso_vel = tci_container_->task_map_["torso_ori_task"]->CurrentVel();
     for (int i = 0; i < com_pos.size(); i++)
     {
         draco_state_msg.add_com_pos(com_pos(i));
         draco_state_msg.add_com_vel(com_vel(i));
+        draco_state_msg.add_base_ori(torso_ori(i));
+        draco_state_msg.add_base_vel(torso_vel(i));
     }
+    draco_state_msg.add_base_ori(torso_ori(3));
+    draco_state_msg.set_count(count_);
     draco_state_msg.set_is_new(is_new_);
+    draco_state_msg.set_footstep_index(footstep_list_index_);
+
+    if (!com_trj_sv_.empty())
+    {
+        init_com_pos_.clear();
+        init_com_vel_.clear();
+
+        for (int i = 0; i < n_nodes_ + 1; i++)
+        {
+            MPC_MSG::ComPos com_pos;
+            com_pos.set_x(com_trj_sv_[i](0));
+            com_pos.set_y(com_trj_sv_[i](1));
+            com_pos.set_z(com_trj_sv_[i](2));
+            init_com_pos_.push_back(com_pos);
+
+            MPC_MSG::ComVel com_vel;
+            com_vel.set_xdot(com_dot_trj_sv_[i](0));
+            com_vel.set_ydot(com_dot_trj_sv_[i](1));
+            com_vel.set_zdot(com_dot_trj_sv_[i](2));
+            init_com_vel_.push_back(com_vel);
+        }
+
+        for (int i = 0; i < init_com_pos_.size(); i++)
+        {
+            auto com_pos = draco_state_msg.add_init_com_pos();
+            com_pos->CopyFrom(init_com_pos_[i]);
+            auto com_vel = draco_state_msg.add_init_com_vel();
+            com_vel->CopyFrom(init_com_vel_[i]);
+        }
+    }
+
     draco_state_msg.SerializeToString(&encoded_msg);
     zmq::message_t zmq_msg(encoded_msg.size());
     memcpy ((void *) zmq_msg.data(), encoded_msg.c_str(), encoded_msg.size());
@@ -276,8 +450,11 @@ void NMPCHandler::_GetMPCOutputData()
 
     HORIZON_TO_PNC::MPCResult temp_res;
     temp_res.ParseFromArray(update_.data(), update_.size());
+//    c_++;
     if(temp_res.com_size() > 0)
     {
+//        std::cout << c_ << std::endl;
+//        c_ = 0;
         solution_received_ = true;
         if (mpc_res_.com_size() > 0)
         {
@@ -298,6 +475,9 @@ void NMPCHandler::_GetMPCOutputData()
         old_com_vel_ << old_mpc_res_.com_vel(1).xdot(), old_mpc_res_.com_vel(1).ydot(), old_mpc_res_.com_vel(1).zdot();
         old_com_acc_ << old_mpc_res_.com_acc(1).xddot(), old_mpc_res_.com_acc(1).yddot(), old_mpc_res_.com_acc(1).zddot();
 
+        old_base_ori_ << old_mpc_res_.ori(1).x(), old_mpc_res_.ori(1).y(), old_mpc_res_.ori(1).z(), old_mpc_res_.ori(1).w();
+        old_base_vel_ << old_mpc_res_.omega(1).x(), old_mpc_res_.omega(1).y(), old_mpc_res_.omega(1).z();
+
         old_lf_pos_ = std::get<0>(old_left_foot);
         old_lf_vel_ = std::get<1>(old_left_foot);
         old_lf_acc_ = std::get<2>(old_left_foot);
@@ -308,6 +488,8 @@ void NMPCHandler::_GetMPCOutputData()
 
         mpc_res_.CopyFrom(temp_res);
         interp_count_ = 0;
+
+//        std::cout << "count_: " << count_ << " - from [" << old_com_pos_.transpose() << "] to [" << mpc_res_.com(1).x() << ", " << mpc_res_.com(1).y() << ", " << mpc_res_.com(1).z() << "]" << std::endl;
 
         auto right_foot_ref = _ConvertFoot(draco_link::r_foot_contact, mpc_res_, 1);
         auto new_rf_force = _ConvertFootForces(std::get<0>(right_foot_ref), draco_link::r_foot_contact, mpc_res_, 1);
@@ -344,6 +526,10 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_Conv
     double avg_xddot = 0, avg_yddot = 0, avg_zddot = 0;
     for (int i = 0; i < foot_pos.pos_size(); i++)
     {
+        if (foot == draco_link::l_foot_contact)
+        {
+            logger_->add("left_contact_" + std::to_string(i), Eigen::Vector3d(foot_pos.pos(i).x(), foot_pos.pos(i).y(), foot_pos.pos(i).z()));
+        }
         pos(0) += foot_pos.pos(i).x();      pos(1) += foot_pos.pos(i).y();      pos(2) += foot_pos.pos(i).z();
         vel(0) += foot_vel.vel(i).xdot();   vel(1) += foot_vel.vel(i).ydot();   vel(2) += foot_vel.vel(i).zdot();
         acc(0) += foot_acc.acc(i).xddot();  acc(1) += foot_acc.acc(i).yddot();  acc(2) += foot_acc.acc(i).zddot();
@@ -418,19 +604,13 @@ bool NMPCHandler::UpdateDesired()
     Eigen::Vector3d com_acc_ref = _LinearInterpolation(old_com_acc_, Eigen::Vector3d(mpc_res_.com_acc(1).xddot(), mpc_res_.com_acc(1).yddot(), mpc_res_.com_acc(1).zddot()));
     tci_container_->task_map_["com_task"]->UpdateDesired(com_pos_ref, com_vel_ref, com_acc_ref);
 
-    logger_->add("unfiltered_com_pos_ref", Eigen::Vector3d(mpc_res_.com(1).x(), mpc_res_.com(1).y(), mpc_res_.com(1).z()));
-    logger_->add("unfiltered_com_vel_ref", Eigen::Vector3d(mpc_res_.com_vel(1).xdot(), mpc_res_.com_vel(1).ydot(), mpc_res_.com_vel(1).zdot()));
-    logger_->add("unfiltered_com_acc_ref", Eigen::Vector3d(mpc_res_.com_acc(1).xddot(), mpc_res_.com_acc(1).yddot(), mpc_res_.com_acc(1).zddot()));
-    logger_->add("com_pos_ref", com_pos_ref);
-    logger_->add("com_vel_ref", com_vel_ref);
-    logger_->add("com_acc_ref", com_acc_ref);
-
-
     // Update torso orientation
-    tci_container_->task_map_["torso_ori_task"]->UpdateDesired(Eigen::Vector4d(mpc_res_.ori(1).ori_x(), mpc_res_.ori(1).ori_y(), mpc_res_.ori(1).ori_z(), mpc_res_.ori(1).ori_w()),
-                                                               Eigen::Vector3d(mpc_res_.omega(1).omega_x(), mpc_res_.omega(1).omega_y(), mpc_res_.omega(1).omega_z()),
-                                                               Eigen::Vector3d(mpc_res_.omega_dot(1).omega_dot_x(), mpc_res_.omega_dot(1).omega_dot_y(), mpc_res_.omega_dot(1).omega_dot_z()));
-
+//    tci_container_->task_map_["torso_ori_task"]->UpdateDesired(Eigen::Vector4d(mpc_res_.ori(1).x(), mpc_res_.ori(1).y(), mpc_res_.ori(1).z(), mpc_res_.ori(1).w()),
+//                                                               Eigen::Vector3d(mpc_res_.omega(1).x(), mpc_res_.omega(1).y(), mpc_res_.omega(1).z()),
+//                                                               Eigen::Vector3d(mpc_res_.omega_dot(1).x(), mpc_res_.omega_dot(1).y(), mpc_res_.omega_dot(1).z()));
+    tci_container_->task_map_["torso_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0 ,1),
+                                                               Eigen::Vector3d(0, 0, 0),
+                                                               Eigen::Vector3d(0, 0, 0));
 
     // Update left foot
     auto left_foot_ref = _ConvertFoot(draco_link::l_foot_contact, mpc_res_, 1);
@@ -473,17 +653,24 @@ bool NMPCHandler::UpdateDesired()
         tci_container_->contact_map_["rf_contact"]->SetMaxFz(1000);
     tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(right_force_ref_interpolated);
 
-//    auto init_dcm_pos = robot_->GetRobotComPos();
-//    auto init_dcm_vel = robot_->GetRobotComLinVel();
-
-
     // Add to logger
+    logger_->add("unfiltered_com_pos_ref", Eigen::Vector3d(mpc_res_.com(1).x(), mpc_res_.com(1).y(), mpc_res_.com(1).z()));
+    logger_->add("unfiltered_com_vel_ref", Eigen::Vector3d(mpc_res_.com_vel(1).xdot(), mpc_res_.com_vel(1).ydot(), mpc_res_.com_vel(1).zdot()));
+    logger_->add("unfiltered_com_acc_ref", Eigen::Vector3d(mpc_res_.com_acc(1).xddot(), mpc_res_.com_acc(1).yddot(), mpc_res_.com_acc(1).zddot()));
+    logger_->add("com_pos_ref", tci_container_->task_map_["com_task"]->DesiredPos());
+    logger_->add("com_vel_ref", tci_container_->task_map_["com_task"]->DesiredVel());
+    logger_->add("com_acc_ref", tci_container_->task_map_["com_task"]->DesiredAcc());
+    logger_->add("actual_com_pos", robot_->GetRobotComPos());
+    logger_->add("actual_com_vel", robot_->GetRobotComLinVel());
+    logger_->add("torso_ori_ref", Eigen::Vector4d(mpc_res_.ori(1).x(), mpc_res_.ori(1).y(), mpc_res_.ori(1).z(), mpc_res_.ori(1).w()));
+    logger_->add("torso_vel", Eigen::Vector3d(mpc_res_.omega(1).x(), mpc_res_.omega(1).y(), mpc_res_.omega(1).z()));
     logger_->add("unfiltered_lf_pos_ref", std::get<0>(left_foot_ref));
     logger_->add("unfiltered_lf_vel_ref", std::get<1>(left_foot_ref));
     logger_->add("unfiltered_lf_acc_ref", std::get<2>(left_foot_ref));
     logger_->add("lf_pos_ref", lf_pos_ref);
     logger_->add("lf_vel_ref", lf_vel_ref);
     logger_->add("lf_acc_ref", lf_acc_ref);
+    logger_->add("actual_lf_pos", robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
     logger_->add("unfiltered_left_force_ref", left_force_ref);
     logger_->add("left_force_ref", _LinearInterpolation(old_lf_force_, left_force_ref));
     logger_->add("unfiltered_rf_pos_ref", std::get<0>(right_foot_ref));
@@ -492,9 +679,11 @@ bool NMPCHandler::UpdateDesired()
     logger_->add("rf_pos_ref", rf_pos_ref);
     logger_->add("rf_vel_ref", rf_vel_ref);
     logger_->add("rf_acc_ref", rf_acc_ref);
+    logger_->add("actual_rf_pos", robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
     logger_->add("unfiltered_right_force_ref", right_force_ref);
     logger_->add("right_force_ref", _LinearInterpolation(old_rf_force_, right_force_ref));
     logger_->add("time", count_ * ctrl_dt_);
+    logger_->add("count", count_);
 
     interp_count_++;
 

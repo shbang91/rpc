@@ -11,6 +11,7 @@ public:
 
   int count_;
   double current_time_;
+  int save_freq_;
 
   // used in pos estimate in estimator module
   int stance_foot_;

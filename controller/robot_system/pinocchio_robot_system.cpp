@@ -254,6 +254,16 @@ Eigen::Vector3d PinocchioRobotSystem::GetRobotComLinVel() {
   return data_.vcom[0];
 }
 
+Eigen::Vector3d PinocchioRobotSystem::GetRobotComPosLocal() {
+  Eigen::Isometry3d ret;
+  const pinocchio::SE3 trans =
+      pinocchio::updateFramePlacement(model_, data_, 2); // 2 stands for the root node of the tree
+  ret.linear() = trans.rotation();
+  ret.translation() = trans.translation();
+  Eigen::Vector3d com_w = pinocchio::centerOfMass(model_, data_, q_);
+  return ret.linear().inverse() * com_w + ret.translation();
+}
+
 Eigen::Matrix<double, 3, Eigen::Dynamic>
 PinocchioRobotSystem::GetComLinJacobian() {
   return jacobianCenterOfMass(model_, data_, q_);

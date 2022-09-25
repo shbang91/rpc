@@ -50,7 +50,12 @@ public:
   /// Initialize walk forward
   void walkForward();
 
+  /// Initialize side walk
+  void walkSide(bool left_side);
+
   void SetFootstepToPublish(const int count);
+
+  void SetDCMPos(Eigen::Vector3d dcm);
 
   bool solutionReceived() const { return solution_received_; }
 
@@ -72,6 +77,7 @@ private:
   double T_, ctrl_dt_;
   int n_nodes_;
   int count_, interp_count_;
+  Eigen::Vector3d dcm_;
 
   std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFoot(int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
   Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
@@ -81,9 +87,12 @@ private:
   std::vector<FootStep>::iterator init_it, end_it;
 
   zmq::message_t update_;
+  std::vector<MPC_MSG::ComPos> init_com_pos_;
+  std::vector<MPC_MSG::ComVel> init_com_vel_;
   HORIZON_TO_PNC::MPCResult mpc_res_, old_mpc_res_;
   NMPCOutputData nmpc_output_data_;
   bool solution_received_;
+  int c_;
 
   // Old reference for interpolation
   Eigen::VectorXd old_lf_force_, old_rf_force_;
@@ -105,6 +114,16 @@ private:
 
   // Fill footstep_list for walking forward
   void _populateStepForward();
+
+  // Fill footstep_list for left side walk
+  void _populateSideWalk(bool left_side);
+
+  // Generate initial guess for MPC from DCM
+  void _generateDCMTrajectory();
+  std::vector<Eigen::Vector3d> com_trj_;
+  std::vector<Eigen::Vector3d> com_dot_trj_;
+  std::vector<Eigen::Vector3d> com_trj_sv_, com_dot_trj_sv_;
+  int init_com_trj_index_;
 
   // Private member objects
   TCIContainer *tci_container_;

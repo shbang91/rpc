@@ -184,6 +184,7 @@ void DracoControlArchitecture::GetCommand(void *command)
   horizon_handler_->SetFootstepToPublish(sp_->count_);
   if (!horizon_handler_->footstep_to_publish_.empty())
   {
+    horizon_handler_->SetDCMPos(sp_->dcm_);
     horizon_handler_->SolveMPC();
     horizon_handler_->ReceiveSolution();
     if (horizon_handler_->solutionReceived() && sp_->count_ > 1000)

@@ -15,9 +15,9 @@ wbc:
       com_height_target_source: 0 # 0: com height / 1: base height
 
       ## sim params
-      weight : [40., 40., 60.]
-      kp : [200., 200., 300.]
-      kd : [15., 15., 20.]
+      weight : [150., 150., 170.]
+      kp : [300., 300., 300.]
+      kd : [150., 150., 150.]
       icp_weight : [20., 20., 20.] # only used when feedback source : 1
       icp_kp : [20., 20., 100.]
       icp_kd : [0., 0., 5.] # x, y will be ignored
@@ -50,9 +50,15 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
-      kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
-      kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+      # WALK FORWARD
+      # weight : [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      # kp : [15., 15., 15., 7.5, 6., 6., 15., 15., 15., 15., 7.5, 6., 6.]
+      # kd : [10., 10., 10., 5., 5., 5., 15., 10., 10., 10., 5., 5., 5.]
+      # SIDE WALK
+      weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
+      kp : [25., 25., 25., 15., 12., 12., 30., 30., 30., 30., 15., 12., 12.]
+      kd : [10., 10., 10., 5., 5., 5., 15., 10., 10., 10., 5., 5., 5.]
+
 
       ## exp params
       exp_weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
@@ -87,8 +93,10 @@ wbc:
 
     foot_rf_task:
       weight_at_contact: [0., 0., 0., 0., 0., 0.] ## trq, force order
-      # weight_at_swing: [0., 0., 0., 0., 0., 0.] ## trq, force order
-      weight_at_swing: [0.001, 0.001, 0.001, 0.001, 0.001, 0.001] ## trq, force order
+      # CLOSE LOOP WEIGHTS
+      weight_at_swing: [0.00, 0.00, 0.00, 0.01, 0,01, 0.01] ## trq, force order
+      # OPEN LOOP WEIGHTS
+      # weight_at_swing: [0.001, 0.001, 0.001, 0.001, 0.001, 0.001] ## trq, force order
 
       exp_weight_at_contact: [0., 0., 0., 0., 0., 0.]
       exp_weight_at_swing: [0., 0., 0., 0., 0., 0.]
@@ -164,14 +172,13 @@ lmpc_walking:
 
 nmpc_walking:
   com_height: 0.6
-  t_double_support: 0.1
-  t_single_support: 0.4
+  time_horizon_length: 1.5
   nominal_footwidth: 0.2
   nominal_forward_step: 0.2
   nominal_backward_step: 0.1
   nominal_turn_radians: 0.3
-  nominal_strafe_distance: 0.02
-  n_steps: 5
+  nominal_strafe_distance: 0.1
+  n_steps: 6
 
 
 

@@ -22,20 +22,25 @@ message pnc_msg {
   repeated float des_com_vel = 13;
   repeated float act_com_vel = 14;
 
-  repeated float des_lf_pos = 15;
-  repeated float act_lf_pos = 16;
-  repeated float des_lf_vel = 17;
-  repeated float act_lf_vel = 18;
+  repeated float des_torso_ori = 15;
+  repeated float act_torso_ori = 16;
+  repeated float des_torso_vel = 17;
+  repeated float act_torso_vel = 18;
 
-  repeated float des_rf_pos = 19;
-  repeated float act_rf_pos = 20;
-  repeated float des_rf_vel = 21;
-  repeated float act_rf_vel = 22;
+  repeated float des_lf_pos = 19;
+  repeated float act_lf_pos = 20;
+  repeated float des_lf_vel = 21;
+  repeated float act_lf_vel = 22;
 
-  repeated float des_rf_force = 23;
-  repeated float act_rf_force = 24;
-  repeated float des_lf_force = 26;
-  repeated float act_lf_force = 27;
+  repeated float des_rf_pos = 23;
+  repeated float act_rf_pos = 24;
+  repeated float des_rf_vel = 25;
+  repeated float act_rf_vel = 26;
+
+  repeated float des_rf_force = 27;
+  repeated float act_rf_force = 28;
+  repeated float des_lf_force = 29;
+  repeated float act_lf_force = 30;
 }
 
 // TODO:

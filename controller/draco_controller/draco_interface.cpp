@@ -4,6 +4,7 @@
 #include "controller/draco_controller/draco_data_manager.hpp"
 #include "controller/draco_controller/draco_interrupt.hpp"
 #include "controller/draco_controller/draco_state_estimator.hpp"
+#include "controller/draco_controller/draco_kf_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
@@ -21,6 +22,7 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
       new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_point_contact.urdf",
                                THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
+//  se_kf_ = new DracoKFStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);
   sp_ = DracoStateProvider::GetStateProvider();
   interrupt_ =

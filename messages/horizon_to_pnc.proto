@@ -21,22 +21,22 @@ message Acceleration {
 }
 
 message BaseOrientation {
-    float ori_x = 1;
-    float ori_y = 2;
-    float ori_z = 3;
-    float ori_w = 4;
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
 }
 
 message BaseAngularVelocity {
-    float omega_x = 1;
-    float omega_y = 2;
-    float omega_z = 3;
+    float x = 1;
+    float y = 2;
+    float z = 3;
 }
 
 message BaseAngularAcceleration {
-    float omega_dot_x = 1;
-    float omega_dot_y = 2;
-    float omega_dot_z = 3;
+    float x = 1;
+    float y = 2;
+    float z = 3;
 }
 
 message FootPos {
