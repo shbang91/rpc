@@ -83,6 +83,8 @@ add_subdirectory(planner)
 add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
+add_subdirectory(filters)
+add_subdirectory(state_estimator)
 
 ##==================================================
 ## Configuration File

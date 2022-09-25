@@ -12,7 +12,9 @@ target_link_libraries(draco-controller pin-robot-system
                                        #pnc-to-horizon
                                        horizon-to-pnc
                                        nmpc-handler
-                                       rpc-wbc)
+                                       rpc-wbc
+                                       rpc-filters
+                                   rpc-state-estimator)
 
 install(TARGETS draco-controller DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${controller_headers} DESTINATION
