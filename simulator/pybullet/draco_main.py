@@ -338,7 +338,7 @@ count = 0
 rospy.init_node('draco_main')
 sim_time_pub = rospy.Publisher('/clock', Clock, queue_size=10)
 
-
+time_force = 0
 
 while not rospy.is_shutdown():
     tic()
@@ -393,6 +393,25 @@ while not rospy.is_shutdown():
         rpc_draco_interface.interrupt_.PressOne()
     elif pybullet_util.is_key_triggered(keys, 'w'):
         rpc_draco_interface.interrupt_.PressW()
+    elif pybullet_util.is_key_triggered(keys, 'a'):
+        rpc_draco_interface.interrupt_.PressA()
+    elif pybullet_util.is_key_triggered(keys, 'd'):
+        rpc_draco_interface.interrupt_.PressD()
+    elif pybullet_util.is_key_triggered(keys, 'f'):
+        magnitude = 2.5 * 37.526
+        direction = np.array([1.0, 0.0, 0.0])
+        direction = direction / np.linalg.norm(direction)
+        duration = 0.1
+        force = magnitude * direction
+        while time_force < duration:
+            pb.applyExternalForce(draco_humanoid,
+                                  DracoLinkIdx.torso_link,
+                                  force.tolist(),
+                                  [0., 0., 0.],
+                                  pb.LINK_FRAME)
+            time_force += dt
+        print(f'Applied force {force} for {duration} seconds')
+        time_force = 0
 
     #get sensor data
     imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
@@ -432,6 +451,8 @@ while not rospy.is_shutdown():
     sim_time = Clock()
     sim_time.clock = rospy.Time(t)
     sim_time_pub.publish(sim_time)
+
+
 
     #step simulation
     pb.stepSimulation()

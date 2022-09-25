@@ -8,5 +8,7 @@ PYBIND11_MODULE(interrupt_py, m) {
   py::class_<Interrupt>(m, "Interrupt")
       .def(py::init<>())
       .def("PressOne", &Interrupt::PressOne)
-      .def("PressW", &Interrupt::PressW);
+      .def("PressW", &Interrupt::PressW)
+      .def("PressA", &Interrupt::PressA)
+      .def("PressD", &Interrupt::PressD);
 }
