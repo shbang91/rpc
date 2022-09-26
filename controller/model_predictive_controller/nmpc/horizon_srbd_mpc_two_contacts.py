@@ -9,13 +9,13 @@ from horizon.transcriptions.transcriptor import Transcriptor
 from horizon.solvers import solver
 from horizon.ros.replay_trajectory import *
 from ttictoc import tic, toc
-# import tf
+import tf
 from geometry_msgs.msg import WrenchStamped, Point
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import Float32
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-# from matlogger2 import matlogger
+from matlogger2 import matlogger
 import zmq
 import matplotlib.pyplot as plt
 
@@ -567,16 +567,16 @@ def publishContactForce(t, f, frame):
     f_msg.wrench.torque.x = f_msg.wrench.torque.y = f_msg.wrench.torque.z = 0.
     rospy.Publisher('f' + frame, WrenchStamped, queue_size=10).publish(f_msg)
 
-# def SRBDTfBroadcaster(r, o, c_dict, t):
-    # br = tf.TransformBroadcaster()
-    # br.sendTransform(r, o, t, "SRB", "world")
-    # for key, val in c_dict.items():
-        # br.sendTransform(val, [0., 0., 0., 1.], t, key, "world")
+def SRBDTfBroadcaster(r, o, c_dict, t):
+    br = tf.TransformBroadcaster()
+    br.sendTransform(r, o, t, "SRB", "world")
+    for key, val in c_dict.items():
+        br.sendTransform(val, [0., 0., 0., 1.], t, key, "world")
 
-# def contactTfBroadcaster(c_dict):
-    # br = tf.TransformBroadcaster()
-    # for key, val in c_dict.items():
-        # br.sendTransform(val, [0, 0, 0, 1], rospy.Time.now(), key, 'world')
+def contactTfBroadcaster(c_dict):
+    br = tf.TransformBroadcaster()
+    for key, val in c_dict.items():
+        br.sendTransform(val, [0, 0, 0, 1], rospy.Time.now(), key, 'world')
 
 def SRBDViewer(I, base_frame, t, number_of_contacts):
     marker = Marker()
@@ -648,9 +648,9 @@ rospy.set_param("use_sim_time", True)
 rospy.Subscriber('/clock', Clock, clock_callback)
 
 '''
-# MatLogger2
+MatLogger2
 '''
-# logger = matlogger.MatLogger2('/tmp/')
+logger = matlogger.MatLogger2('/tmp/')
 
 """
 Creates HORIZON problem. 
@@ -1201,7 +1201,7 @@ while not rospy.is_shutdown():
     sol_time = toc()
     if sol_time > T/ns:
         print(bcolors.WARNING + f'Warning: solution time {sol_time} exceeded MPC dt!' + bcolors.ENDC)
-    # logger.add('solution_time', sol_time)
+    logger.add('solution_time', sol_time)
     solution = solver.getSolutionDict()
 
     """
@@ -1213,7 +1213,7 @@ while not rospy.is_shutdown():
     for i in range(0, nc):
         c0_hist['c' + str(i)] = solution['c' + str(i)][:, 0]
 
-    # SRBDTfBroadcaster(solution['r'][:, 0], solution['o'][:, 0], c0_hist, t)
+    SRBDTfBroadcaster(solution['r'][:, 0], solution['o'][:, 0], c0_hist, t)
     publishFootsteps(contact_sequence)
     SRBDViewer(I, "SRB", t, nc)
     publishPointTrj(solution["r"], t, "SRB", "world")
@@ -1242,22 +1242,22 @@ while not rospy.is_shutdown():
     # figure.canvas.draw()
     # figure.canvas.flush_events()
 
-    # index_to_save = 1
-    # global time_mpc
-    # logger.add('r', solution['r'][:, index_to_save])
-    # logger.add('r_ref', r_ref.getValues(index_to_save))
-    # logger.add('rdot', solution['rdot'][:, index_to_save])
-    # logger.add('rdot_ref', rdot_ref.getValues(index_to_save))
-    # logger.add('o', solution['o'][:, index_to_save])
-    # logger.add('w', solution['w'][:, index_to_save])
-    # logger.add('w_ref', w_ref.getValues(index_to_save))
-    # logger.add('time_mpc', time_mpc)
-    # for j in range(nc):
-        # logger.add('c' + str(j), solution['c' + str(j)][:, index_to_save])
+    index_to_save = 1
+    global time_mpc
+    logger.add('r', solution['r'][:, index_to_save])
+    logger.add('r_ref', r_ref.getValues(index_to_save))
+    logger.add('rdot', solution['rdot'][:, index_to_save])
+    logger.add('rdot_ref', rdot_ref.getValues(index_to_save))
+    logger.add('o', solution['o'][:, index_to_save])
+    logger.add('w', solution['w'][:, index_to_save])
+    logger.add('w_ref', w_ref.getValues(index_to_save))
+    logger.add('time_mpc', time_mpc)
+    for j in range(nc):
+        logger.add('c' + str(j), solution['c' + str(j)][:, index_to_save])
         # logger.add('f' + str(j), solution['f' + str(j)][:, index_to_save])
-        # logger.add('f' + str(j), f[j].getUpperBounds(index_to_save))
-        # logger.add('c_ref' + str(j), c_ref[j].getValues(index_to_save))
-        # logger.add('cdot' + str(j), solution['cdot' + str(j)][:, index_to_save])
+        logger.add('f' + str(j), f[j].getUpperBounds(index_to_save))
+        logger.add('c_ref' + str(j), c_ref[j].getValues(index_to_save))
+        logger.add('cdot' + str(j), solution['cdot' + str(j)][:, index_to_save])
 
     '''
     Send MPC solution to pnc
