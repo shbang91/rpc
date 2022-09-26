@@ -10,6 +10,7 @@
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
+#include "controller/whole_body_controller/ihwbc/joint_integrator.hpp"
 #include "util/interpolation.hpp"
 
 DracoController::DracoController(DracoTCIContainer *tci_container,
@@ -18,7 +19,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
-      b_int_constrinat_first_visit_(true), b_first_visit_(true),
+      b_int_constrinat_first_visit_(true), b_first_visit_wbc_ctrl_(true),
       b_smoothing_command_(false), smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
       data_save_freq_(0) {
@@ -61,7 +62,16 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     }
   }
 
+  // ihwbc initialize
   ihwbc_ = new IHWBC(sa, &sf, &sv);
+
+  // joint integrator initialize
+  Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
+  Eigen::VectorXd jpos_ub = robot_->JointPosLimits().rightCols(1);
+  Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
+  Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
+  joint_integrator_ = new JointIntegrator(draco::n_adof, sp_->servo_dt_,
+                                          jpos_lb, jpos_ub, jvel_lb, jvel_ub);
 
   // read yaml & set params
   try {
@@ -82,9 +92,19 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       std::cout << "------------------------------------" << std::endl;
       std::cout << "Torque Limits are considred in WBC" << std::endl;
       std::cout << "------------------------------------" << std::endl;
-      Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit = robot_->TrqLimit();
+      Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit =
+          robot_->JointTrqLimits();
       ihwbc_->SetTrqLimit(trq_limit);
     }
+
+    // initialize joint integrator params
+    double pos_cutoff_freq = util::ReadParameter<double>(
+        cfg["wbc"]["joint_integrator"], "pos_cutoff_freq");
+    double vel_cutoff_freq = util::ReadParameter<double>(
+        cfg["wbc"]["joint_integrator"], "vel_cutoff_freq");
+    double max_pos_err = util::ReadParameter<double>(cfg["wbc"]["max_pos_err"]);
+    joint_integrator_->SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq);
+    joint_integrator_->SetMaxPositionError(pos_max_error);
 
   } catch (std::runtime_error &e) {
     std::cout << "Error reading parameter [" << e.what() << "] at file: ["
@@ -93,21 +113,34 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   }
 }
 
-DracoController::~DracoController() { delete ihwbc_; }
+DracoController::~DracoController() {
+  delete ihwbc_;
+  delete joint_integrator_;
+}
 
 void DracoController::GetCommand(void *command) {
   if (sp_->state_ == draco_states::kInitialize) {
+    if (b_first_visit_pos_ctrl_) {
+      // for smoothing
+      init_joint_pos_ = robot_->GetJointPos();
+      smoothing_command_start_time_ = sp_->current_time_;
+      // change flag
+      b_first_visit_pos_ctrl_ = false;
+    }
     // joint position control command
     joint_pos_cmd_ = tci_container_->jpos_task_->DesiredPos();
     joint_vel_cmd_ = tci_container_->jpos_task_->DesiredVel();
     joint_trq_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
-
   } else {
     // first visit for feedforward torque command
-    if (b_first_visit_ && b_smoothing_command_) {
+    if (b_first_visit_wbc_ctrl_) {
+      // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
       smoothing_command_start_time_ = sp_->current_time_;
-      b_first_visit_ = false;
+      // for joint integrator initialization
+      joint_integrator_->Initialize();
+      // change flag
+      b_first_visit_wbc_ctrl_ = false;
     }
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
@@ -152,36 +185,36 @@ void DracoController::GetCommand(void *command) {
                   tci_container_->force_task_container_, wbc_qddot_cmd,
                   wbc_rf_cmd, wbc_trq_cmd);
 
+    joint_trq_cmd_ = wbc_trq_cmd;
     // TODO: joint integrator for real experiment
     // joint_integrator_->Integrate()
-
     // joint_pos_cmd_ = ;
     // joint_vel_cmd_ = ;
-    joint_trq_cmd_ = wbc_trq_cmd;
-
-    if (b_smoothing_command_) {
-      // do smoothing command, only for real experiment
-      double s =
-          util::SmoothPos(0, 1, smoothing_command_duration_,
-                          sp_->current_time_ - smoothing_command_start_time_);
-
-      joint_pos_cmd_ = (1 - s) * init_joint_pos_ + s * joint_pos_cmd_;
-      joint_vel_cmd_ = s * joint_vel_cmd_;
-      joint_trq_cmd_ = s * joint_trq_cmd_;
-
-      if (sp_->current_time_ >=
-          smoothing_command_start_time_ + smoothing_command_duration_)
-        b_smoothing_command_ = false;
-    }
   }
 
-  // copy command to DracoCommand class
-  static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
-  static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
-  static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
+  if (b_smoothing_command_) {
+    // do smoothing command, only for real experiment
+    double s =
+        util::SmoothPos(0, 1, smoothing_command_duration_,
+                        sp_->current_time_ - smoothing_command_start_time_);
 
-  if (sp_->count_ % data_save_freq_ == 0)
-    this->_SaveData();
+    joint_pos_cmd_ = (1 - s) * init_joint_pos_ + s * joint_pos_cmd_;
+    joint_vel_cmd_ = s * joint_vel_cmd_;
+    joint_trq_cmd_ = s * joint_trq_cmd_;
+
+    if (sp_->current_time_ >=
+        smoothing_command_start_time_ + smoothing_command_duration_)
+      b_smoothing_command_ = false;
+  }
+}
+
+// copy command to DracoCommand class
+static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
+static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
+static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
+
+if (sp_->count_ % data_save_freq_ == 0)
+  this->_SaveData();
 }
 
 void DracoController::_SaveData() {

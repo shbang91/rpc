@@ -5,6 +5,7 @@ class PinocchioRobotSystem;
 class DracoTCIContainer;
 class DracoStateProvider;
 class IHWBC;
+class JointIntegrator;
 
 class DracoController {
 public:
@@ -20,6 +21,7 @@ private:
   DracoStateProvider *sp_;
 
   IHWBC *ihwbc_;
+  JointIntegrator *joint_integrator_;
 
   Eigen::VectorXd joint_pos_cmd_;
   Eigen::VectorXd joint_vel_cmd_;
@@ -27,7 +29,8 @@ private:
 
   bool b_int_constrinat_first_visit_;
 
-  bool b_first_visit_;
+  bool b_first_visit_wbc_ctrl_;
+  bool b_first_visit_pos_ctrl_;
   bool b_smoothing_command_;
   double smoothing_command_duration_;
   double smoothing_command_start_time_;
