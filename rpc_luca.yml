@@ -1,0 +1,23 @@
+name: rpc_luca
+channels:
+  - conda-forge
+dependencies:
+  - pybind11=2.6.2
+  - python=3.8
+  - ruamel.yaml=0.17.10
+  #- pinocchio=2.5.5
+  - pip
+  - pip:
+      - certifi==2021.5.30
+      - imageio==2.9.0
+      - ipdb==0.13.9
+      - matplotlib==3.4.2
+      - meshcat==0.1.1
+      - opencv-python==4.5.2.54
+      - protobuf==3.20.2
+      - pybullet==3.0.8
+      - scipy==1.7.0
+      - tqdm==4.61.1
+      - wheel==0.36.2
+      - zmq==0.0.0
+      - tensorboard

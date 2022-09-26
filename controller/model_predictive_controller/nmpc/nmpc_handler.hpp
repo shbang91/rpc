@@ -14,31 +14,26 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 // Proto custom messages
-#include "build/messages/pnc_to_horizon.pb.h"
 #include "build/messages/horizon_to_pnc.pb.h"
+#include "build/messages/pnc_to_horizon.pb.h"
 
 // MatLogger2
-#include <matlogger2/matlogger2.h>
-
+//#include <matlogger2/matlogger2.h>
 
 class PinocchioRobotSystem;
 class TCIContainer;
 class FootStep;
 
-
 class NMPCOutputData : public MPCOutputData {
 public:
-    std::vector<Eigen::Vector3d> lfoot_pose;
-    std::vector<Eigen::Vector3d> rfoot_pose;
+  std::vector<Eigen::Vector3d> lfoot_pose;
+  std::vector<Eigen::Vector3d> rfoot_pose;
 };
-
 
 class NMPCHandler : public MPCHandler {
 public:
-  NMPCHandler(PinocchioRobotSystem *robot,
-              TCIContainer *tci_container,
-              int lfoot_id,
-              int rfoot_id);
+  NMPCHandler(PinocchioRobotSystem *robot, TCIContainer *tci_container,
+              int lfoot_id, int rfoot_id);
   virtual ~NMPCHandler() = default;
 
   /// Read params from YAML file
@@ -69,9 +64,10 @@ private:
   void _GetMPCOutputData() override;
   void _SendData() override;
 
-  XBot::MatLogger2::Ptr logger_;
+  // XBot::MatLogger2::Ptr logger_;
 
-  Eigen::VectorXd _LinearInterpolation(Eigen::VectorXd start, Eigen::VectorXd goal);
+  Eigen::VectorXd _LinearInterpolation(Eigen::VectorXd start,
+                                       Eigen::VectorXd goal);
 
   // sender time parameters
   double T_, ctrl_dt_;
@@ -79,8 +75,11 @@ private:
   int count_, interp_count_;
   Eigen::Vector3d dcm_;
 
-  std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFoot(int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
-  Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
+  std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d>
+  _ConvertFoot(int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
+  Eigen::Matrix<double, 6, 1>
+  _ConvertFootForces(Eigen::Vector3d foot_center, int foot,
+                     HORIZON_TO_PNC::MPCResult mpc_res, int index);
 
   int footstep_list_index_;
   bool is_new_, first_visit_;
@@ -153,5 +152,4 @@ private:
 
   // Index that keeps track of which footstep to take.
   int current_footstep_idx_;
-  };
-
+};
