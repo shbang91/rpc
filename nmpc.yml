@@ -25,7 +25,7 @@
 #      - tensorboard
 #      - casadi
 
-name: rpc
+name: nmpc
 channels:
   - conda-forge
 dependencies:

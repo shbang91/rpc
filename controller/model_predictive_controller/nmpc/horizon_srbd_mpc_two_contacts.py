@@ -1007,7 +1007,7 @@ opts = {
         #'ipopt.warm_start_same_structure': 'yes',
         'ipopt.warm_start_init_point': 'yes',
         'ipopt.fast_step_computation': 'yes',
-        'ipopt.print_level': 1,
+        'ipopt.print_level': 0,
         'ipopt.suppress_all_output': 'yes',
         'ipopt.sb': 'yes',
         'print_time': 0
