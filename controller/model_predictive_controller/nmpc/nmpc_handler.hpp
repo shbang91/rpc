@@ -17,10 +17,6 @@
 #include "build/messages/pnc_to_horizon.pb.h"
 #include "build/messages/horizon_to_pnc.pb.h"
 
-// MatLogger2
-#include <matlogger2/matlogger2.h>
-
-
 class PinocchioRobotSystem;
 class TCIContainer;
 class FootStep;
@@ -68,8 +64,6 @@ private:
   void _GetMPCInputData() override;
   void _GetMPCOutputData() override;
   void _SendData() override;
-
-  XBot::MatLogger2::Ptr logger_;
 
   Eigen::VectorXd _LinearInterpolation(Eigen::VectorXd start, Eigen::VectorXd goal);
 

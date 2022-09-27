@@ -42,8 +42,6 @@ first_visit_(true)
 
     interp_count_ = 0;
     c_ = 0;
-
-    logger_ = XBot:: MatLogger2::MakeLogger("/tmp/tasks_references");
 }
 
 void NMPCHandler::paramInitialization(const YAML::Node &node)
@@ -430,7 +428,8 @@ void NMPCHandler::_SendData()
     draco_state_msg.SerializeToString(&encoded_msg);
     zmq::message_t zmq_msg(encoded_msg.size());
     memcpy ((void *) zmq_msg.data(), encoded_msg.c_str(), encoded_msg.size());
-    publisher_->send(zmq_msg, zmq::send_flags::none);
+    // publisher_->send(zmq_msg, zmq::send_flags::none);
+    publisher_->send(zmq_msg);
 }
 
 void NMPCHandler::_GetMPCOutputData()
@@ -526,10 +525,6 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_Conv
     double avg_xddot = 0, avg_yddot = 0, avg_zddot = 0;
     for (int i = 0; i < foot_pos.pos_size(); i++)
     {
-        if (foot == draco_link::l_foot_contact)
-        {
-            logger_->add("left_contact_" + std::to_string(i), Eigen::Vector3d(foot_pos.pos(i).x(), foot_pos.pos(i).y(), foot_pos.pos(i).z()));
-        }
         pos(0) += foot_pos.pos(i).x();      pos(1) += foot_pos.pos(i).y();      pos(2) += foot_pos.pos(i).z();
         vel(0) += foot_vel.vel(i).xdot();   vel(1) += foot_vel.vel(i).ydot();   vel(2) += foot_vel.vel(i).zdot();
         acc(0) += foot_acc.acc(i).xddot();  acc(1) += foot_acc.acc(i).yddot();  acc(2) += foot_acc.acc(i).zddot();
@@ -652,38 +647,6 @@ bool NMPCHandler::UpdateDesired()
     else
         tci_container_->contact_map_["rf_contact"]->SetMaxFz(1000);
     tci_container_->force_task_map_["rf_reaction_force_task"]->UpdateDesired(right_force_ref_interpolated);
-
-    // Add to logger
-    logger_->add("unfiltered_com_pos_ref", Eigen::Vector3d(mpc_res_.com(1).x(), mpc_res_.com(1).y(), mpc_res_.com(1).z()));
-    logger_->add("unfiltered_com_vel_ref", Eigen::Vector3d(mpc_res_.com_vel(1).xdot(), mpc_res_.com_vel(1).ydot(), mpc_res_.com_vel(1).zdot()));
-    logger_->add("unfiltered_com_acc_ref", Eigen::Vector3d(mpc_res_.com_acc(1).xddot(), mpc_res_.com_acc(1).yddot(), mpc_res_.com_acc(1).zddot()));
-    logger_->add("com_pos_ref", tci_container_->task_map_["com_task"]->DesiredPos());
-    logger_->add("com_vel_ref", tci_container_->task_map_["com_task"]->DesiredVel());
-    logger_->add("com_acc_ref", tci_container_->task_map_["com_task"]->DesiredAcc());
-    logger_->add("actual_com_pos", robot_->GetRobotComPos());
-    logger_->add("actual_com_vel", robot_->GetRobotComLinVel());
-    logger_->add("torso_ori_ref", Eigen::Vector4d(mpc_res_.ori(1).x(), mpc_res_.ori(1).y(), mpc_res_.ori(1).z(), mpc_res_.ori(1).w()));
-    logger_->add("torso_vel", Eigen::Vector3d(mpc_res_.omega(1).x(), mpc_res_.omega(1).y(), mpc_res_.omega(1).z()));
-    logger_->add("unfiltered_lf_pos_ref", std::get<0>(left_foot_ref));
-    logger_->add("unfiltered_lf_vel_ref", std::get<1>(left_foot_ref));
-    logger_->add("unfiltered_lf_acc_ref", std::get<2>(left_foot_ref));
-    logger_->add("lf_pos_ref", lf_pos_ref);
-    logger_->add("lf_vel_ref", lf_vel_ref);
-    logger_->add("lf_acc_ref", lf_acc_ref);
-    logger_->add("actual_lf_pos", robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
-    logger_->add("unfiltered_left_force_ref", left_force_ref);
-    logger_->add("left_force_ref", _LinearInterpolation(old_lf_force_, left_force_ref));
-    logger_->add("unfiltered_rf_pos_ref", std::get<0>(right_foot_ref));
-    logger_->add("unfiltered_rf_vel_ref", std::get<1>(right_foot_ref));
-    logger_->add("unfiltered_rf_acc_ref", std::get<2>(right_foot_ref));
-    logger_->add("rf_pos_ref", rf_pos_ref);
-    logger_->add("rf_vel_ref", rf_vel_ref);
-    logger_->add("rf_acc_ref", rf_acc_ref);
-    logger_->add("actual_rf_pos", robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
-    logger_->add("unfiltered_right_force_ref", right_force_ref);
-    logger_->add("right_force_ref", _LinearInterpolation(old_rf_force_, right_force_ref));
-    logger_->add("time", count_ * ctrl_dt_);
-    logger_->add("count", count_);
 
     interp_count_++;
 

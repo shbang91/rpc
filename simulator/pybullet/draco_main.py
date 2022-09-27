@@ -24,7 +24,6 @@ import draco_interface_py
 
 import rospy
 from rosgraph_msgs.msg import Clock
-from ttictoc import tic, toc
 
 
 def get_sensor_data_from_pybullet(robot):
@@ -341,8 +340,6 @@ sim_time_pub = rospy.Publisher('/clock', Clock, queue_size=10)
 time_force = 0
 
 while not rospy.is_shutdown():
-    tic()
-
     ###############################################################################
     #Debugging Purpose
     ##############################################################################
