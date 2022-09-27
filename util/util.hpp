@@ -97,7 +97,11 @@ Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori);
 
-double Clamp(const double &s_in, double lo = 0.0, double hi = 1.0);
+double Clamp(const double s_in, const double lo = 0.0, const double hi = 1.0);
+
+Eigen::VectorXd ClampVector(const Eigen::VectorXd &vec_in,
+                            const Eigen::VectorXd &vec_min,
+                            const Eigen::VectorXd &vec_max);
 
 void PseudoInverse(Eigen::MatrixXd const &matrix, double sigmaThreshold,
                    Eigen::MatrixXd &invMatrix,

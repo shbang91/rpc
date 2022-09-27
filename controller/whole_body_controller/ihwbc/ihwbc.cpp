@@ -11,7 +11,7 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
   util::PrettyConstructor(3, "IHWBC");
 
   num_qdot_ = sa_.cols();
-  num_active_ = sa.rows();
+  num_active_ = sa_.rows();
 
   if (sf) {
     sf_ = *sf;

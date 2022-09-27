@@ -90,7 +90,7 @@ public:
     return joint_pos_limits_;
   }
   Eigen::Matrix<double, Eigen::Dynamic, 2> JointVelLimits() const {
-    return joint_vel_limits;
+    return joint_vel_limits_;
   }
   Eigen::Matrix<double, Eigen::Dynamic, 2> JointTrqLimits() const {
     return joint_trq_limits_;

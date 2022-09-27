@@ -363,7 +363,7 @@ Eigen::VectorXd ClampVector(const Eigen::VectorXd &vec_in,
                             const Eigen::VectorXd &vec_min,
                             const Eigen::VectorXd &vec_max) {
   Eigen::VectorXd vec_out = Eigen::VectorXd::Zero(vec_in.size());
-  for (int i = 0; i < vec_out.size(); i +) {
+  for (int i = 0; i < vec_out.size(); i++) {
     vec_out[i] = Clamp(vec_in[i], vec_min[i], vec_max[i]);
   }
   return vec_out;

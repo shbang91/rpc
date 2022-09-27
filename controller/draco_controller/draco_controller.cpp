@@ -18,9 +18,10 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     : tci_container_(tci_container), robot_(robot),
       joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
-      joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
-      b_int_constrinat_first_visit_(true), b_first_visit_wbc_ctrl_(true),
-      b_smoothing_command_(false), smoothing_command_duration_(0.),
+      joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)), b_sim_(false),
+      b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
+      b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
+      smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
       data_save_freq_(0) {
   util::PrettyConstructor(2, "DracoController");
@@ -42,14 +43,14 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   int num_active(std::count(act_list.begin(), act_list.end(), true));
   int num_passive(num_qdot - num_active - num_float);
 
-  Eigen::MatrixXd sa = Eigen::MatrixXd::Zero(num_active, num_qdot);
+  sa_ = Eigen::MatrixXd::Zero(num_active, num_qdot);
   Eigen::MatrixXd sf = Eigen::MatrixXd::Zero(num_float, num_qdot);
   Eigen::MatrixXd sv = Eigen::MatrixXd::Zero(num_passive, num_qdot);
 
   int j(0), k(0), e(0);
   for (int i(0); i < act_list.size(); ++i) {
     if (act_list[i]) {
-      sa(j, i) = 1.;
+      sa_(j, i) = 1.;
       ++j;
     } else {
       if (i < num_float) {
@@ -63,7 +64,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   }
 
   // ihwbc initialize
-  ihwbc_ = new IHWBC(sa, &sf, &sv);
+  ihwbc_ = new IHWBC(sa_, &sf, &sv);
 
   // joint integrator initialize
   Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
@@ -79,8 +80,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
 
     // initialize draco controller params
-    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
-    if (!b_sim) {
+    b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
+    if (!b_sim_) {
       b_smoothing_command_ = true;
       util::ReadParameter(cfg["controller"], "exp_smoothing_command_duration",
                           smoothing_command_duration_);
@@ -102,7 +103,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
         cfg["wbc"]["joint_integrator"], "pos_cutoff_freq");
     double vel_cutoff_freq = util::ReadParameter<double>(
         cfg["wbc"]["joint_integrator"], "vel_cutoff_freq");
-    double max_pos_err = util::ReadParameter<double>(cfg["wbc"]["max_pos_err"]);
+    double pos_max_error = util::ReadParameter<double>(
+        cfg["wbc"]["joint_integrator"], "max_pos_err");
     joint_integrator_->SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq);
     joint_integrator_->SetMaxPositionError(pos_max_error);
 
@@ -134,11 +136,14 @@ void DracoController::GetCommand(void *command) {
   } else {
     // first visit for feedforward torque command
     if (b_first_visit_wbc_ctrl_) {
-      // for smoothing
-      init_joint_pos_ = robot_->GetJointPos();
-      smoothing_command_start_time_ = sp_->current_time_;
       // for joint integrator initialization
-      joint_integrator_->Initialize();
+      init_joint_pos_ = robot_->GetJointPos();
+      joint_integrator_->Initialize(init_joint_pos_, robot_->GetJointVel());
+      // for real experiment smoothing command
+      if (!b_sim_) {
+        smoothing_command_start_time_ = sp_->current_time_;
+        b_smoothing_command_ = true;
+      }
       // change flag
       b_first_visit_wbc_ctrl_ = false;
     }
@@ -158,12 +163,12 @@ void DracoController::GetCommand(void *command) {
     }
     // iterate once b/c jacobian does not change at all depending on
     // configuration
-    if (b_int_constrinat_first_visit_) {
+    if (b_int_constraint_first_visit_) {
       for (auto internal_constraint :
            tci_container_->internal_constraint_container_) {
         internal_constraint->UpdateJacobian();
         internal_constraint->UpdateJacobianDotQdot();
-        b_int_constrinat_first_visit_ = false;
+        b_int_constraint_first_visit_ = false;
       }
     }
 
@@ -187,9 +192,14 @@ void DracoController::GetCommand(void *command) {
 
     joint_trq_cmd_ = wbc_trq_cmd;
     // TODO: joint integrator for real experiment
-    // joint_integrator_->Integrate()
-    // joint_pos_cmd_ = ;
-    // joint_vel_cmd_ = ;
+    Eigen::VectorXd joint_acc_cmd =
+        sa_.rightCols(sa_.cols() - robot_->NumFloatDof()).transpose() *
+        wbc_qddot_cmd;
+    // Eigen::VectorXd joint_acc_cmd =
+    // wbc_qddot_cmd.tail<robot_->NumActiveDof()>();
+    joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
+                                 robot_->GetJointVel(), joint_pos_cmd_,
+                                 joint_vel_cmd_);
   }
 
   if (b_smoothing_command_) {
@@ -206,15 +216,14 @@ void DracoController::GetCommand(void *command) {
         smoothing_command_start_time_ + smoothing_command_duration_)
       b_smoothing_command_ = false;
   }
-}
 
-// copy command to DracoCommand class
-static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
-static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
-static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
+  // copy command to DracoCommand class
+  static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
+  static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
+  static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 
-if (sp_->count_ % data_save_freq_ == 0)
-  this->_SaveData();
+  if (sp_->count_ % data_save_freq_ == 0)
+    this->_SaveData();
 }
 
 void DracoController::_SaveData() {

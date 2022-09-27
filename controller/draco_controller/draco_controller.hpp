@@ -27,7 +27,8 @@ private:
   Eigen::VectorXd joint_vel_cmd_;
   Eigen::VectorXd joint_trq_cmd_;
 
-  bool b_int_constrinat_first_visit_;
+  bool b_sim_;
+  bool b_int_constraint_first_visit_;
 
   bool b_first_visit_wbc_ctrl_;
   bool b_first_visit_pos_ctrl_;
@@ -37,6 +38,8 @@ private:
   Eigen::VectorXd init_joint_pos_;
 
   int data_save_freq_;
+
+  Eigen::MatrixXd sa_; // selection matrix
 
   void _SaveData();
 };

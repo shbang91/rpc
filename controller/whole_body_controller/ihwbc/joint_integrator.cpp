@@ -15,7 +15,8 @@ JointIntegrator::JointIntegrator(const int num_joints, const double dt,
   b_initialized_ = false;
 }
 
-void JointIntegrator::SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq) {
+void JointIntegrator::SetCutoffFrequency(const double pos_cutoff_freq,
+                                         const double vel_cutoff_freq) {
   alpha_pos_ = _GetAlphaFromFrequency(pos_cutoff_freq, dt_);
   alpha_vel_ = _GetAlphaFromFrequency(vel_cutoff_freq, dt_);
 }
@@ -23,7 +24,7 @@ void JointIntegrator::SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq) {
 double JointIntegrator::_GetAlphaFromFrequency(const double hz,
                                                const double dt) {
   double omega = 2.0 * M_PI * hz;
-  double alpha = (omega * dt_) / (1.0 + (omega * dt_));
+  double alpha = (omega * dt) / (1.0 + (omega * dt));
   return alpha;
 }
 
@@ -64,12 +65,12 @@ void JointIntegrator::Integrate(const Eigen::VectorXd &cmd_jacc,
     jpos_ = cmd_jpos;
 
   } else {
-    std::cerr < "========================================================="
-                    << std::endl;
+    std::cerr << "========================================================="
+              << std::endl;
     std::cerr << "[ERROR] JointIntegrator fails to integrate -> Please "
                  "Initialize JointIntegrator "
               << std::endl;
-    std::cerr < "========================================================="
-                    << std::endl;
+    std::cerr << "========================================================="
+              << std::endl;
   }
 }

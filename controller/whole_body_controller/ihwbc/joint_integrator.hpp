@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/util.hpp"
+#include "util/util.hpp"
 
 //**usage
 // constructor -> SetCutoffFrequency, SetMaxPositionError -> Initialize
@@ -9,7 +9,11 @@
 
 class JointIntegrator {
 public:
-  JointIntegrator(const int num_joints, const double dt);
+  JointIntegrator(const int num_joints, const double dt,
+                  const Eigen::VectorXd &pos_min,
+                  const Eigen::VectorXd &pos_max,
+                  const Eigen::VectorXd &vel_min,
+                  const Eigen::VectorXd &vel_max);
   ~JointIntegrator() = default;
 
   // Set joint integrator params
@@ -28,6 +32,7 @@ public:
                  Eigen::VectorXd &cmd_jvel);
 
 private:
+  double _GetAlphaFromFrequency(const double hz, const double dt);
   int num_joints_;
   double dt_;
   Eigen::VectorXd pos_min_;
@@ -42,4 +47,4 @@ private:
   Eigen::VectorXd jpos_;
   Eigen::VectorXd jvel_;
   bool b_initialized_;
-}
+};
