@@ -86,7 +86,13 @@ public:
   int NumActiveDof() const;
   int NumFloatDof() const;
 
-  Eigen::Matrix<double, Eigen::Dynamic, 2> TrqLimit() const {
+  Eigen::Matrix<double, Eigen::Dynamic, 2> JointPosLimits() const {
+    return joint_pos_limits_;
+  }
+  Eigen::Matrix<double, Eigen::Dynamic, 2> JointVelLimits() const {
+    return joint_vel_limits;
+  }
+  Eigen::Matrix<double, Eigen::Dynamic, 2> JointTrqLimits() const {
     return joint_trq_limits_;
   }
 

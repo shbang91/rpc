@@ -110,6 +110,12 @@ wbc:
     lambda_rf: 1e-6 ##regularization
     b_trq_limit: false
 
+  joint_integrator:
+    pos_cutoff_freq: 0.5 #hz
+    vel_cutoff_freq: 2. #hz
+    max_pos_err: 0.2 #rad
+
+
 
 state_machine:
     initialize:

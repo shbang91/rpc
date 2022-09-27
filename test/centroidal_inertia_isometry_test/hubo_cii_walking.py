@@ -35,6 +35,10 @@ def set_initial_config(robot, joint_id):
     pb.resetJointState(robot, joint_id["LAP"], -np.pi / 4, 0.)
     pb.resetJointState(robot, joint_id["RAP"], -np.pi / 4, 0.)
 
+    pb.resetJointState(robot, joint_id["LSR"], np.pi / 2, 0.)
+    pb.resetJointState(robot, joint_id["RSR"], -np.pi / 2, 0.)
+
+
 
 if __name__ == "__main__":
     #pybullet GUI for visualization
@@ -56,6 +60,7 @@ if __name__ == "__main__":
     nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
         robot, INITIAL_POS, INITIAL_QUAT, False)
 
+
     ## ik prep
     joint_screws_in_ee_at_home, ee_SE3_at_home = dict(), dict()
     open_chain_joints_name_dict, ee_links_name_dict, base_links_name_dict = dict(
@@ -72,21 +77,25 @@ if __name__ == "__main__":
         'RAR'
     ]
 
-    # ee_links_name_dict['left_leg'] = 'leftCOP_Frame'
-    # ee_links_name_dict['right_leg'] = 'rightCOP_Frame'
+    ee_links_name_dict['left_leg'] = 'l_foot_contact_frame'
+    ee_links_name_dict['right_leg'] = 'r_foot_contact_frame'
 
-    # base_links_name = 'pelvis'
+    base_links_name = 'Body_Torso'
 
-    # for leg in leg_list:
-        # joint_screws_in_ee_at_home[leg], ee_SE3_at_home[
-            # leg] = robot_kinematics.get_kinematics_config(
-                # robot, joint_id, link_id, open_chain_joints_name_dict[leg],
-                # base_links_name, ee_links_name_dict[leg])
+    for leg in leg_list:
+        joint_screws_in_ee_at_home[leg], ee_SE3_at_home[
+            leg] = robot_kinematics.get_kinematics_config(
+                robot, joint_id, link_id, open_chain_joints_name_dict[leg],
+                base_links_name, ee_links_name_dict[leg])
+
+    leg_length = pybullet_util.get_link_iso(robot, link_id['Body_Torso'])[2,3] - pybullet_util.get_link_iso(robot, link_id['r_foot_contact_frame'])[2,3]
+    normalize_factor = leg_length / 0.7
+    print("=====normalize factor==========")
+    print(normalize_factor)
 
 
     ## set initial joint pos
     set_initial_config(robot, joint_id)
-    __import__('ipdb').set_trace()
 
 
     ## get initial sensor data
@@ -101,14 +110,14 @@ if __name__ == "__main__":
     nominal_base_iso = liegroup.RpToTrans(util.quat_to_rot(nominal_base_quat),
                                           nominal_base_pos)
     nominal_rf_iso = np.copy(
-        pybullet_util.get_link_iso(robot, link_id['rightCOP_Frame']))
+        pybullet_util.get_link_iso(robot, link_id['r_foot_contact_frame']))
     nominal_lf_iso = np.copy(
-        pybullet_util.get_link_iso(robot, link_id['leftCOP_Frame']))
+        pybullet_util.get_link_iso(robot, link_id['l_foot_contact_frame']))
 
     ## update virtual robot model
     robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/valkyrie/valkyrie.urdf', cwd + '/robot_model/valkyrie',
-        True, False)
+        cwd + '/robot_model/hubo/URDF_HuboPlus_Float_2.urdf', cwd + '/robot_model/hubo',
+        False, False)
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
                                nominal_sensor_data['base_joint_lin_vel'],
@@ -122,15 +131,15 @@ if __name__ == "__main__":
     nominal_inertia = robot_system.Ig[0:3, 0:3]
 
     ## data saver for RCCRBI
-    data_saver = DataSaver('valkyrie_cii_walking_traj.pkl')
+    data_saver = DataSaver('hubo_cii_walking_traj.pkl')
 
     ## create operational space walking trajectories with parameters
     ## parameters: Foot SE(3), Swing height, Swing time, number of node
     ## motion boundary
     swing_time = 0.5
-    ONE_STEP_X_LB, ONE_STEP_X_UB = 0.1, 0.2
-    ONE_STEP_Y_LB, ONE_STEP_Y_UB = -0.1, 0.1
-    SWING_HEIGHT = 0.05
+    ONE_STEP_X_LB, ONE_STEP_X_UB = 0.1 * normalize_factor, 0.2 * normalize_factor
+    ONE_STEP_Y_LB, ONE_STEP_Y_UB = -0.1 * normalize_factor, 0.2 * normalize_factor
+    SWING_HEIGHT = 0.05 * normalize_factor
     NUM_NODE_PER_SWING = 30
 
     for one_step_x in np.linspace(ONE_STEP_X_LB, ONE_STEP_X_UB, num = 10):
@@ -235,8 +244,8 @@ if __name__ == "__main__":
 
                 ## calculate inertia
                 robot_system.update_system(
-                        nominal_sensor_data['base_joint_pos'],
-                        nominal_sensor_data['base_joint_quat'],
+                        base_pos,
+                        base_quat,
                         nominal_sensor_data['base_joint_lin_vel'],
                         nominal_sensor_data['base_joint_ang_vel'], nominal_joint_pos,
                         nominal_sensor_data['joint_vel'], True)

@@ -349,7 +349,7 @@ void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
     act_ori = act_ori;
 }
 
-double Clamp(const double &s_in, double lo, double hi) {
+double Clamp(const double s_in, const double lo, const double hi) {
   if (s_in < lo) {
     return lo;
   } else if (s_in > hi) {
@@ -357,6 +357,16 @@ double Clamp(const double &s_in, double lo, double hi) {
   } else {
     return s_in;
   }
+}
+
+Eigen::VectorXd ClampVector(const Eigen::VectorXd &vec_in,
+                            const Eigen::VectorXd &vec_min,
+                            const Eigen::VectorXd &vec_max) {
+  Eigen::VectorXd vec_out = Eigen::VectorXd::Zero(vec_in.size());
+  for (int i = 0; i < vec_out.size(); i +) {
+    vec_out[i] = Clamp(vec_in[i], vec_min[i], vec_max[i]);
+  }
+  return vec_out;
 }
 
 void PseudoInverse(Eigen::MatrixXd const &matrix, double sigmaThreshold,

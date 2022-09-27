@@ -30,7 +30,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_Torso_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_Torso_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -52,7 +53,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_HNP_vis.stl"/>
+        <box size="0.2 0.1 0.0591"/>
+        <!--<mesh filename="meshes_hubo/Body_HNP_vis.stl"/>-->
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -72,7 +74,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LSP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LSP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -92,7 +95,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LSR_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LSR_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -112,7 +116,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LSY_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LSY_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -132,7 +137,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LEP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LEP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -152,7 +158,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LWY_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LWY_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -172,7 +179,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LWP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LWP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -192,7 +200,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftThumbProximal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftThumbProximal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -232,7 +241,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftThumbDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftThumbDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -252,7 +262,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftPinkyProximal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftPinkyProximal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -272,7 +283,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftPinkyMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftPinkyMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -292,7 +304,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftPinkyDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftPinkyDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -312,7 +325,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftRingProximal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftRingProximal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -332,7 +346,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftRingMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftRingMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -352,7 +367,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftRingDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftRingDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -392,7 +408,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftMiddleMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftMiddleMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -412,7 +429,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftMiddleDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftMiddleDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -432,7 +450,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftIndexProximal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftIndexProximal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -452,7 +471,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftIndexMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftIndexMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -472,7 +492,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/leftIndexDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/leftIndexDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -492,7 +513,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RSP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RSP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -512,7 +534,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RSR_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RSR_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -532,7 +555,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RSY_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RSY_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -552,7 +576,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_REP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_REP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -572,7 +597,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RWY_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RWY_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -592,7 +618,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RWP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RWP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -652,7 +679,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightThumbDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightThumbDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -672,7 +700,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightPinkyProximal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightPinkyProximal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -692,7 +721,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightPinkyMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightPinkyMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -712,7 +742,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightPinkyDistal_vis.stl"/>
+        <box size="0.2 0.1 0.0591"/>
+        <!--<mesh filename="meshes_hubo/rightPinkyDistal_vis.stl"/>-->
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -752,7 +783,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightRingMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightRingMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -772,7 +804,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightRingDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightRingDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -792,7 +825,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightMiddleProximal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightMiddleProximal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -812,7 +846,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightMiddleMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightMiddleMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -832,7 +867,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightMiddleDistal_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightMiddleDistal_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -872,7 +908,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/rightIndexMedial_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/rightIndexMedial_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -912,7 +949,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_Hip_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_Hip_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -932,7 +970,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LHY_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LHY_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -952,7 +991,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LHR_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LHR_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -972,7 +1012,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LHP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LHP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -992,7 +1033,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LKP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LKP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1012,7 +1054,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LAP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LAP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1032,7 +1075,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_LAR_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_LAR_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1072,7 +1116,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RHR_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RHR_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1092,7 +1137,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RHP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RHP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1112,7 +1158,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RKP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RKP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1132,7 +1179,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RAP_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RAP_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
@@ -1152,7 +1200,8 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="meshes_hubo/Body_RAR_vis.stl"/>
+        <!--<mesh filename="meshes_hubo/Body_RAR_vis.stl"/>-->
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
       <material name="random">
         <color rgba="0.800000 0.800000 0.800000 1"/>
