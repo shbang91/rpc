@@ -69,6 +69,7 @@ if com
         subplot(3, 1, i)
         hold on 
         grid on
+        plot(time_mpc, r_ref(i,:), 'LineWidth', 5)
         plot(time, com_pos_ref(i, :), 'LineWidth', 5); 
         plot(time, actual_com_pos(i,:), 'LineWidth', 5);
         min_val = min([r_ref(i,:), com_pos_ref(i,:), actual_com_pos(i,:)]);
@@ -76,7 +77,7 @@ if com
         set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 * (max_val - min_val))
         ylabel(label(i))
         if i == 1
-            legend('wbc reference', 'actual')
+            legend('mpc reference', 'wbc reference', 'actual')
         end
     end
     sgtitle('Com Position', 'Fontsize', 30)
@@ -86,7 +87,7 @@ if com
         subplot(3, 1, i)
         hold on 
         grid on
-        %plot(time_mpc, rdot_ref(i, :), 'LineWidth', 5);
+        stairs(time_mpc, rdot_ref(i, :), 'LineWidth', 5);
         plot(time, com_vel_ref(i, :), 'LineWidth', 5); 
         plot(time, actual_com_vel(i, :), 'LineWidth', 5);
         min_val = min([rdot_ref(i,:), com_vel_ref(i,:), actual_com_vel(i,:)]);
@@ -94,7 +95,7 @@ if com
         set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 * (max_val - min_val))
         ylabel(label(i))
         if i == 1
-            legend('wbc reference', 'actual')
+            legend('mpc_reference', 'wbc reference', 'actual')
         end
     end
     sgtitle('Com Velocity', 'FontSize', 30)

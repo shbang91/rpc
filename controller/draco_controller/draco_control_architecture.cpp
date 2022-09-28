@@ -161,7 +161,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
 
 void DracoControlArchitecture::GetCommand(void *command)
 {
-  if (sp_->count_ < 1000)
+  if (sp_->count_ < 2000)
   {
     if (b_state_first_visit_) {
       state_machine_container_[state_]->FirstVisit();
@@ -187,7 +187,7 @@ void DracoControlArchitecture::GetCommand(void *command)
     horizon_handler_->SetDCMPos(sp_->dcm_);
     horizon_handler_->SolveMPC();
     horizon_handler_->ReceiveSolution();
-    if (horizon_handler_->solutionReceived() && sp_->count_ > 1000)
+    if (horizon_handler_->solutionReceived() && sp_->count_ > 2000)
     {
       upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
       horizon_handler_->UpdateDesired();

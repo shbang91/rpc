@@ -126,7 +126,7 @@ state_machine:
 
     stand_up:
       standup_duration: 1.
-      target_com_height: 0.6
+      target_com_height: 0.65
       target_base_height: 0.9
 
       rf_z_max_interp_duration: 0.1
@@ -171,7 +171,7 @@ lmpc_walking:
   n_steps: 1
 
 nmpc_walking:
-  com_height: 0.6
+  com_height: 0.65
   time_horizon_length: 1.5
   nominal_footwidth: 0.2
   nominal_forward_step: 0.2

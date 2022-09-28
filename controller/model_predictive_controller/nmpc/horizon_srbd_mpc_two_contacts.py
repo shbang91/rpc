@@ -9,7 +9,7 @@ from horizon.transcriptions.transcriptor import Transcriptor
 from horizon.solvers import solver
 from horizon.ros.replay_trajectory import *
 # from ttictoc import tic, toc
-# import tf
+import tf
 from geometry_msgs.msg import WrenchStamped, Point
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import Float32
@@ -290,10 +290,22 @@ class steps_phase:
         cos = 0.05 * (2 * np.pi / T) * np.cos(np.linspace(0, 2 * np.pi, self.nodes + 1))
         for k in range(self.nodes):
             ''' use this when setting the left foot as world '''
-            # self.r_swing.append([0., -0.1 + sin[k], 0.6])
+            # self.r_swing.append([0., -0.1 + sin[k], 0.7])
             ''' use this when using pybullet world '''
-            self.r_swing.append([0.05, sin[k], 0.6])
+            self.r_swing.append([0.05, sin[k], 0.65])
             self.rdot_swing.append([0., cos[k], 0.])
+
+        #SQUAT
+        self.r_squat = []
+        self.rdot_squat = []
+        sin = 0.1 * np.sin(np.linspace(0, 2 * np.pi, self.nodes + 1))
+        cos = 0.1 * (2 * np.pi / T) * np.cos(np.linspace(0, 2 * np.pi, self.nodes + 1))
+        for k in range(self.nodes):
+            ''' use this when setting the left foot as world '''
+            self.r_squat.append([0., -0.1, 0.65 + sin[k]])
+            ''' use this when using pybullet world '''
+            # self.r_squat.append([0.05, 0.0, 0.65 + sin[k]])
+            self.rdot_squat.append([0., 0., cos[k]])
 
         self.action = ""
     def setContactPositions(self, current_contacts, next_contacts):
@@ -451,6 +463,24 @@ class steps_phase:
             del self.r_swing[0]
             del self.rdot_swing[0]
 
+        elif self.action == 'squat':
+            self.r_ref.assign(self.r_squat[0], nodes=self.nodes)
+            self.moveLeftParam(self.r_ref)
+            self.rdot_ref.assign(self.rdot_squat[0], nodes=self.nodes)
+            self.moveLeftParam(self.rdot_ref)
+            for i in range(0, len(c)):
+                self.c_ref[i].assign(self.stance_contact_position[0][(i * 3):(i * 3 + 3)], nodes=self.nodes)
+                self.moveLeftParam(self.c_ref[i])
+                self.cdot[i].setBounds(-1. * np.array(self.stance_contact_velocity[0]), np.array(self.stance_contact_velocity[0]), nodes=self.nodes)
+                self.moveLeftInput(self.cdot[i])
+                self.f[i].setBounds(-1. * np.array(self.f_bounds[0]), np.array(self.f_bounds[0]), nodes=self.nodes - 1)
+                self.moveLeftControl(self.f[i])
+
+            self.r_squat.append(self.r_squat[0])
+            self.rdot_squat.append(self.rdot_squat[0])
+            del self.r_squat[0]
+            del self.rdot_squat[0]
+
 def publishPointTrj(points, t, name, frame, color = [0.7, 0.7, 0.7]):
     marker = Marker()
     marker.header.frame_id = frame
@@ -567,11 +597,11 @@ def publishContactForce(t, f, frame):
     f_msg.wrench.torque.x = f_msg.wrench.torque.y = f_msg.wrench.torque.z = 0.
     rospy.Publisher('f' + frame, WrenchStamped, queue_size=10).publish(f_msg)
 
-#def SRBDTfBroadcaster(r, o, c_dict, t):
-#    br = tf.TransformBroadcaster()
-#    br.sendTransform(r, o, t, "SRB", "world")
-#    for key, val in c_dict.items():
-#        br.sendTransform(val, [0., 0., 0., 1.], t, key, "world")
+def SRBDTfBroadcaster(r, o, c_dict, t):
+   br = tf.TransformBroadcaster()
+   br.sendTransform(r, o, t, "SRB", "world")
+   for key, val in c_dict.items():
+       br.sendTransform(val, [0., 0., 0., 1.], t, key, "world")
 
 #def contactTfBroadcaster(c_dict):
 #    br = tf.TransformBroadcaster()
@@ -688,7 +718,7 @@ Creates problem STATE variables
 """
 """ CoM Position """
 r = prb.createStateVariable("r", 3)
-r.setBounds([-1000, -1000, 0.55], [1000, 1000, 0.65])
+r.setBounds([-1000, -1000, 0.55], [1000, 1000, 0.8])
 r_ref = prb.createParameter("r_ref", 3)
 """ Base orientation (quaternion) """
 o = prb.createStateVariable("o", 4)
@@ -820,7 +850,7 @@ Initialize com state and com velocity
 """
 COM = cs.Function.deserialize(kindyn.centerOfMass())
 com = COM(q=joint_init)['com']
-com[2] = 0.6
+com[2] = 0.65
 print(f"com: {com}")
 r.setInitialGuess(com)
 r.setBounds(com, com, 0)
@@ -1128,27 +1158,34 @@ while not rospy.is_shutdown():
 
         if set_bool or index == 0:
             wpg.setContactPositions(current_positions, current_positions)
-        if False: # index > 15:
-            if not first:
-                first = True
+        if False: #index > 15:
             # swinging
             # rz_tracking_gain.assign(0)
             # r_tracking.assign(1e3)          # com position tracking
-            # rdot_tracking_gain.assign(1e2)  # com velocity tracking
+            # rdot_tracking_gain_xy.assign(1e2)  # com velocity tracking
             # Wo.assign(1e3)                  # base orientation tracking
             # min_f_gain.assign(1e-6)         # forces minimization
             # min_qddot_gain.assign(1e-3)
             # wpg.set('swing')
 
+            # squatting
+            rz_tracking_gain.assign(0)
+            r_tracking.assign(1e3)          # com position tracking
+            rdot_tracking_gain_z.assign(1e2)  # com velocity tracking
+            Wo.assign(1e3)                  # base orientation tracking
+            min_f_gain.assign(1e-6)         # forces minimization
+            min_qddot_gain.assign(1e-3)
+            wpg.set('squat')
+
             # stepping
-            r_tracking.assign(0)  # com position tracking
-            rz_tracking_gain.assign(1e2) # com_z position tracking
-            rdot_tracking_gain.assign(1e1)  # com velocity tracking
-            Wo.assign(1e2)  # base orientation tracking
-            w_tracking_gain.assign(1e2)
-            min_f_gain.assign(1e-3)  # forces minimization
-            c_tracking_gain.assign(1e2) # contact tracking
-            wpg.set('step')
+            # r_tracking.assign(0)  # com position tracking
+            # rz_tracking_gain.assign(1e2) # com_z position tracking
+            # rdot_tracking_gain.assign(1e1)  # com velocity tracking
+            # Wo.assign(1e2)  # base orientation tracking
+            # w_tracking_gain.assign(1e2)
+            # min_f_gain.assign(1e-3)  # forces minimization
+            # c_tracking_gain.assign(1e2) # contact tracking
+            # wpg.set('step')
         else:
             rz_tracking_gain.assign(1e2)
             rdot_tracking_gain_z.assign(1e2)
@@ -1213,7 +1250,7 @@ while not rospy.is_shutdown():
     for i in range(0, nc):
         c0_hist['c' + str(i)] = solution['c' + str(i)][:, 0]
 
-    # SRBDTfBroadcaster(solution['r'][:, 0], solution['o'][:, 0], c0_hist, t)
+    SRBDTfBroadcaster(solution['r'][:, 0], solution['o'][:, 0], c0_hist, t)
     publishFootsteps(contact_sequence)
     SRBDViewer(I, "SRB", t, nc)
     publishPointTrj(solution["r"], t, "SRB", "world")
@@ -1242,19 +1279,19 @@ while not rospy.is_shutdown():
     # figure.canvas.draw()
     # figure.canvas.flush_events()
 
-    #index_to_save = 1
-    #global time_mpc
-    #logger.add('r', solution['r'][:, index_to_save])
-    #logger.add('r_ref', r_ref.getValues(index_to_save))
-    #logger.add('rdot', solution['rdot'][:, index_to_save])
-    #logger.add('rdot_ref', rdot_ref.getValues(index_to_save))
-    #logger.add('o', solution['o'][:, index_to_save])
-    #logger.add('w', solution['w'][:, index_to_save])
-    #logger.add('w_ref', w_ref.getValues(index_to_save))
-    #logger.add('time_mpc', time_mpc)
-    #for j in range(nc):
+    # index_to_save = 1
+    # global time_mpc
+    # logger.add('r', solution['r'][:, index_to_save])
+    # logger.add('r_ref', r_ref.getValues(index_to_save))
+    # logger.add('rdot', solution['rdot'][:, index_to_save])
+    # logger.add('rdot_ref', rdot_ref.getValues(index_to_save))
+    # logger.add('o', solution['o'][:, index_to_save])
+    # logger.add('w', solution['w'][:, index_to_save])
+    # logger.add('w_ref', w_ref.getValues(index_to_save))
+    # logger.add('time_mpc', time_mpc)
+    # for j in range(nc):
     #    logger.add('c' + str(j), solution['c' + str(j)][:, index_to_save])
-        # logger.add('f' + str(j), solution['f' + str(j)][:, index_to_save])
+    #     # logger.add('f' + str(j), solution['f' + str(j)][:, index_to_save])
     #    logger.add('f' + str(j), f[j].getUpperBounds(index_to_save))
     #    logger.add('c_ref' + str(j), c_ref[j].getValues(index_to_save))
     #    logger.add('cdot' + str(j), solution['cdot' + str(j)][:, index_to_save])
