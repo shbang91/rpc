@@ -3,6 +3,7 @@
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/filter/digital_filters.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
 
@@ -16,6 +17,14 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
   R_imu_base_com_ =
       robot_->GetLinkIsometry(draco_link::torso_imu).linear().transpose() *
       robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
+
+  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  Eigen::Vector3d num_com_vel_data = util::ReadParameter<Eigen::Vector3d>(
+      cfg["state_estimator"], "num_com_vel_data_for_filter");
+  com_vel_filter_.clear();
+  for (int i = 0; i < 3; i++) {
+    com_vel_filter_.push_back(new SimpleMovingAverage(num_com_vel_data[i]));
+  }
 }
 
 void DracoStateEstimator::InitializeSensorData(DracoSensorData *sensor_data) {
@@ -31,11 +40,14 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   Eigen::Matrix3d base_joint_ori =
       imu_quat.normalized().toRotationMatrix() * R_imu_base_com_;
 
+  // TODO imu angular velocity filtering for real experiment -> PnC does not use
+  // this in controller
+
   // Update robot model only with base orientation
   robot_->UpdateRobotModel(
       Eigen::Vector3d::Zero(), Eigen::Quaterniond(base_joint_ori).normalized(),
       Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
-      sensor_data->joint_pos_, sensor_data->joint_vel_, true);
+      sensor_data->joint_pos_, sensor_data->joint_vel_, false);
 
   // Estimate floating base position
   // anchor frame depending on the stance foot
@@ -77,6 +89,10 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
 
   // TODO:velocity filtering for com vel (for real experiment)
+  for (int i = 0; i < 3; ++i) {
+    com_vel_filter_[i]->Input(robot_->GetRobotComLinVel()[i]);
+    sp_->com_vel_est_[i] = com_vel_filter_[i]->Output();
+  }
 
   // Save estimated base joint states
   DracoDataManager *dm = DracoDataManager::GetDataManager();

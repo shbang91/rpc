@@ -9,24 +9,30 @@ DracoComTask::DracoComTask(PinocchioRobotSystem *robot)
   util::PrettyConstructor(3, "DracoCoMTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
+
+  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
 }
 
 void DracoComTask::UpdateOpCommand() {
   if (com_feedback_source_ == com_feedback_source::kComFeedback) {
     Eigen::Vector3d com_pos = robot_->GetRobotComPos();
-    Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+    Eigen::Vector3d com_vel =
+        b_sim_ ? robot_->GetRobotComLinVel() : sp_->com_vel_est_;
 
     pos_ << com_pos[0], com_pos[1], com_pos[2];
     vel_ << com_vel[0], com_vel[1], com_vel[2];
 
     if (com_height_target_source_ == com_height_target_source::kComHeight) {
-      pos_[2] = robot_->GetRobotComPos()[2];
-      vel_[2] = robot_->GetRobotComLinVel()[2];
+      // doing just way it is
+      //
     } else if (com_height_target_source_ ==
                com_height_target_source::kBaseHeight) {
       pos_[2] =
           robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-      vel_[2] = robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
+      vel_[2] = robot_->GetLinkSpatialVel(
+          draco_link::torso_com_link)[5]; // TODO: base velocity filtering for
+                                          // real exp
     } else {
       throw std::invalid_argument("No Matching CoM Height Task Target");
     }
@@ -39,7 +45,8 @@ void DracoComTask::UpdateOpCommand() {
 
   } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
     Eigen::Vector3d com_pos = robot_->GetRobotComPos();
-    Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+    Eigen::Vector3d com_vel =
+        b_sim_ ? robot_->GetRobotComLinVel() : sp_->com_vel_est_;
 
     double omega =
         sqrt(9.81 / des_pos_[2]); // TODO:  should be desired com height
@@ -47,13 +54,16 @@ void DracoComTask::UpdateOpCommand() {
     Eigen::Vector2d des_dcm_dot = des_vel_.head(2) + des_acc_.head(2) / omega;
 
     if (com_height_target_source_ == com_height_target_source::kComHeight) {
-      pos_[2] = robot_->GetRobotComPos()[2];
-      vel_[2] = robot_->GetRobotComLinVel()[2];
+      // doing just way it is
+      //
     } else if (com_height_target_source_ ==
                com_height_target_source::kBaseHeight) {
       pos_[2] =
           robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-      vel_[2] = robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
+      vel_[2] = robot_->GetLinkSpatialVel(
+          draco_link::torso_com_link)[5]; // TODO: base velocity filtering for
+                                          // real exp
+
     } else {
       throw std::invalid_argument("No Matching CoM Height Task Target");
     }

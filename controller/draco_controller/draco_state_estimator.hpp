@@ -4,6 +4,7 @@
 class DracoSensorData;
 class PinocchioRobotSystem;
 class DracoStateProvider;
+class SimpleMovingAverage; // filter
 
 class DracoStateEstimator {
 public:
@@ -28,4 +29,7 @@ private:
   Eigen::Vector3d prev_base_joint_pos_;
 
   bool b_first_visit_;
+
+  std::vector<SimpleMovingAverage *> com_vel_filter_;
+  bool b_sim_;
 };

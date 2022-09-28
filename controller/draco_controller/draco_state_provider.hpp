@@ -23,6 +23,8 @@ public:
   bool b_lf_contact_;
   bool b_rf_contact_;
 
+  Eigen::Vector3d com_vel_est_;
+
   int state_;
   int prev_state_;
 

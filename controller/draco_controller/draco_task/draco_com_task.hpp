@@ -32,4 +32,6 @@ private:
   int com_height_target_source_;
 
   DracoStateProvider *sp_;
+
+  bool b_sim_;
 };

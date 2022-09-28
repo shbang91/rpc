@@ -23,6 +23,8 @@ DracoStateProvider::DracoStateProvider() {
   b_lf_contact_ = true;
   b_rf_contact_ = true;
 
+  com_vel_est_.setZero();
+
   state_ = draco_states::kInitialize;
   prev_state_ = draco_states::kInitialize;
 
