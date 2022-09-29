@@ -8,13 +8,13 @@
                                     #rj-module)
 
 add_executable(draco_dart_test draco_dart_robot_system_test.cpp)
-target_link_libraries(draco_dart_test dart-robot-system)
+target_link_libraries(draco_dart_test rpc-dart-robot-system)
 
 add_executable(pin_robot_system_test pin_robot_system_test.cpp)
-target_link_libraries(pin_robot_system_test pin-robot-system)
+target_link_libraries(pin_robot_system_test rpc-pin-robot-system)
 
 add_executable(dcm_planner_test dcm_planner_test.cpp)
 target_link_libraries(dcm_planner_test rpc-wbc)
 
 add_executable(lmpc_handler_test lmpc_handler_test.cpp)
-target_link_libraries(lmpc_handler_test lmpc_handler)
+target_link_libraries(lmpc_handler_test rpc-lmpc_handler)

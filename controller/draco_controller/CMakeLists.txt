@@ -3,17 +3,17 @@ file(GLOB controller_headers "*.hpp")
 file(GLOB state_machines_headers "draco_state_machines/*.hpp")
 file(GLOB draco_task_headers "draco_task/*.hpp")
 
-add_library(draco-controller SHARED ${sources} ${controller_headers}
+add_library(rpc-draco-controller SHARED ${sources} ${controller_headers}
     ${state_machines_headers} ${draco_task_headers})
-target_link_libraries(draco-controller pin-robot-system
+target_link_libraries(rpc-draco-controller rpc-pin-robot-system
                                         ${Protobuf_LIBRARIES}
                                         ${ZMQ_LIBRARIES}
-                                        draco-rpc-msg
+                                        rpc-draco-msg
                                         rpc-wbc
-                                        lmpc_handler
+                                        rpc-lmpc_handler
                                         rpc-filter)
 
-install(TARGETS draco-controller DESTINATION "${INSTALL_LIB_DIR}")
+install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${controller_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/draco_controller")
 install(FILES ${state_machines_headers} DESTINATION
