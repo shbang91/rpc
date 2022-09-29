@@ -27,6 +27,13 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
   }
 }
 
+DracoStateEstimator::~DracoStateEstimator() {
+  while (!com_vel_filter_.empty()) {
+    delete com_vel_filter_.back();
+    com_vel_filter_.pop_back();
+  }
+}
+
 void DracoStateEstimator::InitializeSensorData(DracoSensorData *sensor_data) {
   this->UpdateSensorData(sensor_data);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Dense>
+#include <vector>
 
 class DracoSensorData;
 class PinocchioRobotSystem;
@@ -9,7 +10,7 @@ class SimpleMovingAverage; // filter
 class DracoStateEstimator {
 public:
   DracoStateEstimator(PinocchioRobotSystem *robot);
-  virtual ~DracoStateEstimator() = default;
+  virtual ~DracoStateEstimator();
 
   void InitializeSensorData(DracoSensorData *sensor_data);
   void UpdateSensorData(DracoSensorData *sensor_data);
