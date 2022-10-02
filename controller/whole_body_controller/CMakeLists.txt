@@ -7,7 +7,7 @@ add_library(rpc-wbc SHARED ${sources} ${wbc_headers} ${manager_headers})
 target_link_libraries(rpc-wbc rpc-pin-robot-system
                               rpc-goldfarb
                               rpc-util
-                              rpc-dcm_planner)
+                              rpc-dcm-planner)
 
 install(TARGETS rpc-wbc DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${wbc_headers} DESTINATION

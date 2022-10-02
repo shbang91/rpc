@@ -10,7 +10,7 @@ target_link_libraries(rpc-draco-controller rpc-pin-robot-system
                                         ${ZMQ_LIBRARIES}
                                         rpc-draco-msg
                                         rpc-wbc
-                                        rpc-lmpc_handler
+                                        rpc-lmpc-handler
                                         rpc-filter)
 
 install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")
