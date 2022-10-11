@@ -17,7 +17,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from matlogger2 import matlogger
 import zmq
-import matplotlib.pyplot as plt
 
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -313,9 +312,6 @@ class steps_phase:
         x_rf = np.linspace(next_contacts[0:3*self.contact_model][0::3] + current_contacts[3*self.contact_model:][0::3], next_contacts[0::3], 8)
         y_rf = np.linspace(next_contacts[0:3*self.contact_model][1::3] + current_contacts[3*self.contact_model:][1::3], next_contacts[1::3], 8)
 
-        print(y_lf)
-        print(y_rf)
-
         for k in range(0, 2):  # 2 nodes down
             self.contact_positions.append(current_contacts)
             self.contact_positions[-1][2::3] = [0] * number_of_contacts
@@ -488,10 +484,16 @@ def publishFootsteps(contact_sequence):
         marker.scale.x = 0.16
         marker.scale.y = 0.08
         marker.scale.z = 0.02
-        marker.color.r = 1
-        marker.color.g = 0
-        marker.color.b = 1
-        marker.color.a = 0.5
+        if contact_sequence[contact]['name'] == 'l_foot_contact':
+            marker.color.r = 1
+            marker.color.g = 0
+            marker.color.b = 1
+            marker.color.a = 0.5
+        else:
+            marker.color.r = 1
+            marker.color.g = 1
+            marker.color.b = 0
+            marker.color.a = 0.5
         marker.pose.position.x = contact_sequence[contact]['pos'][0]
         marker.pose.position.y = contact_sequence[contact]['pos'][1]
         marker.pose.position.z = contact_sequence[contact]['pos'][2]
@@ -500,6 +502,29 @@ def publishFootsteps(contact_sequence):
         marker.pose.orientation.z = contact_sequence[contact]['ori'][2]
         marker.pose.orientation.w = contact_sequence[contact]['ori'][3]
         marker_footstep.markers.append(marker)
+
+    marker = Marker()
+    marker.header.frame_id = 'world'
+    marker.header.stamp = rospy.Time.now()
+    marker.ns = 'footsteps'
+    marker.id = 100
+    marker.action = Marker.ADD
+    marker.type = Marker.SPHERE
+    marker.scale.x = 0.6
+    marker.scale.y = 0.6
+    marker.scale.z = 0.6
+    marker.color.r = 0
+    marker.color.g = 1
+    marker.color.b = 0
+    marker.color.a = 0.5
+    marker.pose.position.x = 1.3
+    marker.pose.position.y = 0.0
+    marker.pose.position.z = 0.0
+    marker.pose.orientation.x = 0.0
+    marker.pose.orientation.y = 0.0
+    marker.pose.orientation.z = 0.0
+    marker.pose.orientation.w = 1.0
+    marker_footstep.markers.append(marker)
 
     rospy.Publisher('footsteps', MarkerArray, queue_size=10).publish(marker_footstep)
 
@@ -619,14 +644,14 @@ def SRBDViewer(I, base_frame, t, number_of_contacts):
     pub2 = rospy.Publisher('contacts', MarkerArray, queue_size=10).publish(marker_array)
 
 def setWorld(frame, kindyn, q, base_link="base_link"):
-    FRAME = cs.Function.deserialize(kindyn.fk(frame))
+    FRAME = kindyn.fk(frame)
     w_p_f = FRAME(q=q)['ee_pos']
     w_r_f = FRAME(q=q)['ee_rot']
     w_T_f = np.identity(4)
     w_T_f[0:3, 0:3] = w_r_f
     w_T_f[0:3, 3] = cs.transpose(w_p_f)
 
-    BASE_LINK = cs.Function.deserialize(kindyn.fk(base_link))
+    BASE_LINK = kindyn.fk(base_link)
     w_p_bl = BASE_LINK(q=q)['ee_pos']
     w_r_bl = BASE_LINK(q=q)['ee_rot']
     w_T_bl = np.identity(4)
@@ -716,8 +741,8 @@ rdot_ref.assign([0. ,0. , 0.], nodes=range(1, ns+1))
 
 """ Base angular Velocity and parameter to handle references """
 w = prb.createStateVariable("w", 3) # base vel
-w_ref = prb.createParameter('w_ref', 3)
-w_ref.assign([0., 0., 0.], nodes=range(1, ns+1))
+w_ref = prb.createParameter('w_ref', 2)
+w_ref.assign([0., 0.], nodes=range(1, ns+1))
 
 """ Variable to collect all velocity states """
 qdot = variables.Aggregate()
@@ -759,7 +784,7 @@ for i in range(0, nc):
 """ n
 Formulate discrete time dynamics using multiple_shooting and RK2 integrator
 """
-x, xdot = utils.double_integrator_with_floating_base(q.getVars(), qdot.getVars(), qddot.getVars(), base_velocity_reference_frame=cas_kin_dyn.CasadiKinDyn.LOCAL_WORLD_ALIGNED)
+xdot = utils.double_integrator_with_floating_base(q.getVars(), qdot.getVars(), qddot.getVars(), base_velocity_reference_frame=cas_kin_dyn.CasadiKinDyn.LOCAL_WORLD_ALIGNED)
 prb.setDynamics(xdot)
 prb.setDt(T/ns)
 transcription_method = 'multiple_shooting'  # can choose between 'multiple_shooting' and 'direct_collocation'
@@ -780,7 +805,7 @@ initial_foot_dict = dict()
 init_pose_foot_dict = dict()
 for frame in foot_frames:
     print(frame)
-    FK = cs.Function.deserialize(kindyn.fk(frame))
+    FK = cs.Function(kindyn.fk(frame))
     p = FK(q=joint_init)['ee_pos']
     print(f"{frame}: {p}")
 
@@ -793,7 +818,7 @@ for frame in foot_frames:
 """
 Add the initial contact positions to the contact_sequence
 """
-FK = cs.Function.deserialize(kindyn.fk("l_foot_contact"))
+FK = kindyn.fk("l_foot_contact")
 p = FK(q=joint_init)['ee_pos']
 p = [p.toarray()[0][0].tolist(), p.toarray()[1][0].tolist(), 0]
 ori = FK(q=joint_init)['ee_rot']
@@ -802,7 +827,7 @@ quat_rot = rot.as_quat()
 initial_foot_dict[-2] = {'name': 'l_foot_contact', 'pos': p, 'ori': quat_rot.tolist()}
 init_pose_foot_dict[0] = {'name': 'l_foot_contact', 'pos': p, 'ori': quat_rot.tolist()}
 
-FK = cs.Function.deserialize(kindyn.fk("r_foot_contact"))
+FK = kindyn.fk("r_foot_contact")
 p = FK(q=joint_init)['ee_pos']
 p = [p.toarray()[0][0].tolist(), p.toarray()[1][0].tolist(), 0]
 
@@ -818,7 +843,7 @@ initial_foot_dict.update(contact_sequence)
 """
 Initialize com state and com velocity
 """
-COM = cs.Function.deserialize(kindyn.centerOfMass())
+COM = kindyn.centerOfMass()
 com = COM(q=joint_init)['com']
 com[2] = 0.6
 print(f"com: {com}")
@@ -854,7 +879,10 @@ o_tracking is used to keep the base orientation at identity, its gain is initial
 """
 Wo = prb.createParameter('Wo', 1)
 Wo.assign(1e2)
-prb.createCost("o_tracking", Wo * cs.sumsqr(o - joint_init[3:7]), nodes=range(1, ns+1))
+o_ref = prb.createParameter('o_ref', 4)
+o_ref.assign(joint_init[3:7])
+# prb.createCost("o_tracking", Wo * cs.sumsqr(o - joint_init[3:7]), nodes=range(1, ns+1))
+prb.createCost("o_tracking", Wo * cs.sumsqr(o[3]*o_ref[0:3] - o_ref[3]*o[0:3] - cs.skew(o_ref[0:3])*o[0:3]), nodes=range(1, ns+1))
 
 """
 rdot_tracking is used to track a desired velocity of the CoM
@@ -874,7 +902,7 @@ w_tracking is used to track a desired angular velocity of the base
 w_tracking_gain = prb.createParameter('w_tracking_gain', 1)
 w_tracking_gain.assign(1e2)
 print(f"w_tracking_gain: {w_tracking_gain}")
-prb.createCost("w_tracking", w_tracking_gain * cs.sumsqr(w - w_ref), nodes=range(1, ns+1))
+prb.createCost("w_tracking", w_tracking_gain * cs.sumsqr(w[0:2] - w_ref), nodes=range(1, ns+1))
 
 """
 min_qddot is to minimize the acceleration control effort
@@ -923,13 +951,13 @@ for l in range(0, number_of_legs):
 max_clearance_x = 0.4
 max_clearance_y = 0.25
 d_initial_1 = -(initial_foot_position[fpi[0]][0:2] - initial_foot_position[fpi[2]][0:2])
-relative_pos_y_1_4 = prb.createConstraint("relative_pos_y_1_4", -c[fpi[0]][1] + c[fpi[2]][1], bounds=dict(ub= d_initial_1[1], lb=d_initial_1[1] - max_clearance_y))
+# relative_pos_y_1_4 = prb.createConstraint("relative_pos_y_1_4", -c[fpi[0]][1] + c[fpi[2]][1], bounds=dict(ub= d_initial_1[1], lb=d_initial_1[1] - max_clearance_y))
 # relative_pos_y_1_4 = prb.createResidual("relative_pos_y_1_4", -c[fpi[0]][1] + c[fpi[2]][1], bounds=dict(ub= d_initial_1[1], lb=d_initial_1[1] - max_clearance_y))
-relative_pos_x_1_4 = prb.createConstraint("relative_pos_x_1_4", -c[fpi[0]][0] + c[fpi[2]][0], bounds=dict(ub= d_initial_1[0] + max_clearance_x, lb=d_initial_1[0] - max_clearance_x))
+# relative_pos_x_1_4 = prb.createConstraint("relative_pos_x_1_4", -c[fpi[0]][0] + c[fpi[2]][0], bounds=dict(ub= d_initial_1[0] + max_clearance_x, lb=d_initial_1[0] - max_clearance_x))
 # relative_pos_x_1_4 = prb.createResidual("relative_pos_x_1_4", -c[fpi[0]][0] + c[fpi[2]][0], bounds=dict(ub= d_initial_1[0] + max_clearance_x, lb=d_initial_1[0] - max_clearance_x))
 d_initial_2 = -(initial_foot_position[fpi[1]][0:2] - initial_foot_position[fpi[3]][0:2])
-relative_pos_y_3_6 = prb.createConstraint("relative_pos_y_3_6", -c[fpi[1]][1] + c[fpi[3]][1], bounds=dict(ub= d_initial_2[1], lb=d_initial_2[1] - max_clearance_y))
-relative_pos_x_3_6 = prb.createConstraint("relative_pos_x_3_6", -c[fpi[1]][0] + c[fpi[3]][0], bounds=dict(ub= d_initial_2[0] + max_clearance_x, lb=d_initial_2[0] - max_clearance_x))
+# relative_pos_y_3_6 = prb.createConstraint("relative_pos_y_3_6", -c[fpi[1]][1] + c[fpi[3]][1], bounds=dict(ub= d_initial_2[1], lb=d_initial_2[1] - max_clearance_y))
+# relative_pos_x_3_6 = prb.createConstraint("relative_pos_x_3_6", -c[fpi[1]][0] + c[fpi[3]][0], bounds=dict(ub= d_initial_2[0] + max_clearance_x, lb=d_initial_2[0] - max_clearance_x))
 
 """
 This constraint is used to keep points which belong to the same contacts together
@@ -937,12 +965,12 @@ note: needs as well to be rotated in future to consider w x p
 TODO: use also number_of_legs
 """
 w_relative = 1e3
-if contact_model > 1:
-    for i in range(1, contact_model):
-        prb.createConstraint("relative_vel_left_" + str(i), cdot[0][0:2] - cdot[i][0:2])
+# if contact_model > 1:
+#     for i in range(1, contact_model):
+        # prb.createConstraint("relative_vel_left_" + str(i), cdot[0][0:2] - cdot[i][0:2])
         # prb.createCost("relative_vel_left_" + str(i), w_relative * cs.sumsqr(cdot[0][0:2] - cdot[i][0:2]))
-    for i in range(contact_model + 1, 2 * contact_model):
-        prb.createConstraint("relative_vel_right_" + str(i), cdot[contact_model][0:2] - cdot[i][0:2])
+    # for i in range(contact_model + 1, 2 * contact_model):
+        # prb.createConstraint("relative_vel_right_" + str(i), cdot[contact_model][0:2] - cdot[i][0:2])
         # prb.createCost("relative_vel_right_" + str(i), w_relative * cs.sumsqr(cdot[contact_model][0:2] - cdot[i][0:2]))
 
 """
@@ -962,7 +990,7 @@ Single Rigid Body Dynamics constraint: data are taken from the loaded urdf model
         m(rddot - g) - sum(f) = 0
         Iwdot + w x Iw - sum(r - p) x f = 0
 """
-M = cs.Function.deserialize(kindyn.crba())
+M = kindyn.crba()
 m = M(q=joint_init)['B'][0, 0]
 print(f"mass: {m}")
 I = M(q=joint_init)['B'][3:6, 3:6]
@@ -1007,8 +1035,8 @@ opts = {
         #'ipopt.warm_start_same_structure': 'yes',
         'ipopt.warm_start_init_point': 'yes',
         'ipopt.fast_step_computation': 'yes',
-        'ipopt.print_level': 0,
-        'ipopt.suppress_all_output': 'yes',
+        'ipopt.print_level': 1,
+        'ipopt.suppress_all_output': 'no',
         'ipopt.sb': 'yes',
         'print_time': 0
 }
@@ -1163,6 +1191,23 @@ while not rospy.is_shutdown():
         next_positions = fromContactSequenceToFrames(
             contact_sequence[list(contact_sequence)[2]]) + fromContactSequenceToFrames(
             contact_sequence[list(contact_sequence)[3]])
+        # direction = list()
+        # direction.append((contact_sequence[list(contact_sequence)[3]]['pos'][0] + contact_sequence[list(contact_sequence)[2]]['pos'][0]) / 2 -
+        #                  (contact_sequence[list(contact_sequence)[0]]['pos'][0] + contact_sequence[list(contact_sequence)[1]]['pos'][0]) / 2)
+        # direction.append((contact_sequence[list(contact_sequence)[3]]['pos'][1] + contact_sequence[list(contact_sequence)[2]]['pos'][1]) / 2 -
+        #                  (contact_sequence[list(contact_sequence)[0]]['pos'][1] + contact_sequence[list(contact_sequence)[1]]['pos'][1]) / 2)
+        # direction.append((contact_sequence[list(contact_sequence)[3]]['pos'][2] + contact_sequence[list(contact_sequence)[2]]['pos'][2]) / 2 -
+        #                  (contact_sequence[list(contact_sequence)[0]]['pos'][2] + contact_sequence[list(contact_sequence)[1]]['pos'][2]) / 2)
+        # direction = np.array(direction)
+        # direction = [value / np.linalg.norm(direction) for value in direction]
+        #
+        # rot_matrix = np.array([direction,
+        #                        np.cross(np.array([0, 0, 1]), np.array(direction)).tolist(),
+        #                        [0, 0, 1]])
+        # rot_matrix = rot_matrix.T
+        # rot = R.from_matrix(rot_matrix)
+        # o_ref.assign(rot.as_quat().tolist())
+
 
         if set_bool:
             wpg.setContactPositions(current_positions, next_positions)
@@ -1171,11 +1216,11 @@ while not rospy.is_shutdown():
         r_tracking.assign(0)  # com position tracking
         rz_tracking_gain.assign(1e3)  # com_z position tracking
         rdot_tracking_gain_xy.assign(0)  # com velocity tracking
-        rdot_tracking_gain_z.assign(1e3)
+        rdot_tracking_gain_z.assign(1e2)
         Wo.assign(1e2)  # base orientation tracking
         w_tracking_gain.assign(1e2)
         min_f_gain.assign(1e-3)  # forces minimization
-        cxy_tracking_gain.assign(1e2)  #contact xy tracking
+        cxy_tracking_gain.assign(1e3)  #contact xy tracking
         cz_tracking_gain.assign(1e3)  # contact z tracking
 
         # close loop
@@ -1196,8 +1241,7 @@ while not rospy.is_shutdown():
     """
     tic()
     start = rospy.get_rostime()
-    if not solver.solve():
-        print(bcolors.FAIL + "Unable to solve!" + bcolors.ENDC)
+    solver.solve()
     sol_time = toc()
     if sol_time > T/ns:
         print(bcolors.WARNING + f'Warning: solution time {sol_time} exceeded MPC dt!' + bcolors.ENDC)

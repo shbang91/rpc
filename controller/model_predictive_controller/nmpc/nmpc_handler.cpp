@@ -12,13 +12,22 @@
 
 using namespace google::protobuf::io;
 
+static std::default_random_engine randGenerator;
+static std::uniform_real_distribution<double> randDistribution(-0.05, 0.05);
+
 NMPCHandler::NMPCHandler(PinocchioRobotSystem *robot, TCIContainer* tci_container, int lfoot_id, int rfoot_id):
 MPCHandler(robot),
 tci_container_(tci_container),
 lfoot_id_(lfoot_id),
 rfoot_id_(rfoot_id),
-first_visit_(true)
+first_visit_(true),
+optimizer_(new Muvt::HyperGraph::OptimizerContact())
 {
+
+    auto a = std::chrono::system_clock::now();
+    time_t b = std::chrono::system_clock::to_time_t(a);
+    randGenerator.seed(b);
+
     util::PrettyConstructor(2, "NMPCHandler");
 
     _resetStepIndex();
@@ -195,6 +204,8 @@ void NMPCHandler::_populateStepForward()
         footstep_list.insert(footstep_list.begin(), right_foot_stance_);
     }
 
+    init_local_planner(); // Initialize local planner
+
     // Assign iterators to keep the current foot position at the beginning of the walk
     init_it = footstep_list.begin();
     end_it = init_it + 2;
@@ -227,6 +238,122 @@ void NMPCHandler::_populateSideWalk(bool left_side)
     // Assign iterators to keep the current foot position at the beginning of the walk
     init_it = footstep_list.begin();
     end_it = init_it + 2;
+}
+
+void NMPCHandler::init_local_planner()
+{
+    if (footstep_list.empty())
+        throw std::runtime_error("footstep_list is empty and the local planner cannot be initialized!");
+
+    optimizer_->clear();
+
+//    int index = 2;
+    int index = 0;
+    std::vector<g2o::OptimizableGraph::Vertex*> vertices;
+    std::cout << "---------------------------" << std::endl;
+
+    for (auto footstep : footstep_list)
+    {
+        std::cout << footstep.GetPos().transpose() << std::endl;
+
+        Muvt::HyperGraph::Contact contact;
+        contact.state.pose.translation() = footstep.GetPos();
+        contact.state.pose.linear() = footstep.GetOrientation().toRotationMatrix();
+        if (footstep.GetFootSide() == end_effector::LFoot)
+            contact.setDistalLink("l_foot");
+        else if (footstep.GetFootSide() == end_effector::RFoot)
+            contact.setDistalLink("r_foot");
+
+        Muvt::HyperGraph::VertexContact* v = new Muvt::HyperGraph::VertexContact();
+        v->setId(index);
+        v->setEstimate(contact);
+        if(index == 0 || index == 1)
+            v->setFixed(true);
+
+        auto vertex = dynamic_cast<g2o::OptimizableGraph::Vertex*>(v);
+        vertices.push_back(vertex);
+        index++;
+    }
+
+    std::cout << "--------------------------" << std::endl;
+
+    optimizer_->setVertices(vertices);
+
+    std::vector<g2o::OptimizableGraph::Edge*> edges;
+    for (int i = 0; i < vertices.size(); i++)
+    {
+      int m = 5;
+      Muvt::HyperGraph::EdgeCollision* edge = new Muvt::HyperGraph::EdgeCollision();
+      Eigen::MatrixXd info(1, 1);
+      info.setIdentity(); info *= 100;
+      edge->setInformation(info);
+//      std::map<std::string, Eigen::Vector3d> obstacles;
+//      obstacles["obstacle_0"] = Eigen::Vector3d(0.7, 0.1, 0.0);
+      Eigen::Vector3d obstacle = Eigen::Vector3d(1.3, 0.0, 0.0);
+      edge->setObstacles(obstacle);
+      edge->vertices()[0] = vertices[i];
+      auto e = dynamic_cast<g2o::OptimizableGraph::Edge*>(edge);
+      edges.push_back(e);
+    }
+
+    for (int i = 0; i < vertices.size() - 1; i++)
+    {
+      Muvt::HyperGraph::EdgeRelativePose* edge_succ = new Muvt::HyperGraph::EdgeRelativePose();
+      Eigen::MatrixXd info_succ(3, 3);
+      info_succ.setIdentity(); info_succ(2,2) *= 100;
+      edge_succ->setInformation(info_succ);
+//      edge_succ->setLimits({0.1, 0.15}, {nominal_forward_step_*1.5, 0.4});
+      edge_succ->setStepSize(nominal_forward_step_);
+      edge_succ->vertices()[0] = vertices[i];
+      edge_succ->vertices()[1] = vertices[i+1];
+      auto e = dynamic_cast<g2o::OptimizableGraph::Edge*>(edge_succ);
+      edges.push_back(e);
+    }
+
+    for (unsigned int i = 2; i < vertices.size(); i++)
+    {
+        Muvt::HyperGraph::EdgeSteering* edge = new Muvt::HyperGraph::EdgeSteering();
+        Eigen::MatrixXd info(3, 3);
+        info.setIdentity(); info *= 10;
+        edge->setInformation(info);
+        edge->setPreviousContact(vertices[i-2]);
+        edge->vertices()[0] = vertices[i];
+        auto e = dynamic_cast<g2o::OptimizableGraph::Edge*>(edge);
+        edges.push_back(e);
+    }
+
+    optimizer_->setEdges(edges);
+    optimizer_->update();
+
+    localPlan();
+}
+
+void NMPCHandler::localPlan()
+{
+//    auto edges = optimizer_->getEdges();
+//    for (auto edge : edges)
+//    {
+//        if (auto e = dynamic_cast<Muvt::HyperGraph::EdgeCollision*>(edge); e != nullptr)
+//        {
+//            Eigen::Vector3d obstacle = e->getObstacle();
+//            obstacle(1) = 0. + randDistribution(randGenerator);
+//            e->setObstacles(obstacle);
+//        }
+//    }
+    auto tic = std::chrono::high_resolution_clock::now();
+    optimizer_->solve();
+    auto toc = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> fsec = toc - tic;
+    logger_->add("time_local_planner", fsec.count());
+
+    std::vector<Muvt::HyperGraph::Contact> solution;
+    optimizer_->getFootsteps(solution);
+
+    for (int i = 0; i < solution.size(); i++)
+    {
+        Eigen::Quaterniond q(solution[i].state.pose.linear());
+        footstep_list[i].SetPosOri(solution[i].state.pose.translation(), q);
+    }
 }
 
 void NMPCHandler::_updateStartingStance()
@@ -264,6 +391,7 @@ void NMPCHandler::SetFootstepToPublish(const int count)
 
     if(!footstep_list.empty())
     {
+        localPlan();
         // Update the next footstep reference every T seconds
         /// Problem: simulation time is slower than actual time!
         if(count_ % int(T_ / ctrl_dt_ + 0.5) == 0 && footstep_list_index_ < int(footstep_list.size() - 2))
@@ -526,10 +654,6 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_Conv
     double avg_xddot = 0, avg_yddot = 0, avg_zddot = 0;
     for (int i = 0; i < foot_pos.pos_size(); i++)
     {
-        if (foot == draco_link::l_foot_contact)
-        {
-            logger_->add("left_contact_" + std::to_string(i), Eigen::Vector3d(foot_pos.pos(i).x(), foot_pos.pos(i).y(), foot_pos.pos(i).z()));
-        }
         pos(0) += foot_pos.pos(i).x();      pos(1) += foot_pos.pos(i).y();      pos(2) += foot_pos.pos(i).z();
         vel(0) += foot_vel.vel(i).xdot();   vel(1) += foot_vel.vel(i).ydot();   vel(2) += foot_vel.vel(i).zdot();
         acc(0) += foot_acc.acc(i).xddot();  acc(1) += foot_acc.acc(i).yddot();  acc(2) += foot_acc.acc(i).zddot();
@@ -539,6 +663,69 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_Conv
     acc /= foot_acc.acc_size();
 
     return std::make_tuple(pos, vel, acc);
+}
+
+std::tuple<Eigen::Vector4d, Eigen::Vector3d, Eigen::Vector3d> NMPCHandler::_ConvertFootOri(int foot, HORIZON_TO_PNC::MPCResult mpc_res)
+{
+    HORIZON_TO_PNC::FootPos foot_pos;
+    HORIZON_TO_PNC::FootVel foot_vel;
+    HORIZON_TO_PNC::FootAcc foot_acc;
+
+    double alpha; // Angle offset between the parallel to the local x of the foot and the line bassing through the two points of each foot
+
+    if (foot == draco_link::l_foot_contact)
+    {
+        foot_pos = mpc_res.left_foot_pos(1);
+        foot_vel = mpc_res.left_foot_vel(1);
+        foot_acc = mpc_res.left_foot_acc(1);
+        alpha = -0.4636;
+    }
+    else if (foot == draco_link::r_foot_contact)
+    {
+        foot_pos = mpc_res.right_foot_pos(1);
+        foot_vel = mpc_res.right_foot_vel(1);
+        foot_acc = mpc_res.right_foot_acc(1);
+        alpha = 0.4636;
+    }
+
+    // Orientation
+    Eigen::Vector3d line = Eigen::Vector3d(foot_pos.pos(0).x() - foot_pos.pos(1).x(), foot_pos.pos(0).y() - foot_pos.pos(1).y(), foot_pos.pos(0).z() - foot_pos.pos(1).z());
+    Eigen::Matrix3d rot = Eigen::Matrix3d::Zero();
+    rot.col(0) = line;  rot.col(0).normalize();
+    rot.col(2) = Eigen::Vector3d(0, 0, 1);
+    rot.col(1) = rot.col(2).cross(rot.col(0));
+    Eigen::Matrix3d rot_offset;
+    rot_offset << cos(alpha), -sin(alpha), 0, sin(alpha), cos(alpha), 0, 0, 0, 1;
+    Eigen::Quaternion<double> quat(rot * rot_offset);
+    Eigen::Vector4d ori = Eigen::Vector4d(quat.coeffs().x(), quat.coeffs().y(), quat.coeffs().z(), quat.coeffs().w());
+
+    // Angular velocity
+    Eigen::Vector3d omega;
+    if (foot == draco_link::l_foot_contact)
+    {
+        omega = Eigen::Vector3d(0.04, 0.02, 0.2).cross(Eigen::Vector3d(foot_vel.vel(0).xdot(), foot_vel.vel(0).ydot(), foot_vel.vel(0).zdot())) +
+                Eigen::Vector3d(-0.04, -0.02, 0.2).cross(Eigen::Vector3d(foot_vel.vel(1).xdot(), foot_vel.vel(1).ydot(), foot_vel.vel(1).zdot()));
+    }
+    else
+    {
+        omega = Eigen::Vector3d(0.04, -0.02, 0.2).cross(Eigen::Vector3d(foot_vel.vel(0).xdot(), foot_vel.vel(0).ydot(), foot_vel.vel(0).zdot())) +
+                Eigen::Vector3d(-0.04, 0.02, 0.2).cross(Eigen::Vector3d(foot_vel.vel(1).xdot(), foot_vel.vel(1).ydot(), foot_vel.vel(1).zdot()));
+    }
+
+    // Angular acceleration
+    Eigen::Vector3d omega_dot;
+    if (foot == draco_link::l_foot_contact)
+    {
+        omega_dot = Eigen::Vector3d(0.04, 0.02, 0.2).cross(Eigen::Vector3d(foot_acc.acc(0).xddot(), foot_acc.acc(0).yddot(), foot_acc.acc(0).zddot())) +
+                Eigen::Vector3d(-0.04, -0.02, 0.2).cross(Eigen::Vector3d(foot_acc.acc(1).xddot(), foot_acc.acc(1).yddot(), foot_acc.acc(1).zddot()));
+    }
+    else
+    {
+        omega_dot = Eigen::Vector3d(0.04, -0.02, 0.2).cross(Eigen::Vector3d(foot_acc.acc(0).xddot(), foot_acc.acc(0).yddot(), foot_acc.acc(0).zddot())) +
+                Eigen::Vector3d(-0.04, 0.02, 0.2).cross(Eigen::Vector3d(foot_acc.acc(1).xddot(), foot_acc.acc(1).yddot(), foot_acc.acc(1).zddot()));
+    }
+
+    return std::make_tuple(ori, omega, omega_dot);
 }
 
 Eigen::Matrix<double, 6, 1> NMPCHandler::_ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index)
@@ -619,9 +806,15 @@ bool NMPCHandler::UpdateDesired()
     Eigen::Vector3d lf_acc_ref = _LinearInterpolation(old_lf_acc_, std::get<2>(left_foot_ref));
     tci_container_->task_map_["lf_pos_task"]->UpdateDesired(lf_pos_ref, lf_vel_ref, lf_acc_ref);
 
-    tci_container_->task_map_["lf_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0, 1),
-                                                            Eigen::Vector3d(0, 0, 0),
-                                                            Eigen::Vector3d(0, 0, 0));
+
+//    tci_container_->task_map_["lf_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0, 1),
+//                                                            Eigen::Vector3d(0, 0, 0),
+//                                                            Eigen::Vector3d(0, 0, 0));
+
+    auto left_foot_ori_ref = _ConvertFootOri(draco_link::l_foot_contact, mpc_res_);
+    tci_container_->task_map_["lf_ori_task"]->UpdateDesired(std::get<0>(left_foot_ori_ref),
+                                                            std::get<1>(left_foot_ori_ref),
+                                                            std::get<2>(left_foot_ori_ref));
 
     auto left_force_ref = _ConvertFootForces(std::get<0>(left_foot_ref), draco_link::l_foot_contact, mpc_res_, 1);
     auto left_force_ref_interpolated = _LinearInterpolation(old_lf_force_, left_force_ref);
@@ -639,11 +832,14 @@ bool NMPCHandler::UpdateDesired()
 
     tci_container_->task_map_["rf_pos_task"]->UpdateDesired(rf_pos_ref, rf_vel_ref, rf_acc_ref);
 
+//    tci_container_->task_map_["rf_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0, 1),
+//                                                            Eigen::Vector3d(0, 0, 0),
+//                                                            Eigen::Vector3d(0, 0, 0));
 
-
-    tci_container_->task_map_["rf_ori_task"]->UpdateDesired(Eigen::Vector4d(0, 0, 0, 1),
-                                                            Eigen::Vector3d(0, 0, 0),
-                                                            Eigen::Vector3d(0, 0, 0));
+    auto right_foot_ori_ref = _ConvertFootOri(draco_link::r_foot_contact, mpc_res_);
+    tci_container_->task_map_["rf_ori_task"]->UpdateDesired(std::get<0>(right_foot_ori_ref),
+                                                            std::get<1>(right_foot_ori_ref),
+                                                            std::get<2>(right_foot_ori_ref));
 
     auto right_force_ref = _ConvertFootForces(std::get<0>(right_foot_ref), draco_link::r_foot_contact, mpc_res_, 1);
     auto right_force_ref_interpolated = _LinearInterpolation(old_rf_force_, right_force_ref);

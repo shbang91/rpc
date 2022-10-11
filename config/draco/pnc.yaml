@@ -178,7 +178,7 @@ nmpc_walking:
   nominal_backward_step: 0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.1
-  n_steps: 6
+  n_steps: 12
 
 
 

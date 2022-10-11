@@ -387,6 +387,11 @@ while not rospy.is_shutdown():
     ##############################################################################
     ##############################################################################
 
+    # visualObstacle = pb.createVisualShape(pb.GEOM_SPHERE, radius=0.5)
+    # pb.createMultiBody(baseMass=0,
+    #                   baseVisualShapeIndex=visualObstacle,
+    #                   basePosition=[1.0, 0.4, 0.0])
+
     # Get Keyboard Event
     keys = pb.getKeyboardEvents()
     if pybullet_util.is_key_triggered(keys, '1'):

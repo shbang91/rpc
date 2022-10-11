@@ -17,6 +17,14 @@
 #include "build/messages/pnc_to_horizon.pb.h"
 #include "build/messages/horizon_to_pnc.pb.h"
 
+// muvt local planner
+#include <g2o/core/optimizable_graph.h>
+#include <muvt_core/optimizer/optimizer.h>
+#include <muvt_core/environment/contact/vertex_contact.h>
+#include <muvt_core/environment/contact/edge_collision.h>
+#include <muvt_core/environment/contact/edge_relative_pose.h>
+#include <muvt_core/environment/contact/edge_steering.h>
+
 // MatLogger2
 #include <matlogger2/matlogger2.h>
 
@@ -80,6 +88,8 @@ private:
   Eigen::Vector3d dcm_;
 
   std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFoot(int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
+  std::tuple<Eigen::Vector4d, Eigen::Vector3d, Eigen::Vector3d> _ConvertFootOri(int foot, HORIZON_TO_PNC::MPCResult mpc_res);
+
   Eigen::Matrix<double, 6, 1> _ConvertFootForces(Eigen::Vector3d foot_center, int foot, HORIZON_TO_PNC::MPCResult mpc_res, int index);
 
   int footstep_list_index_;
@@ -124,6 +134,15 @@ private:
   std::vector<Eigen::Vector3d> com_dot_trj_;
   std::vector<Eigen::Vector3d> com_trj_sv_, com_dot_trj_sv_;
   int init_com_trj_index_;
+
+  // Local planner
+  Muvt::HyperGraph::OptimizerContact *optimizer_;
+
+  // Initialize local planner
+  void init_local_planner();
+
+  // Solve local plan
+  void localPlan();
 
   // Private member objects
   TCIContainer *tci_container_;
