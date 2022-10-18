@@ -6,6 +6,12 @@
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
 
+#include <muvt_core/environment/contact/vertex_contact.h>
+#include <muvt_core/environment/contact/edge_collision.h>
+#include <muvt_core/environment/contact/edge_relative_pose.h>
+#include <muvt_core/environment/contact/edge_steering.h>
+#include <muvt_core/environment/contact/edge_task.h>
+
 #include <tuple>
 
 #define GRAVITY 9.81
@@ -21,6 +27,7 @@ tci_container_(tci_container),
 lfoot_id_(lfoot_id),
 rfoot_id_(rfoot_id),
 first_visit_(true),
+_obstacle(Eigen::Vector3d(0.7, 1.0, 0.0)),
 optimizer_(new Muvt::HyperGraph::OptimizerContact())
 {
 
@@ -250,12 +257,9 @@ void NMPCHandler::init_local_planner()
 //    int index = 2;
     int index = 0;
     std::vector<g2o::OptimizableGraph::Vertex*> vertices;
-    std::cout << "---------------------------" << std::endl;
 
     for (auto footstep : footstep_list)
     {
-        std::cout << footstep.GetPos().transpose() << std::endl;
-
         Muvt::HyperGraph::Contact contact;
         contact.state.pose.translation() = footstep.GetPos();
         contact.state.pose.linear() = footstep.GetOrientation().toRotationMatrix();
@@ -275,11 +279,24 @@ void NMPCHandler::init_local_planner()
         index++;
     }
 
-    std::cout << "--------------------------" << std::endl;
-
     optimizer_->setVertices(vertices);
 
     std::vector<g2o::OptimizableGraph::Edge*> edges;
+
+    // EdgeTask for the last two vertices only
+    for (int i = vertices.size() - 2; i < vertices.size(); i++)
+    {
+        Muvt::HyperGraph::EdgeTask* edge = new Muvt::HyperGraph::EdgeTask();
+        Eigen::Matrix3d info = Eigen::Matrix3d::Identity();
+        info *= 10;
+        edge->setInformation(info);
+        auto v = dynamic_cast<Muvt::HyperGraph::VertexContact*>(vertices[i]);
+        edge->setReference(v->estimate().state.pose.translation());
+        edge->vertices()[0] = vertices[i];
+        auto e = dynamic_cast<g2o::OptimizableGraph::Edge*>(edge);
+        edges.push_back(e);
+    }
+
     for (int i = 0; i < vertices.size(); i++)
     {
       int m = 5;
@@ -287,8 +304,6 @@ void NMPCHandler::init_local_planner()
       Eigen::MatrixXd info(1, 1);
       info.setIdentity(); info *= 100;
       edge->setInformation(info);
-//      std::map<std::string, Eigen::Vector3d> obstacles;
-//      obstacles["obstacle_0"] = Eigen::Vector3d(0.7, 0.1, 0.0);
       Eigen::Vector3d obstacle = Eigen::Vector3d(1.3, 0.0, 0.0);
       edge->setObstacles(obstacle);
       edge->vertices()[0] = vertices[i];
@@ -298,17 +313,16 @@ void NMPCHandler::init_local_planner()
 
     for (int i = 0; i < vertices.size() - 1; i++)
     {
-      Muvt::HyperGraph::EdgeRelativePose* edge_succ = new Muvt::HyperGraph::EdgeRelativePose();
-      Eigen::MatrixXd info_succ(3, 3);
-      info_succ.setIdentity(); info_succ(2,2) *= 100;
-      edge_succ->setInformation(info_succ);
-//      edge_succ->setLimits({0.1, 0.15}, {nominal_forward_step_*1.5, 0.4});
-      edge_succ->setStepSize(nominal_forward_step_);
-      edge_succ->vertices()[0] = vertices[i];
-      edge_succ->vertices()[1] = vertices[i+1];
-      auto e = dynamic_cast<g2o::OptimizableGraph::Edge*>(edge_succ);
-      edges.push_back(e);
-    }
+        Muvt::HyperGraph::EdgeRelativePose* edge_succ = new Muvt::HyperGraph::EdgeRelativePose();
+        Eigen::MatrixXd info_succ(3, 3);
+        info_succ.setIdentity(); info_succ(2,2) *= 100;
+        edge_succ->setInformation(info_succ);
+        edge_succ->setStepSize(nominal_forward_step_);
+        edge_succ->vertices()[0] = vertices[i];
+        edge_succ->vertices()[1] = vertices[i+1];
+        auto e = dynamic_cast<g2o::OptimizableGraph::Edge*>(edge_succ);
+        edges.push_back(e);
+     }
 
     for (unsigned int i = 2; i < vertices.size(); i++)
     {
@@ -330,16 +344,14 @@ void NMPCHandler::init_local_planner()
 
 void NMPCHandler::localPlan()
 {
-//    auto edges = optimizer_->getEdges();
-//    for (auto edge : edges)
-//    {
-//        if (auto e = dynamic_cast<Muvt::HyperGraph::EdgeCollision*>(edge); e != nullptr)
-//        {
-//            Eigen::Vector3d obstacle = e->getObstacle();
-//            obstacle(1) = 0. + randDistribution(randGenerator);
-//            e->setObstacles(obstacle);
-//        }
-//    }
+    auto edges = optimizer_->getEdges();
+    for (auto edge : edges)
+    {
+        if (auto e = dynamic_cast<Muvt::HyperGraph::EdgeCollision*>(edge); e != nullptr)
+        {
+            e->setObstacles(_obstacle);
+        }
+    }
     auto tic = std::chrono::high_resolution_clock::now();
     optimizer_->solve();
     auto toc = std::chrono::high_resolution_clock::now();
@@ -383,6 +395,21 @@ void NMPCHandler::_resetStepIndex()
     current_footstep_idx_ = 0;
     footstep_list_index_ = 0;
     init_com_trj_index_ = 0;
+}
+
+Eigen::Vector3d NMPCHandler::_obstacle_trajectory(int count, double T, Eigen::Vector3d start, Eigen::Vector3d goal)
+{
+    Eigen::Vector3d obstacle;
+    double time = (count - count_init_) * ctrl_dt_;
+
+    Eigen::Vector3d a = (start - goal) * 2 / std::pow(T, 3);
+    Eigen::Vector3d b = -3*a*T / 2;
+    Eigen::Vector3d c = Eigen::Vector3d::Zero();
+    Eigen::Vector3d d = start;
+
+    obstacle = a * std::pow(time, 3) + b * std::pow(time, 2) + c * time + d;
+
+    return obstacle;
 }
 
 void NMPCHandler::SetFootstepToPublish(const int count)
@@ -509,6 +536,28 @@ void NMPCHandler::_SendData()
       contact_msg->set_ori_z(footstep.GetOrientation().z());
       contact_msg->set_ori_w(footstep.GetOrientation().w());
     }
+    /////////////////////////
+    // REMOVE WHEN FINISHED
+    for (auto footstep : footstep_list)
+    {
+      MPC_MSG::Contact* contact_msg = draco_state_msg.add_footstep_list();
+      if (footstep.GetFootSide() == end_effector::LFoot)
+        contact_msg->set_name("l_foot_contact");
+      else
+        contact_msg->set_name("r_foot_contact");
+      contact_msg->set_pos_x(footstep.GetPos()(0));
+      contact_msg->set_pos_y(footstep.GetPos()(1));
+      contact_msg->set_pos_z(footstep.GetPos()(2));
+      contact_msg->set_ori_x(footstep.GetOrientation().x());
+      contact_msg->set_ori_y(footstep.GetOrientation().y());
+      contact_msg->set_ori_z(footstep.GetOrientation().z());
+      contact_msg->set_ori_w(footstep.GetOrientation().w());
+    }
+    MPC_MSG::ComPos obstacle = draco_state_msg.obstacle();
+    obstacle.set_x(_obstacle(0));
+    obstacle.set_y(_obstacle(1));
+    obstacle.set_z(_obstacle(2));
+    //////////////////////////
     // send robot state
     Eigen::Vector3d com_pos = tci_container_->task_map_["com_task"]->CurrentPos();
     Eigen::Vector3d com_vel = tci_container_->task_map_["com_task"]->CurrentVel();

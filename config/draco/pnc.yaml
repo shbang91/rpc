@@ -173,12 +173,12 @@ lmpc_walking:
 nmpc_walking:
   com_height: 0.6
   time_horizon_length: 1.5
-  nominal_footwidth: 0.2
+  nominal_footwidth: 0.15
   nominal_forward_step: 0.2
   nominal_backward_step: 0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.1
-  n_steps: 12
+  n_steps: 10
 
 
 

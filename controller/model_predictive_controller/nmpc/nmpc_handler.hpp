@@ -20,10 +20,6 @@
 // muvt local planner
 #include <g2o/core/optimizable_graph.h>
 #include <muvt_core/optimizer/optimizer.h>
-#include <muvt_core/environment/contact/vertex_contact.h>
-#include <muvt_core/environment/contact/edge_collision.h>
-#include <muvt_core/environment/contact/edge_relative_pose.h>
-#include <muvt_core/environment/contact/edge_steering.h>
 
 // MatLogger2
 #include <matlogger2/matlogger2.h>
@@ -76,6 +72,10 @@ private:
   void _GetMPCInputData() override;
   void _GetMPCOutputData() override;
   void _SendData() override;
+
+  Eigen::Vector3d _obstacle_trajectory(int count, double T, Eigen::Vector3d start, Eigen::Vector3d goal);
+  Eigen::Vector3d _obstacle;
+  double count_init_;
 
   XBot::MatLogger2::Ptr logger_;
 

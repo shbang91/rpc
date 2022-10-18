@@ -30,6 +30,8 @@ global time_mpc
 global footstep_list_index
 global old_footstep_list_index
 global marker
+global footstep_list
+global obstacle
 
 class bcolors:
     HEADER = '\033[95m'
@@ -51,6 +53,8 @@ robot_state = {'com_pos': list(),           # com position feedback
                'init_com_vel_trj': list([[], [], []])   # initial com velocity trajectory from dcm planner
                }
 
+
+
 def callback(contact_sequence, robot_state, msg):
     contact_sequence.clear()
     index = msg.footstep_index
@@ -63,6 +67,16 @@ def callback(contact_sequence, robot_state, msg):
     global set_bool
     global footstep_list_index
     global old_footstep_list_index
+    global footstep_list
+    global obstacle
+    index = 0
+    for contact in msg.footstep_list:
+        footstep_list[index] = {'name': contact.name,
+                                'pos': [contact.pos_x, contact.pos_y, contact.pos_z],
+                                'ori': [contact.ori_x, contact.ori_y, contact.ori_z, contact.ori_w]}
+        index += 1
+
+    obstacle = [msg.obstacle.x, msg.obstacle.y, msg.obstacle.z]
 
     footstep_list_index = msg.footstep_index
     if footstep_list_index != old_footstep_list_index:
@@ -472,8 +486,11 @@ def publishPointTrj(points, t, name, frame, color = [0.7, 0.7, 0.7]):
     rospy.Publisher(name + "_trj", Marker, queue_size=10).publish(marker)
 
 def publishFootsteps(contact_sequence):
-    global marker_footstep
-    for contact in contact_sequence:
+    # global marker_footstep
+    marker_footstep = MarkerArray()
+    global footstep_list
+    # for contact in contact_sequence:
+    for contact in footstep_list:
         marker = Marker()
         marker.header.frame_id = 'world'
         marker.header.stamp = rospy.Time.now()
@@ -484,7 +501,8 @@ def publishFootsteps(contact_sequence):
         marker.scale.x = 0.16
         marker.scale.y = 0.08
         marker.scale.z = 0.02
-        if contact_sequence[contact]['name'] == 'l_foot_contact':
+        # if contact_sequence[contact]['name'] == 'l_foot_contact':
+        if footstep_list[contact]['name'] == 'l_foot_contact':
             marker.color.r = 1
             marker.color.g = 0
             marker.color.b = 1
@@ -494,13 +512,20 @@ def publishFootsteps(contact_sequence):
             marker.color.g = 1
             marker.color.b = 0
             marker.color.a = 0.5
-        marker.pose.position.x = contact_sequence[contact]['pos'][0]
-        marker.pose.position.y = contact_sequence[contact]['pos'][1]
-        marker.pose.position.z = contact_sequence[contact]['pos'][2]
-        marker.pose.orientation.x = contact_sequence[contact]['ori'][0]
-        marker.pose.orientation.y = contact_sequence[contact]['ori'][1]
-        marker.pose.orientation.z = contact_sequence[contact]['ori'][2]
-        marker.pose.orientation.w = contact_sequence[contact]['ori'][3]
+        # marker.pose.position.x = contact_sequence[contact]['pos'][0]
+        # marker.pose.position.y = contact_sequence[contact]['pos'][1]
+        # marker.pose.position.z = contact_sequence[contact]['pos'][2]
+        # marker.pose.orientation.x = contact_sequence[contact]['ori'][0]
+        # marker.pose.orientation.y = contact_sequence[contact]['ori'][1]
+        # marker.pose.orientation.z = contact_sequence[contact]['ori'][2]
+        # marker.pose.orientation.w = contact_sequence[contact]['ori'][3]
+        marker.pose.position.x = footstep_list[contact]['pos'][0]
+        marker.pose.position.y = footstep_list[contact]['pos'][1]
+        marker.pose.position.z = footstep_list[contact]['pos'][2]
+        marker.pose.orientation.x = footstep_list[contact]['ori'][0]
+        marker.pose.orientation.y = footstep_list[contact]['ori'][1]
+        marker.pose.orientation.z = footstep_list[contact]['ori'][2]
+        marker.pose.orientation.w = footstep_list[contact]['ori'][3]
         marker_footstep.markers.append(marker)
 
     marker = Marker()
@@ -1068,11 +1093,17 @@ set_bool = False
 first = False
 index_reset = 0
 
+global footstep_list
+footstep_list = {}
+
+global obstacle
+obstacle = []
+
 global old_footstep_list_index
 old_footstep_list_index = 0
 
-global marker_footstep
-marker_footstep = MarkerArray()
+# global marker_footstep
+# marker_footstep = MarkerArray()
 
 """
 Initialize socket
