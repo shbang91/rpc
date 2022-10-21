@@ -14,6 +14,9 @@ Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
   sp_ = DracoStateProvider::GetStateProvider();
   target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
   init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
+
+  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  b_stay_here_ = util::ReadParameter<bool>(cfg, "b_only_joint_pos_control");
 }
 
 void Initialize::FirstVisit() {
@@ -46,7 +49,11 @@ void Initialize::OneStep() {
 void Initialize::LastVisit() {}
 
 bool Initialize::EndOfState() {
-  return (state_machine_time_ >= duration_) ? true : false;
+  if (b_stay_here_) {
+    return false;
+  } else {
+    return (state_machine_time_ >= duration_) ? true : false;
+  }
 }
 
 StateId Initialize::GetNextState() {

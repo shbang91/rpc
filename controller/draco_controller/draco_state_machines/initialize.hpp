@@ -24,4 +24,6 @@ private:
   double duration_;
   Eigen::VectorXd target_joint_pos_;
   Eigen::VectorXd init_joint_pos_;
+
+  bool b_stay_here_;
 };
