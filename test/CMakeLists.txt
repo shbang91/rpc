@@ -7,8 +7,8 @@
                                     #dart-robot-system
                                     #rj-module)
 
-add_executable(draco_dart_test draco_dart_robot_system_test.cpp)
-target_link_libraries(draco_dart_test rpc-dart-robot-system)
+#add_executable(draco_dart_test draco_dart_robot_system_test.cpp)
+#target_link_libraries(draco_dart_test rpc-dart-robot-system)
 
 add_executable(pin_robot_system_test pin_robot_system_test.cpp)
 target_link_libraries(pin_robot_system_test rpc-pin-robot-system)

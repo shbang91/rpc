@@ -4,7 +4,7 @@ file(GLOB yaml_contrib_headers "include/yaml/contrib/*.h")
 file(GLOB yaml_node_headers "include/yaml/node/*.h")
 file(GLOB yaml_node_detail_headers "include/yaml/node/detail/*.h")
 
-add_library(rpc-yaml SHARED ${sources}
+add_library(rpc-yaml ${sources}
                      ${yaml_headers}
                      ${yaml_contrib_headers}
                      ${yaml_node_headers}

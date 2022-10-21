@@ -4,8 +4,10 @@ ip_address: "tcp://127.0.0.1:5557"
 
 data_save_freq: 1
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
+
+b_only_joint_pos_control: true
 
 state_estimator:
   num_com_vel_data_for_filter: [200, 200, 200]
@@ -125,7 +127,7 @@ wbc:
 
 state_machine:
     initialize:
-      init_duration: 4.
+      init_duration: 30.
       target_joint_pos: [0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., 0.523, 0., -1.57, 0., 0., 0., 0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
 
     stand_up:

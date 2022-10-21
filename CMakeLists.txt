@@ -23,6 +23,7 @@ set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 set(PYTHON_BINDING TRUE)
+#set(PYTHON_BINDING FALSE)
 option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
     message(STATUS "CMAKE_BUILD_TYPE not set to Release -> impacts
@@ -34,21 +35,19 @@ endif()
 ##==================================================
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/build")
-include_directories("/usr/local/include")
-link_directories("/usr/local/lib")
 
 ##==================================================
 ## Dependency
 ##==================================================
 
 # DART
-find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
-include_directories(${DART_INCLUDE_DIRS})
+#find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
+#include_directories(${DART_INCLUDE_DIRS})
 
 # Pinocchio
 if(BUILD_WITH_PINOCCHIO)
     find_package(pinocchio)
-    include_directories(${PINOCCHIO_INCLUDE_DIRS})
+    include_directories(${pinocchio_INCLUDE_DIRS})
 endif()
 
 # Eigen
@@ -61,6 +60,11 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 
 #pybind11
 if(PYTHON_BINDING)
+    ### Only for DRACO3 Control Computer
+    #set(pybind11_DIR "/home/apptronik/.local/lib/python3.6/site-packages/pybind11/share/cmake/pybind11")
+    #find_package(Python COMPONENTS Interpreter Development)
+    #find_package(pybind11 CONFIG REQUIRED)
+    ### Only for DRACO3 Control Computer
     find_package(pybind11 REQUIRED)
     include_directories(${pybind11_INCLUDE_DIRS})
     add_subdirectory(binding)

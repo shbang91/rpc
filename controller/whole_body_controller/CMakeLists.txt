@@ -2,16 +2,16 @@ FILE(GLOB_RECURSE sources *.cpp)
 FILE(GLOB wbc_headers *.hpp)
 FILE(GLOB manager_headers managers/*.hpp)
 
-add_library(rpc-wbc SHARED ${sources} ${wbc_headers} ${manager_headers})
+add_library(rpc-wbc ${sources} ${wbc_headers} ${manager_headers})
 
-target_link_libraries(rpc-wbc rpc-pin-robot-system
-                              rpc-goldfarb
-                              rpc-util
-                              rpc-dcm-planner)
+target_link_libraries(rpc-wbc PUBLIC rpc-pin-robot-system
+    PUBLIC rpc-goldfarb
+    PUBLIC rpc-dcm-planner
+    PUBLIC rpc-util)
 
 install(TARGETS rpc-wbc DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${wbc_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/whole_body_controller")
-install(FILES ${wbc_headers} DESTINATION
+install(FILES ${manager_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/whole_body_controller/managers")
 
