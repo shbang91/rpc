@@ -42,7 +42,7 @@ service_call:
         current_limit: 0.7
         weak_kp: 250.
         weak_kd: 1.5
-        weak_current_limit: 0.2
+        weak_current_limit: 0.1
     r_ankle_fe:
         kp: 150.
         kd: 0.2
@@ -84,7 +84,7 @@ service_call:
         current_limit: 0.7
         weak_kp: 250.
         weak_kd: 1.5
-        weak_current_limit: 0.2
+        weak_current_limit: 0.1
     l_ankle_fe:
         kp: 150.
         kd: 0.2
