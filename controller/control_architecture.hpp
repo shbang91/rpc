@@ -13,9 +13,9 @@ public:
   virtual void GetCommand(void *command) = 0;
 
   // getter
-  StateId State() const { return this->state_; }
-  StateId PrevState() const { return this->prev_state_; }
-  std::unordered_map<StateId, StateMachine *> StateMachines() const {
+  StateId state() const { return this->state_; }
+  StateId prev_state() const { return this->prev_state_; }
+  std::unordered_map<StateId, StateMachine *> state_machine_container() const {
     return this->state_machine_container_;
   }
 

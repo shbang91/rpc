@@ -16,9 +16,10 @@ void DracoInterrupt::ProcessInterrupt() {
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "button one pressed: Do CoM Swaying " << std::endl;
     std::cout << "-----------------------------------" << std::endl;
-    if (ctrl_arch_->State() == draco_states::kDoubleSupportBalance) {
+    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
       static_cast<DoubleSupportBalance *>(
-          ctrl_arch_->StateMachines()[draco_states::kDoubleSupportBalance])
+          ctrl_arch_
+              ->state_machine_container()[draco_states::kDoubleSupportBalance])
           ->DoComSwaying();
     } else {
       std::cout << "Wait Until Balance State" << std::endl;
