@@ -24,7 +24,8 @@ set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 set(PYTHON_BINDING TRUE)
 #set(PYTHON_BINDING FALSE)
-option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
+option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" TRUE)
+option(BUILD_WITH_MATLOGGER "compile with MatLogger2" FALSE)
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
     message(STATUS "CMAKE_BUILD_TYPE not set to Release -> impacts
     performance")
@@ -54,17 +55,17 @@ endif()
 find_package(Eigen 3.3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 
+## MatLogger2
+if(BUILD_WITH_MATLOGGER)
+    find_package(matlogger2 REQUIRED)
+endif()
+
 #Boost
 #find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
 #include_directories(${Boost_INCLUDE_DIRS})
 
 #pybind11
 if(PYTHON_BINDING)
-    ### Only for DRACO3 Control Computer
-    #set(pybind11_DIR "/home/apptronik/.local/lib/python3.6/site-packages/pybind11/share/cmake/pybind11")
-    #find_package(Python COMPONENTS Interpreter Development)
-    #find_package(pybind11 CONFIG REQUIRED)
-    ### Only for DRACO3 Control Computer
     find_package(pybind11 REQUIRED)
     include_directories(${pybind11_INCLUDE_DIRS})
     add_subdirectory(binding)
