@@ -1,5 +1,6 @@
 #pragma once
 #include "controller/state_machine.hpp"
+#include "util/interpolation.hpp"
 
 class DracoStateProvider;
 class DracoControlArchitecture;
@@ -26,4 +27,6 @@ private:
   Eigen::VectorXd init_joint_pos_;
 
   bool b_stay_here_;
+
+  MinJerkCurveVec min_jerk_curves_;
 };

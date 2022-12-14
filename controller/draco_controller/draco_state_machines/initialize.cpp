@@ -4,7 +4,6 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
-#include "util/interpolation.hpp"
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
@@ -15,32 +14,44 @@ Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
   target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
   init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  b_stay_here_ = util::ReadParameter<bool>(cfg, "b_only_joint_pos_control");
+  try {
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+    b_stay_here_ = util::ReadParameter<bool>(cfg, "b_only_joint_pos_control");
+  } catch (const YAML::ParserException &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
 }
 
 void Initialize::FirstVisit() {
   std::cout << "draco_states::kInitialize" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
   init_joint_pos_ = robot_->GetJointPos();
+  min_jerk_curves_ = MinJerkCurveVec(
+      init_joint_pos_, Eigen::VectorXd::Zero(init_joint_pos_.size()),
+      Eigen::VectorXd::Zero(init_joint_pos_.size()), target_joint_pos_,
+      Eigen::VectorXd::Zero(target_joint_pos_.size()),
+      Eigen::VectorXd::Zero(target_joint_pos_.size()), duration_);
 }
 
 void Initialize::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
-  Eigen::VectorXd des_joint_pos(
-      Eigen::VectorXd::Zero(target_joint_pos_.size()));
-  Eigen::VectorXd des_joint_vel(
-      Eigen::VectorXd::Zero(target_joint_pos_.size()));
-  Eigen::VectorXd des_joint_acc(
-      Eigen::VectorXd::Zero(target_joint_pos_.size()));
+  Eigen::VectorXd des_joint_pos =
+      Eigen::VectorXd::Zero(target_joint_pos_.size());
+  Eigen::VectorXd des_joint_vel =
+      Eigen::VectorXd::Zero(target_joint_pos_.size());
+  Eigen::VectorXd des_joint_acc =
+      Eigen::VectorXd::Zero(target_joint_pos_.size());
   for (unsigned int i(0); i < target_joint_pos_.size(); ++i) {
-    des_joint_pos[i] = util::SmoothPos(init_joint_pos_[i], target_joint_pos_[i],
-                                       duration_, state_machine_time_);
-    des_joint_vel[i] = util::SmoothVel(init_joint_pos_[i], target_joint_pos_[i],
-                                       duration_, state_machine_time_);
-    des_joint_pos[i] = util::SmoothAcc(init_joint_pos_[i], target_joint_pos_[i],
-                                       duration_, state_machine_time_);
+    des_joint_pos = min_jerk_curves_.Evaluate(state_machine_time_);
+    des_joint_vel =
+        min_jerk_curves_.EvaluateFirstDerivative(state_machine_time_);
+    des_joint_acc =
+        min_jerk_curves_.EvaluateSecondDerivative(state_machine_time_);
   }
   ctrl_arch_->tci_container_->jpos_task_->UpdateDesired(
       des_joint_pos, des_joint_vel, des_joint_acc);
