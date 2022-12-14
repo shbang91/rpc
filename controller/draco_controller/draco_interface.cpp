@@ -26,18 +26,28 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   interrupt_ =
       new DracoInterrupt(static_cast<DracoControlArchitecture *>(ctrl_arch_));
 
-  // get yaml node
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-
-  // set control frequency
-  sp_->servo_dt_ = util::ReadParameter<double>(cfg, "servo_dt");
-
   sp_->b_lf_contact_ = true;
   sp_->b_rf_contact_ = true;
 
-  // initalize data publisher
-  DracoDataManager::GetDataManager()->InitializeSocket(
-      util::ReadParameter<std::string>(cfg, "ip_address"));
+  try {
+    YAML::Node cfg =
+        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+
+    sp_->servo_dt_ =
+        util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
+
+    if (DracoDataManager::GetDataManager()->IsInitialized())
+      DracoDataManager::GetDataManager()->InitializeSocket(
+          util::ReadParameter<std::string>(
+              cfg, "ip_address")); // initalize data publisher
+
+  } catch (const YAML::ParserException &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
 }
 
 DracoInterface::~DracoInterface() {
@@ -50,8 +60,8 @@ DracoInterface::~DracoInterface() {
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   sp_->count_ = count_;
   sp_->current_time_ = static_cast<double>(count_) * sp_->servo_dt_;
-  sp_->state_ = ctrl_arch_->State();
-  sp_->prev_state_ = ctrl_arch_->PrevState();
+  sp_->state_ = ctrl_arch_->state();
+  sp_->prev_state_ = ctrl_arch_->prev_state();
 
   DracoSensorData *draco_sensor_data =
       static_cast<DracoSensorData *>(sensor_data);
@@ -75,7 +85,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   dm->data_->time_ = sp_->current_time_;
   dm->SendData();
 
-  ++count_;
+  count_++;
 }
 
 void DracoInterface::_SafeCommand(DracoSensorData *data,

@@ -2,6 +2,7 @@
 
 #include "draco.pb.h" //in build/messages/
 #include <Eigen/Dense>
+#include <memory>
 #include <zmq.hpp>
 
 class DracoData {
@@ -37,6 +38,8 @@ public:
 
   void InitializeSocket(const std::string &ip_address);
   void SendData();
+
+  bool IsInitialized(); // socket initialized boolean getter
 
   std::unique_ptr<DracoData> data_;
 

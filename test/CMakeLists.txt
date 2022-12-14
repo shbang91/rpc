@@ -24,3 +24,6 @@ if(BUILD_WITH_MATLOGGER)
     target_link_libraries(min_jerk_traj_test matlogger2::matlogger2)
     target_link_libraries(min_jerk_traj_test rpc-util)
 endif()
+
+add_executable(draco_interface_test rpc_interface.cpp)
+target_link_libraries(draco_interface_test rpc-draco-controller)

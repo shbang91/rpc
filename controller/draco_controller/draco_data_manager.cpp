@@ -17,6 +17,8 @@ DracoDataManager::DracoDataManager() {
   b_initialize_socket_ = false;
 }
 
+bool DracoDataManager::IsInitialized() { return b_initialize_socket_; }
+
 void DracoDataManager::InitializeSocket(const std::string &ip_address) {
   socket_->bind(ip_address);
   b_initialize_socket_ = true;
