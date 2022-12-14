@@ -273,8 +273,8 @@ void HermiteQuaternionCurve::PrintQuat(const Eigen::Quaterniond &quat) {
 MinJerkCurve::MinJerkCurve() { Initialization(); }
 
 MinJerkCurve::MinJerkCurve(const Eigen::Vector3d &init,
-                           const Eigen::Vector3d &end, const double &time_start,
-                           const double &time_end) {
+                           const Eigen::Vector3d &end, const double time_start,
+                           const double time_end) {
   Initialization();
   SetParams(init, end, time_start, time_end);
 }
@@ -297,7 +297,7 @@ void MinJerkCurve::Initialization() {
 
 void MinJerkCurve::SetParams(const Eigen::Vector3d &init,
                              const Eigen::Vector3d &end,
-                             const double &time_start, const double &time_end) {
+                             const double time_start, const double time_end) {
   // Set the Parameters
   init_cond = init;
   end_cond = end;
@@ -343,7 +343,7 @@ void MinJerkCurve::SetParams(const Eigen::Vector3d &init,
   a_coeffs = C_mat_inv * bound_cond;
 }
 
-void MinJerkCurve::GetPos(const double &time, double &pos) {
+void MinJerkCurve::GetPos(const double time, double &pos) {
   double t;
   if (time <= to) {
     t = to;
@@ -356,7 +356,7 @@ void MinJerkCurve::GetPos(const double &time, double &pos) {
         a_coeffs[3] * std::pow(t, 3) + a_coeffs[4] * std::pow(t, 4) +
         a_coeffs[5] * std::pow(t, 5);
 }
-void MinJerkCurve::GetVel(const double &time, double &vel) {
+void MinJerkCurve::GetVel(const double time, double &vel) {
   double t;
   if (time <= to) {
     t = to;
@@ -369,7 +369,7 @@ void MinJerkCurve::GetVel(const double &time, double &vel) {
         3.0 * a_coeffs[3] * std::pow(t, 2) +
         4.0 * a_coeffs[4] * std::pow(t, 3) + 5.0 * a_coeffs[5] * std::pow(t, 4);
 }
-void MinJerkCurve::GetAcc(const double &time, double &acc) {
+void MinJerkCurve::GetAcc(const double time, double &acc) {
   double t;
   if (time <= to) {
     t = to;
@@ -408,7 +408,7 @@ MinJerkCurveVec::MinJerkCurveVec(const Eigen::VectorXd &start_pos,
 MinJerkCurveVec::~MinJerkCurveVec() {}
 
 // Evaluation functions
-Eigen::VectorXd MinJerkCurveVec::Evaluate(const double &t_in) {
+Eigen::VectorXd MinJerkCurveVec::Evaluate(const double t_in) {
   double val;
   for (int i = 0; i < p1_.size(); i++) {
     curves_[i].GetPos(t_in, val);
@@ -417,7 +417,7 @@ Eigen::VectorXd MinJerkCurveVec::Evaluate(const double &t_in) {
   return output_;
 }
 
-Eigen::VectorXd MinJerkCurveVec::EvaluateFirstDerivative(const double &t_in) {
+Eigen::VectorXd MinJerkCurveVec::EvaluateFirstDerivative(const double t_in) {
   double val;
   for (int i = 0; i < v1_.size(); i++) {
     curves_[i].GetVel(t_in, val);
@@ -426,7 +426,7 @@ Eigen::VectorXd MinJerkCurveVec::EvaluateFirstDerivative(const double &t_in) {
   return output_;
 }
 
-Eigen::VectorXd MinJerkCurveVec::EvaluateSecondDerivative(const double &t_in) {
+Eigen::VectorXd MinJerkCurveVec::EvaluateSecondDerivative(const double t_in) {
   double val;
   for (int i = 0; i < a1_.size(); i++) {
     curves_[i].GetAcc(t_in, val);

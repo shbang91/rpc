@@ -24,6 +24,7 @@ void SinusoidTrajectory(const Eigen::Vector3d &mid_point,
                         Eigen::VectorXd &v, Eigen::VectorXd &a,
                         double smoothing_dur = 1.0);
 double Smooth(double ini, double fin, double rat);
+
 } // namespace util
 
 class HermiteCurve {
@@ -162,14 +163,14 @@ public:
   // Constructors
   MinJerkCurve();
   MinJerkCurve(const Eigen::Vector3d &init, const Eigen::Vector3d &end,
-               const double &time_start, const double &time_end);
+               const double time_start, const double time_end);
 
   void SetParams(const Eigen::Vector3d &init, const Eigen::Vector3d &end,
-                 const double &time_start, const double &time_end);
+                 const double time_start, const double time_end);
 
-  void GetPos(const double &time, double &pos);
-  void GetVel(const double &time, double &vel);
-  void GetAcc(const double &time, double &acc);
+  void GetPos(const double time, double &pos);
+  void GetVel(const double time, double &vel);
+  void GetAcc(const double time, double &acc);
 
   // Destructor
   ~MinJerkCurve();
@@ -203,9 +204,9 @@ public:
                   const Eigen::VectorXd &end_vel,
                   const Eigen::VectorXd &end_acc, double duration);
   ~MinJerkCurveVec();
-  Eigen::VectorXd Evaluate(const double &t_in);
-  Eigen::VectorXd EvaluateFirstDerivative(const double &t_in);
-  Eigen::VectorXd EvaluateSecondDerivative(const double &t_in);
+  Eigen::VectorXd Evaluate(const double t_in);
+  Eigen::VectorXd EvaluateFirstDerivative(const double t_in);
+  Eigen::VectorXd EvaluateSecondDerivative(const double t_in);
 
 private:
   double Ts_;
