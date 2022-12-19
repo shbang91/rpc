@@ -202,7 +202,7 @@ public:
                   const Eigen::VectorXd &start_acc,
                   const Eigen::VectorXd &end_pos,
                   const Eigen::VectorXd &end_vel,
-                  const Eigen::VectorXd &end_acc, double duration);
+                  const Eigen::VectorXd &end_acc, const double duration);
   ~MinJerkCurveVec();
   Eigen::VectorXd Evaluate(const double t_in);
   Eigen::VectorXd EvaluateFirstDerivative(const double t_in);

@@ -1,15 +1,15 @@
-target_joint_name: "R_Ankle_FE"
+target_joint_name: "R_Knee_FE"
 contact_threshold: 30. # TODO (SH) : Need to be tuned
 sleep_time: 0.8
 b_measure_computation_time: true
 
 service_call:
-    conservative: true
+    conservative: false
     Neck_Pitch:
         kp: 15.
         kd: 0.
         current_limit: 0.15
-        weak_kp: 15.
+        weak_kp: 5.
         weak_kd: 0.
         weak_current_limit: 0.05
     R_Hip_IE:

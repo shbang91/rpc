@@ -391,7 +391,7 @@ MinJerkCurveVec::MinJerkCurveVec(const Eigen::VectorXd &start_pos,
                                  const Eigen::VectorXd &end_pos,
                                  const Eigen::VectorXd &end_vel,
                                  const Eigen::VectorXd &end_acc,
-                                 double duration)
+                                 const double duration)
     : p1_(start_pos), v1_(start_vel), a1_(start_acc), p2_(end_pos),
       v2_(end_vel), a2_(end_acc), Ts_(duration) {
 
