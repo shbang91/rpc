@@ -4,10 +4,9 @@ ip_address: "tcp://127.0.0.1:5557"
 
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
-b_only_joint_pos_control: true
 
 state_estimator:
   num_com_vel_data_for_filter: [200, 200, 200]
@@ -23,14 +22,14 @@ wbc:
       com_height_target_source: 0 # 0: com height / 1: base height
 
       ## sim params
-      weight : [20., 20., 20.]
-      kp : [200., 200., 200.]
-      kd : [10., 10., 5.]
-      icp_weight : [20., 20., 20.] # only used when feedback source : 1
-      icp_kp : [20., 20., 100.]
-      icp_kd : [0., 0., 5.] # x, y will be ignored
-      icp_ki : [0.1, 0.1, 0.1] 
-      time_constant : 5.
+      sim_weight : [20., 20., 20.]
+      sim_kp : [200., 200., 200.]
+      sim_kd : [10., 10., 5.]
+      sim_icp_weight : [20., 20., 20.] # only used when feedback source : 1
+      sim_icp_kp : [20., 20., 100.]
+      sim_icp_kd : [0., 0., 5.] # x, y will be ignored
+      sim_icp_ki : [0.1, 0.1, 0.1] 
+      sim_time_constant : 5.
 
       ## exp params
       exp_weight : [20., 20., 20.]
@@ -44,9 +43,9 @@ wbc:
 
     torso_ori_task:
       ## sim params
-      weight : [20., 20., 2.]
-      kp : [100., 100., 100.]
-      kd : [10., 10., 10.]
+      sim_weight : [20., 20., 2.]
+      sim_kp : [100., 100., 100.]
+      sim_kd : [10., 10., 10.]
 
       ## exp params
       exp_weight : [20., 20., 2.]
@@ -58,9 +57,9 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
-      kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
-      kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+      sim_weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
+      sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
+      sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
 
       ## exp params
       exp_weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
@@ -69,10 +68,10 @@ wbc:
 
     foot_pos_task:
       ## sim params
-      weight : [40., 40., 40.]
-      weight_at_swing : [20., 20., 20.]
-      kp : [300., 300., 300.]
-      kd : [30., 30., 30.]
+      sim_weight : [40., 40., 40.]
+      sim_weight_at_swing : [20., 20., 20.]
+      sim_kp : [300., 300., 300.]
+      sim_kd : [30., 30., 30.]
 
       ## exp params
       exp_weight : [40., 40., 40.]
@@ -82,10 +81,10 @@ wbc:
 
     foot_ori_task:
       ## sim params
-      weight : [40., 40., 40.]
-      weight_at_swing : [20., 20., 20.]
-      kp : [300., 300., 300.]
-      kd : [30., 30., 30.]
+      sim_weight : [40., 40., 40.]
+      sim_weight_at_swing : [20., 20., 20.]
+      sim_kp : [300., 300., 300.]
+      sim_kd : [30., 30., 30.]
 
       ## exp params
       exp_weight : [40., 40., 40.]
@@ -94,22 +93,24 @@ wbc:
       exp_kd : [1., 1., 1.]
 
     foot_rf_task:
-      weight_at_contact: [0., 0., 0., 0., 0., 0.] ## trq, force order
-      weight_at_swing: [0., 0., 0., 0., 0., 0.] ## trq, force order
+      ## sim params
+      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
-      exp_weight_at_contact: [0., 0., 0., 0., 0., 0.]
-      exp_weight_at_swing: [0., 0., 0., 0., 0., 0.]
+      ## exp params
+      exp_weight : [0., 0., 0., 0., 0., 0.]
 
   contact:
     ## sim params
-    mu: 0.3
-    max_rf_z: 1000.
-    foot_half_length: 0.08
-    foot_half_width: 0.04
+    sim_max_rf_z: 1000.
+
+    sim_mu: 0.3
+    sim_foot_half_length: 0.08
+    sim_foot_half_width: 0.04
 
     ## exp params
-    exp_mu: 0.3
     exp_max_rf_z: 1000.
+
+    exp_mu: 0.3
     exp_foot_half_length: 0.11
     exp_foot_half_width: 0.04
 
@@ -129,6 +130,7 @@ state_machine:
     initialize:
       init_duration: 5.
       target_joint_pos: [0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., 0.523, 0., -1.57, 0., 0., 0., 0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      b_only_joint_pos_control: true
 
     stand_up:
       standup_duration: 1.

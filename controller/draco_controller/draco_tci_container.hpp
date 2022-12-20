@@ -26,5 +26,5 @@ public:
 
 private:
   YAML::Node cfg_;
-  void _InitializeParameters();
+  void _InitializeParameters(const bool b_sim);
 };

@@ -8,7 +8,7 @@ class Initialize : public StateMachine {
 public:
   Initialize(const StateId state_id, PinocchioRobotSystem *robot,
              DracoControlArchitecture *ctrl_arch);
-  virtual ~Initialize() = default;
+  ~Initialize() = default;
 
   void FirstVisit() override;
   void OneStep() override;

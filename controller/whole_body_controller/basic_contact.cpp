@@ -176,12 +176,10 @@ void SurfaceContact::UpdateConeConstraint() {
 
 void SurfaceContact::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
-    mu_ = b_sim ? util::ReadParameter<double>(node, "mu")
-                : util::ReadParameter<double>(node, "exp_mu");
-    x_ = b_sim ? util::ReadParameter<double>(node, "foot_half_length")
-               : util::ReadParameter<double>(node, "exp_foot_half_length");
-    y_ = b_sim ? util::ReadParameter<double>(node, "foot_half_width")
-               : util::ReadParameter<double>(node, "exp_foot_half_width");
+    std::string prefix = b_sim ? "sim" : "exp";
+    util::ReadParameter(node, prefix + "_mu", mu_);
+    util::ReadParameter(node, prefix + "_foot_half_length", x_);
+    util::ReadParameter(node, prefix + "_foot_half_width", y_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

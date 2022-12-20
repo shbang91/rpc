@@ -21,14 +21,11 @@ public:
 
   void SetParameters(const YAML::Node &node, const bool b_sim) {
     try {
-      weight_ =
-          b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "weight_at_swing")
-                : util::ReadParameter<Eigen::VectorXd>(node,
-                                                       "exp_weight_at_swing");
+      std::string prefix = b_sim ? "sim" : "exp";
+      util::ReadParameter(node, prefix + "_weight", weight_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-                << __FILE__ << "]" << std::endl
-                << std::endl;
+                << __FILE__ << "]" << std::endl;
       std::exit(EXIT_FAILURE);
     }
   }

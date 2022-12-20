@@ -9,7 +9,7 @@ class DoubleSupportBalance : public StateMachine {
 public:
   DoubleSupportBalance(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch);
-  virtual ~DoubleSupportBalance() = default;
+  ~DoubleSupportBalance() = default;
 
   void FirstVisit() override;
   void OneStep() override;
@@ -17,6 +17,8 @@ public:
   bool EndOfState() override;
 
   StateId GetNextState() override;
+
+  void SetParameters(const YAML::Node &node) override;
 
   // boolean setter
   void DoComSwaying() { b_com_swaying_ = true; }

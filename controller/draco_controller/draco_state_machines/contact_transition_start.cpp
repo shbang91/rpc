@@ -139,3 +139,5 @@ StateId ContactTransitionStart::GetNextState() {
     }
   }
 }
+
+void ContactTransitionStart::SetParameters(const YAML::Node &node) {}

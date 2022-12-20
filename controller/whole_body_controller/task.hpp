@@ -51,17 +51,13 @@ public:
   // task gain, hierarchy
   virtual void SetParameters(const YAML::Node &node, const bool b_sim) {
     try {
-      kp_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kp")
-                  : util::ReadParameter<Eigen::VectorXd>(node, "exp_kp");
-      kd_ = b_sim ? util::ReadParameter<Eigen::VectorXd>(node, "kd")
-                  : util::ReadParameter<Eigen::VectorXd>(node, "exp_kd");
-      weight_ = b_sim
-                    ? util::ReadParameter<Eigen::VectorXd>(node, "weight")
-                    : util::ReadParameter<Eigen::VectorXd>(node, "exp_weight");
+      std::string prefix = b_sim ? "sim" : "exp";
+      util::ReadParameter(node, prefix + "_kp", kp_);
+      util::ReadParameter(node, prefix + "_kd", kd_);
+      util::ReadParameter(node, prefix + "_weight", weight_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-                << __FILE__ << "]" << std::endl
-                << std::endl;
+                << __FILE__ << "]" << std::endl;
       std::exit(EXIT_FAILURE);
     }
   }

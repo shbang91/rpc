@@ -9,7 +9,7 @@ class DoubleSupportSwaying : public StateMachine {
 public:
   DoubleSupportSwaying(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch);
-  virtual ~DoubleSupportSwaying() = default;
+  ~DoubleSupportSwaying() = default;
 
   void FirstVisit() override;
   void OneStep() override;

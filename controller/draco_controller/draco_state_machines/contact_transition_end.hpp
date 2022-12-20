@@ -9,7 +9,7 @@
 // public:
 // ContactTransitionEnd(StateId state_id, PinocchioRobotSystem *robot,
 // DracoControlArchitecture *ctrl_arch);
-// virtual ~ContactTransitionEnd() = default;
+// ~ContactTransitionEnd() = default;
 
 // void FirstVisit() override;
 // void OneStep() override;

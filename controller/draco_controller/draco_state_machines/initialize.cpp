@@ -13,17 +13,6 @@ Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
   sp_ = DracoStateProvider::GetStateProvider();
   target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
   init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
-
-  try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-    b_stay_here_ = util::ReadParameter<bool>(cfg, "b_only_joint_pos_control");
-  } catch (const YAML::ParserException &ex) {
-    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  } catch (const std::runtime_error &ex) {
-    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
 }
 
 void Initialize::FirstVisit() {
@@ -34,7 +23,8 @@ void Initialize::FirstVisit() {
       init_joint_pos_, Eigen::VectorXd::Zero(init_joint_pos_.size()),
       Eigen::VectorXd::Zero(init_joint_pos_.size()), target_joint_pos_,
       Eigen::VectorXd::Zero(target_joint_pos_.size()),
-      Eigen::VectorXd::Zero(target_joint_pos_.size()), duration_);
+      Eigen::VectorXd::Zero(target_joint_pos_.size()),
+      duration_); // min jerk curve initialization
 }
 
 void Initialize::OneStep() {
@@ -75,14 +65,12 @@ void Initialize::SetParameters(const YAML::Node &node) {
   try {
     util::ReadParameter(node, "init_duration", duration_);
     util::ReadParameter(node, "target_joint_pos", target_joint_pos_);
+    sp_->nominal_jpos_ = target_joint_pos_; // set nominal jpos
+    util::ReadParameter(node, "b_only_joint_pos_control", b_stay_here_);
 
-    // set nominal jpos
-    sp_->nominal_jpos_ = target_joint_pos_;
-
-  } catch (std::runtime_error &e) {
+  } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl
-              << std::endl;
+              << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
 }

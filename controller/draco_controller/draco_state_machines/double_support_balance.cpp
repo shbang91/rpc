@@ -82,3 +82,5 @@ StateId DoubleSupportBalance::GetNextState() {
   //}
   //}
 }
+
+void DoubleSupportBalance::SetParameters(const YAML::Node &node) {}

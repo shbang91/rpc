@@ -43,10 +43,10 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   // Contacts List
   //=============================================================
-  lf_contact_ =
-      new SurfaceContact(robot_, draco_link::l_foot_contact, 0.3, 0.11, 0.04);
-  rf_contact_ =
-      new SurfaceContact(robot_, draco_link::r_foot_contact, 0.3, 0.11, 0.04);
+  lf_contact_ = new SurfaceContact(robot_, draco_link::l_foot_contact, 0.3,
+                                   0.11, 0.04); // params reset later
+  rf_contact_ = new SurfaceContact(robot_, draco_link::r_foot_contact, 0.3,
+                                   0.11, 0.04); // params reset later
 
   contact_container_.clear();
   contact_container_.push_back(lf_contact_);
@@ -73,8 +73,14 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   // Tasks, Contacts parameter initialization
   //=============================================================
-  cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  this->_InitializeParameters();
+  try {
+    cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+  bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
+  this->_InitializeParameters(b_sim);
 }
 
 DracoTCIContainer::~DracoTCIContainer() {
@@ -97,8 +103,7 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete rf_reaction_force_task_;
 }
 
-void DracoTCIContainer::_InitializeParameters() {
-  bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
+void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
   // task
   com_task_->SetParameters(cfg_["wbc"]["task"]["com_task"], b_sim);
   torso_ori_task_->SetParameters(cfg_["wbc"]["task"]["torso_ori_task"], b_sim);

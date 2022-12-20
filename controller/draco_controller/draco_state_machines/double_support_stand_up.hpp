@@ -8,7 +8,7 @@ class DoubleSupportStandUp : public StateMachine {
 public:
   DoubleSupportStandUp(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch);
-  virtual ~DoubleSupportStandUp() = default;
+  ~DoubleSupportStandUp() = default;
 
   void FirstVisit() override;
   void OneStep() override;

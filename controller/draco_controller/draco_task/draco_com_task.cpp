@@ -148,8 +148,7 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     }
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl
-              << std::endl;
+              << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
 }

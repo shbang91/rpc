@@ -24,12 +24,21 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   util::PrettyConstructor(1, "DracoControlArchitecture");
 
   // set starting state
-  cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  try {
+    cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
   bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
+
   prev_state_ =
-      (b_sim) ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
+      b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
   state_ =
-      (b_sim) ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
+      b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
+
+  std::string prefix = b_sim ? "sim" : "exp";
 
   //=============================================================
   // initialize task, contact, controller, planner
@@ -62,40 +71,28 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->rf_pos_task_, tci_container_->rf_ori_task_, robot_);
 
-  Eigen::VectorXd pos_weight_in_contact =
-      b_sim ? util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_pos_task"], "weight")
-            : util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_pos_task"], "exp_weight");
-  Eigen::VectorXd ori_weight_in_contact =
-      b_sim ? util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_ori_task"], "weight")
-            : util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_ori_task"], "exp_weight");
-  Eigen::VectorXd pos_weight_in_swing =
-      b_sim ? util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_pos_task"], "weight_at_swing")
-            : util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_pos_task"], "exp_weight_at_swing");
-  Eigen::VectorXd ori_weight_in_swing =
-      b_sim ? util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_ori_task"], "weight_at_swing")
-            : util::ReadParameter<Eigen::VectorXd>(
-                  cfg_["wbc"]["task"]["foot_ori_task"], "exp_weight_at_swing");
-  lf_pos_hm_ = new TaskHierarchyManager(
-      tci_container_->lf_pos_task_, pos_weight_in_contact, pos_weight_in_swing);
-  lf_ori_hm_ = new TaskHierarchyManager(
-      tci_container_->lf_ori_task_, ori_weight_in_contact, ori_weight_in_swing);
-  rf_pos_hm_ = new TaskHierarchyManager(
-      tci_container_->rf_pos_task_, pos_weight_in_contact, pos_weight_in_swing);
-  rf_ori_hm_ = new TaskHierarchyManager(
-      tci_container_->rf_ori_task_, ori_weight_in_contact, ori_weight_in_swing);
+  Eigen::VectorXd weight_at_contact, weight_at_swing;
+  util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
+                      prefix + "_weight_at_contact", weight_at_contact);
+  util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
+                      prefix + "_weight_at_swing", weight_at_swing);
+  lf_pos_hm_ = new TaskHierarchyManager(tci_container_->lf_pos_task_,
+                                        weight_at_contact, weight_at_swing);
+  rf_pos_hm_ = new TaskHierarchyManager(tci_container_->rf_pos_task_,
+                                        weight_at_contact, weight_at_swing);
+
+  util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
+                      prefix + "_weight_at_contact", weight_at_contact);
+  util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
+                      prefix + "_weight_at_swing", weight_at_swing);
+  lf_ori_hm_ = new TaskHierarchyManager(tci_container_->lf_ori_task_,
+                                        weight_at_contact, weight_at_swing);
+  rf_ori_hm_ = new TaskHierarchyManager(tci_container_->rf_ori_task_,
+                                        weight_at_contact, weight_at_swing);
 
   // initialize dynamics manager
-  double max_rf_z =
-      b_sim
-          ? util::ReadParameter<double>(cfg_["wbc"]["contact"], "max_rf_z")
-          : util::ReadParameter<double>(cfg_["wbc"]["contact"], "exp_max_rf_z");
+  double max_rf_z;
+  util::ReadParameter(cfg_["wbc"]["contact"], prefix + "_max_rf_z", max_rf_z);
   lf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
       tci_container_->lf_contact_, max_rf_z);
   rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
