@@ -4,6 +4,7 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
+#include "util/interpolation.hpp"
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
@@ -15,11 +16,16 @@ Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
   init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 }
 
+Initialize::~Initialize() {
+  if (min_jerk_curves_ != nullptr)
+    delete min_jerk_curves_;
+}
+
 void Initialize::FirstVisit() {
   std::cout << "draco_states::kInitialize" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
   init_joint_pos_ = robot_->GetJointPos();
-  min_jerk_curves_ = MinJerkCurveVec(
+  min_jerk_curves_ = new MinJerkCurveVec(
       init_joint_pos_, Eigen::VectorXd::Zero(init_joint_pos_.size()),
       Eigen::VectorXd::Zero(init_joint_pos_.size()), target_joint_pos_,
       Eigen::VectorXd::Zero(target_joint_pos_.size()),
@@ -36,12 +42,17 @@ void Initialize::OneStep() {
       Eigen::VectorXd::Zero(target_joint_pos_.size());
   Eigen::VectorXd des_joint_acc =
       Eigen::VectorXd::Zero(target_joint_pos_.size());
+
+  if (min_jerk_curves_ == nullptr)
+    throw std::runtime_error(
+        "Initialize MinJerkCurve in Initialize StateMachine");
+
   for (unsigned int i(0); i < target_joint_pos_.size(); ++i) {
-    des_joint_pos = min_jerk_curves_.Evaluate(state_machine_time_);
+    des_joint_pos = min_jerk_curves_->Evaluate(state_machine_time_);
     des_joint_vel =
-        min_jerk_curves_.EvaluateFirstDerivative(state_machine_time_);
+        min_jerk_curves_->EvaluateFirstDerivative(state_machine_time_);
     des_joint_acc =
-        min_jerk_curves_.EvaluateSecondDerivative(state_machine_time_);
+        min_jerk_curves_->EvaluateSecondDerivative(state_machine_time_);
   }
   ctrl_arch_->tci_container_->jpos_task_->UpdateDesired(
       des_joint_pos, des_joint_vel, des_joint_acc);

@@ -1,14 +1,15 @@
 #pragma once
 #include "controller/state_machine.hpp"
-#include "util/interpolation.hpp"
 
 class DracoStateProvider;
 class DracoControlArchitecture;
+class MinJerkCurveVec;
+
 class Initialize : public StateMachine {
 public:
   Initialize(const StateId state_id, PinocchioRobotSystem *robot,
              DracoControlArchitecture *ctrl_arch);
-  ~Initialize() = default;
+  ~Initialize();
 
   void FirstVisit() override;
   void OneStep() override;
@@ -28,5 +29,5 @@ private:
 
   bool b_stay_here_;
 
-  MinJerkCurveVec min_jerk_curves_;
+  MinJerkCurveVec *min_jerk_curves_;
 };
