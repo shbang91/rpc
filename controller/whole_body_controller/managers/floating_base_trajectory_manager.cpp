@@ -10,29 +10,63 @@ FloatingBaseTrajectoryManager::FloatingBaseTrajectoryManager(
       duration_(0.), init_com_pos_(Eigen::Vector3d::Zero()),
       target_com_pos_(Eigen::Vector3d::Zero()),
       exp_err_(Eigen::VectorXd::Zero(3)), amp_(Eigen::Vector3d::Zero()),
-      freq_(Eigen::Vector3d::Zero()), b_swaying_(false) {
+      freq_(Eigen::Vector3d::Zero()), b_swaying_(false),
+      min_jerk_curve_(nullptr), min_jerk_time_(nullptr) {
+
   util::PrettyConstructor(2, "FloatingBaseTrajectoryManager");
+}
+
+FloatingBaseTrajectoryManager::~FloatingBaseTrajectoryManager() {
+  if (min_jerk_curve_ != nullptr)
+    delete min_jerk_curve_;
+  if (min_jerk_time_ != nullptr)
+    delete min_jerk_time_;
 }
 
 void FloatingBaseTrajectoryManager::InitializeFloatingBaseInterpolation(
     const Eigen::Vector3d &init_com_pos, const Eigen::Vector3d &target_com_pos,
     const Eigen::Quaterniond &init_torso_quat,
     const Eigen::Quaterniond &target_torso_quat, const double duration) {
+
   duration_ = duration;
+
+  // linear
   init_com_pos_ = init_com_pos;
   target_com_pos_ = target_com_pos;
+  Eigen::VectorXd start_pos(3), end_pos(3);
+  start_pos << init_com_pos_[0], init_com_pos_[1], init_com_pos_[2];
+  end_pos << target_com_pos_[0], target_com_pos_[1], target_com_pos[2];
+  min_jerk_curve_ = new MinJerkCurveVec(
+      start_pos, Eigen::VectorXd::Zero(3), Eigen::VectorXd::Zero(3), end_pos,
+      Eigen::VectorXd::Zero(3), Eigen::VectorXd::Zero(3), duration_);
 
+  // angular
   init_torso_quat_ = init_torso_quat;
   exp_err_ = util::QuatToExp(target_torso_quat * init_torso_quat_.inverse());
+  Eigen::VectorXd start_time(1), end_time(1);
+  start_time << 0.;
+  end_time << 1.;
+  min_jerk_time_ = new MinJerkCurveVec(
+      start_time, Eigen::VectorXd::Zero(1), Eigen::VectorXd::Zero(1), end_time,
+      Eigen::VectorXd::Zero(1), Eigen::VectorXd::Zero(1), duration_);
+}
+
+void FloatingBaseTrajectoryManager::InitializeSwaying(
+    const Eigen::Vector3d &init_com_pos, const Eigen::Vector3d &amp,
+    const Eigen::Vector3d &freq) {
+  init_com_pos_ = init_com_pos;
+  amp_ = amp;
+  freq_ = freq;
+  b_swaying_ = true;
 }
 
 void FloatingBaseTrajectoryManager::UpdateDesired(
     const double state_machine_time) {
-  Eigen::VectorXd des_com_pos = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd des_com_vel = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd des_com_acc = Eigen::VectorXd::Zero(3);
-
   if (b_swaying_) {
+    Eigen::VectorXd des_com_pos = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd des_com_vel = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd des_com_acc = Eigen::VectorXd::Zero(3);
+
     // com swaying
     util::SinusoidTrajectory(init_com_pos_, amp_, freq_, state_machine_time,
                              des_com_pos, des_com_vel, des_com_acc, 1.0);
@@ -41,18 +75,26 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
     com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
 
   } else {
-    // com & torso ori smooth interpolation TODO: change to minjerk traj
-    for (int i(0); i < des_com_pos.size(); ++i) {
-      des_com_pos[i] = util::SmoothPos(init_com_pos_[i], target_com_pos_[i],
-                                       duration_, state_machine_time);
-      des_com_vel[i] = util::SmoothVel(init_com_pos_[i], target_com_pos_[i],
-                                       duration_, state_machine_time);
-      des_com_acc[i] = util::SmoothAcc(init_com_pos_[i], target_com_pos_[i],
-                                       duration_, state_machine_time);
-    }
-    double t = util::SmoothPos(0, 1, duration_, state_machine_time);
-    double t_dot = util::SmoothVel(0, 1, duration_, state_machine_time);
-    double t_ddot = util::SmoothAcc(0, 1, duration_, state_machine_time);
+    // minjerk com traj generation
+    if (min_jerk_curve_ == nullptr || min_jerk_time_ == nullptr)
+      throw std::runtime_error(
+          "Initialze MinJerkCurve First in FlaotingBaseTrajectoryManager");
+
+    Eigen::VectorXd des_com_pos = min_jerk_curve_->Evaluate(state_machine_time);
+    Eigen::VectorXd des_com_vel =
+        min_jerk_curve_->EvaluateFirstDerivative(state_machine_time);
+    Eigen::VectorXd des_com_acc =
+        min_jerk_curve_->EvaluateSecondDerivative(state_machine_time);
+
+    // update com des traj
+    com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
+
+    // torso ori traj generation
+    double t = min_jerk_time_->Evaluate(state_machine_time)[0];
+    double t_dot =
+        min_jerk_time_->EvaluateFirstDerivative(state_machine_time)[0];
+    double t_ddot =
+        min_jerk_time_->EvaluateSecondDerivative(state_machine_time)[0];
 
     Eigen::Quaterniond des_torso_quat =
         util::ExpToQuat(exp_err_ * t) * init_torso_quat_;
@@ -64,18 +106,8 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
     Eigen::VectorXd des_torso_ang_acc(3);
     des_torso_ang_acc << exp_err_ * t_ddot;
 
-    // update desired com & torso_ori task
-    com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
+    // update desired torso_ori des traj
     torso_ori_task_->UpdateDesired(des_torso_quat_vec, des_torso_ang_vel,
                                    des_torso_ang_acc);
   }
-}
-
-void FloatingBaseTrajectoryManager::InitializeSwaying(
-    const Eigen::Vector3d &init_com_pos, const Eigen::Vector3d &amp,
-    const Eigen::Vector3d &freq) {
-  init_com_pos_ = init_com_pos;
-  amp_ = amp;
-  freq_ = freq;
-  b_swaying_ = true;
 }
