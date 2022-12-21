@@ -41,7 +41,7 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
     com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
 
   } else {
-    // com & torso ori smooth interpolation
+    // com & torso ori smooth interpolation TODO: change to minjerk traj
     for (int i(0); i < des_com_pos.size(); ++i) {
       des_com_pos[i] = util::SmoothPos(init_com_pos_[i], target_com_pos_[i],
                                        duration_, state_machine_time);

@@ -44,24 +44,25 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   Eigen::Quaterniond imu_quat(
       sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
       sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
-  Eigen::Matrix3d base_joint_ori =
+  Eigen::Matrix3d base_joint_ori_rot =
       imu_quat.normalized().toRotationMatrix() * R_imu_base_com_;
 
   // TODO imu angular velocity filtering for real experiment -> PnC does not use
   // this in controller
 
   // Update robot model only with base orientation
-  robot_->UpdateRobotModel(
-      Eigen::Vector3d::Zero(), Eigen::Quaterniond(base_joint_ori).normalized(),
-      Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
-      sensor_data->joint_pos_, sensor_data->joint_vel_, false);
+  robot_->UpdateRobotModel(Eigen::Vector3d::Zero(),
+                           Eigen::Quaterniond(base_joint_ori_rot).normalized(),
+                           Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
+                           sensor_data->joint_pos_, sensor_data->joint_vel_,
+                           false);
 
   // Estimate floating base position
   // anchor frame depending on the stance foot
   Eigen::Vector3d anchor_frame_pos =
       robot_->GetLinkIsometry(sp_->stance_foot_).translation();
   Eigen::Vector3d anchor_frame_vel =
-      robot_->GetLinkSpatialVel(sp_->stance_foot_).tail(3);
+      robot_->GetLinkSpatialVel(sp_->stance_foot_).tail<3>();
   if (sp_->stance_foot_ != sp_->prev_stance_foot_) {
     Eigen::Vector3d anchor_frame_pos_diff =
         anchor_frame_pos -
@@ -87,7 +88,7 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
 
   // Update robot model with full estimate
   robot_->UpdateRobotModel(
-      base_joint_pos, Eigen::Quaterniond(base_joint_ori).normalized(),
+      base_joint_pos, Eigen::Quaterniond(base_joint_ori_rot).normalized(),
       base_joint_lin_vel, sensor_data->imu_ang_vel_, sensor_data->joint_pos_,
       sensor_data->joint_vel_, true);
 
@@ -104,7 +105,7 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   // Save estimated base joint states
   DracoDataManager *dm = DracoDataManager::GetDataManager();
   dm->data_->est_base_joint_pos_ = base_joint_pos;
-  Eigen::Quaterniond base_joint_quat(base_joint_ori);
+  Eigen::Quaterniond base_joint_quat(base_joint_ori_rot);
   dm->data_->est_base_joint_ori_ << base_joint_quat.normalized().coeffs();
   dm->data_->est_base_joint_lin_vel_ = base_joint_lin_vel;
   dm->data_->est_base_joint_ang_vel_ = sensor_data->imu_ang_vel_;
@@ -120,7 +121,8 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
 
 void DracoStateEstimator::_ComputeDCM() {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();
-  Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+  Eigen::Vector3d com_vel =
+      robot_->GetRobotComLinVel(); // TODO: use filtered com vel
   double omega = sqrt(9.81 / com_pos[2]);
 
   sp_->prev_dcm_ = sp_->dcm_;

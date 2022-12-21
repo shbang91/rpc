@@ -29,8 +29,9 @@ void DoubleSupportStandUp::FirstVisit() {
     init_com_pos[2] =
         robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
 
-  Eigen::Quaterniond init_torso_quat(
-      robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
+  Eigen::Matrix3d R_w_torso =
+      robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
+  Eigen::Quaterniond init_torso_quat(R_w_torso);
 
   // desired com & torso ori setting
   Eigen::Vector3d target_com_pos =
