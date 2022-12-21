@@ -522,7 +522,7 @@ void DCMPlanner::GetRefOriAngVelAngAcc(const double t,
   pelvis_ori_quat_curves_[step_idx].GetAngularAcceleration(s, ang_acc_out);
 }
 
-Eigen::Vector3d DCMPlanner::GetRefVrp(const int current_time) const {
+Eigen::Vector3d DCMPlanner::GetRefVrp(const double current_time) const {
   Eigen::Vector3d ref_dcm = GetRefDCM(current_time);
   Eigen::Vector3d ref_dcm_vel = GetRefDCMVel(current_time);
   return ref_dcm - b_ * ref_dcm_vel;
@@ -694,13 +694,13 @@ bool DCMPlanner::_GetTimeSwingStartAndEnd(const int step_idx,
   }
 }
 
-Eigen::Vector3d DCMPlanner::GetRefCoMPos(const int current_time) const {
+Eigen::Vector3d DCMPlanner::GetRefCoMPos(const double current_time) const {
   double time = _ClampDouble(current_time - t_start_, 0., t_tot_dur_);
   int index = std::floor(time / dt_local_);
   return ref_com_pos_[index];
 }
 
-Eigen::Vector3d DCMPlanner::GetRefCoMVel(const int current_time) const {
+Eigen::Vector3d DCMPlanner::GetRefCoMVel(const double current_time) const {
   if (current_time < t_start_)
     return Eigen::Vector3d::Zero();
 
@@ -709,7 +709,7 @@ Eigen::Vector3d DCMPlanner::GetRefCoMVel(const int current_time) const {
   return ref_com_vel_[index];
 }
 
-Eigen::Vector3d DCMPlanner::GetRefCoMAcc(const int current_time) const {
+Eigen::Vector3d DCMPlanner::GetRefCoMAcc(const double current_time) const {
   if (current_time < t_start_)
     return Eigen::Vector3d::Zero();
 

@@ -11,7 +11,7 @@ DCMTrajectoryManager::DCMTrajectoryManager(DCMPlanner *dcm_planner,
     : dcm_planner_(dcm_planner), com_task_(com_task),
       torso_ori_task_(torso_ori_task), robot_(robot), lfoot_idx_(lfoot_idx),
       rfoot_idx_(rfoot_idx), current_foot_step_idx_(0),
-      first_swing_leg_(end_effector::LFoot), b_first_visit_(true),
+      first_swing_leg_(end_effector::LFoot), /*b_first_visit_(true),*/
       walking_primitive_(-1) {
   util::PrettyConstructor(2, "DCMTrajectoryManager");
 
@@ -41,64 +41,61 @@ bool DCMTrajectoryManager::Initialize(const double t_walk_start,
 
   init_mid_foot.ComputeMidFoot(init_left_foot, init_right_foot, init_mid_foot);
 
-  if (b_first_visit_) {
-    // generate foot step list depening on walking primitives
-    switch (walking_primitive_) {
-    case dcm_walking_primitive::kFwdWalk:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ = FootStep::GetFwdWalkFootStep(
-          n_steps_, nominal_forward_step_, nominal_footwidth_, first_swing_leg_,
-          init_mid_foot);
-      _AlternateLeg();
-      break;
-    case dcm_walking_primitive::kBwdWalk:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ = FootStep::GetFwdWalkFootStep(
-          n_steps_, nominal_backward_step_, nominal_footwidth_,
-          first_swing_leg_, init_mid_foot);
-      _AlternateLeg();
-      break;
-    case dcm_walking_primitive::kInPlaceWalk:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ = FootStep::GetInPlaceWalkFootStep(
-          n_steps_, nominal_footwidth_, first_swing_leg_, init_mid_foot);
-      _AlternateLeg();
-      break;
+  // if (b_first_visit_) {
+  // generate foot step list depening on walking primitives
+  switch (walking_primitive_) {
+  case dcm_walking_primitive::kFwdWalk:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetFwdWalkFootStep(
+        n_steps_, nominal_forward_step_, nominal_footwidth_, first_swing_leg_,
+        init_mid_foot);
+    _AlternateLeg();
+    break;
+  case dcm_walking_primitive::kBwdWalk:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetFwdWalkFootStep(
+        n_steps_, nominal_backward_step_, nominal_footwidth_, first_swing_leg_,
+        init_mid_foot);
+    _AlternateLeg();
+    break;
+  case dcm_walking_primitive::kInPlaceWalk:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetInPlaceWalkFootStep(
+        n_steps_, nominal_footwidth_, first_swing_leg_, init_mid_foot);
+    _AlternateLeg();
+    break;
 
-    case dcm_walking_primitive::kLeftTurn:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ = FootStep::GetTurningFootStep(
-          n_steps_, nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
-      break;
+  case dcm_walking_primitive::kLeftTurn:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetTurningFootStep(
+        n_steps_, nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
+    break;
 
-    case dcm_walking_primitive::kRightTurn:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ = FootStep::GetTurningFootStep(
-          n_steps_, -nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
-      break;
+  case dcm_walking_primitive::kRightTurn:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetTurningFootStep(
+        n_steps_, -nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
+    break;
 
-    case dcm_walking_primitive::kLeftStrafe:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ =
-          FootStep::GetStrafeFootStep(n_steps_, nominal_strafe_distance_,
-                                      nominal_footwidth_, init_mid_foot);
-      break;
+  case dcm_walking_primitive::kLeftStrafe:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetStrafeFootStep(
+        n_steps_, nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
+    break;
 
-    case dcm_walking_primitive::kRightStrafe:
-      _ResetIndexAndClearFootSteps();
-      foot_step_list_ =
-          FootStep::GetStrafeFootStep(n_steps_, -nominal_strafe_distance_,
-                                      nominal_footwidth_, init_mid_foot);
-      break;
+  case dcm_walking_primitive::kRightStrafe:
+    _ResetIndexAndClearFootSteps();
+    foot_step_list_ = FootStep::GetStrafeFootStep(
+        n_steps_, -nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
+    break;
 
-    default:
-      std::cerr
-          << "[DCMTrajectoryManager] ERROR. Walking Primitives are not set"
-          << std::endl;
-      std::exit(EXIT_FAILURE);
-    }
-    b_first_visit_ = false;
+  default:
+    std::cerr << "[DCMTrajectoryManager] ERROR. Walking Primitives are not set"
+              << std::endl;
+    std::exit(EXIT_FAILURE);
   }
+  // b_first_visit_ = false;
+  //}
 
   int max_foot_steps_preview(40);
   _UpdateFootStepsPreviewList(max_foot_steps_preview);
@@ -131,7 +128,7 @@ bool DCMTrajectoryManager::Initialize(const double t_walk_start,
   return true;
 }
 
-void DCMTrajectoryManager::UpdateDesired(const int current_time) {
+void DCMTrajectoryManager::UpdateDesired(const double current_time) {
   // get reference traj for dcm & com & torso ori
 
   // Eigen::Vector3d des_dcm_pos = dcm_planner_->GetRefDCM(current_time);

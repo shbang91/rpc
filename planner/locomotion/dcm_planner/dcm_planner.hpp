@@ -92,16 +92,16 @@ public:
   // getter desired trajectories
   Eigen::Vector3d GetRefDCM(const double current_time) const;
   Eigen::Vector3d GetRefDCMVel(const double current_time) const;
-  Eigen::Vector3d GetRefCoMPos(const int current_time) const;
-  Eigen::Vector3d GetRefCoMVel(const int current_time) const;
-  Eigen::Vector3d GetRefCoMAcc(const int current_time) const;
+  Eigen::Vector3d GetRefCoMPos(const double current_time) const;
+  Eigen::Vector3d GetRefCoMVel(const double current_time) const;
+  Eigen::Vector3d GetRefCoMAcc(const double current_time) const;
 
   void GetRefOriAngVelAngAcc(const double t, Eigen::Quaterniond &quat_out,
                              Eigen::Vector3d &ang_vel_out,
                              Eigen::Vector3d &ang_acc_out);
-  Eigen::Vector3d GetRefVrp(const int current_time) const;
+  Eigen::Vector3d GetRefVrp(const double current_time) const;
 
-private:
+protected:
   // setter related variables
   double mass_ = 50;
   double gravity_ = 9.81;

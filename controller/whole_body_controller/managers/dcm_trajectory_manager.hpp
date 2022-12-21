@@ -31,7 +31,7 @@ public:
                   const Eigen::Vector3d &init_dcm_pos,
                   const Eigen::Vector3d &init_dcm_vel);
 
-  void UpdateDesired(const int current_time);
+  void UpdateDesired(const double current_time);
 
   // =====================================================================
   // footstep generation methods -> InitializeParameters method need to be
@@ -79,7 +79,7 @@ private:
   int lfoot_idx_;
   int rfoot_idx_;
 
-  bool b_first_visit_;
+  // bool b_first_visit_;
   std::vector<FootStep> foot_step_list_;
   std::vector<FootStep> foot_step_preview_list_;
 
