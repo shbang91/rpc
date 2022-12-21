@@ -18,7 +18,7 @@ controller:
 wbc:
   task:
     com_task:
-      com_feedback_source: 0 # 0: com feedback / 1: dcm feedback
+      com_feedback_source: 1 # 0: com feedback / 1: dcm feedback
       com_height_target_source: 0 # 0: com height / 1: base height
 
       ## sim params
@@ -26,7 +26,7 @@ wbc:
       sim_kp : [200., 200., 200.]
       sim_kd : [10., 10., 5.]
       sim_icp_weight : [20., 20., 20.] # only used when feedback source : 1
-      sim_icp_kp : [20., 20., 100.]
+      sim_icp_kp : [200., 200., 200.]
       sim_icp_kd : [0., 0., 5.] # x, y will be ignored
       sim_icp_ki : [0.1, 0.1, 0.1] 
       sim_time_constant : 5.

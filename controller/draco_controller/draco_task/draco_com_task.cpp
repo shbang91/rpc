@@ -54,8 +54,8 @@ void DracoComTask::UpdateOpCommand() {
         kp_.head(2).cwiseProduct(sp_->dcm_.head<2>() - des_icp);
 
     op_cmd_.head(2) = omega * omega * (com_pos.head<2>() - des_cmp);
-    op_cmd_[2] =
-        kp_[2] * (des_pos_[2] - pos_[2]) + kd_[2] * (des_vel_[2] - vel_[2]);
+    op_cmd_[2] = des_acc_[2] + kp_[2] * (des_pos_[2] - com_pos[2]) +
+                 kd_[2] * (des_vel_[2] - com_vel[2]);
   } else {
     throw std::invalid_argument("No Matching Feedback Source on CoM Task");
   }
