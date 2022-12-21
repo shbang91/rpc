@@ -72,19 +72,31 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->rf_pos_task_, tci_container_->rf_ori_task_, robot_);
 
   Eigen::VectorXd weight_at_contact, weight_at_swing;
-  util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
-                      prefix + "_weight_at_contact", weight_at_contact);
-  util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
-                      prefix + "_weight_at_swing", weight_at_swing);
+  try {
+    util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
+                        prefix + "_weight", weight_at_contact);
+    util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
+                        prefix + "_weight_at_swing", weight_at_swing);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
   lf_pos_hm_ = new TaskHierarchyManager(tci_container_->lf_pos_task_,
                                         weight_at_contact, weight_at_swing);
   rf_pos_hm_ = new TaskHierarchyManager(tci_container_->rf_pos_task_,
                                         weight_at_contact, weight_at_swing);
 
-  util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
-                      prefix + "_weight_at_contact", weight_at_contact);
-  util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
-                      prefix + "_weight_at_swing", weight_at_swing);
+  try {
+    util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
+                        prefix + "_weight", weight_at_contact);
+    util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
+                        prefix + "_weight_at_swing", weight_at_swing);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
   lf_ori_hm_ = new TaskHierarchyManager(tci_container_->lf_ori_task_,
                                         weight_at_contact, weight_at_swing);
   rf_ori_hm_ = new TaskHierarchyManager(tci_container_->rf_ori_task_,

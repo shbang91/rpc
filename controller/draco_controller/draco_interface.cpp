@@ -36,16 +36,13 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
     sp_->servo_dt_ =
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
 
-    if (DracoDataManager::GetDataManager()->IsInitialized()) {
+    if (!DracoDataManager::GetDataManager()->IsInitialized()) {
       std::string socket_address =
           util::ReadParameter<std::string>(cfg, "ip_address");
       DracoDataManager::GetDataManager()->InitializeSocket(
           socket_address); // initalize data publisher
     }
 
-  } catch (const YAML::ParserException &ex) {
-    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

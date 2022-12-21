@@ -9,9 +9,6 @@ DracoComTask::DracoComTask(PinocchioRobotSystem *robot)
   util::PrettyConstructor(3, "DracoCoMTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
-
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
 }
 
 void DracoComTask::UpdateOpCommand() {
@@ -23,18 +20,10 @@ void DracoComTask::UpdateOpCommand() {
     pos_ << com_pos[0], com_pos[1], com_pos[2];
     vel_ << com_vel[0], com_vel[1], com_vel[2];
 
-    if (com_height_target_source_ == com_height_target_source::kComHeight) {
-      // doing just way it is
-      //
-    } else if (com_height_target_source_ ==
-               com_height_target_source::kBaseHeight) {
+    if (com_height_target_source_ == com_height_target_source::kBaseHeight) {
       pos_[2] =
           robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-      vel_[2] = robot_->GetLinkSpatialVel(
-          draco_link::torso_com_link)[5]; // TODO: base velocity filtering for
-                                          // real exp
-    } else {
-      throw std::invalid_argument("No Matching CoM Height Task Target");
+      vel_[2] = robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
     }
 
     pos_err_ = des_pos_ - pos_;
@@ -48,31 +37,23 @@ void DracoComTask::UpdateOpCommand() {
     Eigen::Vector3d com_vel =
         b_sim_ ? robot_->GetRobotComLinVel() : sp_->com_vel_est_;
 
-    double omega =
-        sqrt(9.81 / des_pos_[2]); // TODO:  should be desired com height
-    Eigen::Vector2d des_dcm = des_pos_.head(2) + des_vel_.head(2) / omega;
-    Eigen::Vector2d des_dcm_dot = des_vel_.head(2) + des_acc_.head(2) / omega;
+    // TODO:  should be desired com height not base height
+    double omega = sqrt(9.81 / des_pos_[2]);
+    Eigen::Vector2d des_icp = des_pos_.head(2) + des_vel_.head(2) / omega;
+    Eigen::Vector2d des_icp_dot = des_vel_.head(2) + des_acc_.head(2) / omega;
 
-    if (com_height_target_source_ == com_height_target_source::kComHeight) {
-      // doing just way it is
-      //
-    } else if (com_height_target_source_ ==
-               com_height_target_source::kBaseHeight) {
+    if (com_height_target_source_ == com_height_target_source::kBaseHeight) {
       pos_[2] =
           robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-      vel_[2] = robot_->GetLinkSpatialVel(
-          draco_link::torso_com_link)[5]; // TODO: base velocity filtering for
-                                          // real exp
-
-    } else {
-      throw std::invalid_argument("No Matching CoM Height Task Target");
+      vel_[2] = robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
     }
 
+    // TODO: add integral feedback control law
     Eigen::Vector2d des_cmp =
-        sp_->dcm_.head(2) + omega * des_dcm_dot +
-        kp_.head(2).cwiseProduct(sp_->dcm_.head(2) - des_dcm);
+        sp_->dcm_.head<2>() - des_icp_dot / omega +
+        kp_.head(2).cwiseProduct(sp_->dcm_.head<2>() - des_icp);
 
-    op_cmd_.head(2) = omega * omega * (com_pos.head(2) - des_cmp);
+    op_cmd_.head(2) = omega * omega * (com_pos.head<2>() - des_cmp);
     op_cmd_[2] =
         kp_[2] * (des_pos_[2] - pos_[2]) + kd_[2] * (des_vel_[2] - vel_[2]);
   } else {
@@ -110,6 +91,8 @@ void DracoComTask::UpdateJacobianDotQdot() {
 
 void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
+    b_sim_ = b_sim;
+
     util::ReadParameter(node, "com_feedback_source", com_feedback_source_);
     util::ReadParameter(node, "com_height_target_source",
                         com_height_target_source_);
@@ -119,36 +102,26 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
             ? true
             : false;
 
-    if (b_sim) {
-      if (com_feedback_source_ == com_feedback_source::kComFeedback) {
-        util::ReadParameter(node, "kp", kp_);
-        util::ReadParameter(node, "kd", kd_);
-        util::ReadParameter(node, "weight", weight_);
-      } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
-        util::ReadParameter(node, "icp_kp", kp_);
-        util::ReadParameter(node, "icp_kd", kd_);
-        util::ReadParameter(node, "icp_ki", ki_);
-        util::ReadParameter(node, "icp_weight", weight_);
-      } else {
-        throw std::invalid_argument("No Matching CoM Feedback Source");
-      }
+    std::string prefix = b_sim ? "sim" : "exp";
+    if (com_feedback_source_ == com_feedback_source::kComFeedback) {
+      util::ReadParameter(node, prefix + "_kp", kp_);
+      util::ReadParameter(node, prefix + "_kd", kd_);
+      util::ReadParameter(node, prefix + "_weight", weight_);
+    } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
+      util::ReadParameter(node, prefix + "_icp_kp", kp_);
+      util::ReadParameter(node, prefix + "_icp_kd", kd_);
+      util::ReadParameter(node, prefix + "_icp_ki", ki_);
+      util::ReadParameter(node, prefix + "_icp_weight", weight_);
     } else {
-      if (com_feedback_source_ == com_feedback_source::kComFeedback) {
-        util::ReadParameter(node, "exp_kp", kp_);
-        util::ReadParameter(node, "exp_kd", kd_);
-        util::ReadParameter(node, "exp_weight", weight_);
-      } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
-        util::ReadParameter(node, "exp_icp_kp", kp_);
-        util::ReadParameter(node, "exp_icp_kd", kd_);
-        util::ReadParameter(node, "exp_icp_ki", ki_);
-        util::ReadParameter(node, "exp_icp_weight", weight_);
-      } else {
-        throw std::invalid_argument("No Matching CoM Feedback Source");
-      }
+      throw std::invalid_argument("No Matching CoM Feedback Source");
     }
-  } catch (std::runtime_error &e) {
+  } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  } catch (const std::invalid_argument &ex) {
+    std::cerr << "Error: " << ex.what() << " at file: [" << __FILE__ << "]"
+              << std::endl;
     std::exit(EXIT_FAILURE);
   }
 }
