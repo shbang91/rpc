@@ -1,6 +1,7 @@
 #pragma once
 
 #define THIS_COM "@THIS_COM@"
+#define B_USE_MATLOGGER @B_USE_MATLOGGER@
 
 namespace end_effector{
 constexpr int LFoot = 0;

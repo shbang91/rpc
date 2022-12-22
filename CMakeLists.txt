@@ -5,7 +5,6 @@ project(rpc)
 ##==================================================
 ## CMake Flags
 ##==================================================
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS on)
 add_compile_options(-fPIC)
@@ -23,13 +22,14 @@ set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 set(PYTHON_BINDING TRUE)
-#set(PYTHON_BINDING FALSE)
-option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" TRUE)
-option(BUILD_WITH_MATLOGGER "compile with MatLogger2" FALSE)
+option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
+option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
+
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-    message(STATUS "CMAKE_BUILD_TYPE not set to Release -> impacts
-    performance")
+  #set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
+message(STATUS "CMAKE_BUILD_TYPE not set to Release -> impacts performance")
 endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 ##==================================================
 ## Include Directory
@@ -58,6 +58,9 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 ## MatLogger2
 if(BUILD_WITH_MATLOGGER)
     find_package(matlogger2 REQUIRED)
+    set(B_USE_MATLOGGER true)
+else()
+    set(B_USE_MATLOGGER false)
 endif()
 
 #Boost

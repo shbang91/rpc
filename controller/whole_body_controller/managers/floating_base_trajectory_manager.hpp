@@ -1,6 +1,12 @@
 #pragma once
 #include <Eigen/Dense>
 
+#include "configuration.hpp"
+
+#if B_USE_MATLOGGER
+#include <matlogger2/matlogger2.h>
+#endif
+
 class Task;
 class PinocchioRobotSystem;
 class MinJerkCurveVec;
@@ -29,6 +35,7 @@ private:
 
   // floating base interpolation
   double duration_;
+
   Eigen::Vector3d init_com_pos_;
   Eigen::Vector3d target_com_pos_;
 
@@ -42,4 +49,9 @@ private:
   Eigen::Vector3d amp_;
   Eigen::Vector3d freq_;
   bool b_swaying_;
+
+#if B_USE_MATLOGGER
+  // save data
+  XBot::MatLogger2::Ptr logger_;
+#endif
 };

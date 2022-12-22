@@ -14,6 +14,10 @@ FloatingBaseTrajectoryManager::FloatingBaseTrajectoryManager(
       min_jerk_curve_(nullptr), min_jerk_time_(nullptr) {
 
   util::PrettyConstructor(2, "FloatingBaseTrajectoryManager");
+
+#if B_USE_MATLOGGER
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/task_references");
+#endif
 }
 
 FloatingBaseTrajectoryManager::~FloatingBaseTrajectoryManager() {
@@ -109,5 +113,12 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
     // update desired torso_ori des traj
     torso_ori_task_->UpdateDesired(des_torso_quat_vec, des_torso_ang_vel,
                                    des_torso_ang_acc);
+#if B_USE_MATLOGGER
+    // save data
+    logger_->add("torso_quat", des_torso_quat_vec);
+    logger_->add("torso_ang_vel", des_torso_ang_vel);
+    logger_->add("torso_ang_acc", des_torso_ang_acc);
+    logger_->add("time", state_machine_time);
+#endif
   }
 }
