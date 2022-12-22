@@ -183,20 +183,14 @@ void DracoController::GetCommand(void *command) {
 
     Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
     Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
-    Eigen::VectorXd wbc_trq_cmd = Eigen::VectorXd::Zero(robot_->NumActiveDof());
     ihwbc_->Solve(tci_container_->task_container_,
                   tci_container_->contact_container_,
                   tci_container_->internal_constraint_container_,
                   tci_container_->force_task_container_, wbc_qddot_cmd,
-                  wbc_rf_cmd, wbc_trq_cmd);
+                  wbc_rf_cmd, joint_trq_cmd_); // joint_trq_cmd_ size: 27
 
-    joint_trq_cmd_ = wbc_trq_cmd;
-    // TODO: joint integrator for real experiment
-    Eigen::VectorXd joint_acc_cmd =
-        sa_.rightCols(sa_.cols() - robot_->NumFloatDof()).transpose() *
-        wbc_qddot_cmd;
-    // Eigen::VectorXd joint_acc_cmd =
-    // wbc_qddot_cmd.tail<robot_->NumActiveDof()>();
+    // joint integrator for real experiment
+    Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd.tail(robot_->NumActiveDof());
     joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
                                  robot_->GetJointVel(), joint_pos_cmd_,
                                  joint_vel_cmd_);
