@@ -13,7 +13,7 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
   num_qdot_ = sa_.cols();
   num_active_ = sa_.rows();
 
-  if (sf) {
+  if (sf != nullptr) {
     sf_ = *sf;
     b_floating_ = true;
     num_float_ = sf_.rows();
@@ -23,7 +23,7 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
     num_float_ = 0;
   }
 
-  if (sv) {
+  if (sv != nullptr) {
     sv_ = *sv;
     b_passive_ = true;
     num_passive_ = sv_.rows();

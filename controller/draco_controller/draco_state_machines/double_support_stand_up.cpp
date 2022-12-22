@@ -28,7 +28,6 @@ void DoubleSupportStandUp::FirstVisit() {
   if (sp_->b_use_base_height_)
     init_com_pos[2] =
         robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-
   Eigen::Matrix3d R_w_torso =
       robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
   Eigen::Quaterniond init_torso_quat(R_w_torso);
@@ -52,6 +51,7 @@ void DoubleSupportStandUp::FirstVisit() {
   Eigen::Vector3d rot_y =
       foot_interpol_quat.normalized().toRotationMatrix().col(1);
   Eigen::Vector3d rot_x = rot_y.cross(rot_z);
+
   Eigen::Matrix3d target_torso_SO3;
   target_torso_SO3.col(0) = rot_x;
   target_torso_SO3.col(1) = rot_y;
