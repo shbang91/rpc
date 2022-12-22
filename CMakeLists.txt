@@ -25,11 +25,9 @@ set(PYTHON_BINDING TRUE)
 option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 
-if(NOT CMAKE_BUILD_TYPE MATCHES Release)
-  #set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
-message(STATUS "CMAKE_BUILD_TYPE not set to Release -> impacts performance")
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
 endif()
-message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 ##==================================================
 ## Include Directory
