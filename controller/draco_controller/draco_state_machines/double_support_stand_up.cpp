@@ -9,6 +9,17 @@
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "util/util.hpp"
 
+namespace {
+void MakeHorizontal(Eigen::Isometry3d &pose) {
+  const Eigen::Matrix3d R = pose.linear();
+  const Eigen::Vector3d p = pose.translation();
+  Eigen::Vector3d rpy = util::rpyFromRotMat(R);
+  pose.translation() = Eigen::Vector3d{p(0), p(1), 0.};
+  pose.linear() = util::rpyToRotMat(0., 0., rpy(2));
+}
+
+} // namespace
+
 DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
@@ -33,35 +44,25 @@ void DoubleSupportStandUp::FirstVisit() {
   Eigen::Quaterniond init_torso_quat(R_w_torso);
 
   // desired com & torso ori setting
+  Eigen::Isometry3d lfoot_iso =
+      robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  Eigen::Isometry3d rfoot_iso =
+      robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  MakeHorizontal(lfoot_iso);
+  MakeHorizontal(rfoot_iso);
+
   Eigen::Vector3d target_com_pos =
-      (robot_->GetLinkIsometry(draco_link::l_foot_contact).translation() +
-       robot_->GetLinkIsometry(draco_link::r_foot_contact).translation()) /
-      2.;
-  target_com_pos[2] = target_height_; // base or com
+      (lfoot_iso.translation() + rfoot_iso.translation()) / 2.;
+  target_com_pos[2] = target_height_;
 
-  Eigen::Quaterniond l_foot_quat(
-      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
-  Eigen::Quaterniond r_foot_quat(
-      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
-  Eigen::Quaterniond foot_interpol_quat = l_foot_quat.slerp(0.5, r_foot_quat);
-
-  //  parallel to world ground
-  Eigen::Vector3d rot_z(0, 0, 1);
-
-  Eigen::Vector3d rot_y =
-      foot_interpol_quat.normalized().toRotationMatrix().col(1);
-  Eigen::Vector3d rot_x = rot_y.cross(rot_z);
-
-  Eigen::Matrix3d target_torso_SO3;
-  target_torso_SO3.col(0) = rot_x;
-  target_torso_SO3.col(1) = rot_y;
-  target_torso_SO3.col(2) = rot_z;
-  Eigen::Quaterniond target_torso_quat(target_torso_SO3);
+  Eigen::Quaterniond lfoot_quat(lfoot_iso.linear());
+  Eigen::Quaterniond rfoot_quat(rfoot_iso.linear());
+  Eigen::Quaterniond target_torso_quat = lfoot_quat.slerp(0.5, rfoot_quat);
 
   // initialize floating trajectory
   ctrl_arch_->floating_base_tm_->InitializeFloatingBaseInterpolation(
-      init_com_pos, target_com_pos, init_torso_quat.normalized(),
-      target_torso_quat.normalized(), standup_duration_);
+      init_com_pos, target_com_pos, init_torso_quat, target_torso_quat,
+      standup_duration_);
 
   //  increase maximum normal reaction force
   ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
@@ -98,10 +99,8 @@ StateId DoubleSupportStandUp::GetNextState() {
 void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
   try {
     util::ReadParameter(node, "standup_duration", standup_duration_);
-    target_height_ =
-        (sp_->b_use_base_height_)
-            ? util::ReadParameter<double>(node, "target_base_height")
-            : util::ReadParameter<double>(node, "target_com_height");
+    std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
+    util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
     util::ReadParameter(node, "rf_z_max_interp_duration",
                         rf_z_max_interp_duration_);
   } catch (std::runtime_error &e) {
