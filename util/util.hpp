@@ -94,6 +94,12 @@ Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,
                                       const double pitch_rate,
                                       const double yaw_rate);
 
+// euler angles from rotation matrix
+Eigen::Vector3d rpyFromRotMat(const Eigen::Matrix3d &R);
+
+// euler angles to rotation matrix
+Eigen::Matrix3d rpyToRotMat(double r, double p, double y);
+
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori);
 

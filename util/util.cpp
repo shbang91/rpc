@@ -325,6 +325,21 @@ Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,
   return E * rpy_rates;
 }
 
+Eigen::Vector3d rpyFromRotMat(const Eigen::Matrix3d &R) {
+  Eigen::Quaterniond q(R);
+  Eigen::Vector3d ypr = QuatToEulerZYX(q.normalized());
+  return Eigen::Vector3d{ypr(2), ypr(1), ypr(0)};
+}
+
+Eigen::Matrix3d rpyToRotMat(double r, double p, double y) {
+  Eigen::Quaterniond q = Eigen::AngleAxisd(r, Eigen::Vector3d::UnitX()) *
+                         Eigen::AngleAxisd(p, Eigen::Vector3d::UnitY()) *
+                         Eigen::AngleAxisd(y, Eigen::Vector3d::UnitZ());
+  Eigen::Matrix3d m;
+  m = q;
+  return m.transpose().eval();
+}
+
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori) {
   Eigen::Quaternion<double> ori_diff1;
