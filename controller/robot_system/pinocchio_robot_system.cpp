@@ -64,24 +64,24 @@ void PinocchioRobotSystem::_Initialize() {
   joint_trq_limits_.resize(n_adof_, 2);
 
   if (b_fixed_base_) {
-    joint_pos_limits_.leftCols(1) = model_.lowerPositionLimit;
-    joint_pos_limits_.rightCols(1) = model_.upperPositionLimit;
-    joint_vel_limits_.leftCols(1) = -model_.velocityLimit;
-    joint_vel_limits_.rightCols(1) = model_.velocityLimit;
-    joint_trq_limits_.leftCols(1) = -model_.effortLimit;
-    joint_trq_limits_.rightCols(1) = model_.effortLimit;
+    joint_pos_limits_.leftCols<1>() = model_.lowerPositionLimit;
+    joint_pos_limits_.rightCols<1>() = model_.upperPositionLimit;
+    joint_vel_limits_.leftCols<1>() = -model_.velocityLimit;
+    joint_vel_limits_.rightCols<1>() = model_.velocityLimit;
+    joint_trq_limits_.leftCols<1>() = -model_.effortLimit;
+    joint_trq_limits_.rightCols<1>() = model_.effortLimit;
   } else {
-    joint_pos_limits_.leftCols(1) =
+    joint_pos_limits_.leftCols<1>() =
         model_.lowerPositionLimit.segment(n_float_, n_adof_);
-    joint_pos_limits_.rightCols(1) =
+    joint_pos_limits_.rightCols<1>() =
         model_.upperPositionLimit.segment(n_float_, n_adof_);
-    joint_vel_limits_.leftCols(1) =
+    joint_vel_limits_.leftCols<1>() =
         -model_.velocityLimit.segment(n_float_, n_adof_);
-    joint_vel_limits_.rightCols(1) =
+    joint_vel_limits_.rightCols<1>() =
         model_.velocityLimit.segment(n_float_, n_adof_);
-    joint_trq_limits_.leftCols(1) =
+    joint_trq_limits_.leftCols<1>() =
         -model_.effortLimit.segment(n_float_, n_adof_);
-    joint_trq_limits_.rightCols(1) =
+    joint_trq_limits_.rightCols<1>() =
         model_.effortLimit.segment(n_float_, n_adof_);
   }
 
@@ -99,14 +99,14 @@ void PinocchioRobotSystem::UpdateRobotModel(
     const Eigen::Vector3d &base_joint_ang_vel, const Eigen::VectorXd &joint_pos,
     const Eigen::VectorXd &joint_vel, bool b_update_centroid) {
   if (!b_fixed_base_) {
-    q_.segment(0, 3) = base_joint_pos;
-    q_.segment(3, 4) << base_joint_quat.normalized().coeffs();
+    q_.segment<3>(0) = base_joint_pos;
+    q_.segment<3>(3) << base_joint_quat.normalized().coeffs();
     q_.tail(n_q_ - 7) = joint_pos;
 
     Eigen::Matrix3d rot_w_basejoint =
         base_joint_quat.normalized().toRotationMatrix();
-    qdot_.segment(0, 3) = rot_w_basejoint.transpose() * base_joint_lin_vel;
-    qdot_.segment(3, 3) = rot_w_basejoint.transpose() * base_joint_ang_vel;
+    qdot_.segment<3>(0) = rot_w_basejoint.transpose() * base_joint_lin_vel;
+    qdot_.segment<3>(3) = rot_w_basejoint.transpose() * base_joint_ang_vel;
     qdot_.tail(n_qdot_ - n_float_) = joint_vel;
 
   } else {
@@ -126,11 +126,11 @@ void PinocchioRobotSystem::_UpdateCentroidalQuantities() {
   Ig_.block<3, 3>(0, 0) = data_.Ig.matrix().block<3, 3>(3, 3);
   Ig_.block<3, 3>(3, 3) = data_.Ig.matrix().block<3, 3>(0, 0);
 
-  Hg_.segment(0, 3) = data_.hg.angular();
-  Hg_.segment(3, 3) = data_.hg.linear();
+  Hg_.segment<3>(0) = data_.hg.angular();
+  Hg_.segment<3>(3) = data_.hg.linear();
 
-  Ag_.topRows(3) = data_.Ag.bottomRows(3);
-  Ag_.bottomRows(3) = data_.Ag.topRows(3);
+  Ag_.topRows<3>() = data_.Ag.bottomRows<3>();
+  Ag_.bottomRows<3>() = data_.Ag.topRows<3>();
 }
 
 // Kinematics getter
@@ -183,8 +183,8 @@ PinocchioRobotSystem::GetLinkJacobian(const int link_idx) {
                               pinocchio::LOCAL_WORLD_ALIGNED, jac);
   Eigen::Matrix<double, 6, Eigen::Dynamic> ret =
       Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
-  ret.topRows(3) = jac.bottomRows(3);
-  ret.bottomRows(3) = jac.topRows(3);
+  ret.topRows<3>() = jac.bottomRows<3>();
+  ret.bottomRows<3>() = jac.topRows<3>();
   return ret;
 }
 
@@ -195,8 +195,8 @@ PinocchioRobotSystem::GetLinkJacobianDotQdot(const int link_idx) {
       model_, data_, link_idx, pinocchio::LOCAL_WORLD_ALIGNED);
 
   Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
-  ret.segment(0, 3) = fa.angular();
-  ret.segment(3, 3) = fa.linear();
+  ret.segment<3>(0) = fa.angular();
+  ret.segment<3>(3) = fa.linear();
 
   return ret;
 }
@@ -206,8 +206,8 @@ PinocchioRobotSystem::GetLinkBodySpatialVel(const int link_idx) const {
   Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
   pinocchio::Motion fv =
       pinocchio::getFrameVelocity(model_, data_, link_idx, pinocchio::LOCAL);
-  ret.segment(0, 3) = fv.angular();
-  ret.segment(3, 3) = fv.linear();
+  ret.segment<3>(0) = fv.angular();
+  ret.segment<3>(3) = fv.linear();
   return ret;
 }
 
@@ -220,8 +220,8 @@ PinocchioRobotSystem::GetLinkBodyJacobian(const int link_idx) {
   pinocchio::getFrameJacobian(model_, data_, link_idx, pinocchio::LOCAL, jac);
   Eigen::Matrix<double, 6, Eigen::Dynamic> ret =
       Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
-  ret.topRows(3) = jac.bottomRows(3);
-  ret.bottomRows(3) = jac.topRows(3);
+  ret.topRows<3>() = jac.bottomRows<3>();
+  ret.bottomRows<3>() = jac.topRows<3>();
   return ret;
 }
 
@@ -232,8 +232,8 @@ PinocchioRobotSystem::GetLinkBodyJacobianDotQdot(const int link_idx) {
       model_, data_, link_idx, pinocchio::LOCAL);
 
   Eigen::Matrix<double, 6, 1> ret = Eigen::Matrix<double, 6, 1>::Zero();
-  ret.segment(0, 3) = fa.angular();
-  ret.segment(3, 3) = fa.linear();
+  ret.segment<3>(0) = fa.angular();
+  ret.segment<3>(3) = fa.linear();
 
   return ret;
 }
@@ -253,7 +253,7 @@ PinocchioRobotSystem::GetComLinJacobian() {
 
 Eigen::Matrix<double, 3, 1> PinocchioRobotSystem::GetComLinJacobianDotQdot() {
   return (computeCentroidalMapTimeVariation(model_, data_, q_, qdot_)
-              .topRows(3)) /
+              .topRows<3>()) /
          total_mass_ * qdot_;
 }
 

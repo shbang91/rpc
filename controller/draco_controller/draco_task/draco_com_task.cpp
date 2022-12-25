@@ -39,8 +39,9 @@ void DracoComTask::UpdateOpCommand() {
 
     // TODO:  should be desired com height not base height
     double omega = sqrt(9.81 / des_pos_[2]);
-    Eigen::Vector2d des_icp = des_pos_.head(2) + des_vel_.head(2) / omega;
-    Eigen::Vector2d des_icp_dot = des_vel_.head(2) + des_acc_.head(2) / omega;
+    Eigen::Vector2d des_icp = des_pos_.head<2>() + des_vel_.head<2>() / omega;
+    Eigen::Vector2d des_icp_dot =
+        des_vel_.head<2>() + des_acc_.head<2>() / omega;
 
     if (com_height_target_source_ == com_height_target_source::kBaseHeight) {
       pos_[2] =
@@ -51,9 +52,9 @@ void DracoComTask::UpdateOpCommand() {
     // TODO: add integral feedback control law
     Eigen::Vector2d des_cmp =
         sp_->dcm_.head<2>() - des_icp_dot / omega +
-        kp_.head(2).cwiseProduct(sp_->dcm_.head<2>() - des_icp);
+        kp_.head<2>().cwiseProduct(sp_->dcm_.head<2>() - des_icp);
 
-    op_cmd_.head(2) = omega * omega * (com_pos.head<2>() - des_cmp);
+    op_cmd_.head<2>() = omega * omega * (com_pos.head<2>() - des_cmp);
     op_cmd_[2] = des_acc_[2] + kp_[2] * (des_pos_[2] - com_pos[2]) +
                  kd_[2] * (des_vel_[2] - com_vel[2]);
   } else {
@@ -81,7 +82,8 @@ void DracoComTask::UpdateJacobianDotQdot() {
     jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot();
   } else if (com_height_target_source_ ==
              com_height_target_source::kBaseHeight) {
-    jacobian_dot_q_dot_.head(2) = robot_->GetComLinJacobianDotQdot().head(2);
+    jacobian_dot_q_dot_.head<2>() =
+        robot_->GetComLinJacobianDotQdot().head<2>();
     jacobian_dot_q_dot_[2] =
         robot_->GetLinkJacobianDotQdot(draco_link::torso_com_link)[5];
   } else {
