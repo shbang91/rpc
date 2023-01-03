@@ -8,7 +8,9 @@ public:
   virtual ~DracoTCIContainer();
 
   Task *jpos_task_;
-  Task *com_task_;
+  // Task *com_task_;
+  Task *com_xy_task_;
+  Task *com_z_task_;
   Task *torso_ori_task_;
   Task *upper_body_task_;
   Task *lf_pos_task_;

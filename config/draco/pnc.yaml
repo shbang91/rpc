@@ -17,28 +17,48 @@ controller:
 
 wbc:
   task:
-    com_task:
+    com_xy_task:
       com_feedback_source: 1 # 0: com feedback / 1: dcm feedback
-      com_height_target_source: 0 # 0: com height / 1: base height
-
       ## sim params
-      sim_weight : [20., 20., 20.]
-      sim_kp : [200., 200., 200.]
-      sim_kd : [10., 10., 5.]
-      sim_icp_weight : [20., 20., 20.] # only used when feedback source : 1
-      sim_icp_kp : [200., 200., 200.]
-      sim_icp_kd : [0., 0., 5.] # x, y will be ignored
-      sim_icp_ki : [0.1, 0.1, 0.1] 
+      sim_weight : [20., 20.]
+      sim_kp : [200., 200.]
+      sim_kd : [10., 10.]
+      sim_icp_weight : [20., 20.] # only used when feedback source : 1
+      sim_icp_kp : [200., 200.]
+      sim_icp_kd : [0., 0.,] # x, y will be ignored
+      sim_icp_ki : [0.1, 0.1] 
       sim_time_constant : 5.
 
       ## exp params
-      exp_weight : [20., 20., 20.]
-      exp_kp : [200., 200., 200.]
-      exp_kd : [10., 10., 5.]
-      exp_icp_weight : [20., 20., 20.] # only used when feedback source : 1
-      exp_icp_kp : [10., 10., 100.]
-      exp_icp_kd : [0., 0., 5.] # x, y will be ignored
-      exp_icp_ki : [0.1, 0.1, 0.1] 
+      exp_weight : [20., 20.]
+      exp_kp : [200., 200.]
+      exp_kd : [10., 10.]
+      exp_icp_weight : [20., 20.] # only used when feedback source : 1
+      exp_icp_kp : [10., 10.]
+      exp_icp_kd : [0., 0.] # x, y will be ignored
+      exp_icp_ki : [0.1, 0.1] 
+      exp_time_constant : 5.
+
+    com_z_task:
+      com_height_target_source: 0 # 0: com height / 1: base height
+      ## sim params
+      sim_com_weight : [20.]
+      sim_com_kp : [200.]
+      sim_com_kd : [5.]
+
+      sim_base_weight : [20.] # only used when feedback source : 1
+      sim_base_kp : [200.]
+      sim_base_kd : [5.] # x, y will be ignored
+      sim_time_constant : 5.
+
+      ## exp params
+      exp_com_weight : [20.]
+      exp_com_kp : [200.]
+      exp_com_kd : [5.]
+
+      exp_base_weight : [20.] # only used when feedback source : 1
+      exp_base_kp : [100.]
+      exp_base_kd : [5.] # x, y will be ignored
       exp_time_constant : 5.
 
     torso_ori_task:

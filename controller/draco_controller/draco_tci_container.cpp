@@ -1,7 +1,9 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
-#include "controller/draco_controller/draco_task/draco_com_task.hpp"
+//#include "controller/draco_controller/draco_task/draco_com_task.hpp"
+#include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
+#include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
@@ -14,7 +16,9 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   // Tasks List
   //=============================================================
   jpos_task_ = new JointTask(robot_);
-  com_task_ = new DracoComTask(robot_);
+  // com_task_ = new DracoComTask(robot_);
+  com_xy_task_ = DracoComXYTask(robot_);
+  com_z_task_ = DracoComZTask(robot_);
   torso_ori_task_ = new LinkOriTask(robot_, draco_link::torso_com_link);
   std::vector<int> upper_body_jidx{
       draco_joint::l_shoulder_fe, draco_joint::l_shoulder_aa,
@@ -32,7 +36,9 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
 
   // wbc task list w/o joint task
   task_container_.clear();
-  task_container_.push_back(com_task_);
+  // task_container_.push_back(com_task_);
+  task_container_.push_back(com_xy_task_);
+  task_container_.push_back(com_z_task_);
   task_container_.push_back(torso_ori_task_);
   task_container_.push_back(upper_body_task_);
   task_container_.push_back(lf_pos_task_);

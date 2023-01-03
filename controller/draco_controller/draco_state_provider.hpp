@@ -33,6 +33,8 @@ public:
 
   bool b_use_base_height_;
 
+  double des_com_height_;
+
 private:
   DracoStateProvider();
 };

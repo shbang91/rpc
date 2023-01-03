@@ -2,6 +2,7 @@
 #include "controller/whole_body_controller/task.hpp"
 #include "util/util.hpp"
 #include <stdexcept>
+
 namespace com_feedback_source {
 constexpr int kComFeedback = 0;
 constexpr int kDcmFeedback = 1;
