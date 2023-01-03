@@ -24,7 +24,7 @@ wbc:
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
       sim_icp_weight : [20., 20.] # only used when feedback source : 1
-      sim_icp_kp : [200., 200.]
+      sim_icp_kp : [10., 10.]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
       sim_icp_ki : [0.1, 0.1] 
       sim_time_constant : 5.
@@ -40,25 +40,25 @@ wbc:
       exp_time_constant : 5.
 
     com_z_task:
-      com_height_target_source: 0 # 0: com height / 1: base height
+      com_height_target_source: 1 # 0: com height / 1: base height
       ## sim params
       sim_com_weight : [20.]
-      sim_com_kp : [200.]
+      sim_com_kp : [100.]
       sim_com_kd : [5.]
 
-      sim_base_weight : [20.] # only used when feedback source : 1
+      sim_base_weight : [20.] # only used when target source : 1
       sim_base_kp : [200.]
       sim_base_kd : [5.] # x, y will be ignored
       sim_time_constant : 5.
 
       ## exp params
       exp_com_weight : [20.]
-      exp_com_kp : [200.]
-      exp_com_kd : [5.]
+      exp_com_kp : [50.]
+      exp_com_kd : [1.5]
 
-      exp_base_weight : [20.] # only used when feedback source : 1
-      exp_base_kp : [100.]
-      exp_base_kd : [5.] # x, y will be ignored
+      exp_base_weight : [20.] # only used when target source : 1
+      exp_base_kp : [50.]
+      exp_base_kd : [1.5] # x, y will be ignored
       exp_time_constant : 5.
 
     torso_ori_task:
@@ -154,8 +154,8 @@ state_machine:
 
     stand_up:
       standup_duration: 1.
-      target_com_height: 0.7
-      target_base_height: 0.9
+      target_com_height: 0.658
+      target_base_height: 0.90
 
       rf_z_max_interp_duration: 0.1
 
@@ -170,7 +170,7 @@ state_machine:
       frequency: [0., 0.7, 0.] # [hz]
 
 dcm_walking:
-  com_height: 0.7 #same as the target_com_height in stand_up?
+  com_height: 0.658 #same as the target_com_height in stand_up?
   t_additional_init_trans: 0.
   t_contact_trans: 0.45
   t_swing: 0.55
@@ -187,7 +187,7 @@ dcm_walking:
 lmpc_walking:
 
   ##dcm related params
-  com_height: 0.7 #same as the target_com_height in stand_up?
+  com_height: 0.658 #same as the target_com_height in stand_up?
   t_additional_init_trans: 0.
   t_contact_trans: 0.45
   t_swing: 0.55
