@@ -2,17 +2,19 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
+#include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 ContactTransitionStart::ContactTransitionStart(
     StateId state_id, PinocchioRobotSystem *robot,
     DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), end_time_(0.) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
 
   state_id_ == draco_states::kLFContactTransitionStart
       ? util::PrettyConstructor(2, "LFContactTransitionStart")
@@ -64,36 +66,54 @@ void ContactTransitionStart::FirstVisit() {
     end_time_ =
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetFinalContactTransferTime();
   else {
-    Eigen::Quaterniond init_torso_quat(
-        robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
-    Eigen::Vector3d init_dcm_pos = sp_->dcm_;
-    Eigen::Vector3d init_dcm_vel = sp_->dcm_vel_;
-    if (sp_->b_use_base_height_) {
-      init_dcm_pos[2] =
-          robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-      init_dcm_vel[2] =
-          robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
-    }
+    // Eigen::Quaterniond init_torso_quat(
+    // robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
+    // Eigen::Vector3d init_dcm_pos = sp_->dcm_;
+    // Eigen::Vector3d init_dcm_vel = sp_->dcm_vel_;
+    // if (sp_->b_use_base_height_) {
+    // init_dcm_pos[2] =
+    // robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
+    // init_dcm_vel[2] =
+    // robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
+    //}
 
     if (sp_->prev_state_ == draco_states::kDoubleSupportBalance) {
-      // TODO: consider torso ang vel
+      Eigen::Vector3d ini_des_dcm_pos = Eigen::Vector3d::Zero();
+      ini_des_dcm_pos << ctrl_arch_->tci_container_->com_xy_task_->DesiredPos(),
+          ctrl_arch_->tci_container_->com_z_task_->DesiredPos();
+
+      Eigen::Vector3d ini_des_dcm_vel = Eigen::Vector3d::Zero();
+      ini_des_dcm_vel << ctrl_arch_->tci_container_->com_xy_task_->DesiredVel(),
+          ctrl_arch_->tci_container_->com_z_task_->DesiredVel();
+
+      std::cout << "ini des dcm pos: " << ini_des_dcm_pos << std::endl;
+      std::cout << "ini des dcm vel: " << ini_des_dcm_vel << std::endl;
+
+      if (sp_->b_use_base_height_)
+        ini_des_dcm_pos[2] = sp_->des_com_height_;
+
+      std::cout << "ini des dcm pos after changes: " << ini_des_dcm_pos
+                << std::endl;
+
+      Eigen::Quaterniond ini_torso_quat = sp_->des_torso_quat_;
+
       ctrl_arch_->dcm_tm_->Initialize(
-          sp_->current_time_, dcm_transfer_type::kInitial, init_torso_quat,
-          init_dcm_pos, init_dcm_vel);
+          sp_->current_time_, dcm_transfer_type::kInitial, ini_torso_quat,
+          ini_des_dcm_pos, ini_des_dcm_vel);
       end_time_ =
           ctrl_arch_->dcm_tm_->GetDCMPlanner()
               ->GetInitialContactTransferTime() -
           ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampDownTime();
+    } else {
+      // TODO: replanning
+      // TODO: consider torso ang vel
+      int transfer_type = dcm_transfer_type::kMidStep;
+      // ctrl_arch_->dcm_tm_->Initialize(
+      // sp_->current_time_, dcm_transfer_type::kMidStep, init_torso_quat,
+      // init_dcm_pos, init_dcm_vel);
+      end_time_ =
+          ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime();
     }
-    // else {
-    // TODO: replanning
-    // TODO: consider torso ang vel
-    // ctrl_arch_->dcm_tm_->Initialize(
-    // sp_->current_time_, dcm_transfer_type::kMidStep, init_torso_quat,
-    // init_dcm_pos, init_dcm_vel);
-    // end_time_ =
-    // ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime();
-    //}
   }
 }
 

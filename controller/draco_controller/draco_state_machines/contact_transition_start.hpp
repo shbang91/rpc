@@ -24,6 +24,4 @@ private:
   DracoControlArchitecture *ctrl_arch_;
 
   DracoStateProvider *sp_;
-
-  double end_time_;
 };

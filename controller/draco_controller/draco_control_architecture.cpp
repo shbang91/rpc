@@ -1,6 +1,7 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
@@ -133,10 +134,16 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kLFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kLFContactTransitionStart,
                                  robot_, this);
+  state_machine_container_[draco_states::kLFContactTransitionEnd] =
+      new ContactTransitionEnd(draco_states::kLFContactTransitionEnd, robot_,
+                               this);
 
   state_machine_container_[draco_states::kRFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kRFContactTransitionStart,
                                  robot_, this);
+  state_machine_container_[draco_states::kRFContactTransitionEnd] =
+      new ContactTransitionEnd(draco_states::kRFContactTransitionEnd, robot_,
+                               this);
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -171,6 +178,8 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   // delete state_machine_container_[draco_states::kDoubleSupportSwayingLmpc];
   delete state_machine_container_[draco_states::kLFContactTransitionStart];
   delete state_machine_container_[draco_states::kRFContactTransitionStart];
+  delete state_machine_container_[draco_states::kLFContactTransitionEnd];
+  delete state_machine_container_[draco_states::kRFContactTransitionEnd];
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
