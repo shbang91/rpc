@@ -49,12 +49,12 @@ void DracoDataManager::SendData() {
   }
   msg.add_est_base_joint_ori(data_->est_base_joint_ori_[3]);
 
-  for (int i(0); i < 3; ++i) {
-    msg.add_des_com_pos(data_->des_com_pos_[i]);
-    msg.add_act_com_pos(data_->act_com_pos_[i]);
-    msg.add_des_com_vel(data_->des_com_vel_[i]);
-    msg.add_act_com_vel(data_->act_com_vel_[i]);
-  }
+  // for (int i(0); i < 3; ++i) {
+  // msg.add_des_com_pos(data_->des_com_pos_[i]);
+  // msg.add_act_com_pos(data_->act_com_pos_[i]);
+  // msg.add_des_com_vel(data_->des_com_vel_[i]);
+  // msg.add_act_com_vel(data_->act_com_vel_[i]);
+  //}
 
   // TODO:TEST
   // draco::msg_list msg_list;

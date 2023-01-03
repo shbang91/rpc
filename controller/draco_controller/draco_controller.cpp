@@ -224,8 +224,8 @@ void DracoController::_SaveData() {
   DracoDataManager *dm = DracoDataManager::GetDataManager();
 
   // task data
-  dm->data_->des_com_pos_ = tci_container_->com_task_->DesiredPos();
-  dm->data_->act_com_pos_ = tci_container_->com_task_->CurrentPos();
-  dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
-  dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
+  // dm->data_->des_com_pos_ = tci_container_->com_task_->DesiredPos();
+  // dm->data_->act_com_pos_ = tci_container_->com_task_->CurrentPos();
+  // dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
+  // dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
 }
