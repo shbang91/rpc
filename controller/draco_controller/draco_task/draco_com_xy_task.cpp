@@ -1,6 +1,6 @@
 #include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
-#include "controller/pinocchio_robot_system.hpp"
+#include "controller/robot_system/pinocchio_robot_system.hpp"
 
 #include <stdexcept>
 
@@ -24,19 +24,18 @@ void DracoCoMXYTask::UpdateOpCommand() {
     pos_err_ = des_pos_ - pos_;
     vel_err_ = des_vel_ - vel_;
 
-    op_cmd_ = des_acc_ + kp_.dot(pos_err_) + kd_.dot(vel_err_);
+    op_cmd_ =
+        des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 
-  } else if (feeback_source_ == feedback_source::kIcpFeedback) {
-    double omega =
-        kGravAcc / sp_->des_com_height_; // TODO: make sure com height task is
-                                         // set correctly
+  } else if (feedback_source_ == feedback_source::kIcpFeedback) {
+    double omega = kGravAcc / sp_->des_com_height_;
 
     Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
     Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;
 
     // TODO: add integral feedback ctrl law
-    Eigen::Vector2d des_cmp = sp_->dcm_.head<2>() - des_icp_dot / omgega +
-                              kp_.dot(sp_->dcm_.head<2>() - des_icp);
+    Eigen::Vector2d des_cmp = sp_->dcm_.head<2>() - des_icp_dot / omega +
+                              kp_.cwiseProduct(sp_->dcm_.head<2>() - des_icp);
 
     op_cmd_ = omega * omega * (com_xy_pos - des_cmp);
   }
@@ -50,7 +49,7 @@ void DracoCoMXYTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot().head<2>();
 }
 
-void DracoCoMXYTask::SetParameters(const YAML::Node node, const bool b_sim) {
+void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
 
     b_sim_ = b_sim;

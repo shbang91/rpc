@@ -17,8 +17,8 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   jpos_task_ = new JointTask(robot_);
   // com_task_ = new DracoComTask(robot_);
-  com_xy_task_ = DracoComXYTask(robot_);
-  com_z_task_ = DracoComZTask(robot_);
+  com_xy_task_ = new DracoCoMXYTask(robot_);
+  com_z_task_ = new DracoCoMZTask(robot_);
   torso_ori_task_ = new LinkOriTask(robot_, draco_link::torso_com_link);
   std::vector<int> upper_body_jidx{
       draco_joint::l_shoulder_fe, draco_joint::l_shoulder_aa,
@@ -92,7 +92,8 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
 DracoTCIContainer::~DracoTCIContainer() {
   // task
   delete jpos_task_;
-  delete com_task_;
+  delete com_xy_task_;
+  delete com_z_task_;
   delete torso_ori_task_;
   delete upper_body_task_;
   delete lf_pos_task_;
@@ -111,7 +112,8 @@ DracoTCIContainer::~DracoTCIContainer() {
 
 void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
   // task
-  com_task_->SetParameters(cfg_["wbc"]["task"]["com_task"], b_sim);
+  com_xy_task_->SetParameters(cfg_["wbc"]["task"]["com_xy_task"], b_sim);
+  com_z_task_->SetParameters(cfg_["wbc"]["task"]["com_z_task"], b_sim);
   torso_ori_task_->SetParameters(cfg_["wbc"]["task"]["torso_ori_task"], b_sim);
   upper_body_task_->SetParameters(cfg_["wbc"]["task"]["upper_body_task"],
                                   b_sim);

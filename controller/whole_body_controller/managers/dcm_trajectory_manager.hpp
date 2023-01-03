@@ -19,7 +19,8 @@ class PinocchioRobotSystem;
 
 class DCMTrajectoryManager {
 public:
-  DCMTrajectoryManager(DCMPlanner *dcm_planner, Task *com_task, Task *torso_ori,
+  DCMTrajectoryManager(DCMPlanner *dcm_planner, Task *com_xy_task,
+                       Task *com_z_task, Task *torso_ori,
                        PinocchioRobotSystem *robot, const int lfoot_idx,
                        const int rfoot_idx);
   virtual ~DCMTrajectoryManager() = default;
@@ -73,7 +74,8 @@ public:
 
 private:
   DCMPlanner *dcm_planner_;
-  Task *com_task_;
+  Task *com_xy_task_;
+  Task *com_z_task_;
   Task *torso_ori_task_;
   PinocchioRobotSystem *robot_;
   int lfoot_idx_;

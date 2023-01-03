@@ -13,7 +13,8 @@ class MinJerkCurveVec;
 
 class FloatingBaseTrajectoryManager {
 public:
-  FloatingBaseTrajectoryManager(Task *com_task, Task *body_ori_task,
+  FloatingBaseTrajectoryManager(Task *com_xy_task, Task *com_z_task,
+                                Task *body_ori_task,
                                 PinocchioRobotSystem *robot);
   ~FloatingBaseTrajectoryManager();
 
@@ -29,7 +30,8 @@ public:
   void UpdateDesired(const double state_machine_time);
 
 private:
-  Task *com_task_;
+  Task *com_xy_task_;
+  Task *com_z_task_;
   Task *torso_ori_task_;
   PinocchioRobotSystem *robot_;
 

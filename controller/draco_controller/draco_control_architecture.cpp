@@ -5,11 +5,12 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
-#include "controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
+//#include
+//"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
-#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
+//#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -49,11 +50,11 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   dcm_planner_ = new DCMPlanner();
 
   // mpc handler
-  lmpc_handler_ = new LMPCHandler(
-      dcm_planner_, robot_, tci_container_->com_task_,
-      tci_container_->torso_ori_task_, tci_container_->lf_reaction_force_task_,
-      tci_container_->rf_reaction_force_task_, draco_link::l_foot_contact,
-      draco_link::r_foot_contact);
+  // lmpc_handler_ = new LMPCHandler(
+  // dcm_planner_, robot_, tci_container_->com_task_,
+  // tci_container_->torso_ori_task_, tci_container_->lf_reaction_force_task_,
+  // tci_container_->rf_reaction_force_task_, draco_link::l_foot_contact,
+  // draco_link::r_foot_contact);
 
   //=============================================================
   // trajectory Managers
@@ -62,10 +63,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   upper_body_tm_ =
       new UpperBodyTrajetoryManager(tci_container_->upper_body_task_, robot_);
   floating_base_tm_ = new FloatingBaseTrajectoryManager(
-      tci_container_->com_task_, tci_container_->torso_ori_task_, robot_);
+      tci_container_->com_xy_task_, tci_container_->com_z_task_,
+      tci_container_->torso_ori_task_, robot_);
   dcm_tm_ = new DCMTrajectoryManager(
-      dcm_planner_, tci_container_->com_task_, tci_container_->torso_ori_task_,
-      robot_, draco_link::l_foot_contact, draco_link::r_foot_contact);
+      dcm_planner_, tci_container_->com_xy_task_, tci_container_->com_z_task_,
+      tci_container_->torso_ori_task_, robot_, draco_link::l_foot_contact,
+      draco_link::r_foot_contact);
   lf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->lf_pos_task_, tci_container_->lf_ori_task_, robot_);
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(

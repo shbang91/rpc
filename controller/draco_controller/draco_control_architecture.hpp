@@ -25,7 +25,7 @@ class EndEffectorTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
-class LMPCHandler;
+// class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
@@ -53,7 +53,7 @@ private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
-  LMPCHandler *lmpc_handler_;
+  // LMPCHandler *lmpc_handler_;
 
   void _InitializeParameters() override;
 };

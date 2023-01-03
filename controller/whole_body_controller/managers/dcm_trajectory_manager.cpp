@@ -4,13 +4,14 @@
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 DCMTrajectoryManager::DCMTrajectoryManager(DCMPlanner *dcm_planner,
-                                           Task *com_task, Task *torso_ori_task,
+                                           Task *com_xy_task, Task *com_z_task,
+                                           Task *torso_ori_task,
                                            PinocchioRobotSystem *robot,
                                            const int lfoot_idx,
                                            const int rfoot_idx)
-    : dcm_planner_(dcm_planner), com_task_(com_task),
-      torso_ori_task_(torso_ori_task), robot_(robot), lfoot_idx_(lfoot_idx),
-      rfoot_idx_(rfoot_idx), current_foot_step_idx_(0),
+    : dcm_planner_(dcm_planner), com_xy_task_(com_xy_task),
+      com_z_task_(com_z_task), torso_ori_task_(torso_ori_task), robot_(robot),
+      lfoot_idx_(lfoot_idx), rfoot_idx_(rfoot_idx), current_foot_step_idx_(0),
       first_swing_leg_(end_effector::LFoot), /*b_first_visit_(true),*/
       walking_primitive_(-1) {
   util::PrettyConstructor(2, "DCMTrajectoryManager");
@@ -146,7 +147,10 @@ void DCMTrajectoryManager::UpdateDesired(const double current_time) {
   Eigen::VectorXd des_ori_vec(4);
   des_ori_vec << des_ori_quat.coeffs();
 
-  com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
+  com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
+                              des_com_acc.head<2>());
+  com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
+                             des_com_acc.tail<1>());
   torso_ori_task_->UpdateDesired(des_ori_vec, des_ang_vel, des_ang_acc);
 }
 

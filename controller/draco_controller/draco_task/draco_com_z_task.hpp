@@ -13,7 +13,7 @@ constexpr int kBase = 1;
 
 class DracoCoMZTask : public Task {
 public:
-  DracoCoMZtask(PinocchioRobotSystem *robot);
+  DracoCoMZTask(PinocchioRobotSystem *robot);
   ~DracoCoMZTask() = default;
 
   void UpdateOpCommand() override;
@@ -25,4 +25,4 @@ public:
 private:
   DracoStateProvider *sp_;
   int com_height_;
-}
+};

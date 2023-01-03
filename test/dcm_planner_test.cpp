@@ -9,11 +9,12 @@ int main() {
                              THIS_COM "robot_model/draco", false, false);
   DCMPlanner dcm_planner;
   // dummy task
-  Task *com_task(NULL);
+  Task *com_xy_task(NULL);
+  Task *com_z_task(NULL);
   Task *torso_ori_task(NULL);
-  DCMTrajectoryManager dcm_tm(&dcm_planner, com_task, torso_ori_task, &robot,
-                              draco_link::l_foot_contact,
-                              draco_link::r_foot_contact);
+  DCMTrajectoryManager dcm_tm(
+      &dcm_planner, com_xy_task, com_z_task, torso_ori_task, &robot,
+      draco_link::l_foot_contact, draco_link::r_foot_contact);
 
   // initialize robot
   Eigen::Vector3d bjoint_pos(0, 0, 1.5 - 0.757);

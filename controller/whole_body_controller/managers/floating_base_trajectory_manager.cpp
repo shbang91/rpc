@@ -5,9 +5,11 @@
 #include "util/util.hpp"
 
 FloatingBaseTrajectoryManager::FloatingBaseTrajectoryManager(
-    Task *com_task, Task *torso_ori_task, PinocchioRobotSystem *robot)
-    : com_task_(com_task), torso_ori_task_(torso_ori_task), robot_(robot),
-      duration_(0.), init_com_pos_(Eigen::Vector3d::Zero()),
+    Task *com_xy_task, Task *com_z_task, Task *torso_ori_task,
+    PinocchioRobotSystem *robot)
+    : com_xy_task_(com_xy_task), com_z_task_(com_z_task),
+      torso_ori_task_(torso_ori_task), robot_(robot), duration_(0.),
+      init_com_pos_(Eigen::Vector3d::Zero()),
       target_com_pos_(Eigen::Vector3d::Zero()),
       exp_err_(Eigen::VectorXd::Zero(3)), amp_(Eigen::Vector3d::Zero()),
       freq_(Eigen::Vector3d::Zero()), b_swaying_(false),
@@ -76,7 +78,10 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
                              des_com_pos, des_com_vel, des_com_acc, 1.0);
 
     // update desired com task
-    com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
+    com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
+                                des_com_acc.head<2>());
+    com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
+                               des_com_acc.tail<1>());
 
   } else {
     // minjerk com traj generation
@@ -91,7 +96,10 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
         min_jerk_curve_->EvaluateSecondDerivative(state_machine_time);
 
     // update com des traj
-    com_task_->UpdateDesired(des_com_pos, des_com_vel, des_com_acc);
+    com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
+                                des_com_acc.head<2>());
+    com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
+                               des_com_acc.tail<1>());
 
     // torso ori traj generation
     double t = min_jerk_time_->Evaluate(state_machine_time)[0];
