@@ -23,7 +23,7 @@ public:
 private:
   DracoControlArchitecture *ctrl_arch_;
   DracoStateProvider *sp_;
-  double duration_;
+
   Eigen::VectorXd target_joint_pos_;
   Eigen::VectorXd init_joint_pos_;
 

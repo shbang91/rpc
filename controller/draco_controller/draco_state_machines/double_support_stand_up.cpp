@@ -23,8 +23,8 @@ void MakeHorizontal(Eigen::Isometry3d &pose) {
 DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
-      standup_duration_(0.), target_height_(0.), rf_z_max_interp_duration_(0.) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
+      rf_z_max_interp_duration_(0.) {
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -58,11 +58,12 @@ void DoubleSupportStandUp::FirstVisit() {
   Eigen::Quaterniond lfoot_quat(lfoot_iso.linear());
   Eigen::Quaterniond rfoot_quat(rfoot_iso.linear());
   Eigen::Quaterniond target_torso_quat = lfoot_quat.slerp(0.5, rfoot_quat);
+  sp_->des_torso_quat_ = target_torso_quat;
 
   // initialize floating trajectory
   ctrl_arch_->floating_base_tm_->InitializeFloatingBaseInterpolation(
       init_com_pos, target_com_pos, init_torso_quat, target_torso_quat,
-      standup_duration_);
+      end_time_);
 
   //  increase maximum normal reaction force
   ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
@@ -96,7 +97,7 @@ void DoubleSupportStandUp::LastVisit() {
 }
 
 bool DoubleSupportStandUp::EndOfState() {
-  return (state_machine_time_ > standup_duration_) ? true : false;
+  return (state_machine_time_ > end_time_) ? true : false;
 }
 
 StateId DoubleSupportStandUp::GetNextState() {
@@ -105,7 +106,7 @@ StateId DoubleSupportStandUp::GetNextState() {
 
 void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "standup_duration", standup_duration_);
+    util::ReadParameter(node, "standup_duration", end_time_);
     std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
     util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
     sp_->des_com_height_ = target_height_;

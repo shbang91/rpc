@@ -8,7 +8,7 @@
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), duration_(0.) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
   util::PrettyConstructor(2, "Initialize");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -30,7 +30,7 @@ void Initialize::FirstVisit() {
       Eigen::VectorXd::Zero(init_joint_pos_.size()), target_joint_pos_,
       Eigen::VectorXd::Zero(target_joint_pos_.size()),
       Eigen::VectorXd::Zero(target_joint_pos_.size()),
-      duration_); // min jerk curve initialization
+      end_time_); // min jerk curve initialization
 }
 
 void Initialize::OneStep() {
@@ -64,7 +64,7 @@ bool Initialize::EndOfState() {
   if (b_stay_here_) {
     return false;
   } else {
-    return (state_machine_time_ >= duration_) ? true : false;
+    return (state_machine_time_ >= end_time_) ? true : false;
   }
 }
 
@@ -74,7 +74,7 @@ StateId Initialize::GetNextState() {
 
 void Initialize::SetParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "init_duration", duration_);
+    util::ReadParameter(node, "init_duration", end_time_);
     util::ReadParameter(node, "target_joint_pos", target_joint_pos_);
     sp_->nominal_jpos_ = target_joint_pos_; // set nominal jpos
     util::ReadParameter(node, "b_only_joint_pos_control", b_stay_here_);

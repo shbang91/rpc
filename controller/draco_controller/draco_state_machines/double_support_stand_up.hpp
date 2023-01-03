@@ -23,7 +23,6 @@ private:
   DracoControlArchitecture *ctrl_arch_;
   DracoStateProvider *sp_;
 
-  double standup_duration_;
   double target_height_;
   bool b_use_base_height_;
 
