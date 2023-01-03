@@ -31,4 +31,5 @@ DracoStateProvider::DracoStateProvider() {
   b_use_base_height_ = false;
 
   des_com_height_ = 0.;
+  des_torso_quat_ = Eigen::Quaterniond::Identity();
 }

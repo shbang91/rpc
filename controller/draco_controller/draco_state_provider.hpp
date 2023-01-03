@@ -34,6 +34,7 @@ public:
   bool b_use_base_height_;
 
   double des_com_height_;
+  Eigen::Quaterniond des_torso_quat_;
 
 private:
   DracoStateProvider();
