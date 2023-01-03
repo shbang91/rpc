@@ -11,17 +11,10 @@ DoubleSupportSwaying::DoubleSupportSwaying(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
-      amp_(Eigen::Vector3d::Zero()), freq_(Eigen::Vector3d::Zero()),
-      b_use_base_height_(false) {
+      amp_(Eigen::Vector3d::Zero()), freq_(Eigen::Vector3d::Zero()) {
   util::PrettyConstructor(2, "DoubleSupportSwaying");
 
   sp_ = DracoStateProvider::GetStateProvider();
-
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  int height_source = util::ReadParameter<int>(cfg["wbc"]["task"]["com_task"],
-                                               "com_height_target_source");
-  b_use_base_height_ =
-      height_source == com_height_target_source::kBaseHeight ? true : false;
 }
 
 void DoubleSupportSwaying::FirstVisit() {
@@ -29,10 +22,10 @@ void DoubleSupportSwaying::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
 
   Eigen::VectorXd init_com_pos = robot_->GetRobotComPos();
-  init_com_pos[2] =
-      b_use_base_height_
-          ? robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2]
-          : init_com_pos[2];
+  if (sp_->b_use_base_height_)
+    init_com_pos[2] =
+        robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
+
   ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_);
 }
 

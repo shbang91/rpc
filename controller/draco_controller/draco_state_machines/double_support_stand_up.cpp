@@ -86,7 +86,14 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 }
 
-void DoubleSupportStandUp::LastVisit() {}
+void DoubleSupportStandUp::LastVisit() {
+  if (sp_->b_use_base_height_)
+    sp_->des_com_height_ = robot_->GetRobotComPos()[2];
+
+  std::cout << "-----------------------------------------" << std::endl;
+  std::cout << "des com height: " << sp_->des_com_height_ << std::endl;
+  std::cout << "-----------------------------------------" << std::endl;
+}
 
 bool DoubleSupportStandUp::EndOfState() {
   return (state_machine_time_ > standup_duration_) ? true : false;
@@ -101,6 +108,7 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
     util::ReadParameter(node, "standup_duration", standup_duration_);
     std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
     util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
+    sp_->des_com_height_ = target_height_;
     util::ReadParameter(node, "rf_z_max_interp_duration",
                         rf_z_max_interp_duration_);
   } catch (std::runtime_error &e) {
