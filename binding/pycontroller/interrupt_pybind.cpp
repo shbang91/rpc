@@ -7,5 +7,6 @@ namespace py = pybind11;
 PYBIND11_MODULE(interrupt_py, m) {
   py::class_<Interrupt>(m, "Interrupt")
       .def(py::init<>())
-      .def("PressOne", &Interrupt::PressOne);
+      .def("PressOne", &Interrupt::PressOne)
+      .def("PressEight", &Interrupt::PressEight);
 }
