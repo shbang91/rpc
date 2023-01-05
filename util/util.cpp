@@ -335,9 +335,11 @@ Eigen::Matrix3d rpyToRotMat(double r, double p, double y) {
   Eigen::Quaterniond q = Eigen::AngleAxisd(r, Eigen::Vector3d::UnitX()) *
                          Eigen::AngleAxisd(p, Eigen::Vector3d::UnitY()) *
                          Eigen::AngleAxisd(y, Eigen::Vector3d::UnitZ());
-  Eigen::Matrix3d m;
-  m = q;
-  return m.transpose().eval();
+  // Eigen::Matrix3d m;
+  // m = q;
+  // Eigen::Matrix3d rot2 = m.transpose().eval();
+  // return m.transpose().eval();
+  return q.normalized().toRotationMatrix();
 }
 
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,

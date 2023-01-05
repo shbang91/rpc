@@ -12,8 +12,6 @@ public:
            const int init_foot_side);
   virtual ~FootStep() = default;
 
-  void ComputeMidFoot(const FootStep &footstep1, const FootStep &footstep2,
-                      FootStep &midfoot);
   void PrintInfo();
 
   // setter
@@ -68,6 +66,13 @@ public:
   GetStrafeFootStep(const int n_steps, const double strafe_distance,
                     const double nominal_footwidth,
                     const FootStep &current_mid_foot);
+
+  static void ComputeMidFoot(const FootStep &footstep1,
+                             const FootStep &footstep2, FootStep &midfoot);
+
+  static void MakeHorizontal(Eigen::Isometry3d &pose);
+
+  static Eigen::Isometry3d MakeIsometry(const FootStep &foot_step);
 
 private:
   Eigen::Vector3d pos_;

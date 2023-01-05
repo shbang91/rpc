@@ -1,4 +1,5 @@
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
+#include "util/util.hpp"
 
 FootStep::FootStep()
     : pos_(Eigen::Vector3d::Zero()), quat_ori_(Eigen::Quaterniond::Identity()),
@@ -13,15 +14,6 @@ FootStep::FootStep(const Eigen::Vector3d &init_pos,
   quat_ori_ = init_quat;
   rot_ori_ = init_quat.toRotationMatrix();
   foot_side_ = init_foot_side;
-}
-
-void FootStep::ComputeMidFoot(const FootStep &footstep1,
-                              const FootStep &footstep2, FootStep &midfoot) {
-  Eigen::Vector3d mid_pos = 0.5 * (footstep1.GetPos() + footstep2.GetPos());
-  Eigen::Quaterniond mid_quat =
-      footstep1.GetOrientation().slerp(0.5, footstep2.GetOrientation());
-  midfoot.SetPosOri(mid_pos, mid_quat);
-  midfoot.SetMidFoot();
 }
 
 void FootStep::PrintInfo() {
@@ -186,4 +178,28 @@ FootStep::GetStrafeFootStep(const int n_steps, const double strafe_distance,
     }
   }
   return foot_step_list;
+}
+
+void FootStep::ComputeMidFoot(const FootStep &footstep1,
+                              const FootStep &footstep2, FootStep &midfoot) {
+  Eigen::Vector3d mid_pos = 0.5 * (footstep1.GetPos() + footstep2.GetPos());
+  Eigen::Quaterniond mid_quat =
+      footstep1.GetOrientation().slerp(0.5, footstep2.GetOrientation());
+  midfoot.SetPosOri(mid_pos, mid_quat);
+  midfoot.SetMidFoot();
+}
+
+void FootStep::MakeHorizontal(Eigen::Isometry3d &pose) {
+  const Eigen::Matrix3d R = pose.linear();
+  const Eigen::Vector3d p = pose.translation();
+  Eigen::Vector3d rpy = util::rpyFromRotMat(R);
+  pose.translation() = Eigen::Vector3d{p(0), p(1), 0.};
+  pose.linear() = util::rpyToRotMat(0., 0., rpy(2));
+}
+
+Eigen::Isometry3d FootStep::MakeIsometry(const FootStep &foot_step) {
+  Eigen::Isometry3d ret;
+  ret.translation() = foot_step.GetPos();
+  ret.linear() = foot_step.GetRotMat();
+  return ret;
 }
