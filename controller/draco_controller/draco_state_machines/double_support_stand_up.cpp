@@ -7,18 +7,8 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
-
-namespace {
-void MakeHorizontal(Eigen::Isometry3d &pose) {
-  const Eigen::Matrix3d R = pose.linear();
-  const Eigen::Vector3d p = pose.translation();
-  Eigen::Vector3d rpy = util::rpyFromRotMat(R);
-  pose.translation() = Eigen::Vector3d{p(0), p(1), 0.};
-  pose.linear() = util::rpyToRotMat(0., 0., rpy(2));
-}
-
-} // namespace
 
 DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            PinocchioRobotSystem *robot,
@@ -48,8 +38,9 @@ void DoubleSupportStandUp::FirstVisit() {
       robot_->GetLinkIsometry(draco_link::l_foot_contact);
   Eigen::Isometry3d rfoot_iso =
       robot_->GetLinkIsometry(draco_link::r_foot_contact);
-  MakeHorizontal(lfoot_iso);
-  MakeHorizontal(rfoot_iso);
+
+  FootStep::MakeHorizontal(lfoot_iso);
+  FootStep::MakeHorizontal(rfoot_iso);
 
   Eigen::Vector3d target_com_pos =
       (lfoot_iso.translation() + rfoot_iso.translation()) / 2.;

@@ -2,6 +2,7 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 
 DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
@@ -41,15 +42,18 @@ void DoubleSupportBalance::OneStep() {
 }
 
 bool DoubleSupportBalance::EndOfState() {
-  // TODO: add dcm walking condition(e.g., remaining footstep)
-  return (b_com_swaying_ || b_lmpc_swaying_ || b_nmpc_swaying_ ||
-          b_dcm_walking_ || b_lmpc_walking_ || b_nmpc_walking_ ||
-          b_static_walking_)
-             ? true
-             : false;
+  if (b_com_swaying_ || b_lmpc_swaying_ || b_nmpc_swaying_ || b_lmpc_walking_ ||
+      b_nmpc_walking_ || b_static_walking_)
+    return true;
+
+  if (b_dcm_walking_ && ctrl_arch_->dcm_tm_->GetFootStepList().size() > 0 &&
+      !ctrl_arch_->dcm_tm_->NoRemainingSteps())
+    return true;
+
+  return false;
 }
 
-void DoubleSupportBalance::LastVisit() {}
+void DoubleSupportBalance::LastVisit() { state_machine_time_ = 0.; }
 
 StateId DoubleSupportBalance::GetNextState() {
   if (b_com_swaying_)
@@ -59,13 +63,16 @@ StateId DoubleSupportBalance::GetNextState() {
   // if (b_nmpc_swaying_)
   // return draco_states::kComSwayingNmpc;
 
-  // if (b_dcm_walking_) {
-  // //which foot (L or R?)
-  // if (true) {
-  // return draco_states::kLFootContactTransitionStart;
-  // else {
-  // return draco_states::kRFootContactTransitionStart;
-  //}
+  if (b_dcm_walking_) {
+    if (ctrl_arch_->dcm_tm_->GetFirstSwingLeg() == end_effector::LFoot) {
+      b_dcm_walking_ = false;
+      return draco_states::kLFContactTransitionStart;
+    } else if (ctrl_arch_->dcm_tm_->GetFirstSwingLeg() == end_effector::RFoot) {
+      b_dcm_walking_ = false;
+      return draco_states::kRFContactTransitionStart;
+    }
+  }
+
   //}
   //}
 

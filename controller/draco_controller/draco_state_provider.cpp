@@ -32,4 +32,6 @@ DracoStateProvider::DracoStateProvider() {
 
   des_com_height_ = 0.;
   des_torso_quat_ = Eigen::Quaterniond::Identity();
+
+  planning_id_ = 0;
 }

@@ -4,6 +4,7 @@
 
 class PinocchioRobotSystem;
 class DracoControlArchitecture;
+class DracoStateProvider;
 
 class SingleSupportSwing : public StateMachine {
 public:
@@ -20,4 +21,8 @@ public:
   void SetParameters(const YAML::Node &node) override;
 
 private:
-}
+  DracoControlArchitecture *ctrl_arch_;
+  DracoStateProvider *sp_;
+
+  double swing_height_;
+};

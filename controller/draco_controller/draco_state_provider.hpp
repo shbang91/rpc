@@ -36,6 +36,8 @@ public:
   double des_com_height_;
   Eigen::Quaterniond des_torso_quat_;
 
+  int planning_id_;
+
 private:
   DracoStateProvider();
 };

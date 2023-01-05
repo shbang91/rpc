@@ -16,9 +16,10 @@ ContactTransitionStart::ContactTransitionStart(
     DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
 
-  state_id_ == draco_states::kLFContactTransitionStart
-      ? util::PrettyConstructor(2, "LFContactTransitionStart")
-      : util::PrettyConstructor(2, "RFContactTransitionStart");
+  if (state_id_ == draco_states::kLFContactTransitionStart)
+    util::PrettyConstructor(2, "LFContactTransitionStart");
+  else if (state_id_ == draco_states::kRFContactTransitionStart)
+    util::PrettyConstructor(2, "RFContactTransitionStart");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }
@@ -28,7 +29,7 @@ void ContactTransitionStart::FirstVisit() {
 
   if (state_id_ == draco_states::kLFContactTransitionStart) {
     // stance foot lfoot
-    std::cout << "kLFContactTransitionStart" << std::endl;
+    std::cout << "draco_states::kLFContactTransitionStart" << std::endl;
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
@@ -42,9 +43,12 @@ void ContactTransitionStart::FirstVisit() {
     // =====================================================================
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+
+    sp_->b_rf_contact_ = true;
+
   } else {
     // stance foot rfoot
-    std::cout << "kRFContactTransitionStart" << std::endl;
+    std::cout << "draco_states::kRFContactTransitionStart" << std::endl;
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
@@ -57,6 +61,8 @@ void ContactTransitionStart::FirstVisit() {
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+
+    sp_->b_lf_contact_ = true;
   }
 
   // =====================================================================
@@ -86,14 +92,16 @@ void ContactTransitionStart::FirstVisit() {
       ini_des_dcm_vel << ctrl_arch_->tci_container_->com_xy_task_->DesiredVel(),
           ctrl_arch_->tci_container_->com_z_task_->DesiredVel();
 
-      std::cout << "ini des dcm pos: " << ini_des_dcm_pos << std::endl;
-      std::cout << "ini des dcm vel: " << ini_des_dcm_vel << std::endl;
+      std::cout << "ini des dcm pos: " << ini_des_dcm_pos.transpose()
+                << std::endl;
+      std::cout << "ini des dcm vel: " << ini_des_dcm_vel.transpose()
+                << std::endl;
 
       if (sp_->b_use_base_height_)
         ini_des_dcm_pos[2] = sp_->des_com_height_;
 
-      std::cout << "ini des dcm pos after changes: " << ini_des_dcm_pos
-                << std::endl;
+      std::cout << "ini des dcm pos after changes: "
+                << ini_des_dcm_pos.transpose() << std::endl;
 
       Eigen::Quaterniond ini_torso_quat = sp_->des_torso_quat_;
 
@@ -104,6 +112,10 @@ void ContactTransitionStart::FirstVisit() {
           ctrl_arch_->dcm_tm_->GetDCMPlanner()
               ->GetInitialContactTransferTime() -
           ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampDownTime();
+
+      ctrl_arch_->dcm_tm_->GetDCMPlanner()->SaveSolution(
+          std::to_string(sp_->planning_id_));
+      sp_->planning_id_ += 1;
     } else {
       // TODO: replanning
       // TODO: consider torso ang vel
@@ -143,7 +155,7 @@ bool ContactTransitionStart::EndOfState() {
   return state_machine_time_ > end_time_ ? true : false;
 }
 
-void ContactTransitionStart::LastVisit() {}
+void ContactTransitionStart::LastVisit() { state_machine_time_ = 0.; }
 
 StateId ContactTransitionStart::GetNextState() {
   if (ctrl_arch_->dcm_tm_->NoRemainingSteps())

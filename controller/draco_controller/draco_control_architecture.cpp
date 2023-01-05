@@ -6,6 +6,7 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
+#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
 //#include
 //"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
@@ -137,6 +138,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kLFContactTransitionEnd] =
       new ContactTransitionEnd(draco_states::kLFContactTransitionEnd, robot_,
                                this);
+  state_machine_container_[draco_states::kLFSingleSupportSwing] =
+      new SingleSupportSwing(draco_states::kLFSingleSupportSwing, robot_, this);
 
   state_machine_container_[draco_states::kRFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kRFContactTransitionStart,
@@ -144,6 +147,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kRFContactTransitionEnd] =
       new ContactTransitionEnd(draco_states::kRFContactTransitionEnd, robot_,
                                this);
+  state_machine_container_[draco_states::kRFSingleSupportSwing] =
+      new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -180,6 +185,8 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionStart];
   delete state_machine_container_[draco_states::kLFContactTransitionEnd];
   delete state_machine_container_[draco_states::kRFContactTransitionEnd];
+  delete state_machine_container_[draco_states::kLFSingleSupportSwing];
+  delete state_machine_container_[draco_states::kRFSingleSupportSwing];
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -207,8 +214,13 @@ void DracoControlArchitecture::_InitializeParameters() {
       cfg_["state_machine"]["initialize"]);
   state_machine_container_[draco_states::kDoubleSupportStandUp]->SetParameters(
       cfg_["state_machine"]["stand_up"]);
+  state_machine_container_[draco_states::kLFSingleSupportSwing]->SetParameters(
+      cfg_["state_machine"]["single_support_swing"]);
+  state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
+      cfg_["state_machine"]["single_support_swing"]);
   state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
       cfg_["state_machine"]["com_swaying"]);
+
   // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc]
   //->SetParameters(cfg_["state_machine"]["lmpc_com_swaying"]);
 

@@ -28,7 +28,7 @@ void ContactTransitionEnd::FirstVisit() {
       ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampDownTime();
 
   if (state_id_ == draco_states::kLFContactTransitionEnd) {
-    std::cout << "kLFContactTransitionEnd" << std::endl;
+    std::cout << "draco_States::kLFContactTransitionEnd" << std::endl;
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
@@ -40,7 +40,7 @@ void ContactTransitionEnd::FirstVisit() {
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
-    std::cout << "kRFContactTransitionEnd" << std::endl;
+    std::cout << "draco_states::kRFContactTransitionEnd" << std::endl;
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
@@ -65,7 +65,7 @@ void ContactTransitionEnd::OneStep() {
   ctrl_arch_->rf_SE3_tm_->UseCurrent();
 
   // contact task & force update
-  if (state_id_ == draco_states::kLFContactTransitionStart) {
+  if (state_id_ == draco_states::kLFContactTransitionEnd) {
     ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMin(state_machine_time_);
     ctrl_arch_->lf_pos_hm_->UpdateRampToMin(state_machine_time_);
     ctrl_arch_->lf_ori_hm_->UpdateRampToMin(state_machine_time_);
@@ -80,7 +80,7 @@ bool ContactTransitionEnd::EndOfState() {
   return state_machine_time_ > end_time_ ? true : false;
 }
 
-void ContactTransitionEnd::LastVisit() {}
+void ContactTransitionEnd::LastVisit() { state_machine_time_ = 0.; }
 
 StateId ContactTransitionEnd::GetNextState() {
   if (state_id_ == draco_states::kLFContactTransitionEnd)
