@@ -1,5 +1,6 @@
 #pragma once
 #include "controller/model_predictive_controller/mpc_handler.hpp"
+#include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
 
 namespace lmpc_walking_primitive {
@@ -15,7 +16,6 @@ constexpr int kLeftStrafe = 6;
 class PinocchioRobotSystem;
 class Task;
 class ForceTask;
-class FootStep;
 class DCMPlanner;
 
 class LMPCHandler : public MPCHandler {
@@ -33,6 +33,7 @@ public:
                                  const Eigen::Quaterniond &init_torso_quat,
                                  const Eigen::Vector3d &init_dcm_pos,
                                  const Eigen::Vector3d &init_dcm_vel);
+  void GenerateFootSteps();
 
   void UpdateDesired(const double current_time);
 
@@ -44,24 +45,31 @@ public:
   // =====================================================================
   void ForwardWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kFwdWalk;
+    GenerateFootSteps();
   }
   void BackwardWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kBwdWalk;
+    GenerateFootSteps();
   }
   void InplaceWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kInPlaceWalk;
+    GenerateFootSteps();
   }
   void LeftTurnWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kLeftTurn;
+    GenerateFootSteps();
   }
   void RightTurnWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kRightTurn;
+    GenerateFootSteps();
   }
   void LeftStrafeWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kLeftStrafe;
+    GenerateFootSteps();
   }
   void RightStrafeWalkMode() {
     walking_primitive_ = lmpc_walking_primitive::kRightStrafe;
+    GenerateFootSteps();
   }
 
   // =====================================================================
@@ -87,6 +95,9 @@ private:
   ForceTask *rfoot_rf_task_;
   int lfoot_idx_;
   int rfoot_idx_;
+
+  FootStep init_left_foot_;
+  FootStep init_right_foot_;
 
   bool b_first_visit_;
   int walking_primitive_;

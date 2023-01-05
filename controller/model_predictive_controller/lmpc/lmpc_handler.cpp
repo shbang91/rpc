@@ -18,26 +18,23 @@ LMPCHandler::LMPCHandler(DCMPlanner *dcm_planner, PinocchioRobotSystem *robot,
   foot_step_preview_list_.clear();
 }
 
-bool LMPCHandler::UpdateReferenceTrajectory(
-    const double t_walk_start, const int transfer_type,
-    const Eigen::Quaterniond &init_torso_quat,
-    const Eigen::Vector3d &init_dcm_pos, const Eigen::Vector3d &init_dcm_vel) {
+void LMPCHandler::GenerateFootSteps() {
   //---------------------------------------------------------
   // foot step setup
   //---------------------------------------------------------
   // update current stance feet
-  FootStep init_left_foot, init_right_foot, init_mid_foot;
   Eigen::Isometry3d lfoot_iso = robot_->GetLinkIsometry(lfoot_idx_);
-  init_left_foot.SetPosOriSide(lfoot_iso.translation(),
-                               Eigen::Quaterniond(lfoot_iso.linear()),
-                               end_effector::LFoot);
+  init_left_foot_.SetPosOriSide(lfoot_iso.translation(),
+                                Eigen::Quaterniond(lfoot_iso.linear()),
+                                end_effector::LFoot);
 
   Eigen::Isometry3d rfoot_iso = robot_->GetLinkIsometry(rfoot_idx_);
-  init_right_foot.SetPosOriSide(rfoot_iso.translation(),
-                                Eigen::Quaterniond(rfoot_iso.linear()),
-                                end_effector::RFoot);
+  init_right_foot_.SetPosOriSide(rfoot_iso.translation(),
+                                 Eigen::Quaterniond(rfoot_iso.linear()),
+                                 end_effector::RFoot);
 
-  init_mid_foot.ComputeMidFoot(init_left_foot, init_right_foot, init_mid_foot);
+  FootStep init_mid_foot;
+  FootStep::ComputeMidFoot(init_left_foot_, init_right_foot_, init_mid_foot);
 
   // generate foot step list depening on walking primitives
   switch (walking_primitive_) {
@@ -91,6 +88,12 @@ bool LMPCHandler::UpdateReferenceTrajectory(
               << std::endl;
     std::exit(EXIT_FAILURE);
   }
+}
+
+bool LMPCHandler::UpdateReferenceTrajectory(
+    const double t_walk_start, const int transfer_type,
+    const Eigen::Quaterniond &init_torso_quat,
+    const Eigen::Vector3d &init_dcm_pos, const Eigen::Vector3d &init_dcm_vel) {
 
   int max_foot_steps_preview(40);
   _UpdateFootStepsPreviewList(max_foot_steps_preview);
@@ -118,8 +121,8 @@ bool LMPCHandler::UpdateReferenceTrajectory(
     dcm_planner_->SetTransferTime(t_transfer_mid);
 
   // compute dcm trajectory based on the foot step list
-  dcm_planner_->InitializeFootStepsVrp(foot_step_preview_list_, init_left_foot,
-                                       init_right_foot, init_dcm_pos,
+  dcm_planner_->InitializeFootStepsVrp(foot_step_preview_list_, init_left_foot_,
+                                       init_right_foot_, init_dcm_pos,
                                        init_dcm_vel);
   return true;
 }
@@ -138,6 +141,7 @@ void LMPCHandler::InitializeParameters(const YAML::Node &node) {
   util::ReadParameter(node, "nominal_strafe_distance",
                       nominal_strafe_distance_);
   util::ReadParameter(node, "n_steps", n_steps_);
+  util::ReadParameter(node, "first_swing_leg", first_swing_leg_);
 }
 
 void LMPCHandler::_UpdateFootStepsPreviewList(

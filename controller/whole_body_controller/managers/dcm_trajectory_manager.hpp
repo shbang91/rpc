@@ -17,6 +17,10 @@ class DCMPlanner;
 class Task;
 class PinocchioRobotSystem;
 
+/* usage:
+ * InitializeParameters -> Trigger WalkMode (ForwardWalkMode) -> Initialize ->
+ * UpdateDesired
+ */
 class DCMTrajectoryManager {
 public:
   DCMTrajectoryManager(DCMPlanner *dcm_planner, Task *com_xy_task,
@@ -26,6 +30,8 @@ public:
   virtual ~DCMTrajectoryManager() = default;
 
   void InitializeParameters(const YAML::Node &node);
+
+  void GenerateFootSteps();
 
   bool Initialize(const double t_walk_start, const int transfer_type,
                   const Eigen::Quaterniond &init_torso_quat,
@@ -40,24 +46,31 @@ public:
   // =====================================================================
   void ForwardWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kFwdWalk;
+    GenerateFootSteps();
   }
   void BackwardWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kBwdWalk;
+    GenerateFootSteps();
   }
   void InplaceWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kInPlaceWalk;
+    GenerateFootSteps();
   }
   void LeftTurnWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kLeftTurn;
+    GenerateFootSteps();
   }
   void RightTurnWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kRightTurn;
+    GenerateFootSteps();
   }
   void LeftStrafeWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kLeftStrafe;
+    GenerateFootSteps();
   }
   void RightStrafeWalkMode() {
     walking_primitive_ = dcm_walking_primitive::kRightStrafe;
+    GenerateFootSteps();
   }
 
   // =====================================================================
@@ -71,6 +84,9 @@ public:
 
   // getter
   DCMPlanner *GetDCMPlanner() { return dcm_planner_; }
+  int GetCurrentFootStepIdx() { return current_foot_step_idx_; }
+  std::vector<FootStep> GetFootStepList() { return foot_step_list_; }
+  int GetFirstSwingLeg() { return first_swing_leg_; }
 
 private:
   DCMPlanner *dcm_planner_;
@@ -80,6 +96,9 @@ private:
   PinocchioRobotSystem *robot_;
   int lfoot_idx_;
   int rfoot_idx_;
+
+  FootStep init_left_foot_;
+  FootStep init_right_foot_;
 
   // bool b_first_visit_;
   std::vector<FootStep> foot_step_list_;
