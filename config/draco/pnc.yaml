@@ -20,97 +20,95 @@ wbc:
     com_xy_task:
       com_feedback_source: 1 # 0: com feedback / 1: dcm feedback
       ## sim params
-      sim_weight : [20., 20.]
+      sim_weight : [1000., 1000.]
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_weight : [20., 20.] # only used when feedback source : 1
+      sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
       sim_icp_kp : [10., 10.]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
-      sim_icp_ki : [0.1, 0.1] 
+      sim_icp_ki : [0., 0.] 
       sim_time_constant : 5.
 
       ## exp params
-      exp_weight : [20., 20.]
+      exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [20., 20.] # only used when feedback source : 1
-      exp_icp_kp : [10., 10.]
+      exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
+      exp_icp_kp : [0.5, 0.3]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.1, 0.1] 
+      exp_icp_ki : [1., 1.] 
       exp_time_constant : 5.
 
     com_z_task:
-      com_height_target_source: 1 # 0: com height / 1: base height
+      com_height_target_source: 0 # 0: com height / 1: base height
       ## sim params
-      sim_com_weight : [20.]
+      sim_com_weight : [1000.]
       sim_com_kp : [100.]
       sim_com_kd : [5.]
 
-      sim_base_weight : [20.] # only used when target source : 1
-      sim_base_kp : [200.]
+      sim_base_weight : [1000.] # only used when target source : 1
+      sim_base_kp : [100.]
       sim_base_kd : [5.] # x, y will be ignored
-      sim_time_constant : 5.
 
       ## exp params
-      exp_com_weight : [20.]
-      exp_com_kp : [50.]
-      exp_com_kd : [1.5]
+      exp_com_weight : [1000.]
+      exp_com_kp : [100.]
+      exp_com_kd : [5.]
 
-      exp_base_weight : [20.] # only used when target source : 1
+      exp_base_weight : [1000.] # only used when target source : 1
       exp_base_kp : [50.]
       exp_base_kd : [1.5] # x, y will be ignored
-      exp_time_constant : 5.
 
     torso_ori_task:
       ## sim params
-      sim_weight : [20., 20., 2.]
+      sim_weight : [100., 100., 10.]
       sim_kp : [100., 100., 100.]
       sim_kd : [10., 10., 10.]
 
       ## exp params
-      exp_weight : [20., 20., 2.]
-      exp_kp : [100., 100., 100.]
-      exp_kd : [10., 10., 10.]
+      exp_weight : [100., 100., 10.]
+      exp_kp : [30., 30., 20.]
+      exp_kd : [0.2, 0.2, 0.1]
 
     upper_body_task:
       ## sim params
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      sim_weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
+      sim_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
       sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
       sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
 
       ## exp params
-      exp_weight : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
+      exp_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
       exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
       exp_kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
 
     foot_pos_task:
       ## sim params
-      sim_weight : [40., 40., 40.]
-      sim_weight_at_swing : [20., 20., 20.]
+      sim_weight : [10000., 10000., 10000.]
+      sim_weight_at_swing : [500., 500., 500.]
       sim_kp : [300., 300., 300.]
       sim_kd : [30., 30., 30.]
 
       ## exp params
-      exp_weight : [40., 40., 40.]
-      exp_weight_at_swing : [20., 20., 20.]
-      exp_kp : [100., 100., 250.]
-      exp_kd : [1., 1., 1.]
+      exp_weight : [10000., 10000., 10000.]
+      exp_weight_at_swing : [500., 500., 500.]
+      exp_kp : [100., 100., 150.]
+      exp_kd : [0.1, 0.1, 1.]
 
     foot_ori_task:
       ## sim params
-      sim_weight : [40., 40., 40.]
-      sim_weight_at_swing : [20., 20., 20.]
+      sim_weight : [10000., 10000., 10000.]
+      sim_weight_at_swing : [500., 500., 500.]
       sim_kp : [300., 300., 300.]
       sim_kd : [30., 30., 30.]
 
       ## exp params
-      exp_weight : [40., 40., 40.]
-      exp_weight_at_swing : [20., 20., 20.]
+      exp_weight : [10000., 10000., 10000.]
+      exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [20., 20., 20.]
-      exp_kd : [1., 1., 1.]
+      exp_kd : [0.1, 0.1, 0.1]
 
     foot_rf_task:
       ## sim params
@@ -121,22 +119,22 @@ wbc:
 
   contact:
     ## sim params
-    sim_max_rf_z: 1000.
+    sim_max_rf_z: 400.
 
     sim_mu: 0.3
     sim_foot_half_length: 0.08
     sim_foot_half_width: 0.04
 
     ## exp params
-    exp_max_rf_z: 1000.
+    exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    exp_foot_half_length: 0.11
+    exp_foot_half_length: 0.08
     exp_foot_half_width: 0.04
 
   qp:
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: 1e-6 ##regularization
+    lambda_rf: 1e-6 ##regularization TODO: fix this
     b_trq_limit: false
 
   joint_integrator:
@@ -159,6 +157,8 @@ state_machine:
 
       rf_z_max_interp_duration: 0.1
 
+    single_support_swing:
+      swing_height: 0.04
     com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
       frequency: [0., 0.5, 0.] # [hz]
@@ -182,10 +182,11 @@ dcm_walking:
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.02
-  n_steps: 5
+  n_steps: 3
+  first_swing_leg: 1 ## 0: left leg ## 1: right leg
+
 
 lmpc_walking:
-
   ##dcm related params
   com_height: 0.658 #same as the target_com_height in stand_up?
   t_additional_init_trans: 0.
@@ -201,5 +202,6 @@ lmpc_walking:
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.02
   n_steps: 1
+  first_swing_leg: 0 ## 0: left leg ## 1: right leg
 
 
