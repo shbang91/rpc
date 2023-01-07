@@ -130,8 +130,8 @@ void DracoController::GetCommand(void *command) {
       b_first_visit_pos_ctrl_ = false;
     }
     // joint position control command
-    joint_pos_cmd_ = tci_container_->jpos_task_->DesiredPos();
-    joint_vel_cmd_ = tci_container_->jpos_task_->DesiredVel();
+    joint_pos_cmd_ = tci_container_->task_map_["joint_task"]->DesiredPos();
+    joint_vel_cmd_ = tci_container_->task_map_["joint_task"]->DesiredVel();
     joint_trq_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
   } else {
     // first visit for feedforward torque command
@@ -139,6 +139,10 @@ void DracoController::GetCommand(void *command) {
       // for joint integrator initialization
       init_joint_pos_ = robot_->GetJointPos();
       joint_integrator_->Initialize(init_joint_pos_, robot_->GetJointVel());
+
+      // erase jpos task
+      tci_container_->task_map_.erase("joint_task");
+
       // for real experiment smoothing command
       if (!b_sim_) {
         smoothing_command_start_time_ = sp_->current_time_;
@@ -149,25 +153,26 @@ void DracoController::GetCommand(void *command) {
     }
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
-    for (auto task : tci_container_->task_container_) {
-      task->UpdateJacobian();
-      task->UpdateJacobianDotQdot();
-      task->UpdateOpCommand();
+    for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
+      task_ptr->UpdateJacobian();
+      task_ptr->UpdateJacobianDotQdot();
+      task_ptr->UpdateOpCommand();
     }
     int rf_dim(0);
-    for (auto contact : tci_container_->contact_container_) {
-      contact->UpdateJacobian();
-      contact->UpdateJacobianDotQdot();
-      contact->UpdateConeConstraint();
-      rf_dim += contact->Dim();
+    for (const auto &[contact_str, contact_ptr] :
+         tci_container_->contact_map_) {
+      contact_ptr->UpdateJacobian();
+      contact_ptr->UpdateJacobianDotQdot();
+      contact_ptr->UpdateConeConstraint();
+      rf_dim += contact_ptr->Dim();
     }
     // iterate once b/c jacobian does not change at all depending on
     // configuration
     if (b_int_constraint_first_visit_) {
-      for (auto internal_constraint :
-           tci_container_->internal_constraint_container_) {
-        internal_constraint->UpdateJacobian();
-        internal_constraint->UpdateJacobianDotQdot();
+      for (const auto &[internal_const_str, internal_constr_ptr] :
+           tci_container_->internal_constraint_map_) {
+        internal_constr_ptr->UpdateJacobian();
+        internal_constr_ptr->UpdateJacobianDotQdot();
         b_int_constraint_first_visit_ = false;
       }
     }
@@ -183,11 +188,10 @@ void DracoController::GetCommand(void *command) {
 
     Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
     Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
-    ihwbc_->Solve(tci_container_->task_container_,
-                  tci_container_->contact_container_,
-                  tci_container_->internal_constraint_container_,
-                  tci_container_->force_task_container_, wbc_qddot_cmd,
-                  wbc_rf_cmd, joint_trq_cmd_); // joint_trq_cmd_ size: 27
+    ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
+                  tci_container_->internal_constraint_map_,
+                  tci_container_->force_task_map_, wbc_qddot_cmd, wbc_rf_cmd,
+                  joint_trq_cmd_); // joint_trq_cmd_ size: 27
 
     // joint integrator for real experiment
     Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd.tail(robot_->NumActiveDof());

@@ -7,8 +7,8 @@ public:
   DracoTCIContainer(PinocchioRobotSystem *robot);
   virtual ~DracoTCIContainer();
 
+private:
   Task *jpos_task_;
-  // Task *com_task_;
   Task *com_xy_task_;
   Task *com_z_task_;
   Task *torso_ori_task_;
@@ -26,7 +26,6 @@ public:
   ForceTask *lf_reaction_force_task_;
   ForceTask *rf_reaction_force_task_;
 
-private:
   YAML::Node cfg_;
   void _InitializeParameters(const bool b_sim);
 };

@@ -54,7 +54,7 @@ void Initialize::OneStep() {
     des_joint_acc =
         min_jerk_curves_->EvaluateSecondDerivative(state_machine_time_);
   }
-  ctrl_arch_->tci_container_->jpos_task_->UpdateDesired(
+  ctrl_arch_->tci_container_->task_map_["joint_task"]->UpdateDesired(
       des_joint_pos, des_joint_vel, des_joint_acc);
 }
 

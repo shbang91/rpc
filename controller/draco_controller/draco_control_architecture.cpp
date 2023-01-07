@@ -62,19 +62,22 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   // trajectory Managers
   //=============================================================
   //  initialize kinematics manager
-  upper_body_tm_ =
-      new UpperBodyTrajetoryManager(tci_container_->upper_body_task_, robot_);
+  upper_body_tm_ = new UpperBodyTrajetoryManager(
+      tci_container_->task_map_["upper_body_task"], robot_);
   floating_base_tm_ = new FloatingBaseTrajectoryManager(
-      tci_container_->com_xy_task_, tci_container_->com_z_task_,
-      tci_container_->torso_ori_task_, robot_);
+      tci_container_->task_map_["com_xy_task"],
+      tci_container_->task_map_["com_z_task"],
+      tci_container_->task_map_["torso_ori_task"], robot_);
   dcm_tm_ = new DCMTrajectoryManager(
       dcm_planner_, tci_container_->com_xy_task_, tci_container_->com_z_task_,
       tci_container_->torso_ori_task_, robot_, draco_link::l_foot_contact,
       draco_link::r_foot_contact);
   lf_SE3_tm_ = new EndEffectorTrajectoryManager(
-      tci_container_->lf_pos_task_, tci_container_->lf_ori_task_, robot_);
+      tci_container_->task_map_["lf_pos_task"],
+      tci_container_->task_map_["lf_ori_task"], robot_);
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(
-      tci_container_->rf_pos_task_, tci_container_->rf_ori_task_, robot_);
+      tci_container_->task_map_["rf_pos_task"],
+      tci_container_->task_map_["rf_ori_task"], robot_);
 
   Eigen::VectorXd weight_at_contact, weight_at_swing;
   try {
@@ -87,10 +90,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
-  lf_pos_hm_ = new TaskHierarchyManager(tci_container_->lf_pos_task_,
-                                        weight_at_contact, weight_at_swing);
-  rf_pos_hm_ = new TaskHierarchyManager(tci_container_->rf_pos_task_,
-                                        weight_at_contact, weight_at_swing);
+  lf_pos_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["lf_pos_task"],
+                               weight_at_contact, weight_at_swing);
+  rf_pos_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["rf_pos_task"],
+                               weight_at_contact, weight_at_swing);
 
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
@@ -102,18 +107,20 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
-  lf_ori_hm_ = new TaskHierarchyManager(tci_container_->lf_ori_task_,
-                                        weight_at_contact, weight_at_swing);
-  rf_ori_hm_ = new TaskHierarchyManager(tci_container_->rf_ori_task_,
-                                        weight_at_contact, weight_at_swing);
+  lf_ori_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["lf_ori_task"],
+                               weight_at_contact, weight_at_swing);
+  rf_ori_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["rf_ori_task"],
+                               weight_at_contact, weight_at_swing);
 
   // initialize dynamics manager
   double max_rf_z;
   util::ReadParameter(cfg_["wbc"]["contact"], prefix + "_max_rf_z", max_rf_z);
   lf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
-      tci_container_->lf_contact_, max_rf_z);
+      tci_container_->contact_map_["lf_contact"], max_rf_z);
   rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
-      tci_container_->rf_contact_, max_rf_z);
+      tci_container_->contact_map_["rf_contact"], max_rf_z);
 
   //=============================================================
   // initialize state machines

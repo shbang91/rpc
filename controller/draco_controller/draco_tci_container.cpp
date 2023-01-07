@@ -1,7 +1,6 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
-//#include "controller/draco_controller/draco_task/draco_com_task.hpp"
 #include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
@@ -16,7 +15,6 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   // Tasks List
   //=============================================================
   jpos_task_ = new JointTask(robot_);
-  // com_task_ = new DracoComTask(robot_);
   com_xy_task_ = new DracoCoMXYTask(robot_);
   com_z_task_ = new DracoCoMZTask(robot_);
   torso_ori_task_ = new LinkOriTask(robot_, draco_link::torso_com_link);
@@ -35,16 +33,16 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   rf_ori_task_ = new LinkOriTask(robot_, draco_link::r_foot_contact);
 
   // wbc task list w/o joint task
-  task_container_.clear();
-  // task_container_.push_back(com_task_);
-  task_container_.push_back(com_xy_task_);
-  task_container_.push_back(com_z_task_);
-  task_container_.push_back(torso_ori_task_);
-  task_container_.push_back(upper_body_task_);
-  task_container_.push_back(lf_pos_task_);
-  task_container_.push_back(rf_pos_task_);
-  task_container_.push_back(lf_ori_task_);
-  task_container_.push_back(rf_ori_task_);
+  task_map_.clear();
+  task_map_.insert(std::make_pair("joint_task", jpos_task_));
+  task_map_.insert(std::make_pair("com_xy_task", com_xy_task_));
+  task_map_.insert(std::make_pair("com_z_task", com_z_task_));
+  task_map_.insert(std::make_pair("torso_ori_task", torso_ori_task_));
+  task_map_.insert(std::make_pair("upper_body_task", upper_body_task_));
+  task_map_.insert(std::make_pair("lf_pos_task", lf_pos_task_));
+  task_map_.insert(std::make_pair("rf_pos_task", rf_pos_task_));
+  task_map_.insert(std::make_pair("lf_ori_task", lf_ori_task_));
+  task_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
 
   //=============================================================
   // Contacts List
@@ -54,17 +52,18 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   rf_contact_ = new SurfaceContact(robot_, draco_link::r_foot_contact, 0.3,
                                    0.11, 0.04); // params reset later
 
-  contact_container_.clear();
-  contact_container_.push_back(lf_contact_);
-  contact_container_.push_back(rf_contact_);
+  contact_map_.clear();
+  contact_map_.insert(std::make_pair("lf_contact", lf_contact_));
+  contact_map_.insert(std::make_pair("rf_contact", rf_contact_));
 
   //=============================================================
   // InternalConstraints List
   //=============================================================
   rolling_joint_constraint_ = new DracoRollingJointConstraint(robot_);
 
-  internal_constraint_container_.clear();
-  internal_constraint_container_.push_back(rolling_joint_constraint_);
+  internal_constraint_map_.clear();
+  internal_constraint_map_.insert(
+      std::make_pair("rolling_joint_constraint", rolling_joint_constraint_));
 
   //=============================================================
   // Force Task List
@@ -72,9 +71,11 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   lf_reaction_force_task_ = new ForceTask(lf_contact_->Dim());
   rf_reaction_force_task_ = new ForceTask(rf_contact_->Dim());
 
-  force_task_container_.clear();
-  force_task_container_.push_back(lf_reaction_force_task_);
-  force_task_container_.push_back(rf_reaction_force_task_);
+  force_task_map_.clear();
+  force_task_map_.insert(
+      std::make_pair("lf_force_task", lf_reaction_force_task_));
+  force_task_map_.insert(
+      std::make_pair("rf_force_task", rf_reaction_force_task_));
 
   //=============================================================
   // Tasks, Contacts parameter initialization

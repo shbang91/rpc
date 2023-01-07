@@ -85,12 +85,14 @@ void ContactTransitionStart::FirstVisit() {
 
     if (sp_->prev_state_ == draco_states::kDoubleSupportBalance) {
       Eigen::Vector3d ini_des_dcm_pos = Eigen::Vector3d::Zero();
-      ini_des_dcm_pos << ctrl_arch_->tci_container_->com_xy_task_->DesiredPos(),
-          ctrl_arch_->tci_container_->com_z_task_->DesiredPos();
+      ini_des_dcm_pos
+          << ctrl_arch_->tci_container_->task_map_["com_xy_task"]->DesiredPos(),
+          ctrl_arch_->tci_container_->task_map_["com_z_task"]->DesiredPos();
 
       Eigen::Vector3d ini_des_dcm_vel = Eigen::Vector3d::Zero();
-      ini_des_dcm_vel << ctrl_arch_->tci_container_->com_xy_task_->DesiredVel(),
-          ctrl_arch_->tci_container_->com_z_task_->DesiredVel();
+      ini_des_dcm_vel
+          << ctrl_arch_->tci_container_->task_map_["com_xy_task"]->DesiredVel(),
+          ctrl_arch_->tci_container_->task_map_["com_z_task"]->DesiredVel();
 
       std::cout << "ini des dcm pos: " << ini_des_dcm_pos.transpose()
                 << std::endl;

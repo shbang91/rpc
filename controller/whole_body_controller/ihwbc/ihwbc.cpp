@@ -52,15 +52,16 @@ void IHWBC::UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
 }
 
 void IHWBC::Solve(
-    const std::vector<Task *> &task_container,
-    const std::vector<Contact *> &contact_container,
-    const std::vector<InternalConstraint *> &internal_constraint_container,
-    const std::vector<ForceTask *> &force_task_container,
+    const std::unordered_map<std::string, Task *> &task_map,
+    const std::unordered_map<std::string, Contact *> &contact_map,
+    const std::unordered_map<std::string, InternalConstraint *>
+        &internal_constraint_map,
+    const std::unordered_map<std::string, ForceTask *> &force_task_map,
     Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &rf_cmd,
     Eigen::VectorXd &trq_cmd) {
 
-  assert(task_container.size() > 0);
-  b_contact_ = contact_container.size() > 0 ? true : false;
+  assert(task_map.size() > 0);
+  b_contact_ = contact_map.size() > 0 ? true : false;
 
   //=============================================================
   // cost setup
@@ -71,11 +72,11 @@ void IHWBC::Solve(
   // task cost
   cost_t_mat.setZero(num_qdot_, num_qdot_);
   cost_t_vec.setZero(num_qdot_);
-  for (auto task : task_container) {
-    Eigen::MatrixXd jt = task->Jacobian();
-    Eigen::VectorXd jtdot_qdot = task->JacobianDotQdot();
-    Eigen::VectorXd des_xddot = task->OpCommand();
-    Eigen::MatrixXd weight_mat = task->Weight().asDiagonal();
+  for (const auto &[task_str, task_ptr] : task_map) {
+    Eigen::MatrixXd jt = task_ptr->Jacobian();
+    Eigen::VectorXd jtdot_qdot = task_ptr->JacobianDotQdot();
+    Eigen::VectorXd des_xddot = task_ptr->OpCommand();
+    Eigen::MatrixXd weight_mat = task_ptr->Weight().asDiagonal();
 
     // std::cout
     //<< "--------------------------------------------------------------"
@@ -84,7 +85,7 @@ void IHWBC::Solve(
     // std::cout << jt << std::endl;
 
     // Debug Task
-    // task->Debug();
+    // task_ptr->Debug();
 
     cost_t_mat += jt.transpose() * weight_mat * jt;
     cost_t_vec += (jtdot_qdot - des_xddot).transpose() * weight_mat * jt;
@@ -93,9 +94,9 @@ void IHWBC::Solve(
 
   // // check contact dimension
   if (b_first_visit_) {
-    for (auto contact : contact_container) {
-      dim_contact_ += contact->Dim();
-      dim_cone_constraint_ += contact->UfVector().size();
+    for (const auto &[contact_str, contact_ptr] : contact_map) {
+      dim_contact_ += contact_ptr->Dim();
+      dim_cone_constraint_ += contact_ptr->UfVector().size();
       b_first_visit_ = false;
     }
   }
@@ -109,11 +110,11 @@ void IHWBC::Solve(
     cost_rf_mat.setZero(dim_contact_, dim_contact_);
     cost_rf_vec.setZero(dim_contact_);
     int row_idx(0);
-    for (auto force_task : force_task_container) {
+    for (const auto &[force_task_str, force_task_ptr] : force_task_map) {
       // lfoot, rfoot order & wrench (torque, force order)
-      Eigen::MatrixXd weight_mat = force_task->Weight().asDiagonal();
-      Eigen::VectorXd des_rf = force_task->DesiredRf();
-      int dim = force_task->Dim();
+      Eigen::MatrixXd weight_mat = force_task_ptr->Weight().asDiagonal();
+      Eigen::VectorXd des_rf = force_task_ptr->DesiredRf();
+      int dim = force_task_ptr->Dim();
 
       cost_rf_mat.block(row_idx, row_idx, dim, dim) = weight_mat;
       cost_rf_vec.segment(row_idx, dim) = -des_rf.transpose() * weight_mat;
@@ -149,10 +150,10 @@ void IHWBC::Solve(
   if (b_passive_) {
     // exist passive joint
     int row_idx(0);
-    for (auto ic : internal_constraint_container) {
-      Eigen::MatrixXd j_i = ic->Jacobian();
-      Eigen::VectorXd jidot_qdot = ic->JacobianDotQdot();
-      int dim = ic->Dim();
+    for (const auto [ic_str, ic_ptr] : internal_constraint_map) {
+      Eigen::MatrixXd j_i = ic_ptr->Jacobian();
+      Eigen::VectorXd jidot_qdot = ic_ptr->JacobianDotQdot();
+      int dim = ic_ptr->Dim();
 
       ji.middleRows(row_idx, dim) = j_i;
       jidot_qdot_vec.segment(row_idx, dim) = jidot_qdot;
@@ -211,11 +212,11 @@ void IHWBC::Solve(
 
     int contact_row_idx(0);
     int contact_cone_row_idx(0);
-    for (auto contact : contact_container) {
-      Eigen::MatrixXd j_c = contact->Jacobian();
-      Eigen::MatrixXd cone_mat = contact->UfMatrix();
-      Eigen::VectorXd cone_vec = contact->UfVector();
-      int dim_contact = contact->Dim();
+    for (const auto &[contact_str, contact_ptr] : contact_map) {
+      Eigen::MatrixXd j_c = contact_ptr->Jacobian();
+      Eigen::MatrixXd cone_mat = contact_ptr->UfMatrix();
+      Eigen::VectorXd cone_vec = contact_ptr->UfVector();
+      int dim_contact = contact_ptr->Dim();
       int dim_cone_constraint = cone_mat.rows();
 
       jc.middleRows(contact_row_idx, dim_contact) = j_c;
