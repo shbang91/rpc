@@ -24,6 +24,9 @@ target_link_libraries(rpc-draco-controller PUBLIC ${Protobuf_LIBRARIES}
                                            PUBLIC rpc-dcm-planner
                                            PUBLIC rpc-lmpc-handler
                                            PUBLIC rpc-filter)
+if(BUILD_WITH_MATLOGGER)
+    target_link_libraries(rpc-draco-controller PUBLIC matlogger2::matlogger2)
+endif()
 
 
 install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")

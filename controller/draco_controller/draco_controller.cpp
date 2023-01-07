@@ -27,6 +27,10 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
+#if B_USE_MATLOGGER
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/task_ref");
+#endif
+
   // set virtual & actuated selection matrix
   std::vector<bool> act_list;
   act_list.resize(draco::n_qdot, true);
@@ -225,11 +229,73 @@ void DracoController::GetCommand(void *command) {
 }
 
 void DracoController::_SaveData() {
-  DracoDataManager *dm = DracoDataManager::GetDataManager();
+  // DracoDataManager *dm = DracoDataManager::GetDataManager();
 
   // task data
+  // TODO: saving data here
   // dm->data_->des_com_pos_ = tci_container_->com_task_->DesiredPos();
   // dm->data_->act_com_pos_ = tci_container_->com_task_->CurrentPos();
   // dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
   // dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
+  // tci_container_->task_map["com_xy_task"]->DesiredPos();
+
+#if B_USE_MATLOGGER
+  logger_->add("time", sp_->current_time_);
+  logger_->add("des_com_xy_pos",
+               tci_container_->task_map_["com_xy_task"]->DesiredPos());
+  logger_->add("act_com_xy_pos",
+               tci_container_->task_map_["com_xy_task"]->CurrentPos());
+  logger_->add("des_com_xy_vel",
+               tci_container_->task_map_["com_xy_task"]->DesiredVel());
+  logger_->add("act_com_xy_vel",
+               tci_container_->task_map_["com_xy_task"]->CurrentVel());
+  logger_->add("des_com_z_pos",
+               tci_container_->task_map_["com_z_task"]->DesiredPos());
+  logger_->add("act_com_z_pos",
+               tci_container_->task_map_["com_z_task"]->CurrentPos());
+  logger_->add("des_com_z_vel",
+               tci_container_->task_map_["com_z_task"]->DesiredVel());
+  logger_->add("act_com_z_vel",
+               tci_container_->task_map_["com_z_task"]->CurrentVel());
+  logger_->add("des_torso_ori_pos",
+               tci_container_->task_map_["torso_ori_task"]->DesiredPos());
+  logger_->add("act_torso_ori_pos",
+               tci_container_->task_map_["torso_ori_task"]->CurrentPos());
+  logger_->add("des_torso_ori_vel",
+               tci_container_->task_map_["torso_ori_task"]->DesiredVel());
+  logger_->add("act_torso_ori_vel",
+               tci_container_->task_map_["torso_ori_task"]->CurrentVel());
+  logger_->add("des_upper_body_pos",
+               tci_container_->task_map_["upper_body_task"]->DesiredPos());
+  logger_->add("act_upper_body_pos",
+               tci_container_->task_map_["upper_body_task"]->CurrentPos());
+  logger_->add("des_upper_body_vel",
+               tci_container_->task_map_["upper_body_task"]->DesiredVel());
+  logger_->add("act_upper_body_vel",
+               tci_container_->task_map_["upper_body_task"]->CurrentVel());
+  logger_->add("des_lf_pos",
+               tci_container_->task_map_["lf_pos_task"]->DesiredPos());
+  logger_->add("act_lf_pos",
+               tci_container_->task_map_["lf_pos_task"]->CurrentPos());
+  logger_->add("des_lf_vel",
+               tci_container_->task_map_["lf_pos_task"]->DesiredVel());
+  logger_->add("act_lf_vel",
+               tci_container_->task_map_["lf_pos_task"]->CurrentVel());
+  logger_->add("des_rf_pos",
+               tci_container_->task_map_["rf_pos_task"]->DesiredPos());
+  logger_->add("act_rf_pos",
+               tci_container_->task_map_["rf_pos_task"]->CurrentPos());
+  logger_->add("des_rf_vel",
+               tci_container_->task_map_["rf_pos_task"]->DesiredVel());
+  logger_->add("act_rf_vel",
+               tci_container_->task_map_["rf_pos_task"]->CurrentVel());
+  logger_->add("des_lf_ori",
+               tci_container_->task_map_["lf_ori_task"]->DesiredPos());
+  logger_->add("act_lf_ori",
+               tci_container_->task_map_["lf_ori_task"]->CurrentPos());
+  logger_->add("des_rf_ori_vel",
+               tci_container_->task_map_["rf_ori_task"]->DesiredVel());
+  logger_->add("act_rf_ori_vel",
+               tci_container_->task_map_["rf_ori_task"]->CurrentVel());
+#endif
 }

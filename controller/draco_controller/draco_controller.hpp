@@ -1,6 +1,10 @@
 #pragma once
 #include "util/util.hpp"
 
+#if B_USE_MATLOGGER
+#include <matlogger2/matlogger2.h>
+#endif
+
 class PinocchioRobotSystem;
 class DracoTCIContainer;
 class DracoStateProvider;
@@ -42,4 +46,8 @@ private:
   Eigen::MatrixXd sa_; // selection matrix
 
   void _SaveData();
+
+#if B_USE_MATLOGGER
+  XBot::MatLogger2::Ptr logger_;
+#endif
 };
