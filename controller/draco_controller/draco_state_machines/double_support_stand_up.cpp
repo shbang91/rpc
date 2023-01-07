@@ -78,14 +78,7 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 }
 
-void DoubleSupportStandUp::LastVisit() {
-  if (sp_->b_use_base_height_)
-    sp_->des_com_height_ = robot_->GetRobotComPos()[2];
-
-  std::cout << "-----------------------------------------" << std::endl;
-  std::cout << "des com height: " << sp_->des_com_height_ << std::endl;
-  std::cout << "-----------------------------------------" << std::endl;
-}
+void DoubleSupportStandUp::LastVisit() {}
 
 bool DoubleSupportStandUp::EndOfState() {
   return (state_machine_time_ > end_time_) ? true : false;

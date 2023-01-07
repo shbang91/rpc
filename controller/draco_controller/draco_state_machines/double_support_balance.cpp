@@ -53,7 +53,16 @@ bool DoubleSupportBalance::EndOfState() {
   return false;
 }
 
-void DoubleSupportBalance::LastVisit() { state_machine_time_ = 0.; }
+void DoubleSupportBalance::LastVisit() {
+  state_machine_time_ = 0.;
+
+  if (sp_->b_use_base_height_)
+    sp_->des_com_height_ = robot_->GetRobotComPos()[2];
+
+  std::cout << "-----------------------------------------" << std::endl;
+  std::cout << "des com height: " << sp_->des_com_height_ << std::endl;
+  std::cout << "-----------------------------------------" << std::endl;
+}
 
 StateId DoubleSupportBalance::GetNextState() {
   if (b_com_swaying_)
