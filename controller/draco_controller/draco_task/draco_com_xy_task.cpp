@@ -2,6 +2,7 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
+#include <cmath>
 #include <stdexcept>
 
 DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
@@ -17,9 +18,10 @@ void DracoCoMXYTask::UpdateOpCommand() {
   Eigen::Vector2d com_xy_vel = b_sim_ ? robot_->GetRobotComLinVel().head<2>()
                                       : sp_->com_vel_est_.head<2>();
 
+  pos_ << com_xy_pos[0], com_xy_pos[1];
+  vel_ << com_xy_vel[0], com_xy_vel[1];
+
   if (feedback_source_ == feedback_source::kCoMFeedback) {
-    pos_ << com_xy_pos[0], com_xy_pos[1];
-    vel_ << com_xy_vel[0], com_xy_vel[1];
 
     pos_err_ = des_pos_ - pos_;
     vel_err_ = des_vel_ - vel_;
@@ -28,7 +30,8 @@ void DracoCoMXYTask::UpdateOpCommand() {
         des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 
   } else if (feedback_source_ == feedback_source::kIcpFeedback) {
-    double omega = kGravAcc / sp_->des_com_height_;
+
+    double omega = sqrt(kGravAcc / sp_->des_com_height_);
 
     Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
     Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;
