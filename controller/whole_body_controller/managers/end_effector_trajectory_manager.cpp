@@ -78,17 +78,19 @@ void EndEffectorTrajectoryManager::UpdateDesired(const double current_time) {
   Eigen::VectorXd des_pos =
       current_time < 0.5 * duration_
           ? pos_first_half_curve_->Evaluate(current_time)
-          : pos_second_half_curve_->Evaluate(current_time);
+          : pos_second_half_curve_->Evaluate(current_time - 0.5 * duration_);
 
   Eigen::VectorXd des_vel =
       current_time < 0.5 * duration_
           ? pos_first_half_curve_->EvaluateFirstDerivative(current_time)
-          : pos_second_half_curve_->EvaluateFirstDerivative(current_time);
+          : pos_second_half_curve_->EvaluateFirstDerivative(current_time -
+                                                            0.5 * duration_);
 
   Eigen::VectorXd des_acc =
       current_time < 0.5 * duration_
           ? pos_first_half_curve_->EvaluateSecondDerivative(current_time)
-          : pos_second_half_curve_->EvaluateSecondDerivative(current_time);
+          : pos_second_half_curve_->EvaluateSecondDerivative(current_time -
+                                                             0.5 * duration_);
 
   pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
 
