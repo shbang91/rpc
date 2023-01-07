@@ -27,6 +27,10 @@ public:
                        Task *com_z_task, Task *torso_ori,
                        PinocchioRobotSystem *robot, const int lfoot_idx,
                        const int rfoot_idx);
+  DCMTrajectoryManager(DCMPlanner *dcm_planner, Task *com_xy_task,
+                       Task *com_z_task, Task *torso_ori,
+                       PinocchioRobotSystem *robot, const int lfoot_idx,
+                       const int rfoot_idx, bool b_use_base_height);
   virtual ~DCMTrajectoryManager() = default;
 
   void InitializeParameters(const YAML::Node &node);
@@ -107,6 +111,8 @@ private:
   int current_foot_step_idx_;
 
   int first_swing_leg_;
+
+  bool b_use_base_height_ = false;
 
   // walking primitives
   int walking_primitive_;

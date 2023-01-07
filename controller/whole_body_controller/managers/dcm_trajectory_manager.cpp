@@ -20,6 +20,21 @@ DCMTrajectoryManager::DCMTrajectoryManager(DCMPlanner *dcm_planner,
   foot_step_preview_list_.clear();
 }
 
+DCMTrajectoryManager::DCMTrajectoryManager(
+    DCMPlanner *dcm_planner, Task *com_xy_task, Task *com_z_task,
+    Task *torso_ori_task, PinocchioRobotSystem *robot, const int lfoot_idx,
+    const int rfoot_idx, bool b_use_base_height)
+    : dcm_planner_(dcm_planner), com_xy_task_(com_xy_task),
+      com_z_task_(com_z_task), torso_ori_task_(torso_ori_task), robot_(robot),
+      lfoot_idx_(lfoot_idx), rfoot_idx_(rfoot_idx), current_foot_step_idx_(0),
+      first_swing_leg_(end_effector::LFoot), /*b_first_visit_(true),*/
+      walking_primitive_(-1), b_use_base_height_(b_use_base_height) {
+  util::PrettyConstructor(2, "DCMTrajectoryManager");
+
+  foot_step_list_.clear();
+  foot_step_preview_list_.clear();
+}
+
 void DCMTrajectoryManager::GenerateFootSteps() {
   //---------------------------------------------------------
   // foot step setup
@@ -40,7 +55,6 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   FootStep init_mid_foot;
   FootStep::ComputeMidFoot(init_left_foot_, init_right_foot_, init_mid_foot);
 
-  // if (b_first_visit_) {
   // generate foot step list depening on walking primitives
   switch (walking_primitive_) {
   case dcm_walking_primitive::kFwdWalk:
@@ -151,8 +165,9 @@ void DCMTrajectoryManager::UpdateDesired(const double current_time) {
 
   com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
                               des_com_acc.head<2>());
-  com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
-                             des_com_acc.tail<1>());
+  if (!b_use_base_height_)
+    com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
+                               des_com_acc.tail<1>());
   torso_ori_task_->UpdateDesired(des_ori_vec, des_ang_vel, des_ang_acc);
 }
 

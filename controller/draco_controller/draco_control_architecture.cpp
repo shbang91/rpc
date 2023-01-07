@@ -26,6 +26,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     : ControlArchitecture(robot) {
   util::PrettyConstructor(1, "DracoControlArchitecture");
 
+  sp_ = DracoStateProvider::GetStateProvider();
+
   // set starting state
   try {
     cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
@@ -69,9 +71,11 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->task_map_["com_z_task"],
       tci_container_->task_map_["torso_ori_task"], robot_);
   dcm_tm_ = new DCMTrajectoryManager(
-      dcm_planner_, tci_container_->com_xy_task_, tci_container_->com_z_task_,
-      tci_container_->torso_ori_task_, robot_, draco_link::l_foot_contact,
-      draco_link::r_foot_contact);
+      dcm_planner_, tci_container_->task_map_["com_xy_task"],
+      tci_container_->task_map_["com_z_task"],
+      tci_container_->task_map_["torso_ori_task"], robot_,
+      draco_link::l_foot_contact, draco_link::r_foot_contact,
+      sp_->b_use_base_height_);
   lf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->task_map_["lf_pos_task"],
       tci_container_->task_map_["lf_ori_task"], robot_);
@@ -156,8 +160,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
                                this);
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
-
-  sp_ = DracoStateProvider::GetStateProvider();
 
   this->_InitializeParameters();
 }
