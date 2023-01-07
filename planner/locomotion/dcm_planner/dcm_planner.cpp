@@ -394,8 +394,8 @@ void DCMPlanner::_ComputeRefPelvisOri() {
   FootStep midfoot;
 
   // initialize pelvis orientation
-  midfoot.ComputeMidFoot(prev_left_stance_foot, prev_right_stance_foot,
-                         midfoot);
+  FootStep::ComputeMidFoot(prev_left_stance_foot, prev_right_stance_foot,
+                           midfoot);
   Eigen::Quaterniond current_pelvis_ori = init_pelvis_quat_;
 
   // initialize the footstep counter
@@ -415,8 +415,9 @@ void DCMPlanner::_ComputeRefPelvisOri() {
       }
 
       // find the midfoot
-      midfoot.ComputeMidFoot(stance_step, target_step, midfoot);
+      FootStep::ComputeMidFoot(stance_step, target_step, midfoot);
 
+      // TODO: pelvis ori ang vel should not be zero
       // create hermite quaternion curve object
       pelvis_ori_quat_curves_.push_back(HermiteQuaternionCurve(
           current_pelvis_ori, Eigen::Vector3d::Zero(), midfoot.GetOrientation(),
@@ -428,8 +429,8 @@ void DCMPlanner::_ComputeRefPelvisOri() {
       step_counter++;
     } else {
       // orienataion is constant during transfer
-      midfoot.ComputeMidFoot(prev_left_stance_foot, prev_right_stance_foot,
-                             midfoot);
+      FootStep::ComputeMidFoot(prev_left_stance_foot, prev_right_stance_foot,
+                               midfoot);
       current_pelvis_ori = midfoot.GetOrientation();
       pelvis_ori_quat_curves_.push_back(HermiteQuaternionCurve(
           current_pelvis_ori, Eigen::Vector3d::Zero(), current_pelvis_ori,
