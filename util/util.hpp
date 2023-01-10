@@ -28,6 +28,9 @@ constexpr int kBoldCyan = 11;
 }; // namespace color
 
 namespace util {
+// =========================================================================
+// IO Utilities
+// =========================================================================
 void SaveVector(const Eigen::VectorXd &vec_, std::string name_,
                 bool b_param = false);
 void SaveVector(double *_vec, std::string _name, int size,
@@ -60,7 +63,27 @@ void ReadParameter(const YAML::Node &node, const std::string &name,
 void PrettyConstructor(const int &_num_tab, const std::string &_name);
 void ColorPrint(const int &_color, const std::string &_name,
                 bool line_change = true);
+void PrettyPrint(Eigen::VectorXd const &vv, std::ostream &os,
+                 std::string const &title, std::string const &prefix = "",
+                 bool nonl = false);
+void PrettyPrint(Eigen::MatrixXd const &mm, std::ostream &os,
+                 std::string const &title, std::string const &prefix = "",
+                 bool vecmode = false, bool nonl = false);
+void PrettyPrint(Eigen::Quaternion<double> const &qq, std::ostream &os,
+                 std::string const &title, std::string const &prefix = "",
+                 bool nonl = false);
+void PrettyPrint(Eigen::Vector3d const &vv, std::ostream &os,
+                 std::string const &title, std::string const &prefix = "",
+                 bool nonl = false);
+void PrettyPrint(const std::vector<double> &_vec, const char *title);
+void PrettyPrint(const std::vector<int> &_vec, const char *title);
+std::string PrettyString(Eigen::VectorXd const &vv);
+std::string PrettyString(Eigen::MatrixXd const &mm, std::string const &prefix);
+std::string PrettyString(double vv);
 
+// =========================================================================
+// Math
+// =========================================================================
 Eigen::MatrixXd hStack(const Eigen::MatrixXd &a_, const Eigen::MatrixXd &b_);
 Eigen::MatrixXd vStack(const Eigen::MatrixXd &a_, const Eigen::MatrixXd &b_);
 Eigen::MatrixXd block_diag(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
@@ -95,10 +118,10 @@ Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,
                                       const double yaw_rate);
 
 // euler angles from rotation matrix
-Eigen::Vector3d rpyFromRotMat(const Eigen::Matrix3d &R);
+Eigen::Vector3d RPYFromSO3(const Eigen::Matrix3d &R);
 
 // euler angles to rotation matrix
-Eigen::Matrix3d rpyToRotMat(double r, double p, double y);
+Eigen::Matrix3d SO3FromRPY(double r, double p, double y);
 
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori);

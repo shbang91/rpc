@@ -161,6 +161,95 @@ void ColorPrint(const int &_color, const std::string &_name, bool line_change) {
   printf("\033[0m");
 }
 
+void PrettyPrint(Eigen::VectorXd const &vv, std::ostream &os,
+                 std::string const &title, std::string const &prefix,
+                 bool nonl) {
+  PrettyPrint((Eigen::MatrixXd const &)vv, os, title, prefix, true, nonl);
+}
+
+void PrettyPrint(Eigen::MatrixXd const &mm, std::ostream &os,
+                 std::string const &title, std::string const &prefix,
+                 bool vecmode, bool nonl) {
+  char const *nlornot("\n");
+  if (nonl) {
+    nlornot = "";
+  }
+  if (!title.empty()) {
+    os << title << nlornot;
+  }
+  if ((mm.rows() <= 0) || (mm.cols() <= 0)) {
+    os << prefix << " (empty)" << nlornot;
+  } else {
+    // if (mm.cols() == 1) {
+    //   vecmode = true;
+    // }
+
+    if (vecmode) {
+      if (!prefix.empty())
+        os << prefix;
+      for (int ir(0); ir < mm.rows(); ++ir) {
+        os << PrettyString(mm.coeff(ir, 0));
+      }
+      os << nlornot;
+
+    } else {
+      for (int ir(0); ir < mm.rows(); ++ir) {
+        if (!prefix.empty())
+          os << prefix;
+        for (int ic(0); ic < mm.cols(); ++ic) {
+          os << PrettyString(mm.coeff(ir, ic));
+        }
+        os << nlornot;
+      }
+    }
+  }
+}
+void PrettyPrint(Eigen::Quaternion<double> const &qq, std::ostream &os,
+                 std::string const &title, std::string const &prefix,
+                 bool nonl) {
+  PrettyPrint(qq.coeffs(), os, title, prefix, true, nonl);
+}
+void PrettyPrint(Eigen::Vector3d const &vv, std::ostream &os,
+                 std::string const &title, std::string const &prefix,
+                 bool nonl) {
+  PrettyPrint((Eigen::MatrixXd const &)vv, os, title, prefix, true, nonl);
+}
+void PrettyPrint(const std::vector<double> &_vec, const char *title) {
+  std::printf("%s: ", title);
+  for (int i(0); i < _vec.size(); ++i) {
+    std::printf("% 6.4f, \t", _vec[i]);
+  }
+  std::printf("\n");
+}
+
+void PrettyPrint(const std::vector<int> &_vec, const char *title) {
+  std::printf("%s: ", title);
+  for (int i(0); i < _vec.size(); ++i) {
+    std::printf("%d, \t", _vec[i]);
+  }
+  std::printf("\n");
+}
+std::string PrettyString(Eigen::VectorXd const &vv) {
+  std::ostringstream os;
+  PrettyPrint(vv, os, "", "", true);
+  return os.str();
+}
+
+std::string PrettyString(Eigen::MatrixXd const &mm, std::string const &prefix) {
+  std::ostringstream os;
+  PrettyPrint(mm, os, "", prefix);
+  return os.str();
+}
+
+std::string PrettyString(double vv) {
+  static int const buflen(32);
+  static char buf[buflen];
+  memset(buf, 0, sizeof(buf));
+  snprintf(buf, buflen - 1, "% 6.6f  ", vv);
+  std::string str(buf);
+  return str;
+}
+
 Eigen::MatrixXd hStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
   assert(a.rows() == b.rows());
   Eigen::MatrixXd ab = Eigen::MatrixXd::Zero(a.rows(), a.cols() + b.cols());
@@ -325,13 +414,13 @@ Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,
   return E * rpy_rates;
 }
 
-Eigen::Vector3d rpyFromRotMat(const Eigen::Matrix3d &R) {
+Eigen::Vector3d RPYFromSO3(const Eigen::Matrix3d &R) {
   Eigen::Quaterniond q(R);
   Eigen::Vector3d ypr = QuatToEulerZYX(q.normalized());
   return Eigen::Vector3d{ypr(2), ypr(1), ypr(0)};
 }
 
-Eigen::Matrix3d rpyToRotMat(double r, double p, double y) {
+Eigen::Matrix3d SO3FromRPY(double r, double p, double y) {
   Eigen::Quaterniond q = Eigen::AngleAxisd(r, Eigen::Vector3d::UnitX()) *
                          Eigen::AngleAxisd(p, Eigen::Vector3d::UnitY()) *
                          Eigen::AngleAxisd(y, Eigen::Vector3d::UnitZ());
