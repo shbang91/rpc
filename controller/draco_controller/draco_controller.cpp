@@ -9,6 +9,7 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
+#include "controller/whole_body_controller/force_task.hpp"
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
 #include "controller/whole_body_controller/ihwbc/joint_integrator.hpp"
 #include "util/interpolation.hpp"
@@ -18,7 +19,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     : tci_container_(tci_container), robot_(robot),
       joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
-      joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)), b_sim_(false),
+      joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+      wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(false),
       b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
       b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
       smoothing_command_duration_(0.),
@@ -190,15 +192,13 @@ void DracoController::GetCommand(void *command) {
     Eigen::VectorXd grav = robot_->GetGravity();
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
 
-    Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
-    // Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
     ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
                   tci_container_->internal_constraint_map_,
                   tci_container_->force_task_map_, wbc_qddot_cmd_,
                   joint_trq_cmd_); // joint_trq_cmd_ size: 27
 
     // joint integrator for real experiment
-    Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd.tail(robot_->NumActiveDof());
+    Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd_.tail(robot_->NumActiveDof());
     joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
                                  robot_->GetJointVel(), joint_pos_cmd_,
                                  joint_vel_cmd_);
@@ -240,7 +240,10 @@ void DracoController::_SaveData() {
   // tci_container_->task_map["com_xy_task"]->DesiredPos();
 
 #if B_USE_MATLOGGER
+  // time plot
   logger_->add("time", sp_->current_time_);
+
+  // motion task plot
   logger_->add("des_com_xy_pos",
                tci_container_->task_map_["com_xy_task"]->DesiredPos());
   logger_->add("act_com_xy_pos",
@@ -297,5 +300,20 @@ void DracoController::_SaveData() {
                tci_container_->task_map_["rf_ori_task"]->DesiredVel());
   logger_->add("act_rf_ori_vel",
                tci_container_->task_map_["rf_ori_task"]->CurrentVel());
+
+  // wbc solution plot (reaction force cmd, qddot, qdot, q cmd)
+  logger_->add("lf_rf_cmd",
+               tci_container_->force_task_map_["lf_force_task"]
+                   ->CmdRf()); // local quantity
+  logger_->add("rf_rf_cmd",
+               tci_container_->force_task_map_["rf_force_task"]
+                   ->CmdRf()); // local quantity
+
+  logger_->add("fb_qddot_cmd", wbc_qddot_cmd_.head<6>());
+  logger_->add("joint_acc_cmd", wbc_qddot_cmd_.tail<27>());
+
+  logger_->add("joint_pos_cmd", joint_pos_cmd_);
+  logger_->add("joint_vel_cmd", joint_vel_cmd_);
+  logger_->add("joint_trq_cmd", joint_trq_cmd_);
 #endif
 }

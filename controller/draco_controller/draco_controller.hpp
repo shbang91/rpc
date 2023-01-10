@@ -30,6 +30,7 @@ private:
   Eigen::VectorXd joint_pos_cmd_;
   Eigen::VectorXd joint_vel_cmd_;
   Eigen::VectorXd joint_trq_cmd_;
+  Eigen::VectorXd wbc_qddot_cmd_;
 
   bool b_sim_;
   bool b_int_constraint_first_visit_;

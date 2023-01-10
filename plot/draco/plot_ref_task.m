@@ -15,6 +15,22 @@ xyz_label = ["x","y","z"];
 xyz_dot_label = ["x_{dot}", "y_{dot}", "z_{dot}"];
 xy_label = ["x","y"];
 xy_dot_label = ["x_{dot}", "y_{dot}"];
+rf_label = ["trq_{x}", "trq_{y}", "trq_{z}", "f_{x}", "f_{y}", "f_{z}"];
+fb_qddot_label = ["x_{ddot}", "y_{ddot}", "z_{ddot}", "wx_{dot}", "wy_{dot}", "wz_{dot}"];
+
+draco_joint_label = ["l\_hip\_ie", "l\_hip\_aa", "l\_hip\_fe", "l\_knee\_fe\_jp", "l\_knee\_fe\_jd", "l\_ankle\_fe", "l\_ankle\_ie", "l\_shoulder\_fe", "l\_shoulder\_aa", "l\_shoulder\_ie", "l\_elbow\_fe", "l\_wrist\_ps", "l\_wrist\_pitch", "neck\_pitch",...
+    "r\_hip\_ie", "r\_hip\_aa", "r\_hip\_fe", "r\_knee\_fe\_jp", "r\_knee\_fe\_jd", "r\_ankle\_fe", "r\_ankle\_ie", "r\_shoulder\_fe", "r\_shoulder\_aa", "r\_shoulder\_ie", "r\_elbow\_fe", "r\_wrist\_ps", "r\_wrist\_pitch" ];
+draco_lf_label = ["l\_hip\_ie", "l\_hip\_aa", "l\_hip\_fe", "l\_knee\_fe\_jp", "l\_knee\_fe\_jd", "l\_ankle\_fe", "l\_ankle\_ie"];
+draco_rf_label = ["r\_hip\_ie", "r\_hip\_aa", "r\_hip\_fe", "r\_knee\_fe\_jp", "r\_knee\_fe\_jd", "r\_ankle\_fe", "r\_ankle\_ie"];
+
+draco_lf_idx = zeros(1, 7);
+draco_rf_idx = zeros(1, 7);
+for i = 1: length(draco_lf_label)
+    lf_idx = find(ismember(draco_joint_label, draco_lf_label(i)));
+    rf_idx = find(ismember(draco_joint_label, draco_rf_label(i)));
+    draco_lf_idx(i) = lf_idx;
+    draco_rf_idx(i) = rf_idx;
+end
 
 %%
 %com xy task
@@ -135,6 +151,83 @@ for i = 1:6
         ylabel(xyz_dot_label(k))
     end
     sgtitle('Right Foot Task', 'FontSize', 30)
+end
+
+% reaction force cmd
+figure(5)
+j = 0;
+k = 0;
+for i = 1:12
+    subplot(6,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, lf_rf_cmd(j, :), 'k', 'LineWidth', 2);
+        grid on
+%         min_val = min([lf_rf_cmd(j, :)]);
+%         max_val = max([lf_rf_cmd(j, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(rf_label(j))
+        if j == 1
+            title('left foot reaction force', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(time, rf_rf_cmd(k, :), 'k', 'LineWidth', 2);
+        grid on
+%         min_val = min([rf_rf_cmd(k, :)]);
+%         max_val = max([rf_rf_cmd(k, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(rf_label(k))
+         if j == 1
+            title('right foot reaction force', 'FontSize', 30)
+        end
+    end
+end
+
+% floating base qddot cmd
+figure(6)
+for i = 1:6
+    subplot(6,1,i);
+    plot(time, fb_qddot_cmd(i, :), 'k', 'LineWidth', 2);
+    grid on
+    xlabel('time')
+    ylabel(fb_qddot_label(i))
+    sgtitle('floating base qddot cmd', 'FontSize', 30)
+end
+
+% foot qddot cmd
+figure(7)
+j = 0;
+k = 0;
+for i = 1:14
+    subplot(7,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, joint_acc_cmd(draco_lf_idx(j), :), 'k', 'LineWidth', 2);
+        grid on
+%         min_val = min([lf_rf_cmd(j, :)]);
+%         max_val = max([lf_rf_cmd(j, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_lf_label(j))
+        if j == 1
+            title('left foot', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(time, joint_acc_cmd(draco_rf_idx(k), :), 'k', 'LineWidth', 2);
+        grid on
+%         min_val = min([rf_rf_cmd(k, :)]);
+%         max_val = max([rf_rf_cmd(k, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_rf_label(k))
+         if j == 1
+            title('right foot', 'FontSize', 30)
+        end
+    end
 end
 
 
