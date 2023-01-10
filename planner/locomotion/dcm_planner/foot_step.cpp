@@ -192,9 +192,9 @@ void FootStep::ComputeMidFoot(const FootStep &footstep1,
 void FootStep::MakeHorizontal(Eigen::Isometry3d &pose) {
   const Eigen::Matrix3d R = pose.linear();
   const Eigen::Vector3d p = pose.translation();
-  Eigen::Vector3d rpy = util::rpyFromRotMat(R);
+  Eigen::Vector3d rpy = util::RPYFromSO3(R);
   pose.translation() = Eigen::Vector3d{p(0), p(1), 0.};
-  pose.linear() = util::rpyToRotMat(0., 0., rpy(2));
+  pose.linear() = util::SO3FromRPY(0., 0., rpy(2));
 }
 
 Eigen::Isometry3d FootStep::MakeIsometry(const FootStep &foot_step) {
