@@ -72,7 +72,7 @@ protected:
 
   // optimization regularization parameters
   double lambda_qddot_;
-  double lambda_rf_;
+  Eigen::VectorXd lambda_rf_;
   bool b_trq_limit_;
 
   // joint pos, vel, trq limits (cols(1) = lower limit / cols(2) = upper limit)

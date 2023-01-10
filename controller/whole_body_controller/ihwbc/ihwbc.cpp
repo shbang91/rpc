@@ -7,7 +7,7 @@
 IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
              const Eigen::MatrixXd *sv)
     : sa_(sa), dim_contact_(0), dim_cone_constraint_(0), b_contact_(true),
-      lambda_qddot_(0.), lambda_rf_(0.), b_first_visit_(true) {
+      lambda_qddot_(0.), b_first_visit_(true) {
   util::PrettyConstructor(3, "IHWBC");
 
   num_qdot_ = sa_.cols();
@@ -40,6 +40,9 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
   snf_.setZero(num_qdot_ - num_float_, num_qdot_);
   snf_.rightCols(num_qdot_ - num_float_) =
       Eigen::MatrixXd::Identity(num_qdot_ - num_float_, num_qdot_ - num_float_);
+
+  // assume surface contact:TODO make generic
+  lambda_rf_ = Eigen::VectorXd::Ones(12);
 }
 
 void IHWBC::UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
@@ -120,9 +123,8 @@ void IHWBC::Solve(
       cost_rf_vec.segment(row_idx, dim) = -des_rf.transpose() * weight_mat;
       row_idx += dim;
     }
-    cost_rf_mat +=
-        lambda_rf_ *
-        Eigen::MatrixXd::Identity(dim_contact_, dim_contact_); // regularization
+    cost_rf_mat += lambda_rf_.asDiagonal();
+    // util::PrettyPrint(cost_rf_mat, std::cout, "cost_rf_mat");
 
     cost_mat.topLeftCorner(cost_t_mat.rows(), cost_t_mat.cols()) = cost_t_mat;
     cost_mat.bottomRightCorner(cost_rf_mat.rows(), cost_rf_mat.cols()) =

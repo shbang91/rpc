@@ -134,7 +134,7 @@ wbc:
 
   qp:
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: 1e-6 ##regularization TODO: fix this
+    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
   joint_integrator:
