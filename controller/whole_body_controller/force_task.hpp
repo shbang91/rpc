@@ -6,6 +6,7 @@ class ForceTask {
 public:
   ForceTask(const int dim)
       : dim_(dim), rf_des_(Eigen::VectorXd::Zero(dim)),
+        rf_cmd_(Eigen::VectorXd::Zero(dim)),
         weight_(Eigen::VectorXd::Zero(dim)) {
     util::PrettyConstructor(3, "ForceTask");
   };
@@ -13,9 +14,11 @@ public:
 
   // setter
   void UpdateDesired(const Eigen::VectorXd &rf_des) { rf_des_ = rf_des; };
+  void UpdateCmd(const Eigen::VectorXd &rf_cmd) { rf_cmd_ = rf_cmd; };
 
   // getter
   Eigen::VectorXd DesiredRf() const { return rf_des_; }
+  Eigen::VectorXd CmdRf() const { return rf_cmd_; }
   Eigen::VectorXd Weight() const { return weight_; }
   int Dim() const { return dim_; }
 
@@ -32,6 +35,7 @@ public:
 
 protected:
   int dim_;
-  Eigen::VectorXd rf_des_;
+  Eigen::VectorXd rf_des_; // reference reaction force value
+  Eigen::VectorXd rf_cmd_; // wbc command
   Eigen::VectorXd weight_;
 };

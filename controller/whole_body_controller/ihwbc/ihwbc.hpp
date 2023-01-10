@@ -21,9 +21,8 @@ public:
              const std::unordered_map<std::string, Contact *> &contact_map,
              const std::unordered_map<std::string, InternalConstraint *>
                  &internal_constraint_map,
-             const std::unordered_map<std::string, ForceTask *> &force_task_map,
-             Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &rf_cmd,
-             Eigen::VectorXd &trq_cmd);
+             std::unordered_map<std::string, ForceTask *> &force_task_map,
+             Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &trq_cmd);
 
   void SetParameters(const YAML::Node &node);
 

@@ -54,14 +54,12 @@ void IHWBC::UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
   grav_ = grav;
 }
 
-void IHWBC::Solve(
-    const std::unordered_map<std::string, Task *> &task_map,
-    const std::unordered_map<std::string, Contact *> &contact_map,
-    const std::unordered_map<std::string, InternalConstraint *>
-        &internal_constraint_map,
-    const std::unordered_map<std::string, ForceTask *> &force_task_map,
-    Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &rf_cmd,
-    Eigen::VectorXd &trq_cmd) {
+void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
+                  const std::unordered_map<std::string, Contact *> &contact_map,
+                  const std::unordered_map<std::string, InternalConstraint *>
+                      &internal_constraint_map,
+                  std::unordered_map<std::string, ForceTask *> &force_task_map,
+                  Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &trq_cmd) {
 
   assert(task_map.size() > 0);
   b_contact_ = contact_map.size() > 0 ? true : false;
@@ -467,8 +465,10 @@ void IHWBC::Solve(
   }
 
   // qddot_cmd = sa_ * qddot_sol_;
+  // rf_cmd = rf_sol_;
   qddot_cmd = qddot_sol_;
-  rf_cmd = rf_sol_;
+  force_task_map["lf_force_task"]->UpdateCmd(rf_sol_.head(dim_contact_ / 2));
+  force_task_map["rf_force_task"]->UpdateCmd(rf_sol_.tail(dim_contact_ / 2));
 }
 
 void IHWBC::_SetQPCost(const Eigen::MatrixXd &cost_mat,

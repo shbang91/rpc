@@ -191,10 +191,10 @@ void DracoController::GetCommand(void *command) {
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
 
     Eigen::VectorXd wbc_qddot_cmd = Eigen::VectorXd::Zero(robot_->NumQdot());
-    Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
+    // Eigen::VectorXd wbc_rf_cmd = Eigen::VectorXd::Zero(rf_dim);
     ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
                   tci_container_->internal_constraint_map_,
-                  tci_container_->force_task_map_, wbc_qddot_cmd, wbc_rf_cmd,
+                  tci_container_->force_task_map_, wbc_qddot_cmd_,
                   joint_trq_cmd_); // joint_trq_cmd_ size: 27
 
     // joint integrator for real experiment
