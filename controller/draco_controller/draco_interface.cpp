@@ -82,6 +82,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   DracoDataManager *dm = DracoDataManager::GetDataManager();
   dm->data_->time_ = sp_->current_time_;
+  dm->data_->phase_ = sp_->state_;
   dm->SendData();
 
   count_++;

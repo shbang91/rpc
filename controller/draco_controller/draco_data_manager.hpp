@@ -11,6 +11,7 @@ public:
   ~DracoData() = default;
 
   double time_;
+  int phase_;
 
   Eigen::Vector3d base_joint_pos_;
   Eigen::Vector4d base_joint_ori_;
