@@ -3,6 +3,7 @@
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/filter/digital_filters.cpp" //for template class
 #include "controller/filter/digital_filters.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
@@ -18,20 +19,54 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
       robot_->GetLinkIsometry(draco_link::torso_imu).linear().transpose() *
       robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
 
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  Eigen::Vector3d num_com_vel_data = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "num_com_vel_data_for_filter");
-  com_vel_filter_.clear();
-  for (int i = 0; i < 3; i++) {
-    com_vel_filter_.push_back(new SimpleMovingAverage(num_com_vel_data[i]));
+  try {
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+    com_vel_filter_type_ =
+        util::ReadParameter<int>(cfg["state_estimator"], "com_vel_filter_type");
+    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
+
+    if (com_vel_filter_type_ == com_vel_filter::kMovingAverage) {
+      Eigen::Vector3d num_data_com_vel =
+          b_sim ? util::ReadParameter<Eigen::Vector3d>(cfg["state_estimator"],
+                                                       "sim_num_data_com_vel")
+                : util::ReadParameter<Eigen::Vector3d>(cfg["state_estimator"],
+                                                       "num_data_com_vel");
+      com_vel_mv_avg_filter_.clear();
+      for (int i = 0; i < 3; i++) {
+        com_vel_mv_avg_filter_.push_back(
+            new SimpleMovingAverage(num_data_com_vel[i]));
+      }
+    } else if (com_vel_filter_type_ == com_vel_filter::kExponentialSmoother) {
+      double time_constant = util::ReadParameter<double>(
+          cfg["state_estimator"], "com_vel_time_constant");
+      Eigen::VectorXd com_vel_err_limit = util::ReadParameter<Eigen::VectorXd>(
+          cfg["state_estimator"], "com_vel_err_limit");
+      com_vel_exp_filter_ = new ExponentialMovingAverageFilter(
+          sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(3),
+          -com_vel_err_limit, com_vel_err_limit);
+    } else if (com_vel_filter_type_ == com_vel_filter::kLowPassFilter) {
+      double cut_off_period =
+          util::ReadParameter<double>(cfg["state_estimator"], "cut_off_period");
+      com_vel_lp_filter_ = new LowPassVelocityFilter<Eigen::Vector3d>(
+          sp_->servo_dt_, cut_off_period);
+    }
+
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
   }
 }
 
 DracoStateEstimator::~DracoStateEstimator() {
-  while (!com_vel_filter_.empty()) {
-    delete com_vel_filter_.back();
-    com_vel_filter_.pop_back();
+  while (!com_vel_mv_avg_filter_.empty()) {
+    delete com_vel_mv_avg_filter_.back();
+    com_vel_mv_avg_filter_.pop_back();
   }
+  if (com_vel_exp_filter_ != nullptr)
+    delete com_vel_exp_filter_;
+
+  if (com_vel_lp_filter_ != nullptr)
+    delete com_vel_lp_filter_;
 }
 
 void DracoStateEstimator::InitializeSensorData(DracoSensorData *sensor_data) {
@@ -96,10 +131,26 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
   sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
   sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
 
-  // TODO:velocity filtering for com vel (for real experiment)
-  for (int i = 0; i < 3; ++i) {
-    com_vel_filter_[i]->Input(robot_->GetRobotComLinVel()[i]);
-    sp_->com_vel_est_[i] = com_vel_filter_[i]->Output();
+  // velocity filtering for com vel (for real experiment)
+  Eigen::Vector3d real_com_vel = robot_->GetRobotComLinVel();
+  if (com_vel_filter_type_ == com_vel_filter::kMovingAverage) {
+    for (int i = 0; i < 3; ++i) {
+      com_vel_mv_avg_filter_[i]->Input(real_com_vel[i]);
+      sp_->com_vel_est_[i] = com_vel_mv_avg_filter_[i]->Output();
+    }
+  } else if (com_vel_filter_type_ == com_vel_filter::kExponentialSmoother) {
+    Eigen::VectorXd real_com_vel_xd(3);
+    real_com_vel_xd << real_com_vel;
+    com_vel_exp_filter_->Input(real_com_vel_xd);
+    Eigen::VectorXd output = com_vel_exp_filter_->Output();
+    sp_->com_vel_est_ << output[0], output[1], output[2];
+  } else if (com_vel_filter_type_ == com_vel_filter::kLowPassFilter) {
+    if (b_lp_first_visit_) {
+      com_vel_lp_filter_->Reset(robot_->GetRobotComPos());
+      b_lp_first_visit_ = false;
+    }
+    com_vel_lp_filter_->Input(robot_->GetRobotComPos());
+    sp_->com_vel_est_ = com_vel_lp_filter_->Output();
   }
 
   // Save estimated base joint states
@@ -121,8 +172,7 @@ void DracoStateEstimator::UpdateSensorData(DracoSensorData *sensor_data) {
 
 void DracoStateEstimator::_ComputeDCM() {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();
-  Eigen::Vector3d com_vel =
-      robot_->GetRobotComLinVel(); // TODO: use filtered com vel
+  Eigen::Vector3d com_vel = sp_->com_vel_est_; // TODO: use filtered com vel
   double omega = sqrt(9.81 / com_pos[2]);
 
   sp_->prev_dcm_ = sp_->dcm_;
@@ -133,7 +183,7 @@ void DracoStateEstimator::_ComputeDCM() {
   double alpha = sp_->servo_dt_ / cutoff_period;
 
   sp_->dcm_vel_ = alpha * (sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_ +
-                  (1 - alpha) * sp_->dcm_vel_;
+                  (1 - alpha) * sp_->dcm_vel_; // not being used in controller
 }
 
 void DracoStateEstimator::UpdateGroundTruthSensorData(
