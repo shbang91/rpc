@@ -17,18 +17,7 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   util::ColorPrint(color::kBoldRed, border);
   util::PrettyConstructor(0, "DracoInterface");
 
-  robot_ =
-      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
-                               THIS_COM "robot_model/draco", false, false);
-  se_ = new DracoStateEstimator(robot_);
-  ctrl_arch_ = new DracoControlArchitecture(robot_);
   sp_ = DracoStateProvider::GetStateProvider();
-  interrupt_ =
-      new DracoInterrupt(static_cast<DracoControlArchitecture *>(ctrl_arch_));
-
-  sp_->b_lf_contact_ = true;
-  sp_->b_rf_contact_ = true;
-
   try {
     YAML::Node cfg =
         YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
@@ -47,6 +36,17 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
     std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
   }
+
+  robot_ =
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+                               THIS_COM "robot_model/draco", false, false);
+  se_ = new DracoStateEstimator(robot_);
+  ctrl_arch_ = new DracoControlArchitecture(robot_);
+  interrupt_ =
+      new DracoInterrupt(static_cast<DracoControlArchitecture *>(ctrl_arch_));
+
+  sp_->b_lf_contact_ = true;
+  sp_->b_rf_contact_ = true;
 }
 
 DracoInterface::~DracoInterface() {

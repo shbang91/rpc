@@ -9,7 +9,19 @@ b_sim: true ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
-  num_com_vel_data_for_filter: [200, 200, 200]
+  ## for simulation please use 000000000
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+
+  ## IF 0: simple moving average filter parameter
+  sim_num_data_com_vel: [20, 20, 20]
+  num_data_com_vel: [200, 200, 200] 
+
+  ## IF 1: exponential smoother filter parameter
+  com_vel_time_constant: 0.2 
+  com_vel_err_limit: [0.04, 0.04, 0.04]
+
+  ## IF 2: low-pass filter parameter
+  cut_off_period: 0.01
 
 
 controller:
