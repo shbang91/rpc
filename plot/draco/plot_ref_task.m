@@ -10,6 +10,7 @@ d = dir("/tmp/task_ref*.mat");
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
+%%
 quat_label = ["q_x", "q_y", "q_z", "q_w"];
 xyz_label = ["x","y","z"];
 xyz_dot_label = ["x_{dot}", "y_{dot}", "z_{dot}"];

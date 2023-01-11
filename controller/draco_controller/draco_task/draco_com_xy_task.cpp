@@ -1,5 +1,6 @@
 #include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/filter/digital_filters.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
 #include <cmath>
@@ -11,6 +12,15 @@ DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
   util::PrettyConstructor(3, "DracoCoMXYTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
+
+#if B_USE_MATLOGGER
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/icp_error");
+#endif
+}
+
+DracoCoMXYTask::~DracoCoMXYTask() {
+  if (icp_integrator_ != nullptr)
+    delete icp_integrator_;
 }
 
 void DracoCoMXYTask::UpdateOpCommand() {
@@ -36,11 +46,36 @@ void DracoCoMXYTask::UpdateOpCommand() {
     Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
     Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;
 
-    // TODO: add integral feedback ctrl law
-    Eigen::Vector2d des_cmp = sp_->dcm_.head<2>() - des_icp_dot / omega +
-                              kp_.cwiseProduct(sp_->dcm_.head<2>() - des_icp);
+    Eigen::Vector2d icp = sp_->dcm_.head<2>();
+    Eigen::Vector2d icp_error = des_icp - icp;
 
-    op_cmd_ = omega * omega * (com_xy_pos - des_cmp);
+    Eigen::Vector2d des_cmp =
+        icp - des_icp_dot / omega - kp_.cwiseProduct(icp_error);
+
+    // calculate icp integral error
+    Eigen::Vector2d icp_avg_err = Eigen::Vector2d::Zero();
+    if (icp_integrator_type_ == icp_integrator::kExponentialSmoother) {
+      Eigen::VectorXd error = Eigen::VectorXd::Zero(2);
+      error << icp_error[0], icp_error[1];
+      icp_integrator_->Input(error);
+      Eigen::VectorXd avg_err = icp_integrator_->Output();
+      icp_avg_err << avg_err[0], avg_err[1];
+    } else if (icp_integrator_type_ == icp_integrator::kLeakyIntegrator) {
+      // TODO: clean up this
+      icp_avg_err = icp_error * sp_->servo_dt_ + leaky_rate_ * icp_integral_;
+      icp_integral_ = util::Clamp2DVector(icp_avg_err, -leaky_integrator_limit_,
+                                          leaky_integrator_limit_);
+      icp_avg_err = icp_integral_;
+    }
+
+    // calculate com x_ddot
+    op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
+              omega * omega * ki_.cwiseProduct(icp_avg_err);
+
+#if B_USE_MATLOGGER
+    logger_->add("icp_error_raw", icp_error);
+    logger_->add("icp_avg_err", icp_avg_err);
+#endif
   }
 }
 
@@ -69,6 +104,24 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
       util::ReadParameter(node, prefix + "_icp_kd", kd_);
       util::ReadParameter(node, prefix + "_icp_ki", ki_);
       util::ReadParameter(node, prefix + "_icp_weight", weight_);
+
+      icp_integrator_type_ =
+          util::ReadParameter<int>(node, "icp_integrator_type");
+      if (icp_integrator_type_ == icp_integrator::kExponentialSmoother) {
+        double time_constant =
+            util::ReadParameter<double>(node, prefix + "_time_constant");
+        Eigen::VectorXd average_icp_error_limit =
+            util::ReadParameter<Eigen::VectorXd>(
+                node, prefix + "_avg_icp_error_limit");
+
+        icp_integrator_ = new ExponentialMovingAverageFilter(
+            sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(2),
+            -average_icp_error_limit, average_icp_error_limit);
+      } else if (icp_integrator_type_ == icp_integrator::kLeakyIntegrator) {
+        leaky_rate_ = util::ReadParameter<double>(node, prefix + "_leaky_rate");
+        leaky_integrator_limit_ = util::ReadParameter<Eigen::Vector2d>(
+            node, prefix + "_leaky_integrator_limit");
+      }
     } else
       throw std::invalid_argument("No Matching CoM Feedback Source");
 
