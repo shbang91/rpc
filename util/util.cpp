@@ -475,6 +475,16 @@ Eigen::VectorXd ClampVector(const Eigen::VectorXd &vec_in,
   return vec_out;
 }
 
+Eigen::Vector2d Clamp2DVector(const Eigen::Vector2d &vec_in,
+                              const Eigen::Vector2d &vec_min,
+                              const Eigen::Vector2d &vec_max) {
+  Eigen::Vector2d vec_out = vec_in;
+  for (int i = 0; i < vec_in.size(); i++) {
+    vec_out[i] = Clamp(vec_in[i], vec_min[i], vec_max[i]);
+  }
+  return vec_out;
+}
+
 void PseudoInverse(Eigen::MatrixXd const &matrix, double sigmaThreshold,
                    Eigen::MatrixXd &invMatrix, Eigen::VectorXd *opt_sigmaOut) {
 
