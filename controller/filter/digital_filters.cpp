@@ -158,6 +158,35 @@ void DerivativeLowPassFilter::Clear() {
   Lpf_out_prev[0] = 0;
 }
 
+// template <typename T> LowPassVelocityFilter<T>::LowPassVelocityFilter() {}
+template <typename T>
+LowPassVelocityFilter<T>::LowPassVelocityFilter(double dt) : dt_(dt) {
+  Reset(T::Zero());
+}
+template <typename T>
+LowPassVelocityFilter<T>::LowPassVelocityFilter(double dt, double period)
+    : dt_(dt) {
+  Reset(T::Zero());
+  _CutOffPeriod(period);
+}
+template <typename T>
+void LowPassVelocityFilter<T>::_CutOffPeriod(double period) {
+  period = std::max(period, 2 * dt_); // Nyquist-Shannon sampling theorem
+  cut_off_period_ = period;
+}
+template <typename T> void LowPassVelocityFilter<T>::Reset(const T &pos) {
+  pos_ = pos;
+  vel_ = T::Zero();
+}
+template <typename T> void LowPassVelocityFilter<T>::Input(const T &new_pos) {
+  double x = (cut_off_period_ <= dt_) ? 1. : dt_ / cut_off_period_;
+  T disc_vel = (new_pos - pos_) / dt_;
+  T new_vel = x * disc_vel + (1. - x) * vel_;
+  pos_ = new_pos;
+  vel_ = new_vel;
+}
+template <typename T> T LowPassVelocityFilter<T>::Output() { return vel_; }
+
 ExponentialMovingAverageFilter::ExponentialMovingAverageFilter(
     double dt, double time_constant, Eigen::VectorXd init_value,
     Eigen::VectorXd min_crop, Eigen::VectorXd max_crop) {
