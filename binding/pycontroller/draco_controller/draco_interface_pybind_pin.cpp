@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 
 #include "controller/draco_controller/draco_interface.hpp"
+#include "controller/interrupt.hpp"
 
 class PyInterface : public Interface {
 public:

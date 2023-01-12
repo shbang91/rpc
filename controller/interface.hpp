@@ -1,8 +1,9 @@
 #pragma once
-#include "controller/interrupt.hpp"
+//#include "controller/interrupt.hpp"
 
 class PinocchioRobotSystem;
 class ControlArchitecture;
+class Interrupt;
 
 class Interface {
 public:
