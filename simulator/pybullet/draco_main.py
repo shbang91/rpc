@@ -380,6 +380,8 @@ while (True):
     keys = pb.getKeyboardEvents()
     if pybullet_util.is_key_triggered(keys, '1'):
         rpc_draco_interface.interrupt_.PressOne()
+    if pybullet_util.is_key_triggered(keys, '5'):
+        rpc_draco_interface.interrupt_.PressFive()
     if pybullet_util.is_key_triggered(keys, '8'):
         rpc_draco_interface.interrupt_.PressEight()
 

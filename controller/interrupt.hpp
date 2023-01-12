@@ -12,6 +12,7 @@ public:
   virtual void ProcessInterrupt() { _ResetFlags(); };
 
   void PressOne() { b_button_one = true; }
+  void PressFive() { b_button_five = true; }
   void PressEight() { b_button_eight = true; }
 
 protected:

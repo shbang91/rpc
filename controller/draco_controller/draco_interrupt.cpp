@@ -26,6 +26,20 @@ void DracoInterrupt::ProcessInterrupt() {
       std::cout << "Wait Until Balance State" << std::endl;
   }
 
+  if (b_button_five) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button five pressed: Do Inplace Walking " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
+      ctrl_arch_->dcm_tm_->InplaceWalkMode();
+      static_cast<DoubleSupportBalance *>(
+          ctrl_arch_
+              ->state_machine_container()[draco_states::kDoubleSupportBalance])
+          ->DoDcmWalking();
+    } else
+      std::cout << "Wait Until Balance State" << std::endl;
+  }
+
   if (b_button_eight) {
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "button eight pressed: Do Forward Walking " << std::endl;
