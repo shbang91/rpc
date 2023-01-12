@@ -742,7 +742,6 @@ void DCMPlanner::GetResults() {}
 
 void DCMPlanner::SetParams(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "com_height", z_vrp_);
     util::ReadParameter(node, "t_additional_init_trans", t_transfer_);
     util::ReadParameter(node, "t_contact_trans", t_ds_);
     util::ReadParameter(node, "t_swing", t_ss_);

@@ -126,6 +126,7 @@ bool DCMTrajectoryManager::Initialize(const double t_walk_start,
   // dcm setup
   //---------------------------------------------------------
   dcm_planner_->SetRobotMass(robot_->GetTotalMass());
+  dcm_planner_->SetComHeight(init_dcm_pos[2]);
   dcm_planner_->SetInitialTime(t_walk_start);
   dcm_planner_->SetInitialPelvisOri(init_torso_quat);
   // TODO: torso ang vel setting for replanning
