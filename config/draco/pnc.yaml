@@ -154,15 +154,19 @@ wbc:
     sim_max_rf_z: 400.
 
     sim_mu: 0.3
-    sim_foot_half_length: 0.08
-    sim_foot_half_width: 0.04
+    #sim_foot_half_length: 0.08
+    #sim_foot_half_width: 0.04
+    sim_foot_half_length: 0.125
+    sim_foot_half_width: 0.075
 
     ## exp params
     exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    exp_foot_half_length: 0.08
-    exp_foot_half_width: 0.04
+    #exp_foot_half_length: 0.08
+    #exp_foot_half_width: 0.04
+    exp_foot_half_length: 0.125
+    exp_foot_half_width: 0.075
 
   qp:
     lambda_qddot: 1e-7 ##regularization

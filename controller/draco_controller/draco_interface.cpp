@@ -37,9 +37,12 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
               << __FILE__ << "]" << std::endl;
   }
 
-  robot_ =
-      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
-                               THIS_COM "robot_model/draco", false, false);
+  // robot_ =
+  // new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+  // THIS_COM "robot_model/draco", false, false);
+  robot_ = new PinocchioRobotSystem(THIS_COM
+                                    "robot_model/draco/draco3_big_feet.urdf",
+                                    THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);
   interrupt_ =
