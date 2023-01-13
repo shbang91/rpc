@@ -73,8 +73,10 @@ void DracoCoMXYTask::UpdateOpCommand() {
               omega * omega * ki_.cwiseProduct(icp_avg_err);
 
 #if B_USE_MATLOGGER
-    logger_->add("icp_error_raw", icp_error);
-    logger_->add("icp_avg_err", icp_avg_err);
+    if (sp_->count_ % sp_->data_save_freq_ == 0) {
+      logger_->add("icp_error_raw", icp_error);
+      logger_->add("icp_avg_err", icp_avg_err);
+    }
 #endif
   }
 }

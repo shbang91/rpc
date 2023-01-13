@@ -42,8 +42,6 @@ private:
   double smoothing_command_start_time_;
   Eigen::VectorXd init_joint_pos_;
 
-  int data_save_freq_;
-
   Eigen::MatrixXd sa_; // selection matrix
 
   void _SaveData();

@@ -25,6 +25,7 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
     sp_->servo_dt_ =
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
 
+    sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
     if (!DracoDataManager::GetDataManager()->IsInitialized()) {
       std::string socket_address =
           util::ReadParameter<std::string>(cfg, "ip_address");

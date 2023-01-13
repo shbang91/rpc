@@ -24,8 +24,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
       b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
       smoothing_command_duration_(0.),
-      init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
-      data_save_freq_(0) {
+      init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -83,7 +82,6 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   // read yaml & set params
   try {
     YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-    data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
 
     // initialize draco controller params
     b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
@@ -224,7 +222,7 @@ void DracoController::GetCommand(void *command) {
   static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
   static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 
-  if (sp_->count_ % data_save_freq_ == 0)
+  if (sp_->count_ % sp_->data_save_freq_ == 0)
     this->_SaveData();
 }
 
