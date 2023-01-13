@@ -29,7 +29,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   sp_ = DracoStateProvider::GetStateProvider();
 
 #if B_USE_MATLOGGER
-  logger_ = XBot::MatLogger2::MakeLogger("/tmp/task_ref");
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_controller_data");
 #endif
 
   // set virtual & actuated selection matrix

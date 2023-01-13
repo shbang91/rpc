@@ -14,7 +14,7 @@ DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 
 #if B_USE_MATLOGGER
-  logger_ = XBot::MatLogger2::MakeLogger("/tmp/icp_error");
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_icp_error");
 #endif
 }
 
