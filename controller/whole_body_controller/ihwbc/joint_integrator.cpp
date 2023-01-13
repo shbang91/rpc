@@ -1,4 +1,5 @@
 #include "controller/whole_body_controller/ihwbc/joint_integrator.hpp"
+#include "util/util.hpp"
 
 JointIntegrator::JointIntegrator(const int num_joints, const double dt,
                                  const Eigen::VectorXd &pos_min,
@@ -25,6 +26,7 @@ double JointIntegrator::_GetAlphaFromFrequency(const double hz,
                                                const double dt) {
   double omega = 2.0 * M_PI * hz;
   double alpha = (omega * dt) / (1.0 + (omega * dt));
+  alpha = util::Clamp(alpha, 0., 1.);
   return alpha;
 }
 
@@ -57,7 +59,7 @@ void JointIntegrator::Integrate(const Eigen::VectorXd &cmd_jacc,
     // position integration
     // decaying desired position to current position
     jpos_ = (1.0 - alpha_pos_) * jpos_ + alpha_pos_ * curr_jpos;
-    jpos_ += cmd_jvel * dt_;
+    jpos_ += jvel_ * dt_;
     jpos_ = util::ClampVector(
         jpos_, curr_jpos - pos_max_error_vec_,
         curr_jpos + pos_max_error_vec_); // clamp to maximum position error

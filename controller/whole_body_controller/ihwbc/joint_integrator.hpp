@@ -1,7 +1,5 @@
 #pragma once
-
-#include "util/util.hpp"
-
+#include <Eigen/Dense>
 //**usage
 // constructor -> SetCutoffFrequency, SetMaxPositionError -> Initialize
 // ->Integrate
