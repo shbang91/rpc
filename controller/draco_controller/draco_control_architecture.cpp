@@ -1,3 +1,5 @@
+#include "controller/robot_system/pinocchio_robot_system.hpp"
+
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
@@ -28,7 +30,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   sp_ = DracoStateProvider::GetStateProvider();
 
-  // set starting state
   try {
     cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
   } catch (const std::runtime_error &e) {
@@ -38,6 +39,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
 
+  // set starting state
   prev_state_ =
       b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
   state_ =
@@ -204,12 +206,12 @@ void DracoControlArchitecture::GetCommand(void *command) {
     b_state_first_visit_ = false;
   }
 
-  if (!state_machine_container_[state_]->EndOfState()) {
-    state_machine_container_[state_]->OneStep();
-    // state independent upper body traj setting
-    upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
-    controller_->GetCommand(command);
-  } else {
+  state_machine_container_[state_]->OneStep();
+  upper_body_tm_->UseNominalUpperBodyJointPos(
+      sp_->nominal_jpos_);          // state independent upper body traj setting
+  controller_->GetCommand(command); // get control command
+
+  if (state_machine_container_[state_]->EndOfState()) {
     state_machine_container_[state_]->LastVisit();
     prev_state_ = state_;
     state_ = state_machine_container_[state_]->GetNextState();
