@@ -72,9 +72,9 @@ void PinocchioRobotSystem::_Initialize() {
     joint_trq_limits_.rightCols<1>() = model_.effortLimit;
   } else {
     joint_pos_limits_.leftCols<1>() =
-        model_.lowerPositionLimit.segment(n_float_, n_adof_);
+        model_.lowerPositionLimit.segment(n_float_ + 1, n_adof_);
     joint_pos_limits_.rightCols<1>() =
-        model_.upperPositionLimit.segment(n_float_, n_adof_);
+        model_.upperPositionLimit.segment(n_float_ + 1, n_adof_);
     joint_vel_limits_.leftCols<1>() =
         -model_.velocityLimit.segment(n_float_, n_adof_);
     joint_vel_limits_.rightCols<1>() =
