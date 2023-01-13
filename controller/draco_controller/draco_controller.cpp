@@ -238,8 +238,8 @@ void DracoController::_SaveData() {
   // tci_container_->task_map["com_xy_task"]->DesiredPos();
 
 #if B_USE_MATLOGGER
-  // time plot
-  logger_->add("time", sp_->current_time_);
+  logger_->add("time", sp_->current_time_); // time plot
+  logger_->add("state", sp_->state_);       // draco state machine indicator
 
   // motion task plot
   logger_->add("des_com_xy_pos",
