@@ -72,7 +72,7 @@ wbc:
       exp_leaky_integrator_limit: [0.03, 0.03]
 
     com_z_task:
-      com_height_target_source: 0 # 0: com height / 1: base height
+      com_height_target_source: 1 # 0: com height / 1: base height
       ## sim params
       sim_com_weight : [1000.]
       sim_com_kp : [100.]
@@ -212,8 +212,8 @@ dcm_walking:
   percentage_settle: 0.9
   alpha_ds: 0.5
 
-  #t_additional_init_trans: 0.4
-  #t_contact_trans: 1.6
+  #t_additional_init_trans: 0.
+  #t_contact_trans: 1.8
   #t_swing: 0.8
   #percentage_settle: 0.9
   #alpha_ds: 0.5
@@ -223,7 +223,7 @@ dcm_walking:
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.02
-  n_steps: 5
+  n_steps: 3
   first_swing_leg: 1 ## 0: left leg ## 1: right leg
 
 

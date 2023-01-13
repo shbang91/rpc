@@ -1,14 +1,16 @@
-#include "controller/draco_controller/draco_interface.hpp"
 #include "configuration.hpp"
+#include "controller/robot_system/pinocchio_robot_system.hpp"
+
+#include "controller/draco_controller/draco_state_estimator.hpp"
+
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_data_manager.hpp"
+#include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_interrupt.hpp"
-#include "controller/draco_controller/draco_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
-#include "controller/robot_system/pinocchio_robot_system.hpp"
-#include "util/util.hpp"
 
 #include "controller/draco_controller/draco_definition.hpp"
+#include "util/util.hpp"
 
 DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   std::string border = "=";
@@ -26,6 +28,7 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
 
     sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
+
     if (!DracoDataManager::GetDataManager()->IsInitialized()) {
       std::string socket_address =
           util::ReadParameter<std::string>(cfg, "ip_address");
@@ -86,10 +89,12 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     interrupt_->ProcessInterrupt();
   }
 
-  DracoDataManager *dm = DracoDataManager::GetDataManager();
-  dm->data_->time_ = sp_->current_time_;
-  dm->data_->phase_ = sp_->state_;
-  dm->SendData();
+  // if (sp_->count_ % sp_->data_save_freq_ == 0) {
+  // DracoDataManager *dm = DracoDataManager::GetDataManager();
+  // dm->data_->time_ = sp_->current_time_;
+  // dm->data_->phase_ = sp_->state_;
+  // dm->SendData();
+  //}
 
   count_++;
 }

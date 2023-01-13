@@ -28,7 +28,7 @@ public:
   bool b_lf_contact_;
   bool b_rf_contact_;
 
-  // Debug
+  // Debug or using ground truth state estimator
   Eigen::Vector3d base_joint_pos_;
   Eigen::Vector4d base_joint_quat_; // x, y, z, w order
   Eigen::Vector3d base_joint_lin_vel_;

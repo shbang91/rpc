@@ -1,4 +1,9 @@
 #pragma once
+#include "configuration.hpp"
+
+#if B_USE_MATLOGGER
+#include <matlogger2/matlogger2.h>
+#endif
 
 #include <Eigen/Dense>
 #include <vector>
@@ -14,15 +19,15 @@ class PinocchioRobotSystem;
 class DracoStateProvider;
 class SimpleMovingAverage;
 class ExponentialMovingAverageFilter;
-template <typename T> class LowPassVelocityFilter;
+// template <typename T> class LowPassVelocityFilter;
 
 class DracoStateEstimator {
 public:
   DracoStateEstimator(PinocchioRobotSystem *robot);
   virtual ~DracoStateEstimator();
 
-  void InitializeSensorData(DracoSensorData *sensor_data);
-  void UpdateSensorData(DracoSensorData *sensor_data);
+  void Initialize(DracoSensorData *sensor_data);
+  void Update(DracoSensorData *sensor_data);
 
   // simulation only
   void UpdateGroundTruthSensorData(DracoSensorData *sensor_data);
@@ -44,5 +49,9 @@ private:
   int com_vel_filter_type_;
   std::vector<SimpleMovingAverage *> com_vel_mv_avg_filter_;
   ExponentialMovingAverageFilter *com_vel_exp_filter_;
-  LowPassVelocityFilter<Eigen::Vector3d> *com_vel_lp_filter_;
+  // LowPassVelocityFilter<Eigen::Vector3d> *com_vel_lp_filter_;
+
+#if B_USE_MATLOGGER
+  XBot::MatLogger2::Ptr logger_;
+#endif
 };

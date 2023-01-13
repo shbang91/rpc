@@ -4,15 +4,21 @@ clc;
 
 addpath("/tmp")
 
-d = dir("/tmp/task_ref*.mat");
-
+d = dir("/tmp/draco_controller_data*.mat");
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
+dd = dir("/tmp/draco_state_estimator_data*.mat");
+[tmp, i] = max([dd.datenum]);
+fprintf('loading %s \n', dd(i).name)
+load(dd(i).name, 'joint_pos_act')
+load(dd(i).name, 'joint_vel_act')
+
 %%
 quat_label = ["q_x", "q_y", "q_z", "q_w"];
 xyz_label = ["x","y","z"];
+rpy_label = ["roll", "pitch", "yaw"];
 xyz_dot_label = ["x_{dot}", "y_{dot}", "z_{dot}"];
 xy_label = ["x","y"];
 xy_dot_label = ["x_{dot}", "y_{dot}"];
@@ -162,7 +168,7 @@ for i = 1:12
     subplot(6,2,i);
     if mod(i,2) == 1
         j = j + 1;
-        plot(time, lf_rf_cmd(j, :), 'k', 'LineWidth', 2);
+        plot(time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
         grid on
 %         min_val = min([lf_rf_cmd(j, :)]);
 %         max_val = max([lf_rf_cmd(j, :)]);
@@ -174,7 +180,7 @@ for i = 1:12
         end
     else
         k = k + 1;
-        plot(time, rf_rf_cmd(k, :), 'k', 'LineWidth', 2);
+        plot(time, rf_rf_cmd(k, :), 'r', 'LineWidth', 2);
         grid on
 %         min_val = min([rf_rf_cmd(k, :)]);
 %         max_val = max([rf_rf_cmd(k, :)]);
@@ -191,7 +197,7 @@ end
 figure(6)
 for i = 1:6
     subplot(6,1,i);
-    plot(time, fb_qddot_cmd(i, :), 'k', 'LineWidth', 2);
+    plot(time, fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
     grid on
     xlabel('time')
     ylabel(fb_qddot_label(i))
@@ -206,7 +212,7 @@ for i = 1:14
     subplot(7,2,i);
     if mod(i,2) == 1
         j = j + 1;
-        plot(time, joint_acc_cmd(draco_lf_idx(j), :), 'k', 'LineWidth', 2);
+        plot(time, joint_acc_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
         grid on
 %         min_val = min([lf_rf_cmd(j, :)]);
 %         max_val = max([lf_rf_cmd(j, :)]);
@@ -214,11 +220,11 @@ for i = 1:14
         xlabel('time')
         ylabel(draco_lf_label(j))
         if j == 1
-            title('left foot', 'FontSize',30)
+            title('left foot qddot cmd', 'FontSize',30)
         end
     else
         k = k + 1;
-        plot(time, joint_acc_cmd(draco_rf_idx(k), :), 'k', 'LineWidth', 2);
+        plot(time, joint_acc_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
         grid on
 %         min_val = min([rf_rf_cmd(k, :)]);
 %         max_val = max([rf_rf_cmd(k, :)]);
@@ -226,11 +232,116 @@ for i = 1:14
         xlabel('time')
         ylabel(draco_rf_label(k))
          if j == 1
-            title('right foot', 'FontSize', 30)
+            title('right foot qddot cmd', 'FontSize', 30)
         end
     end
 end
 
+% foot torque cmd
+figure(8)
+j = 0;
+k = 0;
+for i = 1:14
+    subplot(7,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, joint_trq_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
+        grid on
+%         min_val = min([lf_rf_cmd(j, :)]);
+%         max_val = max([lf_rf_cmd(j, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_lf_label(j))
+        if j == 1
+            title('left foot trq cmd', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(time, joint_trq_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
+        grid on
+%         min_val = min([rf_rf_cmd(k, :)]);
+%         max_val = max([rf_rf_cmd(k, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_rf_label(k))
+         if j == 1
+            title('right foot trq cmd', 'FontSize', 30)
+        end
+    end
+end
+% lower body joint position
+figure(9)
+j = 0;
+k = 0;
+for i = 1:14
+    subplot(7,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, joint_pos_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
+%         min_val = min([lf_rf_cmd(j, :)]);
+%         max_val = max([lf_rf_cmd(j, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_lf_label(j))
+        if j == 1
+            title('left foot jpos data', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+         plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
+%         min_val = min([rf_rf_cmd(k, :)]);
+%         max_val = max([rf_rf_cmd(k, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_rf_label(k))
+         if j == 1
+            title('right foot jpos data', 'FontSize', 30)
+        end
+    end
+end
+
+% lower body joint velocity
+figure(10)
+j = 0;
+k = 0;
+for i = 1:14
+    subplot(7,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, joint_vel_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_vel_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
+%         min_val = min([lf_rf_cmd(j, :)]);
+%         max_val = max([lf_rf_cmd(j, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_lf_label(j))
+        if j == 1
+            title('left foot jvel data', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+         plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_vel_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
+%         min_val = min([rf_rf_cmd(k, :)]);
+%         max_val = max([rf_rf_cmd(k, :)]);
+%         set_fig_opt(min_val, max_val)
+        xlabel('time')
+        ylabel(draco_rf_label(k))
+         if j == 1
+            title('right foot jvel data', 'FontSize', 30)
+        end
+    end
+end
 
 function [] = set_fig_opt(min,max)
     set(gca, 'LineWidth', 3)
