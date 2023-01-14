@@ -19,7 +19,7 @@ class PinocchioRobotSystem;
 class DracoStateProvider;
 class SimpleMovingAverage;
 class ExponentialMovingAverageFilter;
-// template <typename T> class LowPassVelocityFilter;
+class LowPassVelocityFilter;
 
 class DracoStateEstimator {
 public:
@@ -49,7 +49,7 @@ private:
   int com_vel_filter_type_;
   std::vector<SimpleMovingAverage *> com_vel_mv_avg_filter_;
   ExponentialMovingAverageFilter *com_vel_exp_filter_;
-  // LowPassVelocityFilter<Eigen::Vector3d> *com_vel_lp_filter_;
+  LowPassVelocityFilter *com_vel_lp_filter_;
 
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;

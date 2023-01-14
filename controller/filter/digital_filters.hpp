@@ -88,26 +88,28 @@ private:
 };
 
 // github.com/stephane-caron/lipm_walking_controller/blob/master/include/lipm_walking/utils/LowPassVelocityFilter.h
-template <typename T> class LowPassVelocityFilter {
+class LowPassVelocityFilter {
 public:
-  LowPassVelocityFilter(double dt);
-  LowPassVelocityFilter(double dt, double period);
+  LowPassVelocityFilter(double dt, double period, int dim);
 
-  void Reset(const T &pos);
+  void Reset(const Eigen::VectorXd &pos);
 
-  void Input(const T &new_pos);
-  void UpdatePositionOnly(const T &new_pos) {
+  void Input(const Eigen::VectorXd &new_pos);
+
+  void UpdatePositionOnly(const Eigen::VectorXd &new_pos) {
     pos_ = new_pos;
-  }; // LeftFootRatioJumped
-  T Output();
+  } // LeftFootRatioJumped
+
+  Eigen::VectorXd Output();
 
 private:
   void _CutOffPeriod(double period);
 
-  T pos_;
-  T vel_;
+  Eigen::VectorXd pos_;
+  Eigen::VectorXd vel_;
   double cut_off_period_ = 0.;
   double dt_ = 0.005;
+  int dim_ = 3;
 };
 
 /// class ExponentialMovingAverageFilter

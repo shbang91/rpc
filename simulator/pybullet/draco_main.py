@@ -122,7 +122,7 @@ def apply_control_input_to_pybullet(robot, command):
                              DracoJointIdx.l_hip_fe,
                              controlMode=mode,
                              force=command[2])
-    # pb.setJointMotorControl2(robot, DracoJointIdx.l_knee_fe_jd, controlMode=mode, force=command[3])
+    # pb.setJointMotorControl2(robot, DracoJointIdx.l_knee_fe_jp, controlMode=mode, force=command[3])
     pb.setJointMotorControl2(robot,
                              DracoJointIdx.l_knee_fe_jd,
                              controlMode=mode,
@@ -413,6 +413,13 @@ while (True):
 
     #apply command to pybullet robot
     apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
+
+    # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+    # DracoLinkIdx.l_foot_contact)[0:3, 3]
+    # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+    # DracoLinkIdx.r_foot_contact)[0:3, 3]
+    # print("------------------------------------")
+    # print(rfoot_pos[1] - lfoot_pos[1])
 
     # print("trq command printout")
     # print(rpc_trq_command)
