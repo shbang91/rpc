@@ -92,13 +92,11 @@ while True:
     data_saver.add('des_com_vel', list(msg.des_com_vel))
     data_saver.add('act_com_vel', list(msg.act_com_vel))
 
-
     ##TODO: TEST
 
     # fb_msg = msg.fb
     # print(fb_msg.bjoint_pos)
     ##TODO: TEST
-
 
     data_saver.advance()
 

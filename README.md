@@ -11,11 +11,11 @@ The controller has been tested on Ubuntu 18.04 and Mac OSX Ventura. It builds on
 conda env create -f rpc.yml
 ```
 - [pinocchio](https://github.com/shbang91/pinocchio): rigid body dynamics
-- [zmq](https://github.com/zeromq/cppzmq): logging numeric data
-- [protobuf](https://github.com/protocolbuffers/protobuf): logging numeric data
 
 ###### optional dependencies
 - [MatLogger2](https://github.com/ADVRHumanoids/MatLogger2/tree/devel): logging numeric data (cpp to MAT-files)
+- [zmq](https://github.com/zeromq/cppzmq): logging numeric data
+- [protobuf](https://github.com/protocolbuffers/protobuf): logging numeric data
 
 ## Usage
 - source conda environment:<br/>

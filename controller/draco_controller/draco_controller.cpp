@@ -2,7 +2,6 @@
 
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
-#include "controller/draco_controller/draco_data_manager.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
@@ -14,6 +13,10 @@
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
 #include "controller/whole_body_controller/ihwbc/joint_integrator.hpp"
 #include "util/interpolation.hpp"
+
+#if B_USE_ZMQ
+#include "controller/draco_controller/draco_data_manager.hpp"
+#endif
 
 DracoController::DracoController(DracoTCIContainer *tci_container,
                                  PinocchioRobotSystem *robot)
@@ -228,6 +231,7 @@ void DracoController::GetCommand(void *command) {
 }
 
 void DracoController::_SaveData() {
+#if B_USE_ZMQ
   // DracoDataManager *dm = DracoDataManager::GetDataManager();
 
   // task data
@@ -237,6 +241,7 @@ void DracoController::_SaveData() {
   // dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
   // dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
   // tci_container_->task_map["com_xy_task"]->DesiredPos();
+#endif
 
 #if B_USE_MATLOGGER
   logger_->add("time", sp_->current_time_); // time plot

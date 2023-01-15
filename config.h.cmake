@@ -2,6 +2,7 @@
 
 #define THIS_COM "@THIS_COM@"
 #define B_USE_MATLOGGER @B_USE_MATLOGGER@
+#define B_USE_ZMQ @B_USE_ZMQ@
 
 namespace end_effector{
 constexpr int LFoot = 0;

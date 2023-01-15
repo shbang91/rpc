@@ -28,6 +28,7 @@ option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
 option(BUILD_WITH_DART "compile with DART" OFF)
 
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
+option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
@@ -43,6 +44,13 @@ include_directories("${PROJECT_SOURCE_DIR}/build")
 ## Dependency
 ##==================================================
 
+#pybind11
+if(PYTHON_BINDING)
+    find_package(pybind11 REQUIRED)
+    include_directories(${pybind11_INCLUDE_DIRS})
+    add_subdirectory(binding)
+endif()
+
 # Pinocchio
 if(BUILD_WITH_PINOCCHIO)
     find_package(pinocchio)
@@ -54,7 +62,6 @@ if(BUILD_WITH_DART)
     find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
     include_directories(${DART_INCLUDE_DIRS})
 endif()
-
 
 # Eigen
 find_package(Eigen 3.3 REQUIRED)
@@ -68,25 +75,24 @@ else()
     set(B_USE_MATLOGGER false)
 endif()
 
+
+#Protobuf & ZMQ
+if (BUILD_WITH_ZMQ_PROTOBUF)
+    find_package(ZMQ)
+    find_package(Protobuf)
+    if(Protobuf_FOUND AND ZMQ_FOUND)
+        include_directories(${Protobuf_INCLUDE_DIRS})
+        include_directories(${ZMQ_INCLUDE_DIRS})
+        add_subdirectory(messages)
+    endif()
+    set(B_USE_ZMQ true)
+else()
+    set(B_USE_ZMQ false)
+endif()
+
 #Boost
 #find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
 #include_directories(${Boost_INCLUDE_DIRS})
-
-#pybind11
-if(PYTHON_BINDING)
-    find_package(pybind11 REQUIRED)
-    include_directories(${pybind11_INCLUDE_DIRS})
-    add_subdirectory(binding)
-endif()
-
-#Protobuf & ZMQ
-find_package(ZMQ)
-find_package(Protobuf)
-if(Protobuf_FOUND AND ZMQ_FOUND)
-    include_directories(${Protobuf_INCLUDE_DIRS})
-    include_directories(${ZMQ_INCLUDE_DIRS})
-    add_subdirectory(messages)
-endif()
 
 ##==================================================
 ## Subdirectories

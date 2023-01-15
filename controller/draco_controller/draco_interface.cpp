@@ -4,13 +4,16 @@
 #include "controller/draco_controller/draco_state_estimator.hpp"
 
 #include "controller/draco_controller/draco_control_architecture.hpp"
-#include "controller/draco_controller/draco_data_manager.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_interrupt.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 
 #include "controller/draco_controller/draco_definition.hpp"
 #include "util/util.hpp"
+
+#if B_USE_ZMQ
+#include "controller/draco_controller/draco_data_manager.hpp"
+#endif
 
 DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   std::string border = "=";
@@ -29,12 +32,14 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
 
     sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
 
+#if B_USE_ZMQ
     if (!DracoDataManager::GetDataManager()->IsInitialized()) {
       std::string socket_address =
           util::ReadParameter<std::string>(cfg, "ip_address");
       DracoDataManager::GetDataManager()->InitializeSocket(
           socket_address); // initalize data publisher
     }
+#endif
 
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
@@ -89,12 +94,14 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     interrupt_->ProcessInterrupt();
   }
 
+#if B_USE_ZMQ
   // if (sp_->count_ % sp_->data_save_freq_ == 0) {
   // DracoDataManager *dm = DracoDataManager::GetDataManager();
   // dm->data_->time_ = sp_->current_time_;
   // dm->data_->phase_ = sp_->state_;
   // dm->SendData();
   //}
+#endif
 
   count_++;
 }

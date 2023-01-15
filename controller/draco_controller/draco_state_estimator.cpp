@@ -2,13 +2,16 @@
 
 #include "controller/filter/digital_filters.hpp"
 
-//#include "controller/draco_controller/draco_data_manager.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 
 #include "util/util.hpp"
+
+#if B_USE_ZMQ
+#include "controller/draco_controller/draco_data_manager.hpp"
+#endif
 
 #include <string>
 
@@ -164,6 +167,7 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     sp_->com_vel_est_ << output[0], output[1], output[2];
   }
 
+#if B_USE_ZMQ
   // Save estimated base joint states
   // DracoDataManager *dm = DracoDataManager::GetDataManager();
   // dm->data_->est_base_joint_pos_ = base_joint_pos;
@@ -176,6 +180,7 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
   // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
   // dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
   // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
+#endif
 
   // compute dcm
   this->_ComputeDCM();
@@ -235,6 +240,7 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
 
   this->_ComputeDCM();
 
+#if B_USE_ZMQ
   // DracoDataManager *dm = DracoDataManager::GetDataManager();
   // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
   // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
@@ -242,4 +248,5 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
   // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
 
   // dm->data_->joint_positions_ = sensor_data->joint_pos_;
+#endif
 }
