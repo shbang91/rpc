@@ -1,26 +1,27 @@
+#include "configuration.hpp"
+#include "test/rolling_joint_test_world_node.hpp"
+#include "util/util.hpp"
 #include <dart/dart.hpp>
 #include <dart/gui/osg/osg.hpp>
 #include <dart/utils/urdf/urdf.hpp>
 #include <dart/utils/utils.hpp>
-#include "test/rolling_joint_test_world_node.hpp"
-#include "util/util.hpp"
-#include "configuration.hpp"
 
-#include "pnc/rolling_joint/rolling_joint_replacer.hpp"
+#include "test/rolling_joint/rolling_joint_replacer.hpp"
 
-//inline std::vector<std::string> tokenizePrefixes(std::string name){
-      //boost::replace_all(name, "__", ",");
-      //std::vector<std::string> tokens;
+// inline std::vector<std::string> tokenizePrefixes(std::string name){
+// boost::replace_all(name, "__", ",");
+// std::vector<std::string> tokens;
 
-      //boost::char_separator<char> sep {","};
-      //boost::tokenizer<boost::char_separator<char> > tokenizer(name, sep);
-      //for(boost::tokenizer<boost::char_separator<char> >::iterator it = tokenizer.begin(); it != tokenizer.end(); ++it)
-      //{
-        //std::string token(*it);
-        //tokens.push_back(token);
-      //}
+// boost::char_separator<char> sep {","};
+// boost::tokenizer<boost::char_separator<char> > tokenizer(name, sep);
+// for(boost::tokenizer<boost::char_separator<char> >::iterator it =
+// tokenizer.begin(); it != tokenizer.end(); ++it)
+//{
+// std::string token(*it);
+// tokens.push_back(token);
+//}
 
-      //return tokens;
+// return tokens;
 //}
 
 void displayJointFrames(const dart::simulation::WorldPtr &world,
@@ -45,7 +46,6 @@ void displayJointFrames(const dart::simulation::WorldPtr &world,
   }
 }
 
-
 class OneStepProgress : public osgGA::GUIEventHandler {
 public:
   OneStepProgress(RollingJointWorldNode *worldnode) : worldnode_(worldnode) {}
@@ -60,7 +60,7 @@ public:
       }
       if (ea.getKey() == 'r') {
       }
-      if(ea.getKey() == 'w') {
+      if (ea.getKey() == 'w') {
       }
       if (ea.getKey() == 'a') {
       }
@@ -102,59 +102,59 @@ public:
 //}
 
 void _printRobotModel(dart::dynamics::SkeletonPtr robot) {
-   for (int i = 0; i < robot->getNumBodyNodes(); ++i) {
-   dart::dynamics::BodyNodePtr bn = robot->getBodyNode(i);
-   std::cout << i << "th" << std::endl;
-   std::cout << bn->getName() << std::endl;
-   std::cout << bn->getMass() << std::endl;
+  for (int i = 0; i < robot->getNumBodyNodes(); ++i) {
+    dart::dynamics::BodyNodePtr bn = robot->getBodyNode(i);
+    std::cout << i << "th" << std::endl;
+    std::cout << bn->getName() << std::endl;
+    std::cout << bn->getMass() << std::endl;
   }
 
-   for (int i = 0; i < robot->getNumJoints(); ++i) {
-   dart::dynamics::Joint* joint = robot->getJoint(i);
-   std::cout << i << "th" << std::endl;
-   std::cout << joint->getNumDofs() << std::endl;
+  for (int i = 0; i < robot->getNumJoints(); ++i) {
+    dart::dynamics::Joint *joint = robot->getJoint(i);
+    std::cout << i << "th" << std::endl;
+    std::cout << joint->getNumDofs() << std::endl;
   }
 
   for (int i = 0; i < robot->getNumDofs(); ++i) {
     dart::dynamics::DegreeOfFreedom *dof = robot->getDof(i);
     std::cout << i << "th" << std::endl;
     std::cout << "dof name : " << dof->getName() << std::endl;
-     std::cout << "child body node name and mass : "
-    << dof->getChildBodyNode()->getName() << " , "
-    << dof->getChildBodyNode()->getMass() << std::endl;
+    std::cout << "child body node name and mass : "
+              << dof->getChildBodyNode()->getName() << " , "
+              << dof->getChildBodyNode()->getMass() << std::endl;
   }
 
-   std::cout << "num dof" << std::endl;
-   std::cout << robot->getNumDofs() << std::endl;
-   std::cout << robot->getNumJoints() << std::endl;
-   std::cout << "mass mat row" << std::endl;
-   std::cout << robot->getMassMatrix().rows() << std::endl;
-   std::cout << robot->getMassMatrix().cols() << std::endl;
-   std::cout << "q" << std::endl;
-   std::cout << robot->getPositions() << std::endl;
-   std::cout << "robot total mass" << std::endl;
-   std::cout << robot->getMass() << std::endl;
-   std::cout << "robot position" << std::endl;
-   std::cout << robot->getPositions() << std::endl;
+  std::cout << "num dof" << std::endl;
+  std::cout << robot->getNumDofs() << std::endl;
+  std::cout << robot->getNumJoints() << std::endl;
+  std::cout << "mass mat row" << std::endl;
+  std::cout << robot->getMassMatrix().rows() << std::endl;
+  std::cout << robot->getMassMatrix().cols() << std::endl;
+  std::cout << "q" << std::endl;
+  std::cout << robot->getPositions() << std::endl;
+  std::cout << "robot total mass" << std::endl;
+  std::cout << robot->getMass() << std::endl;
+  std::cout << "robot position" << std::endl;
+  std::cout << robot->getPositions() << std::endl;
 
-   std::cout << "==================" << std::endl;
+  std::cout << "==================" << std::endl;
 
-   //std::cout << "right" << std::endl;
-   //std::cout << robot->getBodyNode("rightCOP_Frame")
+  // std::cout << "right" << std::endl;
+  // std::cout << robot->getBodyNode("rightCOP_Frame")
   //->getWorldTransform()
   //.translation()
   //<< std::endl;
-   //std::cout << "left" << std::endl;
-   //std::cout << robot->getBodyNode("leftCOP_Frame")
+  // std::cout << "left" << std::endl;
+  // std::cout << robot->getBodyNode("leftCOP_Frame")
   //->getWorldTransform()
   //.translation()
   //<< std::endl;
 
-  //exit(0);
+  // exit(0);
 }
 
 void SetInitialConfiguration(dart::dynamics::SkeletonPtr robot) {
-  //int j0_idx = robot->getDof("j0")->getIndexInSkeleton();
+  // int j0_idx = robot->getDof("j0")->getIndexInSkeleton();
   int j1_idx = robot->getDof("joint_name__roll__j1")->getIndexInSkeleton();
 
   Eigen::Isometry3d fixed_base_joint_iso = Eigen::Isometry3d::Identity();
@@ -166,38 +166,38 @@ void SetInitialConfiguration(dart::dynamics::SkeletonPtr robot) {
 
   robot->getJoint(0)->setTransformFromParentBodyNode(fixed_base_joint_iso);
 
-
   Eigen::VectorXd q = robot->getPositions();
-  //q[j0_idx] = M_PI / 4.;
+  // q[j0_idx] = M_PI / 4.;
   q[j1_idx] = M_PI / 4.;
 
   robot->setPositions(q);
 }
 
-//void LocateReplacementRecursive(dart::dynamics::BodyNode* node, RollingJointReplacer *replacer){
+// void LocateReplacementRecursive(dart::dynamics::BodyNode* node,
+// RollingJointReplacer *replacer){
 
-    //if(replacer->handles(node))
+// if(replacer->handles(node))
 //}
 
-void ModifySkeletonRecursive(dart::dynamics::SkeletonPtr old_skel, 
-                        dart::dynamics::SkeletonPtr new_skel, 
-                        dart::dynamics::BodyNode *old_node, 
-                        dart::dynamics::BodyNode *new_parent,
-                        RollingJointReplacer *replacer){
+void ModifySkeletonRecursive(dart::dynamics::SkeletonPtr old_skel,
+                             dart::dynamics::SkeletonPtr new_skel,
+                             dart::dynamics::BodyNode *old_node,
+                             dart::dynamics::BodyNode *new_parent,
+                             RollingJointReplacer *replacer) {
 
-std::cout << "old_node name: " << old_node->getName() << std::endl;
-dart::dynamics::BodyNode *next_new_parent = nullptr;
+  std::cout << "old_node name: " << old_node->getName() << std::endl;
+  dart::dynamics::BodyNode *next_new_parent = nullptr;
 
-next_new_parent = replacer->replace(old_skel, new_skel, old_node, new_parent);
+  next_new_parent = replacer->replace(old_skel, new_skel, old_node, new_parent);
 
-if(next_new_parent == nullptr){
+  if (next_new_parent == nullptr) {
     next_new_parent = old_node->copyTo(new_skel, new_parent, false).second;
-}
+  }
 
-for(unsigned int i = 0; i < old_node->getNumChildBodyNodes(); i++){
-    ModifySkeletonRecursive(old_skel, new_skel, old_node->getChildBodyNode(i), next_new_parent, replacer);
-}
-
+  for (unsigned int i = 0; i < old_node->getNumChildBodyNodes(); i++) {
+    ModifySkeletonRecursive(old_skel, new_skel, old_node->getChildBodyNode(i),
+                            next_new_parent, replacer);
+  }
 }
 
 int main(int argc, char **argv) {
@@ -225,24 +225,24 @@ int main(int argc, char **argv) {
   dart::dynamics::SkeletonPtr robot_model_raw = urdfLoader.parseSkeleton(
       THIS_COM "robot_model/manipulator/rolling_joint_model.urdf");
 
-
-  //TODO: modify skeleton
-  dart::dynamics::SkeletonPtr robot = dart::dynamics::Skeleton::create(robot_model_raw->getName());//create empty skeleton
-  robot_model_raw->setName(robot_model_raw->getName()+"_raw");
-  robot_model_raw->setPositions(Eigen::VectorXd::Zero(robot_model_raw->getNumDofs()));
-  robot_model_raw->setVelocities(Eigen::VectorXd::Zero(robot_model_raw->getNumDofs()));
+  // TODO: modify skeleton
+  dart::dynamics::SkeletonPtr robot = dart::dynamics::Skeleton::create(
+      robot_model_raw->getName()); // create empty skeleton
+  robot_model_raw->setName(robot_model_raw->getName() + "_raw");
+  robot_model_raw->setPositions(
+      Eigen::VectorXd::Zero(robot_model_raw->getNumDofs()));
+  robot_model_raw->setVelocities(
+      Eigen::VectorXd::Zero(robot_model_raw->getNumDofs()));
   robot_model_raw->computeForwardKinematics();
 
   RollingJointReplacer *replacer = new RollingJointReplacer();
 
-  //locate replacement recursively
-  //LocateReplacementRecursive(robot_model_raw->getRootBodyNode(), replacer);
+  // locate replacement recursively
+  // LocateReplacementRecursive(robot_model_raw->getRootBodyNode(), replacer);
   //
-  //modify skeleton recursively
-  ModifySkeletonRecursive(robot_model_raw, robot, robot_model_raw->getRootBodyNode(), 0, replacer);
-
-
-
+  // modify skeleton recursively
+  ModifySkeletonRecursive(robot_model_raw, robot,
+                          robot_model_raw->getRootBodyNode(), 0, replacer);
 
   world->addSkeleton(ground);
   world->addSkeleton(robot);

@@ -21,8 +21,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
-set(PYTHON_BINDING TRUE)
+
+option(PYTHON_BINDING "use pybind11" ON)
+
 option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
+option(BUILD_WITH_DART "compile with DART" OFF)
+
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -39,15 +43,18 @@ include_directories("${PROJECT_SOURCE_DIR}/build")
 ## Dependency
 ##==================================================
 
-# DART
-#find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
-#include_directories(${DART_INCLUDE_DIRS})
-
 # Pinocchio
 if(BUILD_WITH_PINOCCHIO)
     find_package(pinocchio)
     include_directories(${pinocchio_INCLUDE_DIRS})
 endif()
+
+# DART
+if(BUILD_WITH_DART)
+    find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
+    include_directories(${DART_INCLUDE_DIRS})
+endif()
+
 
 # Eigen
 find_package(Eigen 3.3 REQUIRED)
