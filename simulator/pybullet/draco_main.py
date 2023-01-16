@@ -384,10 +384,20 @@ while (True):
     keys = pb.getKeyboardEvents()
     if pybullet_util.is_key_triggered(keys, '1'):
         rpc_draco_interface.interrupt_.PressOne()
+    if pybullet_util.is_key_triggered(keys, '2'):
+        rpc_draco_interface.interrupt_.PressTwo()
+    if pybullet_util.is_key_triggered(keys, '4'):
+        rpc_draco_interface.interrupt_.PressFour()
     if pybullet_util.is_key_triggered(keys, '5'):
         rpc_draco_interface.interrupt_.PressFive()
+    if pybullet_util.is_key_triggered(keys, '6'):
+        rpc_draco_interface.interrupt_.PressSix()
+    if pybullet_util.is_key_triggered(keys, '7'):
+        rpc_draco_interface.interrupt_.PressSeven()
     if pybullet_util.is_key_triggered(keys, '8'):
         rpc_draco_interface.interrupt_.PressEight()
+    if pybullet_util.is_key_triggered(keys, '9'):
+        rpc_draco_interface.interrupt_.PressNine()
 
     #get sensor data
     imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(

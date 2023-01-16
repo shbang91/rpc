@@ -255,7 +255,7 @@ dcm_walking:
   nominal_forward_step: 0.1
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
-  nominal_strafe_distance: 0.02
+  nominal_strafe_distance: 0.05
   n_steps: 1
   first_swing_leg: 1 ## 0: left leg ## 1: right leg
 

@@ -12,8 +12,13 @@ public:
   virtual void ProcessInterrupt() { _ResetFlags(); };
 
   void PressOne() { b_button_one = true; }
+  void PressTwo() { b_button_two = true; }
+  void PressFour() { b_button_four = true; }
   void PressFive() { b_button_five = true; }
+  void PressSix() { b_button_six = true; }
+  void PressSeven() { b_button_seven = true; }
   void PressEight() { b_button_eight = true; }
+  void PressNine() { b_button_nine = true; }
 
 protected:
   void _ResetFlags() {
