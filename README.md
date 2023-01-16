@@ -14,8 +14,8 @@ conda env create -f rpc.yml
 
 ###### optional dependencies
 - [MatLogger2](https://github.com/ADVRHumanoids/MatLogger2/tree/devel): logging numeric data (cpp to MAT-files)
-- [zmq](https://github.com/zeromq/cppzmq): logging numeric data
-- [protobuf](https://github.com/protocolbuffers/protobuf): logging numeric data
+- [zmq](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_zmq.sh): logging numeric data
+- [protobuf](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_protobuf.sh): logging numeric data
 
 ## Usage
 - source conda environment:<br/>
