@@ -82,24 +82,28 @@ void DCMTrajectoryManager::GenerateFootSteps() {
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetTurningFootStep(
         n_steps_, nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
+    first_swing_leg_ = end_effector::LFoot;
     break;
 
   case dcm_walking_primitive::kRightTurn:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetTurningFootStep(
         n_steps_, -nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
+    first_swing_leg_ = end_effector::RFoot;
     break;
 
   case dcm_walking_primitive::kLeftStrafe:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetStrafeFootStep(
         n_steps_, nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
+    first_swing_leg_ = end_effector::LFoot;
     break;
 
   case dcm_walking_primitive::kRightStrafe:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetStrafeFootStep(
         n_steps_, -nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
+    first_swing_leg_ = end_effector::RFoot;
     break;
 
   default:
