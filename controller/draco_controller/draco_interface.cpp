@@ -57,6 +57,7 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   interrupt_ =
       new DracoInterrupt(static_cast<DracoControlArchitecture *>(ctrl_arch_));
 
+  // assume start with double support
   sp_->b_lf_contact_ = true;
   sp_->b_rf_contact_ = true;
 }

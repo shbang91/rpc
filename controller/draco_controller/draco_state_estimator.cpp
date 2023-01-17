@@ -116,7 +116,6 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
 
   // estimate position
   Eigen::Vector3d base_joint_pos = global_leg_odometry_ - anchor_frame_pos;
-
   if (b_first_visit_) {
     prev_base_joint_pos_ = base_joint_pos;
     b_first_visit_ = false;
@@ -136,9 +135,9 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
       base_joint_lin_vel, sensor_data->imu_ang_vel_, sensor_data->joint_pos_,
       sensor_data->joint_vel_, true);
 
-  // foot contact switch
-  sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
-  sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
+  // TODO:foot contact switch
+  // sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
+  // sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
 
   // velocity filtering for com vel (for real experiment)
   Eigen::Vector3d real_com_vel = robot_->GetRobotComLinVel();
