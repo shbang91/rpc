@@ -22,6 +22,8 @@ import copy
 
 import draco_interface_py
 
+# from pytictoc import TicToc
+
 
 def get_sensor_data_from_pybullet(robot):
 
@@ -335,6 +337,9 @@ t = 0
 dt = Config.CONTROLLER_DT
 count = 0
 
+# timer = TicToc()
+# compuation_cal_list = []
+
 while (True):
 
     ###############################################################################
@@ -398,6 +403,10 @@ while (True):
         rpc_draco_interface.interrupt_.PressEight()
     if pybullet_util.is_key_triggered(keys, '9'):
         rpc_draco_interface.interrupt_.PressNine()
+    if pybullet_util.is_key_triggered(keys, 's'):
+        np.savetxt('computation_time.txt',
+                   np.array([compuation_cal_list]),
+                   delimiter=',')
 
     #get sensor data
     imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
@@ -414,7 +423,10 @@ while (True):
     ##Debugging
 
     ##compute control command
+    # timer.tic()
     rpc_draco_interface.GetCommand(rpc_draco_sensor_data, rpc_draco_command)
+    # comp_time = timer.tocvalue()
+    # compuation_cal_list.append(comp_time)
 
     #copy command data from rpc command class
     rpc_trq_command = rpc_draco_command.joint_trq_cmd_
