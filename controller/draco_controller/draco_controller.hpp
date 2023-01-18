@@ -1,4 +1,5 @@
 #pragma once
+#include "configuration.hpp"
 #include "util/util.hpp"
 
 #if B_USE_MATLOGGER

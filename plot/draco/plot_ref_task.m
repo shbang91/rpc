@@ -3,17 +3,25 @@ clear;
 clc;
 
 addpath("/tmp")
-
-d = dir("/tmp/draco_controller_data*.mat");
-[tmp, i] = max([d.datenum]);
-fprintf('loading %s \n', d(i).name)
-load(d(i).name)
+% 
+% d = dir("/tmp/draco_controller_data*.mat");
+% [tmp, i] = max([d.datenum]);
+% fprintf('loading %s \n', d(i).name)
+% load(d(i).name)
 
 dd = dir("/tmp/draco_state_estimator_data*.mat");
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
+
+ddd = dir("/tmp/draco_icp_data*.mat");
+[tmp, i] = max([ddd.datenum]);
+fprintf('loading %s \n', ddd(i).name)
+load(ddd(i).name, 'des_icp')
+load(ddd(i).name, 'act_icp')
+load(ddd(i).name, 'local_des_icp')
+load(ddd(i).name, 'local_act_icp')
 
 %%
 quat_label = ["q_x", "q_y", "q_z", "q_w"];
@@ -40,8 +48,52 @@ for i = 1: length(draco_lf_label)
 end
 
 %%
+num_fig = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Icp task
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+for i = 1:2
+    subplot(2,1,i);
+        j = j + 1;
+        plot(time, des_icp(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_icp(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_icp(j,:), act_icp(j,:)]);
+        max_val = max([des_icp(j,:), act_icp(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xy_label(j))
+    sgtitle('ICP XY Task', 'FontSize', 30)
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+for i = 1:2
+    subplot(2,1,i);
+        j = j + 1;
+        plot(time, local_des_icp(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, local_act_icp(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_icp(j,:), local_act_icp(j,:)]);
+        max_val = max([local_des_icp(j,:), local_act_icp(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xy_label(j))
+    sgtitle('ICP XY Task in LOCAL', 'FontSize', 30)
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %com xy task
-figure(1)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:4
@@ -72,8 +124,42 @@ for i = 1:4
     sgtitle('CoM XY Task', 'FontSize', 30)
 end
 
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:4
+    subplot(2,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
+        max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xy_label(j))
+    else
+        k = k + 1;
+        plot(time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
+        max_val = max([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xy_dot_label(k))
+    end
+    sgtitle('CoM XY Task in LOCAL', 'FontSize', 30)
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %com z task
-figure(2)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 subplot(1,2,1)
 plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
 hold on
@@ -96,8 +182,135 @@ xlabel('time')
 ylabel('z_{dot}')
 sgtitle('CoM Z Task', 'FontSize', 30)
 
-%left foot task
-figure(3)
+figure(num_fig)
+num_fig = num_fig + 1;
+subplot(1,2,1)
+plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
+hold on
+plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
+grid on
+min_val = min([des_com_z_pos, act_com_z_pos]);
+max_val = max([des_com_z_pos, act_com_z_pos]);
+set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+xlabel('time')
+ylabel("z")
+subplot(1,2,2)
+plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
+hold on
+plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
+grid on
+min_val = min([des_com_z_vel, act_com_z_vel]);
+max_val = max([des_com_z_vel, act_com_z_vel]);
+set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+xlabel('time')
+ylabel('z_{dot}')
+sgtitle('CoM Z Task in LOCAL', 'FontSize', 30)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%torso ori task
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[row, col] = size(des_torso_ori_pos);
+torso_ori_des_quat = zeros(row, col);
+torso_ori_des_quat(1, :) = des_torso_ori_pos(4, :);
+torso_ori_des_quat(2:4, :) = des_torso_ori_pos(1:3, :);
+
+torso_ori_act_quat = zeros(row, col);
+torso_ori_act_quat(1, :) = act_torso_ori_pos(4, :);
+torso_ori_act_quat(2:4, :) = act_torso_ori_pos(1:3, :);
+
+torso_ori_des_euler_xyz = zeros(3, col);
+torso_ori_act_euler_xyz = zeros(3, col);
+for i = 1: col
+    torso_ori_des_euler_xyz(:, i) = quat2eul(torso_ori_des_quat, 'xyz');
+    torso_ori_act_euler_xyz(:, i) = quat2eul(torso_ori_act_quat, 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
+        max_val = max([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(time, des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
+        max_val = max([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Torso ori task', 'FontSize', 30)
+end
+
+[row, col] = size(local_des_torso_ori_pos);
+local_torso_ori_des_quat = zeros(row, col);
+local_torso_ori_des_quat(1, :) = local_des_torso_ori_pos(4, :);
+local_torso_ori_des_quat(2:4, :) = local_des_torso_ori_pos(1:3, :);
+
+local_torso_ori_act_quat = zeros(row, col);
+local_torso_ori_act_quat(1, :) = local_act_torso_ori_pos(4, :);
+local_torso_ori_act_quat(2:4, :) = local_act_torso_ori_pos(1:3, :);
+
+local_torso_ori_des_euler_xyz = zeros(3, col);
+local_torso_ori_act_euler_xyz = zeros(3, col);
+for i = 1: col
+    local_torso_ori_des_euler_xyz(:, i) = quat2eul(local_torso_ori_des_quat, 'xyz');
+    local_torso_ori_act_euler_xyz(:, i) = quat2eul(local_torso_ori_act_quat, 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, local_torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, local_torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_torso_ori_des_euler_xyz(j,:), local_torso_ori_act_euler_xyz(j,:)]);
+        max_val = max([local_torso_ori_des_euler_xyz(j,:), local_torso_ori_act_euler_xyz(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(time, local_des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, local_act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_torso_ori_vel(j,:), local_act_torso_ori_vel(j,:)]);
+        max_val = max([local_des_torso_ori_vel(j,:), local_act_torso_ori_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Torso ori task in LOCAL', 'FontSize', 30)
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%left foot pos task
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:6
@@ -128,8 +341,142 @@ for i = 1:6
     sgtitle('Left Foot Task', 'FontSize', 30)
 end
 
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, local_des_lf_pos(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, local_act_lf_pos(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_lf_pos(j,:), local_act_lf_pos(j,:)]);
+        max_val = max([local_des_lf_pos(j,:), local_act_lf_pos(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_label(j))
+    else
+        k = k + 1;
+        plot(time, local_des_lf_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, local_act_lf_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_lf_vel(j,:), local_act_lf_vel(j,:)]);
+        max_val = max([local_des_lf_vel(j,:), local_act_lf_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Left Foot Task in LOCAL', 'FontSize', 30)
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%left foot ori task
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[row, col] = size(des_lf_ori);
+des_lf_quat = zeros(row, col);
+des_lf_quat(1, :) = des_lf_ori(4, :);
+des_lf_quat(2:4, :) = des_lf_ori(1:3, :);
+
+act_lf_quat = zeros(row, col);
+act_lf_quat(1, :) = act_lf_ori(4, :);
+act_lf_quat(2:4, :) = act_lf_ori(1:3, :);
+
+des_lf_ori_euler_xyz = zeros(3, col);
+act_lf_ori_euler_xyz = zeros(3, col);
+for i = 1: col
+    des_lf_ori_euler_xyz(:, i) = quat2eul(des_lf_quat, 'xyz');
+    act_lf_ori_euler_xyz(:, i) = quat2eul(act_lf_quat, 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, des_lf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_lf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_lf_ori_euler_xyz(j,:), act_lf_ori_euler_xyz(j,:)]);
+        max_val = max([des_lf_ori_euler_xyz(j,:), act_lf_ori_euler_xyz(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(time, des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_lf_ori_vel(j,:), act_lf_ori_vel(j,:)]);
+        max_val = max([des_lf_ori_vel(j,:), act_lf_ori_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Left foot ori task', 'FontSize', 30)
+end
+
+[row, col] = size(local_des_lf_ori);
+local_des_lf_quat = zeros(row, col);
+local_des_lf_quat(1, :) = local_des_lf_ori(4, :);
+local_des_lf_quat(2:4, :) = local_des_lf_ori(1:3, :);
+
+local_act_lf_quat = zeros(row, col);
+local_act_lf_quat(1, :) = local_act_lf_ori(4, :);
+local_act_lf_quat(2:4, :) = local_act_lf_ori(1:3, :);
+
+local_des_lf_ori_euler_xyz = zeros(3, col);
+local_act_lf_ori_euler_xyz = zeros(3, col);
+for i = 1: col
+    local_des_lf_ori_euler_xyz(:, i) = quat2eul(local_des_lf_quat, 'xyz');
+    local_act_lf_ori_euler_xyz(:, i) = quat2eul(local_act_lf_quat, 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, local_des_lf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, local_act_lf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_lf_ori_euler_xyz(j,:), local_act_lf_ori_euler_xyz(j,:)]);
+        max_val = max([local_des_lf_ori_euler_xyz(j,:), local_act_lf_ori_euler_xyz(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(time, local_des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, local_act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_lf_ori_vel(j,:), local_act_lf_ori_vel(j,:)]);
+        max_val = max([local_des_lf_ori_vel(j,:), local_act_lf_ori_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Left Foot ori task in LOCAL', 'FontSize', 30)
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %right foot task
-figure(4)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:6
@@ -160,8 +507,145 @@ for i = 1:6
     sgtitle('Right Foot Task', 'FontSize', 30)
 end
 
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, des_rf_pos(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_rf_pos(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_rf_pos(j,:), act_rf_pos(j,:)]);
+        max_val = max([des_rf_pos(j,:), act_rf_pos(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_label(j))
+    else
+        k = k + 1;
+        plot(time, des_rf_vel(k, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_rf_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_rf_vel(j,:), act_rf_vel(j,:)]);
+        max_val = max([des_rf_vel(j,:), act_rf_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Right Foot Task in LOCAL', 'FontSize', 30)
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%left foot ori task
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[row, col] = size(des_rf_ori);
+des_rf_quat = zeros(row, col);
+des_rf_quat(1, :) = des_rf_ori(4, :);
+des_rf_quat(2:4, :) = des_rf_ori(1:3, :);
+
+act_rf_quat = zeros(row, col);
+act_rf_quat(1, :) = act_rf_ori(4, :);
+act_rf_quat(2:4, :) = act_rf_ori(1:3, :);
+
+des_rf_ori_euler_xyz = zeros(3, col);
+act_rf_ori_euler_xyz = zeros(3, col);
+for i = 1: col
+    des_rf_ori_euler_xyz(:, i) = quat2eul(des_rf_quat, 'xyz');
+    act_rf_ori_euler_xyz(:, i) = quat2eul(act_rf_quat, 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, des_rf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_rf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_rf_ori_euler_xyz(j,:), act_rf_ori_euler_xyz(j,:)]);
+        max_val = max([des_rf_ori_euler_xyz(j,:), act_rf_ori_euler_xyz(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(time, des_rf_ori_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, act_rf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_rf_ori_vel(j,:), act_rf_ori_vel(j,:)]);
+        max_val = max([des_rf_ori_vel(j,:), act_rf_ori_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Right foot ori task', 'FontSize', 30)
+end
+
+[row, col] = size(local_des_rf_ori);
+local_des_rf_quat = zeros(row, col);
+local_des_rf_quat(1, :) = local_des_rf_ori(4, :);
+local_des_rf_quat(2:4, :) = local_des_rf_ori(1:3, :);
+
+local_act_rf_quat = zeros(row, col);
+local_act_rf_quat(1, :) = local_act_rf_ori(4, :);
+local_act_rf_quat(2:4, :) = local_act_rf_ori(1:3, :);
+
+local_des_rf_ori_euler_xyz = zeros(3, col);
+local_act_rf_ori_euler_xyz = zeros(3, col);
+for i = 1: col
+    local_des_rf_ori_euler_xyz(:, i) = quat2eul(local_des_rf_quat, 'xyz');
+    local_act_rf_ori_euler_xyz(:, i) = quat2eul(local_act_rf_quat, 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(time, local_des_rf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(time, local_act_rf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_rf_ori_euler_xyz(j,:), local_act_rf_ori_euler_xyz(j,:)]);
+        max_val = max([local_des_rf_ori_euler_xyz(j,:), local_act_rf_ori_euler_xyz(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(time, local_des_rf_ori_vel(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(time, local_act_rf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_rf_ori_vel(j,:), local_act_rf_ori_vel(j,:)]);
+        max_val = max([local_des_rf_ori_vel(j,:), local_act_rf_ori_vel(j,:)]);
+        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('Right Foot ori task in LOCAL', 'FontSize', 30)
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%% Whole-body control commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % reaction force cmd
-figure(5)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:12
@@ -193,8 +677,11 @@ for i = 1:12
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % floating base qddot cmd
-figure(6)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:6
     subplot(6,1,i);
     plot(time, fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
@@ -204,8 +691,12 @@ for i = 1:6
     sgtitle('floating base qddot cmd', 'FontSize', 30)
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % foot qddot cmd
-figure(7)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:14
@@ -237,8 +728,12 @@ for i = 1:14
     end
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % foot torque cmd
-figure(8)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:14
@@ -269,8 +764,12 @@ for i = 1:14
         end
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint position
-figure(9)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:14
@@ -305,9 +804,11 @@ for i = 1:14
         end
     end
 end
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
-figure(10)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:14

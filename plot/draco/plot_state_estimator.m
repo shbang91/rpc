@@ -4,13 +4,15 @@ clc;
 
 addpath("/tmp")
 
-d = dir("/tmp/draco_icp_err*.mat");
+d = dir("/tmp/draco_icp_data*.mat");
 dd = dir("/tmp/draco_controller_data*.mat");
 ddd = dir("/tmp/draco_state_estimator*.mat");
 
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
-load(d(i).name)
+load(d(i).name, "icp_error_raw")
+load(d(i).name, "icp_avg_err")
+
 
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
@@ -31,8 +33,13 @@ rf_label = ["trq_{x}", "trq_{y}", "trq_{z}", "f_{x}", "f_{y}", "f_{z}"];
 fb_qddot_label = ["x_{ddot}", "y_{ddot}", "z_{ddot}", "wx_{dot}", "wy_{dot}", "wz_{dot}"];
 
 %%
+num_fig = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%floating base estimation
-figure(1)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:3
     subplot(3,1, i);
     plot(time, base_joint_pos_est(i, :), 'b', 'LineWidth',2);
@@ -45,7 +52,8 @@ for i = 1:3
     sgtitle('base joint pos est', 'FontSize', 30)
 end
 
-figure(2)
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:3
     subplot(3, 1, i);
     plot(time, base_joint_rpy_est(i, :), 'b', 'LineWidth',2);
@@ -58,7 +66,8 @@ for i = 1:3
     sgtitle('base joint rpy est', 'FontSize', 30)
 end
 
-figure(3)
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:3
     subplot(3, 1, i);
     plot(time, base_joint_lin_vel_est(i, :), 'b', 'LineWidth',2);
@@ -71,7 +80,8 @@ for i = 1:3
     sgtitle('base joint lin vel est', 'FontSize', 30)
 end 
 
-figure(4)
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:3
     subplot(3, 1, i);
     plot(time, base_joint_ang_vel_est(i, :), 'b', 'LineWidth',2);
@@ -85,7 +95,8 @@ for i = 1:3
 end 
 
 % com vel est
-figure(5)
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:3
      subplot(3,1,i);
         plot(time, com_vel_raw(i, :), 'k', 'LineWidth', 3);
@@ -102,7 +113,8 @@ for i = 1:3
 end
 
 % icp est
-figure(6)
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:4
@@ -136,7 +148,8 @@ end
 
 
 %icp err plot
-figure(7)
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:2
     subplot(2,1,i);
         plot(time, icp_error_raw(i, :), 'k', 'LineWidth', 3);

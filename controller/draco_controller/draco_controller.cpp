@@ -238,8 +238,7 @@ void DracoController::_SaveData() {
 #if B_USE_ZMQ
   // DracoDataManager *dm = DracoDataManager::GetDataManager();
 
-  // task data
-  // TODO: saving data here
+  // task data TODO : saving data here
   // dm->data_->des_com_pos_ = tci_container_->com_task_->DesiredPos();
   // dm->data_->act_com_pos_ = tci_container_->com_task_->CurrentPos();
   // dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
@@ -248,10 +247,14 @@ void DracoController::_SaveData() {
 #endif
 
 #if B_USE_MATLOGGER
-  logger_->add("time", sp_->current_time_); // time plot
-  logger_->add("state", sp_->state_);       // draco state machine indicator
+
+  auto b = logger_->add("time", sp_->current_time_); // time plot
+  logger_->add("state", sp_->state_); // draco state machine indicator
 
   // motion task plot
+  // ========================================================================
+  // task data in world frame
+  // ========================================================================
   logger_->add("des_com_xy_pos",
                tci_container_->task_map_["com_xy_task"]->DesiredPos());
   logger_->add("act_com_xy_pos",
@@ -277,7 +280,8 @@ void DracoController::_SaveData() {
   logger_->add("act_torso_ori_vel",
                tci_container_->task_map_["torso_ori_task"]->CurrentVel());
   logger_->add("des_upper_body_pos",
-               tci_container_->task_map_["upper_body_task"]->DesiredPos());
+               tci_container_->task_map_["upper_body_task"]
+                   ->DesiredPos()); // share with local one
   logger_->add("act_upper_body_pos",
                tci_container_->task_map_["upper_body_task"]->CurrentPos());
   logger_->add("des_upper_body_vel",
@@ -309,7 +313,61 @@ void DracoController::_SaveData() {
   logger_->add("act_rf_ori_vel",
                tci_container_->task_map_["rf_ori_task"]->CurrentVel());
 
+  // ========================================================================
+  // task data in local frame (it depends on each task)
+  // ========================================================================
+  logger_->add("local_des_com_xy_pos",
+               tci_container_->task_map_["com_xy_task"]->DesiredLocalPos());
+  logger_->add("local_act_com_xy_pos",
+               tci_container_->task_map_["com_xy_task"]->CurrentLocalPos());
+  logger_->add("local_des_com_xy_vel",
+               tci_container_->task_map_["com_xy_task"]->DesiredLocalVel());
+  logger_->add("local_act_com_xy_vel",
+               tci_container_->task_map_["com_xy_task"]->CurrentLocalVel());
+  logger_->add("local_des_com_z_pos",
+               tci_container_->task_map_["com_z_task"]->DesiredLocalPos());
+  logger_->add("local_act_com_z_pos",
+               tci_container_->task_map_["com_z_task"]->CurrentLocalPos());
+  logger_->add("local_des_com_z_vel",
+               tci_container_->task_map_["com_z_task"]->DesiredLocalVel());
+  logger_->add("local_act_com_z_vel",
+               tci_container_->task_map_["com_z_task"]->CurrentLocalVel());
+  logger_->add("local_des_torso_ori_pos",
+               tci_container_->task_map_["torso_ori_task"]->DesiredLocalPos());
+  logger_->add("local_act_torso_ori_pos",
+               tci_container_->task_map_["torso_ori_task"]->CurrentLocalPos());
+  logger_->add("local_des_torso_ori_vel",
+               tci_container_->task_map_["torso_ori_task"]->DesiredLocalVel());
+  logger_->add("local_act_torso_ori_vel",
+               tci_container_->task_map_["torso_ori_task"]->CurrentLocalVel());
+  logger_->add("local_des_lf_pos",
+               tci_container_->task_map_["lf_pos_task"]->DesiredLocalPos());
+  logger_->add("local_act_lf_pos",
+               tci_container_->task_map_["lf_pos_task"]->CurrentLocalPos());
+  logger_->add("local_des_lf_vel",
+               tci_container_->task_map_["lf_pos_task"]->DesiredLocalVel());
+  logger_->add("local_act_lf_vel",
+               tci_container_->task_map_["lf_pos_task"]->CurrentLocalVel());
+  logger_->add("local_des_rf_pos",
+               tci_container_->task_map_["rf_pos_task"]->DesiredLocalPos());
+  logger_->add("local_act_rf_pos",
+               tci_container_->task_map_["rf_pos_task"]->CurrentLocalPos());
+  logger_->add("local_des_rf_vel",
+               tci_container_->task_map_["rf_pos_task"]->DesiredLocalVel());
+  logger_->add("local_act_rf_vel",
+               tci_container_->task_map_["rf_pos_task"]->CurrentLocalVel());
+  logger_->add("local_des_lf_ori",
+               tci_container_->task_map_["lf_ori_task"]->DesiredLocalPos());
+  logger_->add("local_act_lf_ori",
+               tci_container_->task_map_["lf_ori_task"]->CurrentLocalPos());
+  logger_->add("local_des_rf_ori_vel",
+               tci_container_->task_map_["rf_ori_task"]->DesiredLocalVel());
+  logger_->add("local_act_rf_ori_vel",
+               tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
+
+  // ========================================================================
   // wbc solution plot (reaction force cmd, qddot, qdot, q cmd)
+  // ========================================================================
   logger_->add("lf_rf_cmd",
                tci_container_->force_task_map_["lf_force_task"]
                    ->CmdRf()); // local quantity
