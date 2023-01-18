@@ -146,7 +146,11 @@ void DracoController::GetCommand(void *command) {
     if (b_first_visit_wbc_ctrl_) {
       // for joint integrator initialization
       init_joint_pos_ = robot_->GetJointPos();
-      joint_integrator_->Initialize(init_joint_pos_, robot_->GetJointVel());
+
+      // TODO: check this
+      // joint_integrator_->Initialize(init_joint_pos_, robot_->GetJointVel());
+      joint_integrator_->Initialize(init_joint_pos_,
+                                    Eigen::VectorXd::Zero(draco::n_adof));
 
       // erase jpos task
       tci_container_->task_map_.erase("joint_task");
