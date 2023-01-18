@@ -3,11 +3,11 @@ clear;
 clc;
 
 addpath("/tmp")
-% 
-% d = dir("/tmp/draco_controller_data*.mat");
-% [tmp, i] = max([d.datenum]);
-% fprintf('loading %s \n', d(i).name)
-% load(d(i).name)
+
+d = dir("/tmp/draco_controller_data*.mat");
+[tmp, i] = max([d.datenum]);
+fprintf('loading %s \n', d(i).name)
+load(d(i).name)
 
 dd = dir("/tmp/draco_state_estimator_data*.mat");
 [tmp, i] = max([dd.datenum]);
@@ -221,8 +221,8 @@ torso_ori_act_quat(2:4, :) = act_torso_ori_pos(1:3, :);
 torso_ori_des_euler_xyz = zeros(3, col);
 torso_ori_act_euler_xyz = zeros(3, col);
 for i = 1: col
-    torso_ori_des_euler_xyz(:, i) = quat2eul(torso_ori_des_quat, 'xyz');
-    torso_ori_act_euler_xyz(:, i) = quat2eul(torso_ori_act_quat, 'xyz');
+    torso_ori_des_euler_xyz(:, i) = quat2eul(torso_ori_des_quat(:, i).', 'xyz');
+    torso_ori_act_euler_xyz(:, i) = quat2eul(torso_ori_act_quat(:, i).', 'xyz');
 end
 
 figure(num_fig)
@@ -269,8 +269,8 @@ local_torso_ori_act_quat(2:4, :) = local_act_torso_ori_pos(1:3, :);
 local_torso_ori_des_euler_xyz = zeros(3, col);
 local_torso_ori_act_euler_xyz = zeros(3, col);
 for i = 1: col
-    local_torso_ori_des_euler_xyz(:, i) = quat2eul(local_torso_ori_des_quat, 'xyz');
-    local_torso_ori_act_euler_xyz(:, i) = quat2eul(local_torso_ori_act_quat, 'xyz');
+    local_torso_ori_des_euler_xyz(:, i) = quat2eul(local_torso_ori_des_quat(:, i).', 'xyz');
+    local_torso_ori_act_euler_xyz(:, i) = quat2eul(local_torso_ori_act_quat(:, i).', 'xyz');
 end
 
 figure(num_fig)
@@ -388,8 +388,8 @@ act_lf_quat(2:4, :) = act_lf_ori(1:3, :);
 des_lf_ori_euler_xyz = zeros(3, col);
 act_lf_ori_euler_xyz = zeros(3, col);
 for i = 1: col
-    des_lf_ori_euler_xyz(:, i) = quat2eul(des_lf_quat, 'xyz');
-    act_lf_ori_euler_xyz(:, i) = quat2eul(act_lf_quat, 'xyz');
+    des_lf_ori_euler_xyz(:, i) = quat2eul(des_lf_quat(:, i).', 'xyz');
+    act_lf_ori_euler_xyz(:, i) = quat2eul(act_lf_quat(:, i).', 'xyz');
 end
 
 figure(num_fig)
@@ -436,8 +436,8 @@ local_act_lf_quat(2:4, :) = local_act_lf_ori(1:3, :);
 local_des_lf_ori_euler_xyz = zeros(3, col);
 local_act_lf_ori_euler_xyz = zeros(3, col);
 for i = 1: col
-    local_des_lf_ori_euler_xyz(:, i) = quat2eul(local_des_lf_quat, 'xyz');
-    local_act_lf_ori_euler_xyz(:, i) = quat2eul(local_act_lf_quat, 'xyz');
+    local_des_lf_ori_euler_xyz(:, i) = quat2eul(local_des_lf_quat(:, i).', 'xyz');
+    local_act_lf_ori_euler_xyz(:, i) = quat2eul(local_act_lf_quat(:, i).', 'xyz');
 end
 
 figure(num_fig)
@@ -473,7 +473,7 @@ for i = 1:6
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%right foot task
+%right foot pos task
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
 num_fig = num_fig + 1;
@@ -540,7 +540,7 @@ for i = 1:6
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%left foot ori task
+%right foot ori task
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [row, col] = size(des_rf_ori);
 des_rf_quat = zeros(row, col);
@@ -554,8 +554,8 @@ act_rf_quat(2:4, :) = act_rf_ori(1:3, :);
 des_rf_ori_euler_xyz = zeros(3, col);
 act_rf_ori_euler_xyz = zeros(3, col);
 for i = 1: col
-    des_rf_ori_euler_xyz(:, i) = quat2eul(des_rf_quat, 'xyz');
-    act_rf_ori_euler_xyz(:, i) = quat2eul(act_rf_quat, 'xyz');
+    des_rf_ori_euler_xyz(:, i) = quat2eul(des_rf_quat(:, i).', 'xyz');
+    act_rf_ori_euler_xyz(:, i) = quat2eul(act_rf_quat(:, i).', 'xyz');
 end
 
 figure(num_fig)
@@ -602,8 +602,8 @@ local_act_rf_quat(2:4, :) = local_act_rf_ori(1:3, :);
 local_des_rf_ori_euler_xyz = zeros(3, col);
 local_act_rf_ori_euler_xyz = zeros(3, col);
 for i = 1: col
-    local_des_rf_ori_euler_xyz(:, i) = quat2eul(local_des_rf_quat, 'xyz');
-    local_act_rf_ori_euler_xyz(:, i) = quat2eul(local_act_rf_quat, 'xyz');
+    local_des_rf_ori_euler_xyz(:, i) = quat2eul(local_des_rf_quat(:, i).', 'xyz');
+    local_act_rf_ori_euler_xyz(:, i) = quat2eul(local_act_rf_quat(:, i).', 'xyz');
 end
 
 figure(num_fig)

@@ -308,6 +308,14 @@ void DracoController::_SaveData() {
                tci_container_->task_map_["lf_ori_task"]->DesiredPos());
   logger_->add("act_lf_ori",
                tci_container_->task_map_["lf_ori_task"]->CurrentPos());
+  logger_->add("des_lf_ori_vel",
+               tci_container_->task_map_["lf_ori_task"]->DesiredVel());
+  logger_->add("act_lf_ori_vel",
+               tci_container_->task_map_["lf_ori_task"]->CurrentVel());
+  logger_->add("des_rf_ori",
+               tci_container_->task_map_["rf_ori_task"]->DesiredPos());
+  logger_->add("act_rf_ori",
+               tci_container_->task_map_["rf_ori_task"]->CurrentPos());
   logger_->add("des_rf_ori_vel",
                tci_container_->task_map_["rf_ori_task"]->DesiredVel());
   logger_->add("act_rf_ori_vel",
@@ -356,10 +364,19 @@ void DracoController::_SaveData() {
                tci_container_->task_map_["rf_pos_task"]->DesiredLocalVel());
   logger_->add("local_act_rf_vel",
                tci_container_->task_map_["rf_pos_task"]->CurrentLocalVel());
+
   logger_->add("local_des_lf_ori",
                tci_container_->task_map_["lf_ori_task"]->DesiredLocalPos());
   logger_->add("local_act_lf_ori",
                tci_container_->task_map_["lf_ori_task"]->CurrentLocalPos());
+  logger_->add("local_des_lf_ori_vel",
+               tci_container_->task_map_["lf_ori_task"]->DesiredLocalVel());
+  logger_->add("local_act_lf_ori_vel",
+               tci_container_->task_map_["lf_ori_task"]->CurrentLocalVel());
+  logger_->add("local_des_rf_ori",
+               tci_container_->task_map_["rf_ori_task"]->DesiredLocalPos());
+  logger_->add("local_act_rf_ori",
+               tci_container_->task_map_["rf_ori_task"]->CurrentLocalPos());
   logger_->add("local_des_rf_ori_vel",
                tci_container_->task_map_["rf_ori_task"]->DesiredLocalVel());
   logger_->add("local_act_rf_ori_vel",
