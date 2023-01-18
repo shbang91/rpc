@@ -13,6 +13,9 @@ public:
   int count_;
   double current_time_;
 
+  // should be set outside of controller
+  Eigen::VectorXd nominal_jpos_;
+
   // used in pos estimate in estimator module
   int stance_foot_;
   int prev_stance_foot_;
@@ -28,9 +31,6 @@ public:
 
   int state_;
   int prev_state_;
-
-  // should be set outside of controller
-  Eigen::VectorXd nominal_jpos_;
 
   bool b_use_base_height_;
 
