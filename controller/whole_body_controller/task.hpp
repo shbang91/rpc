@@ -14,11 +14,21 @@ public:
     des_vel_ = Eigen::VectorXd::Zero(dim_);
     des_acc_ = Eigen::VectorXd::Zero(dim_);
 
+    local_des_pos_ = Eigen::VectorXd::Zero(dim_);
+    local_des_vel_ = Eigen::VectorXd::Zero(dim_);
+    local_des_acc_ = Eigen::VectorXd::Zero(dim_);
+
     pos_ = Eigen::VectorXd::Zero(dim_);
     vel_ = Eigen::VectorXd::Zero(dim_);
 
+    local_pos_ = Eigen::VectorXd::Zero(dim_);
+    local_vel_ = Eigen::VectorXd::Zero(dim_);
+
     pos_err_ = Eigen::VectorXd::Zero(dim_);
     vel_err_ = Eigen::VectorXd::Zero(dim_);
+
+    local_pos_err_ = Eigen::VectorXd::Zero(dim_);
+    local_vel_err_ = Eigen::VectorXd::Zero(dim_);
 
     kp_ = Eigen::VectorXd::Zero(dim_);
     kd_ = Eigen::VectorXd::Zero(dim_);
@@ -67,8 +77,15 @@ public:
   Eigen::VectorXd DesiredVel() const { return des_vel_; }
   Eigen::VectorXd DesiredAcc() const { return des_acc_; }
 
+  Eigen::VectorXd DesiredLocalPos() const { return des_pos_; }
+  Eigen::VectorXd DesiredLocalVel() const { return des_vel_; }
+  Eigen::VectorXd DesiredLocalAcc() const { return des_acc_; }
+
   Eigen::VectorXd CurrentPos() const { return pos_; }
   Eigen::VectorXd CurrentVel() const { return vel_; }
+
+  Eigen::VectorXd CurrentLocalPos() const { return pos_; }
+  Eigen::VectorXd CurrentLocalVel() const { return vel_; }
 
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
@@ -103,8 +120,14 @@ protected:
   Eigen::VectorXd pos_;
   Eigen::VectorXd vel_;
 
+  Eigen::VectorXd local_pos_;
+  Eigen::VectorXd local_vel_;
+
   Eigen::VectorXd pos_err_;
   Eigen::VectorXd vel_err_;
+
+  Eigen::VectorXd local_pos_err_;
+  Eigen::VectorXd local_vel_err_;
 
   Eigen::VectorXd kp_;
   Eigen::VectorXd kd_;
@@ -114,6 +137,10 @@ protected:
   Eigen::VectorXd des_pos_;
   Eigen::VectorXd des_vel_;
   Eigen::VectorXd des_acc_;
+
+  Eigen::VectorXd local_des_pos_;
+  Eigen::VectorXd local_des_vel_;
+  Eigen::VectorXd local_des_acc_;
 
   Eigen::VectorXd op_cmd_;
 
