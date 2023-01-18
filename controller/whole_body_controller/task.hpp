@@ -72,6 +72,11 @@ public:
     }
   }
 
+  void ModifyJacobian(const std::vector<int> joint_idx) {
+    for (int i(0); i < joint_idx.size(); i++)
+      jacobian_.col(joint_idx[i]).setZero();
+  }
+
   // getter function
   Eigen::VectorXd DesiredPos() const { return des_pos_; }
   Eigen::VectorXd DesiredVel() const { return des_vel_; }

@@ -39,6 +39,8 @@ public:
 
   int planning_id_;
 
+  std::vector<int> floating_base_jidx_;
+
 private:
   DracoStateProvider();
 };

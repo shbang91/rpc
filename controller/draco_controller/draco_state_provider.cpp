@@ -38,4 +38,6 @@ DracoStateProvider::DracoStateProvider() {
   des_torso_quat_ = Eigen::Quaterniond::Identity();
 
   planning_id_ = 0;
+
+  floating_base_jidx_ = {0, 1, 2, 3, 4, 5};
 }
