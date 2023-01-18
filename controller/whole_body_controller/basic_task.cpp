@@ -108,8 +108,10 @@ LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
   util::PrettyConstructor(3, "LinkOriTask");
   target_idx_ = target_idx;
-  des_pos_.resize(4); // quaternion
-  pos_.resize(4);     // quaternion
+  des_pos_.resize(4);       // quaternion
+  pos_.resize(4);           // quaternion
+  local_des_pos_.resize(4); // quaternion
+  local_pos_.resize(4);     // quaternion
 }
 
 void LinkOriTask::UpdateOpCommand() {
