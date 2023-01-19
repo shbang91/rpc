@@ -17,6 +17,7 @@ load(d(i).name, "icp_avg_err")
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'time')
+load(dd(i).name, 'state')
 
 [tmp, i] = max([ddd.datenum]);
 fprintf('loading %s \n', ddd(i).name)
@@ -32,6 +33,13 @@ xy_dot_label = ["x_{dot}", "y_{dot}"];
 rf_label = ["trq_{x}", "trq_{y}", "trq_{z}", "f_{x}", "f_{y}", "f_{z}"];
 fb_qddot_label = ["x_{ddot}", "y_{ddot}", "z_{ddot}", "wx_{dot}", "wy_{dot}", "wz_{dot}"];
 
+phase_color = ["#A2142F", "#FF0000","#00FF00", "#0000FF","#00FFFF", "#FF00FF", "#FFFF00",	"#0072BD", "#D95319", "#EDB120"	, "#7E2F8E", "#77AC30", "#A2142F"];
+
+%source functions
+mfilepath = fileparts(which('plot_state_estimator'));
+addpath(fullfile(erase(mfilepath, '/draco')));
+helper_functions
+
 %%
 num_fig = 1;
 
@@ -44,9 +52,13 @@ for i = 1:3
     subplot(3,1, i);
     plot(time, base_joint_pos_est(i, :), 'b', 'LineWidth',2);
     grid on
+    hold on
     min_val = min(base_joint_pos_est(i,:));
     max_val = max(base_joint_pos_est(i,:));
-    set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
     xlabel('time')
     ylabel(xyz_label(i))
     sgtitle('base joint pos est', 'FontSize', 30)
@@ -58,9 +70,13 @@ for i = 1:3
     subplot(3, 1, i);
     plot(time, base_joint_rpy_est(i, :), 'b', 'LineWidth',2);
     grid on
+    hold on
     min_val = min(base_joint_rpy_est(i,:));
     max_val = max(base_joint_rpy_est(i,:));
-    set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
     xlabel('time')
     ylabel(rpy_label(i))
     sgtitle('base joint rpy est', 'FontSize', 30)
@@ -72,9 +88,13 @@ for i = 1:3
     subplot(3, 1, i);
     plot(time, base_joint_lin_vel_est(i, :), 'b', 'LineWidth',2);
     grid on
+    hold on
     min_val = min(base_joint_lin_vel_est(i,:));
     max_val = max(base_joint_lin_vel_est(i,:));
-    set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
     xlabel('time')
     ylabel(xyz_label(i))
     sgtitle('base joint lin vel est', 'FontSize', 30)
@@ -86,9 +106,13 @@ for i = 1:3
     subplot(3, 1, i);
     plot(time, base_joint_ang_vel_est(i, :), 'b', 'LineWidth',2);
     grid on
+    hold on
     min_val = min(base_joint_ang_vel_est(i,:));
     max_val = max(base_joint_ang_vel_est(i,:));
-    set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
     xlabel('time')
     ylabel(ang_vel_label(i))
     sgtitle('base joint ang vel est', 'FontSize', 30)
@@ -107,7 +131,10 @@ for i = 1:3
         grid on
         min_val = min([com_vel_raw(i,:), com_vel_est(i,:)]);
         max_val = max([com_vel_raw(i,:), com_vel_est(i,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(i))
         legend('raw', 'est')
@@ -127,9 +154,13 @@ for i = 1:4
         j = j + 1;
         plot(time, icp_est(j, :), 'b', 'LineWidth',2);
         grid on
+        hold on
         min_val = min(icp_est(j, :));
         max_val = max(icp_est(j, :));
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_label(j))
         if j == 1
@@ -139,9 +170,13 @@ for i = 1:4
         k = k + 1;
         plot(time, icp_vel_est(k, :), 'b', 'LineWidth', 2);
         grid on
+        hold on
         min_val = min(icp_vel_est(k, :));
         max_val = max(icp_vel_est(k, :));
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_dot_label(k))
         if k == 1
@@ -163,18 +198,11 @@ for i = 1:2
         grid on
         min_val = min([icp_error_raw(i,:), icp_avg_err(i,:)]);
         max_val = max([icp_error_raw(i,:), icp_avg_err(i,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_label(i))
     sgtitle('icp integrator', 'FontSize', 30)
-end
-
-
-
-function [] = set_fig_opt(min,max)
-    set(gca, 'LineWidth', 3)
-    set(gca, 'TickLabelInterpreter', 'latex')
-    set(gca, 'FontSize', 30)
-    set(gca, 'Color', 'white')
-    ylim([min, max])
 end

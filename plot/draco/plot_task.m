@@ -33,6 +33,8 @@ xy_dot_label = ["x_{dot}", "y_{dot}"];
 rf_label = ["trq_{x}", "trq_{y}", "trq_{z}", "f_{x}", "f_{y}", "f_{z}"];
 fb_qddot_label = ["x_{ddot}", "y_{ddot}", "z_{ddot}", "wx_{dot}", "wy_{dot}", "wz_{dot}"];
 
+phase_color = ["#A2142F", "#FF0000","#00FF00", "#0000FF","#00FFFF", "#FF00FF", "#FFFF00",	"#0072BD", "#D95319", "#EDB120"	, "#7E2F8E", "#77AC30", "#A2142F"];
+
 draco_joint_label = ["l\_hip\_ie", "l\_hip\_aa", "l\_hip\_fe", "l\_knee\_fe\_jp", "l\_knee\_fe\_jd", "l\_ankle\_fe", "l\_ankle\_ie", "l\_shoulder\_fe", "l\_shoulder\_aa", "l\_shoulder\_ie", "l\_elbow\_fe", "l\_wrist\_ps", "l\_wrist\_pitch", "neck\_pitch",...
     "r\_hip\_ie", "r\_hip\_aa", "r\_hip\_fe", "r\_knee\_fe\_jp", "r\_knee\_fe\_jd", "r\_ankle\_fe", "r\_ankle\_ie", "r\_shoulder\_fe", "r\_shoulder\_aa", "r\_shoulder\_ie", "r\_elbow\_fe", "r\_wrist\_ps", "r\_wrist\_pitch" ];
 draco_lf_label = ["l\_hip\_ie", "l\_hip\_aa", "l\_hip\_fe", "l\_knee\_fe\_jp", "l\_knee\_fe\_jd", "l\_ankle\_fe", "l\_ankle\_ie"];
@@ -46,6 +48,11 @@ for i = 1: length(draco_lf_label)
     draco_lf_idx(i) = lf_idx;
     draco_rf_idx(i) = rf_idx;
 end
+
+%source functions
+mfilepath = fileparts(which('plot_task'));
+addpath(fullfile(erase(mfilepath, '/draco')));
+helper_functions
 
 %%
 num_fig = 1;
@@ -65,7 +72,10 @@ for i = 1:2
         grid on
         min_val = min([des_icp(j,:), act_icp(j,:)]);
         max_val = max([des_icp(j,:), act_icp(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_label(j))
     sgtitle('ICP XY Task', 'FontSize', 30)
@@ -83,7 +93,10 @@ for i = 1:2
         grid on
         min_val = min([local_des_icp(j,:), local_act_icp(j,:)]);
         max_val = max([local_des_icp(j,:), local_act_icp(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_label(j))
     sgtitle('ICP XY Task in LOCAL', 'FontSize', 30)
@@ -106,18 +119,24 @@ for i = 1:4
         grid on
         min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
         max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_label(j))
     else
         k = k + 1;
         plot(time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
-         hold on
+        hold on
         plot(time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
         max_val = max([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_dot_label(k))
     end
@@ -138,7 +157,10 @@ for i = 1:4
         grid on
         min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
         max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_label(j))
     else
@@ -149,7 +171,10 @@ for i = 1:4
         grid on
         min_val = min([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
         max_val = max([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xy_dot_label(k))
     end
@@ -160,51 +185,73 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
 num_fig = num_fig + 1;
-subplot(1,2,1)
-plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
-hold on
-plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
-grid on
-min_val = min([des_com_z_pos, act_com_z_pos]);
-max_val = max([des_com_z_pos, act_com_z_pos]);
-set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
-xlabel('time')
-ylabel("z")
-subplot(1,2,2)
-plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
-hold on
-plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
-grid on
-min_val = min([des_com_z_vel, act_com_z_vel]);
-max_val = max([des_com_z_vel, act_com_z_vel]);
-set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
-xlabel('time')
-ylabel('z_{dot}')
-sgtitle('CoM Z Task', 'FontSize', 30)
+for i = 1 : 2
+    if i == 1
+        subplot(1,2,i)
+        plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_com_z_pos, act_com_z_pos]);
+        max_val = max([des_com_z_pos, act_com_z_pos]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel("z")
+    else
+        subplot(1,2,i)
+        plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_com_z_vel, act_com_z_vel]);
+        max_val = max([des_com_z_vel, act_com_z_vel]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel('z_{dot}')
+    end
+    sgtitle('CoM Z Task', 'FontSize', 30)
+end
 
 figure(num_fig)
 num_fig = num_fig + 1;
-subplot(1,2,1)
-plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
-hold on
-plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
-grid on
-min_val = min([des_com_z_pos, act_com_z_pos]);
-max_val = max([des_com_z_pos, act_com_z_pos]);
-set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
-xlabel('time')
-ylabel("z")
-subplot(1,2,2)
-plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
-hold on
-plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
-grid on
-min_val = min([des_com_z_vel, act_com_z_vel]);
-max_val = max([des_com_z_vel, act_com_z_vel]);
-set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
-xlabel('time')
-ylabel('z_{dot}')
-sgtitle('CoM Z Task in LOCAL', 'FontSize', 30)
+for i = 1 : 2
+    if i == 1
+        subplot(1,2,i)
+        plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_com_z_pos, act_com_z_pos]);
+        max_val = max([des_com_z_pos, act_com_z_pos]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel("z")
+    else
+        subplot(1,2,i)
+        plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
+        hold on
+        plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([des_com_z_vel, act_com_z_vel]);
+        max_val = max([des_com_z_vel, act_com_z_vel]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel('z_{dot}')
+    end
+    sgtitle('CoM Z Task in LOCAL', 'FontSize', 30)
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %torso ori task
@@ -239,18 +286,24 @@ for i = 1:6
         grid on
         min_val = min([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
         max_val = max([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rpy_label(j))
     else
         k = k + 1;
         plot(time, des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
-         hold on
+        hold on
         plot(time, act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
         max_val = max([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -287,7 +340,10 @@ for i = 1:6
         grid on
         min_val = min([local_torso_ori_des_euler_xyz(j,:), local_torso_ori_act_euler_xyz(j,:)]);
         max_val = max([local_torso_ori_des_euler_xyz(j,:), local_torso_ori_act_euler_xyz(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rpy_label(j))
     else
@@ -298,7 +354,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_torso_ori_vel(j,:), local_act_torso_ori_vel(j,:)]);
         max_val = max([local_des_torso_ori_vel(j,:), local_act_torso_ori_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -323,7 +382,10 @@ for i = 1:6
         grid on
         min_val = min([des_lf_pos(j,:), act_lf_pos(j,:)]);
         max_val = max([des_lf_pos(j,:), act_lf_pos(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_label(j))
     else
@@ -334,7 +396,10 @@ for i = 1:6
         grid on
         min_val = min([des_lf_vel(j,:), act_lf_vel(j,:)]);
         max_val = max([des_lf_vel(j,:), act_lf_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -355,7 +420,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_lf_pos(j,:), local_act_lf_pos(j,:)]);
         max_val = max([local_des_lf_pos(j,:), local_act_lf_pos(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_label(j))
     else
@@ -366,7 +434,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_lf_vel(j,:), local_act_lf_vel(j,:)]);
         max_val = max([local_des_lf_vel(j,:), local_act_lf_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -406,18 +477,24 @@ for i = 1:6
         grid on
         min_val = min([des_lf_ori_euler_xyz(j,:), act_lf_ori_euler_xyz(j,:)]);
         max_val = max([des_lf_ori_euler_xyz(j,:), act_lf_ori_euler_xyz(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rpy_label(j))
     else
         k = k + 1;
         plot(time, des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
-         hold on
+        hold on
         plot(time, act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_lf_ori_vel(j,:), act_lf_ori_vel(j,:)]);
         max_val = max([des_lf_ori_vel(j,:), act_lf_ori_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -454,7 +531,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_lf_ori_euler_xyz(j,:), local_act_lf_ori_euler_xyz(j,:)]);
         max_val = max([local_des_lf_ori_euler_xyz(j,:), local_act_lf_ori_euler_xyz(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rpy_label(j))
     else
@@ -465,7 +545,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_lf_ori_vel(j,:), local_act_lf_ori_vel(j,:)]);
         max_val = max([local_des_lf_ori_vel(j,:), local_act_lf_ori_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -489,7 +572,10 @@ for i = 1:6
         grid on
         min_val = min([des_rf_pos(j,:), act_rf_pos(j,:)]);
         max_val = max([des_rf_pos(j,:), act_rf_pos(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_label(j))
     else
@@ -500,7 +586,10 @@ for i = 1:6
         grid on
         min_val = min([des_rf_vel(j,:), act_rf_vel(j,:)]);
         max_val = max([des_rf_vel(j,:), act_rf_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -521,7 +610,10 @@ for i = 1:6
         grid on
         min_val = min([des_rf_pos(j,:), act_rf_pos(j,:)]);
         max_val = max([des_rf_pos(j,:), act_rf_pos(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_label(j))
     else
@@ -532,7 +624,10 @@ for i = 1:6
         grid on
         min_val = min([des_rf_vel(j,:), act_rf_vel(j,:)]);
         max_val = max([des_rf_vel(j,:), act_rf_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -572,7 +667,10 @@ for i = 1:6
         grid on
         min_val = min([des_rf_ori_euler_xyz(j,:), act_rf_ori_euler_xyz(j,:)]);
         max_val = max([des_rf_ori_euler_xyz(j,:), act_rf_ori_euler_xyz(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rpy_label(j))
     else
@@ -583,7 +681,10 @@ for i = 1:6
         grid on
         min_val = min([des_rf_ori_vel(j,:), act_rf_ori_vel(j,:)]);
         max_val = max([des_rf_ori_vel(j,:), act_rf_ori_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -620,7 +721,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_rf_ori_euler_xyz(j,:), local_act_rf_ori_euler_xyz(j,:)]);
         max_val = max([local_des_rf_ori_euler_xyz(j,:), local_act_rf_ori_euler_xyz(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rpy_label(j))
     else
@@ -631,7 +735,10 @@ for i = 1:6
         grid on
         min_val = min([local_des_rf_ori_vel(j,:), local_act_rf_ori_vel(j,:)]);
         max_val = max([local_des_rf_ori_vel(j,:), local_act_rf_ori_vel(j,:)]);
-        set_fig_opt(min_val - 0.1 * (max_val - min_val), max_val + 0.1 *(max_val - min_val))
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(xyz_dot_label(k))
     end
@@ -654,9 +761,13 @@ for i = 1:12
         j = j + 1;
         plot(time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
         grid on
-%         min_val = min([lf_rf_cmd(j, :)]);
-%         max_val = max([lf_rf_cmd(j, :)]);
-%         set_fig_opt(min_val, max_val)
+        hold on
+        min_val = min([lf_rf_cmd(j, :)]);
+        max_val = max([lf_rf_cmd(j, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rf_label(j))
         if j == 1
@@ -666,9 +777,13 @@ for i = 1:12
         k = k + 1;
         plot(time, rf_rf_cmd(k, :), 'r', 'LineWidth', 2);
         grid on
-%         min_val = min([rf_rf_cmd(k, :)]);
-%         max_val = max([rf_rf_cmd(k, :)]);
-%         set_fig_opt(min_val, max_val)
+        hold on
+        min_val = min([rf_rf_cmd(k, :)]);
+        max_val = max([rf_rf_cmd(k, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(rf_label(k))
          if j == 1
@@ -686,6 +801,13 @@ for i = 1:6
     subplot(6,1,i);
     plot(time, fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
     grid on
+    hold on
+    min_val = min([fb_qddot_cmd(i, :)]);
+    max_val = max([fb_qddot_cmd(i, :)]);
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+%   set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
     xlabel('time')
     ylabel(fb_qddot_label(i))
     sgtitle('floating base qddot cmd', 'FontSize', 30)
@@ -705,9 +827,13 @@ for i = 1:14
         j = j + 1;
         plot(time, joint_acc_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
         grid on
-%         min_val = min([lf_rf_cmd(j, :)]);
-%         max_val = max([lf_rf_cmd(j, :)]);
-%         set_fig_opt(min_val, max_val)
+        hold on
+        min_val = min([joint_acc_cmd(draco_lf_idx(j), :)]);
+        max_val = max([joint_acc_cmd(draco_lf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_lf_label(j))
         if j == 1
@@ -717,9 +843,13 @@ for i = 1:14
         k = k + 1;
         plot(time, joint_acc_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
         grid on
-%         min_val = min([rf_rf_cmd(k, :)]);
-%         max_val = max([rf_rf_cmd(k, :)]);
-%         set_fig_opt(min_val, max_val)
+        hold on
+        min_val = min([joint_acc_cmd(draco_rf_idx(k), :)]);
+        max_val = max([joint_acc_cmd(draco_rf_idx(k), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_rf_label(k))
          if j == 1
@@ -742,9 +872,13 @@ for i = 1:14
         j = j + 1;
         plot(time, joint_trq_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
         grid on
-%         min_val = min([lf_rf_cmd(j, :)]);
-%         max_val = max([lf_rf_cmd(j, :)]);
-%         set_fig_opt(min_val, max_val)
+        hold on
+        min_val = min([joint_trq_cmd(draco_lf_idx(j), :)]);
+        max_val = max([joint_trq_cmd(draco_lf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_lf_label(j))
         if j == 1
@@ -754,9 +888,13 @@ for i = 1:14
         k = k + 1;
         plot(time, joint_trq_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
         grid on
-%         min_val = min([rf_rf_cmd(k, :)]);
-%         max_val = max([rf_rf_cmd(k, :)]);
-%         set_fig_opt(min_val, max_val)
+        hold on
+        min_val = min([joint_trq_cmd(draco_rf_idx(k), :)]);
+        max_val = max([joint_trq_cmd(draco_rf_idx(k), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_rf_label(k))
          if j == 1
@@ -780,9 +918,12 @@ for i = 1:14
         grid on
         hold on
         plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-%         min_val = min([lf_rf_cmd(j, :)]);
-%         max_val = max([lf_rf_cmd(j, :)]);
-%         set_fig_opt(min_val, max_val)
+        min_val = min([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
+        max_val = max([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_lf_label(j))
         if j == 1
@@ -790,13 +931,16 @@ for i = 1:14
         end
     else
         k = k + 1;
-         plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+        plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
         grid on
         hold on
         plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-%         min_val = min([rf_rf_cmd(k, :)]);
-%         max_val = max([rf_rf_cmd(k, :)]);
-%         set_fig_opt(min_val, max_val)
+        min_val = min([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
+        max_val = max([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_rf_label(k))
          if j == 1
@@ -819,9 +963,12 @@ for i = 1:14
         grid on
         hold on
         plot(time, joint_vel_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-%         min_val = min([lf_rf_cmd(j, :)]);
-%         max_val = max([lf_rf_cmd(j, :)]);
-%         set_fig_opt(min_val, max_val)
+        min_val = min([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
+        max_val = max([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_lf_label(j))
         if j == 1
@@ -829,25 +976,20 @@ for i = 1:14
         end
     else
         k = k + 1;
-         plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+        plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
         grid on
         hold on
         plot(time, joint_vel_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-%         min_val = min([rf_rf_cmd(k, :)]);
-%         max_val = max([rf_rf_cmd(k, :)]);
-%         set_fig_opt(min_val, max_val)
+        min_val = min([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
+        max_val = max([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
         ylabel(draco_rf_label(k))
          if j == 1
             title('right foot jvel data', 'FontSize', 30)
         end
     end
-end
-
-function [] = set_fig_opt(min,max)
-    set(gca, 'LineWidth', 3)
-    set(gca, 'TickLabelInterpreter', 'latex')
-    set(gca, 'FontSize', 30)
-    set(gca, 'Color', 'white')
-    ylim([min, max])
 end
