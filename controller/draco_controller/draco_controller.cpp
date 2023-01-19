@@ -267,8 +267,8 @@ void DracoController::_SaveData() {
 
 #if B_USE_MATLOGGER
 
-  auto b = logger_->add("time", sp_->current_time_); // time plot
-  logger_->add("state", sp_->state_); // draco state machine indicator
+  logger_->add("time", sp_->current_time_); // time plot
+  logger_->add("state", sp_->state_);       // draco state machine indicator
 
   // motion task plot
   // ========================================================================

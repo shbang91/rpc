@@ -2,17 +2,17 @@
 #include "controller/control_architecture.hpp"
 
 namespace draco_states {
-constexpr int kInitialize = 0;
-constexpr int kDoubleSupportStandUp = 1;
-constexpr int kDoubleSupportBalance = 2;
-constexpr int kDoubleSupportSwaying = 3;
-constexpr int kLFContactTransitionStart = 4;
-constexpr int kLFContactTransitionEnd = 5;
-constexpr int kLFSingleSupportSwing = 6;
-constexpr int kRFContactTransitionStart = 7;
-constexpr int kRFContactTransitionEnd = 8;
-constexpr int kRFSingleSupportSwing = 9;
-constexpr int kDoubleSupportSwayingLmpc = 10;
+constexpr int kInitialize = 1;
+constexpr int kDoubleSupportStandUp = 2;
+constexpr int kDoubleSupportBalance = 3;
+constexpr int kDoubleSupportSwaying = 4;
+constexpr int kLFContactTransitionStart = 5;
+constexpr int kLFContactTransitionEnd = 6;
+constexpr int kLFSingleSupportSwing = 7;
+constexpr int kRFContactTransitionStart = 8;
+constexpr int kRFContactTransitionEnd = 9;
+constexpr int kRFSingleSupportSwing = 10;
+constexpr int kDoubleSupportSwayingLmpc = 11;
 } // namespace draco_states
 
 class DracoController;
