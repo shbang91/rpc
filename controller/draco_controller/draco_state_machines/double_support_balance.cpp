@@ -73,10 +73,10 @@ StateId DoubleSupportBalance::GetNextState() {
   // return draco_states::kComSwayingNmpc;
 
   if (b_dcm_walking_) {
-    if (ctrl_arch_->dcm_tm_->GetFirstSwingLeg() == end_effector::LFoot) {
+    if (ctrl_arch_->dcm_tm_->GetSwingLeg() == end_effector::LFoot) {
       b_dcm_walking_ = false;
       return draco_states::kLFContactTransitionStart;
-    } else if (ctrl_arch_->dcm_tm_->GetFirstSwingLeg() == end_effector::RFoot) {
+    } else if (ctrl_arch_->dcm_tm_->GetSwingLeg() == end_effector::RFoot) {
       b_dcm_walking_ = false;
       return draco_states::kRFContactTransitionStart;
     }

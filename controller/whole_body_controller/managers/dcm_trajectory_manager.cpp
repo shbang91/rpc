@@ -75,7 +75,9 @@ void DCMTrajectoryManager::GenerateFootSteps() {
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetInPlaceWalkFootStep(
         n_steps_, nominal_footwidth_, first_swing_leg_, init_mid_foot);
-    //_AlternateLeg();
+    swing_leg_ =
+        first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
+    _AlternateLeg();
     break;
 
   case dcm_walking_primitive::kLeftTurn:

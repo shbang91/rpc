@@ -90,7 +90,7 @@ public:
   DCMPlanner *GetDCMPlanner() { return dcm_planner_; }
   int GetCurrentFootStepIdx() { return current_foot_step_idx_; }
   std::vector<FootStep> GetFootStepList() { return foot_step_list_; }
-  int GetFirstSwingLeg() { return first_swing_leg_; }
+  int GetSwingLeg() { return swing_leg_; }
 
 private:
   DCMPlanner *dcm_planner_;
@@ -111,6 +111,7 @@ private:
   int current_foot_step_idx_;
 
   int first_swing_leg_;
+  int swing_leg_;
 
   bool b_use_base_height_ = false;
 
