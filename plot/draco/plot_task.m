@@ -14,12 +14,13 @@ dd = dir("/tmp/draco_state_estimator_data*.mat");
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
+load(ddd(i).name, 'icp_est')
 
 ddd = dir("/tmp/draco_icp_data*.mat");
 [tmp, i] = max([ddd.datenum]);
 fprintf('loading %s \n', ddd(i).name)
 load(ddd(i).name, 'des_icp')
-load(ddd(i).name, 'act_icp')
+% load(ddd(i).name, 'act_icp')
 load(ddd(i).name, 'local_des_icp')
 load(ddd(i).name, 'local_act_icp')
 
@@ -68,10 +69,10 @@ for i = 1:2
         j = j + 1;
         plot(time, des_icp(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_icp(j, :), 'b', 'LineWidth', 2);
+        plot(time, icp_est(j, :), 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_icp(j,:), act_icp(j,:)]);
-        max_val = max([des_icp(j,:), act_icp(j,:)]);
+        min_val = min([des_icp(j,:), icp_est(j,:)]);
+        max_val = max([des_icp(j,:), icp_est(j,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
