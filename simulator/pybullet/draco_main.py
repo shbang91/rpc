@@ -20,9 +20,14 @@ from util.python_utils import liegroup
 
 import copy
 
+import signal
+import shutil
+import cv2
+
 import draco_interface_py
 
-# from pytictoc import TicToc
+if Config.MEASURE_COMPUTATION_TIME:
+    from pytictoc import TicToc
 
 
 def get_sensor_data_from_pybullet(robot):
@@ -252,207 +257,256 @@ def set_init_config_pybullet_robot(robot):
                        np.radians(hip_yaw_angle), 0.)
 
 
-pb.connect(pb.GUI)
-
-pb.resetDebugVisualizerCamera(cameraDistance=1.5,
-                              cameraYaw=120,
-                              cameraPitch=-30,
-                              cameraTargetPosition=[0, 0, 0.5])
-## sim physics setting
-pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
-                             numSubSteps=Config.N_SUBSTEP)
-pb.setGravity(0, 0, -9.81)
-
-## robot spawn & initial kinematics and dynamics setting
-pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-# draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco_modified.urdf",
-# Config.INITIAL_BASE_JOINT_POS,
-# Config.INITIAL_BASE_JOINT_QUAT,
-# useFixedBase=0)
-draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco3_big_feet.urdf",
-                             Config.INITIAL_BASE_JOINT_POS,
-                             Config.INITIAL_BASE_JOINT_QUAT,
-                             useFixedBase=0)
-
-ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=1)
-pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
-
-#TODO:modify this function without dictionary container
-n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
-    draco_humanoid, Config.INITIAL_BASE_JOINT_POS,
-    Config.INITIAL_BASE_JOINT_QUAT, Config.PRINT_ROBOT_INFO)
-
-#robot initial config setting
-set_init_config_pybullet_robot(draco_humanoid)
-
-#robot joint and link dynamics setting
-#TODO:modify this function without dictionary container
-pybullet_util.set_joint_friction(draco_humanoid, joint_id_dict, 0)
-pybullet_util.set_link_damping(draco_humanoid, link_id_dict, 0., 0.)
-
-## rolling contact joint constraint
-c1 = pb.createConstraint(draco_humanoid,
-                         DracoLinkIdx.l_knee_fe_lp,
-                         draco_humanoid,
-                         DracoLinkIdx.l_knee_fe_ld,
-                         jointType=pb.JOINT_GEAR,
-                         jointAxis=[0, 1, 0],
-                         parentFramePosition=[0, 0, 0],
-                         childFramePosition=[0, 0, 0])
-pb.changeConstraint(c1, gearRatio=-1, maxForce=500, erp=10)
-
-c2 = pb.createConstraint(draco_humanoid,
-                         DracoLinkIdx.r_knee_fe_lp,
-                         draco_humanoid,
-                         DracoLinkIdx.r_knee_fe_ld,
-                         jointType=pb.JOINT_GEAR,
-                         jointAxis=[0, 1, 0],
-                         parentFramePosition=[0, 0, 0],
-                         childFramePosition=[0, 0, 0])
-pb.changeConstraint(c2, gearRatio=-1, maxForce=500, erp=10)
-
-#pnc interface, sensor_data, command class
-rpc_draco_interface = draco_interface_py.DracoInterface()
-rpc_draco_sensor_data = draco_interface_py.DracoSensorData()
-rpc_draco_command = draco_interface_py.DracoCommand()
-
-#TODO
-#active jointidx list in sequence
-active_jointidx_list = []  #for setjointmotorcontrolarray
-
-#default robot kinematics information
-base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(draco_humanoid)
-rot_world_basecom = util.quat_to_rot(np.array(base_com_quat))
-rot_world_basejoint = util.quat_to_rot(np.array(
-    Config.INITIAL_BASE_JOINT_QUAT))
-
-pos_basejoint_to_basecom = np.dot(
-    rot_world_basejoint.transpose(),
-    base_com_pos - np.array(Config.INITIAL_BASE_JOINT_POS))
-rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
-                                  rot_world_basecom)
-
-# Run Simulation
-t = 0
-dt = Config.CONTROLLER_DT
-count = 0
-
-# timer = TicToc()
-# compuation_cal_list = []
-
-while (True):
-
-    ###############################################################################
-    #Debugging Purpose
-    ##############################################################################
-    ##debugging state estimator by calculating groundtruth basejoint states
-    base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
-        draco_humanoid)
-    rot_world_basecom = util.quat_to_rot(base_com_quat)
-    rot_world_basejoint = np.dot(rot_world_basecom,
-                                 rot_basejoint_to_basecom.transpose())
-    base_joint_pos = base_com_pos - np.dot(rot_world_basejoint,
-                                           pos_basejoint_to_basecom)
-    base_joint_quat = util.rot_to_quat(rot_world_basejoint)
-
-    base_com_lin_vel, base_com_ang_vel = pb.getBaseVelocity(draco_humanoid)
-    trans_joint_com = liegroup.RpToTrans(rot_basejoint_to_basecom,
-                                         pos_basejoint_to_basecom)
-    adjoint_joint_com = liegroup.Adjoint(trans_joint_com)
-    twist_basecom_in_world = np.zeros(6)
-    twist_basecom_in_world[0:3] = base_com_ang_vel
-    twist_basecom_in_world[3:6] = base_com_lin_vel
-    augrot_basecom_world = np.zeros((6, 6))
-    augrot_basecom_world[0:3, 0:3] = rot_world_basecom.transpose()
-    augrot_basecom_world[3:6, 3:6] = rot_world_basecom.transpose()
-    twist_basecom_in_basecom = np.dot(augrot_basecom_world,
-                                      twist_basecom_in_world)
-    twist_basejoint_in_basejoint = np.dot(adjoint_joint_com,
-                                          twist_basecom_in_basecom)
-    augrot_world_basejoint = np.zeros((6, 6))
-    augrot_world_basejoint[0:3, 0:3] = rot_world_basejoint
-    augrot_world_basejoint[3:6, 3:6] = rot_world_basejoint
-    twist_basejoint_in_world = np.dot(augrot_world_basejoint,
-                                      twist_basejoint_in_basejoint)
-    base_joint_ang_vel = twist_basejoint_in_world[0:3]
-    base_joint_lin_vel = twist_basejoint_in_world[3:6]
-
-    #pass debugged data to rpc interface
-    rpc_draco_sensor_data.base_joint_pos_ = base_joint_pos
-    rpc_draco_sensor_data.base_joint_quat_ = base_joint_quat
-    rpc_draco_sensor_data.base_joint_lin_vel_ = base_joint_lin_vel
-    rpc_draco_sensor_data.base_joint_ang_vel_ = base_joint_ang_vel
-    ##############################################################################
-    ##############################################################################
-
-    # Get Keyboard Event
-    keys = pb.getKeyboardEvents()
-    if pybullet_util.is_key_triggered(keys, '1'):
-        rpc_draco_interface.interrupt_.PressOne()
-    if pybullet_util.is_key_triggered(keys, '2'):
-        rpc_draco_interface.interrupt_.PressTwo()
-    if pybullet_util.is_key_triggered(keys, '4'):
-        rpc_draco_interface.interrupt_.PressFour()
-    if pybullet_util.is_key_triggered(keys, '5'):
-        rpc_draco_interface.interrupt_.PressFive()
-    if pybullet_util.is_key_triggered(keys, '6'):
-        rpc_draco_interface.interrupt_.PressSix()
-    if pybullet_util.is_key_triggered(keys, '7'):
-        rpc_draco_interface.interrupt_.PressSeven()
-    if pybullet_util.is_key_triggered(keys, '8'):
-        rpc_draco_interface.interrupt_.PressEight()
-    if pybullet_util.is_key_triggered(keys, '9'):
-        rpc_draco_interface.interrupt_.PressNine()
-    if pybullet_util.is_key_triggered(keys, 's'):
+def signal_handler(signal, frame):
+    # if Config.VIDEO_RECORD:
+    # pybullet_util.make_video(video_dir, False)
+    if Config.MEASURE_COMPUTATION_TIME:
+        print('========================================================')
+        print('saving list of compuation time in "compuation_time.txt"')
+        print('========================================================')
         np.savetxt('computation_time.txt',
                    np.array([compuation_cal_list]),
                    delimiter=',')
 
-    #get sensor data
-    imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
+    if Config.VIDEO_RECORD:
+        print('========================================================')
+        print('Making Video')
+        print('========================================================')
+        pybullet_util.make_video(video_dir)
+
+    pb.disconnect()
+    sys.exit(0)
+
+
+signal.signal(signal.SIGINT, signal_handler)
+
+if __name__ == "__main__":
+
+    ## connect pybullet sim server
+    pb.connect(pb.GUI)
+
+    pb.resetDebugVisualizerCamera(cameraDistance=1.5,
+                                  cameraYaw=120,
+                                  cameraPitch=-30,
+                                  cameraTargetPosition=[0, 0, 0.5])
+    ## sim physics setting
+    pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
+                                 numSubSteps=Config.N_SUBSTEP)
+    pb.setGravity(0, 0, -9.81)
+
+    ## robot spawn & initial kinematics and dynamics setting
+    pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
+    # draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco_modified.urdf",
+    # Config.INITIAL_BASE_JOINT_POS,
+    # Config.INITIAL_BASE_JOINT_QUAT,
+    # useFixedBase=0)
+    draco_humanoid = pb.loadURDF(cwd +
+                                 "/robot_model/draco/draco3_big_feet.urdf",
+                                 Config.INITIAL_BASE_JOINT_POS,
+                                 Config.INITIAL_BASE_JOINT_QUAT,
+                                 useFixedBase=0)
+
+    ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
+                         useFixedBase=1)
+    pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
+
+    #TODO:modify this function without dictionary container
+    n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
+        draco_humanoid, Config.INITIAL_BASE_JOINT_POS,
+        Config.INITIAL_BASE_JOINT_QUAT, Config.PRINT_ROBOT_INFO)
+
+    #robot initial config setting
+    set_init_config_pybullet_robot(draco_humanoid)
+
+    #robot joint and link dynamics setting
+    #TODO:modify this function without dictionary container
+    pybullet_util.set_joint_friction(draco_humanoid, joint_id_dict, 0)
+    pybullet_util.set_link_damping(draco_humanoid, link_id_dict, 0., 0.)
+
+    ## rolling contact joint constraint
+    c1 = pb.createConstraint(draco_humanoid,
+                             DracoLinkIdx.l_knee_fe_lp,
+                             draco_humanoid,
+                             DracoLinkIdx.l_knee_fe_ld,
+                             jointType=pb.JOINT_GEAR,
+                             jointAxis=[0, 1, 0],
+                             parentFramePosition=[0, 0, 0],
+                             childFramePosition=[0, 0, 0])
+    pb.changeConstraint(c1, gearRatio=-1, maxForce=500, erp=10)
+
+    c2 = pb.createConstraint(draco_humanoid,
+                             DracoLinkIdx.r_knee_fe_lp,
+                             draco_humanoid,
+                             DracoLinkIdx.r_knee_fe_ld,
+                             jointType=pb.JOINT_GEAR,
+                             jointAxis=[0, 1, 0],
+                             parentFramePosition=[0, 0, 0],
+                             childFramePosition=[0, 0, 0])
+    pb.changeConstraint(c2, gearRatio=-1, maxForce=500, erp=10)
+
+    #pnc interface, sensor_data, command class
+    rpc_draco_interface = draco_interface_py.DracoInterface()
+    rpc_draco_sensor_data = draco_interface_py.DracoSensorData()
+    rpc_draco_command = draco_interface_py.DracoCommand()
+
+    #TODO
+    #active jointidx list in sequence
+    active_jointidx_list = []  #for setjointmotorcontrolarray
+
+    #default robot kinematics information
+    base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
+    rot_world_basecom = util.quat_to_rot(np.array(base_com_quat))
+    rot_world_basejoint = util.quat_to_rot(
+        np.array(Config.INITIAL_BASE_JOINT_QUAT))
 
-    #copy sensor data to rpc sensor data class
-    rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
-    rpc_draco_sensor_data.imu_ang_vel_ = imu_ang_vel
-    rpc_draco_sensor_data.joint_pos_ = joint_pos
-    rpc_draco_sensor_data.joint_vel_ = joint_vel
-    rpc_draco_sensor_data.b_lf_contact_ = b_lf_contact
-    rpc_draco_sensor_data.b_rf_contact_ = b_rf_contact
+    pos_basejoint_to_basecom = np.dot(
+        rot_world_basejoint.transpose(),
+        base_com_pos - np.array(Config.INITIAL_BASE_JOINT_POS))
+    rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
+                                      rot_world_basecom)
 
-    ##Debugging
+    # Run Simulation
+    t = 0
+    dt = Config.CONTROLLER_DT
+    count = 0
+    jpg_count = 0
 
-    ##compute control command
-    # timer.tic()
-    rpc_draco_interface.GetCommand(rpc_draco_sensor_data, rpc_draco_command)
-    # comp_time = timer.tocvalue()
-    # compuation_cal_list.append(comp_time)
+    ## simulation options
+    if Config.MEASURE_COMPUTATION_TIME:
+        timer = TicToc()
+        compuation_cal_list = []
 
-    #copy command data from rpc command class
-    rpc_trq_command = rpc_draco_command.joint_trq_cmd_
-    rpc_joint_pos_command = rpc_draco_command.joint_pos_cmd_
-    rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
+    if Config.VIDEO_RECORD:
+        video_dir = 'video/draco'
+        if os.path.exists(video_dir):
+            shutil.rmtree(video_dir)
+        os.makedirs(video_dir)
 
-    #apply command to pybullet robot
-    apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
+    while (True):
 
-    # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
-    # DracoLinkIdx.l_foot_contact)[0:3, 3]
-    # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
-    # DracoLinkIdx.r_foot_contact)[0:3, 3]
-    # print("------------------------------------")
-    # print(rfoot_pos[1] - lfoot_pos[1])
+        ###############################################################################
+        #Debugging Purpose
+        ##############################################################################
+        ##debugging state estimator by calculating groundtruth basejoint states
+        base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
+            draco_humanoid)
+        rot_world_basecom = util.quat_to_rot(base_com_quat)
+        rot_world_basejoint = np.dot(rot_world_basecom,
+                                     rot_basejoint_to_basecom.transpose())
+        base_joint_pos = base_com_pos - np.dot(rot_world_basejoint,
+                                               pos_basejoint_to_basecom)
+        base_joint_quat = util.rot_to_quat(rot_world_basejoint)
 
-    # print("trq command printout")
-    # print(rpc_trq_command)
-    # print("jpos command printout")
-    # print(rpc_joint_pos_command)
-    # print("jpos command printout")
-    # print(rpc_joint_vel_command)
+        base_com_lin_vel, base_com_ang_vel = pb.getBaseVelocity(draco_humanoid)
+        trans_joint_com = liegroup.RpToTrans(rot_basejoint_to_basecom,
+                                             pos_basejoint_to_basecom)
+        adjoint_joint_com = liegroup.Adjoint(trans_joint_com)
+        twist_basecom_in_world = np.zeros(6)
+        twist_basecom_in_world[0:3] = base_com_ang_vel
+        twist_basecom_in_world[3:6] = base_com_lin_vel
+        augrot_basecom_world = np.zeros((6, 6))
+        augrot_basecom_world[0:3, 0:3] = rot_world_basecom.transpose()
+        augrot_basecom_world[3:6, 3:6] = rot_world_basecom.transpose()
+        twist_basecom_in_basecom = np.dot(augrot_basecom_world,
+                                          twist_basecom_in_world)
+        twist_basejoint_in_basejoint = np.dot(adjoint_joint_com,
+                                              twist_basecom_in_basecom)
+        augrot_world_basejoint = np.zeros((6, 6))
+        augrot_world_basejoint[0:3, 0:3] = rot_world_basejoint
+        augrot_world_basejoint[3:6, 3:6] = rot_world_basejoint
+        twist_basejoint_in_world = np.dot(augrot_world_basejoint,
+                                          twist_basejoint_in_basejoint)
+        base_joint_ang_vel = twist_basejoint_in_world[0:3]
+        base_joint_lin_vel = twist_basejoint_in_world[3:6]
 
-    #step simulation
-    pb.stepSimulation()
-    time.sleep(dt)
+        #pass debugged data to rpc interface
+        rpc_draco_sensor_data.base_joint_pos_ = base_joint_pos
+        rpc_draco_sensor_data.base_joint_quat_ = base_joint_quat
+        rpc_draco_sensor_data.base_joint_lin_vel_ = base_joint_lin_vel
+        rpc_draco_sensor_data.base_joint_ang_vel_ = base_joint_ang_vel
+        ##############################################################################
+        ##############################################################################
 
-    t += dt
-    count += 1
+        # Get Keyboard Event
+        keys = pb.getKeyboardEvents()
+        if pybullet_util.is_key_triggered(keys, '1'):
+            rpc_draco_interface.interrupt_.PressOne()
+        elif pybullet_util.is_key_triggered(keys, '2'):
+            rpc_draco_interface.interrupt_.PressTwo()
+        elif pybullet_util.is_key_triggered(keys, '4'):
+            rpc_draco_interface.interrupt_.PressFour()
+        elif pybullet_util.is_key_triggered(keys, '5'):
+            rpc_draco_interface.interrupt_.PressFive()
+        elif pybullet_util.is_key_triggered(keys, '6'):
+            rpc_draco_interface.interrupt_.PressSix()
+        elif pybullet_util.is_key_triggered(keys, '7'):
+            rpc_draco_interface.interrupt_.PressSeven()
+        elif pybullet_util.is_key_triggered(keys, '8'):
+            rpc_draco_interface.interrupt_.PressEight()
+        elif pybullet_util.is_key_triggered(keys, '9'):
+            rpc_draco_interface.interrupt_.PressNine()
+
+        #get sensor data
+        imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
+            draco_humanoid)
+
+        #copy sensor data to rpc sensor data class
+        rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
+        rpc_draco_sensor_data.imu_ang_vel_ = imu_ang_vel
+        rpc_draco_sensor_data.joint_pos_ = joint_pos
+        rpc_draco_sensor_data.joint_vel_ = joint_vel
+        rpc_draco_sensor_data.b_lf_contact_ = b_lf_contact
+        rpc_draco_sensor_data.b_rf_contact_ = b_rf_contact
+
+        ##Debugging
+
+        ##compute control command
+        if Config.MEASURE_COMPUTATION_TIME:
+            timer.tic()
+
+        rpc_draco_interface.GetCommand(rpc_draco_sensor_data,
+                                       rpc_draco_command)
+
+        if Config.MEASURE_COMPUTATION_TIME:
+            comp_time = timer.tocvalue()
+            compuation_cal_list.append(comp_time)
+
+        #copy command data from rpc command class
+        rpc_trq_command = rpc_draco_command.joint_trq_cmd_
+        rpc_joint_pos_command = rpc_draco_command.joint_pos_cmd_
+        rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
+
+        #apply command to pybullet robot
+        apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
+
+        # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+        # DracoLinkIdx.l_foot_contact)[0:3, 3]
+        # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+        # DracoLinkIdx.r_foot_contact)[0:3, 3]
+        # print("------------------------------------")
+        # print(rfoot_pos[1] - lfoot_pos[1])
+
+        # print("trq command printout")
+        # print(rpc_trq_command)
+        # print("jpos command printout")
+        # print(rpc_joint_pos_command)
+        # print("jpos command printout")
+        # print(rpc_joint_vel_command)
+
+        # Save Image file
+        if (Config.VIDEO_RECORD) and (count % Config.RECORD_FREQ == 0):
+            frame = pybullet_util.get_camera_image([1., 0.5, 1.], 1.0, 120,
+                                                   -15, 0, 60., 1920, 1080,
+                                                   0.1, 100.)
+            frame = frame[:, :, [2, 1, 0]]  # << RGB to BGR
+            filename = video_dir + '/step%06d.jpg' % jpg_count
+            cv2.imwrite(filename, frame)
+            jpg_count += 1
+
+        #step simulation
+        pb.stepSimulation()
+        time.sleep(dt)
+
+        t += dt
+        count += 1

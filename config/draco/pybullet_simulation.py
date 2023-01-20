@@ -9,6 +9,14 @@ class Config(object):
 
     PRINT_ROBOT_INFO = False
 
+    MEASURE_COMPUTATION_TIME = False
+
+    VIDEO_RECORD = False
+    RECORD_FREQ = 50
+
+    ##TODO:
+    USE_MESHCAT = False
+
 
 class DracoLinkIdx(object):
     torso_link = -1
