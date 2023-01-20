@@ -55,10 +55,10 @@ void IHWBC::UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
 }
 
 void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
-                  const std::unordered_map<std::string, Contact *> &contact_map,
+                  const std::map<std::string, Contact *> &contact_map,
                   const std::unordered_map<std::string, InternalConstraint *>
                       &internal_constraint_map,
-                  std::unordered_map<std::string, ForceTask *> &force_task_map,
+                  std::map<std::string, ForceTask *> &force_task_map,
                   Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &trq_cmd) {
 
   assert(task_map.size() > 0);
@@ -212,7 +212,11 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
 
     int contact_row_idx(0);
     int contact_cone_row_idx(0);
+    int k(0);
     for (const auto &[contact_str, contact_ptr] : contact_map) {
+      if (k == 0)
+        std::cout << "first contact: " << contact_str << std::endl;
+      k += 1;
       Eigen::MatrixXd j_c = contact_ptr->Jacobian();
       Eigen::MatrixXd cone_mat = contact_ptr->UfMatrix();
       Eigen::VectorXd cone_vec = contact_ptr->UfVector();
