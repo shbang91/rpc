@@ -36,11 +36,12 @@ cmp_des = []
 
 # Create Robot for Meshcat Visualization
 model, collision_model, visual_model = pin.buildModelsFromUrdf(
-    cwd + "/robot_model/draco/draco3_big_feet.urdf", cwd + "/robot_model/draco",
-    pin.JointModelFreeFlyer())
+    cwd + "/robot_model/draco/draco3_big_feet.urdf",
+    cwd + "/robot_model/draco", pin.JointModelFreeFlyer())
 viz = MeshcatVisualizer(model, collision_model, visual_model)
 try:
     viz.initViewer(open=True)
+    # viz.viewer.wait()
 except ImportError as err:
     print(
         "Error while initializing the viewer. It seems you should install Python meshcat"
@@ -92,8 +93,9 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
         try:
             d = pickle.load(file)
             exp_time.append(d['time'])
-            joint_positions.append(d['est_base_joint_pos'] + [
-                d['est_base_joint_ori'] + d['joint_positions'])
+            joint_positions.append(d['est_base_joint_pos'] +
+                                   d['est_base_joint_ori'] +
+                                   d['joint_positions'])
 
             com_position_des.append(d['des_com_pos'])
             com_position.append(d['act_com_pos'])
@@ -112,6 +114,8 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
 
         except EOFError:
             break
+
+time.sleep(3)
 
 # replay data and create animation
 save_freq = 50  # hertz

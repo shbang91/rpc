@@ -123,7 +123,7 @@ while True:
     data_saver.add('act_com_pos', list(msg.act_com_pos))
 
     data_saver.add('lfoot_pos', list(msg.lfoot_pos))
-    data_saver.add('act_com_pos', list(msg.rfoot_pos))
+    data_saver.add('rfoot_pos', list(msg.rfoot_pos))
 
     data_saver.add('lfoot_ori', list(msg.lfoot_ori))
     data_saver.add('rfoot_ori', list(msg.rfoot_ori))
