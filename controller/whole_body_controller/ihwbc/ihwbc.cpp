@@ -214,9 +214,6 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
     int contact_cone_row_idx(0);
     int k(0);
     for (const auto &[contact_str, contact_ptr] : contact_map) {
-      if (k == 0)
-        std::cout << "first contact: " << contact_str << std::endl;
-      k += 1;
       Eigen::MatrixXd j_c = contact_ptr->Jacobian();
       Eigen::MatrixXd cone_mat = contact_ptr->UfMatrix();
       Eigen::VectorXd cone_vec = contact_ptr->UfVector();
