@@ -14,7 +14,7 @@ dd = dir("/tmp/draco_state_estimator_data*.mat");
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
-load(ddd(i).name, 'icp_est')
+load(dd(i).name, 'icp_est')
 
 ddd = dir("/tmp/draco_icp_data*.mat");
 [tmp, i] = max([ddd.datenum]);
