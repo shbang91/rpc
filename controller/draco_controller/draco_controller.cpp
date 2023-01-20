@@ -255,14 +255,50 @@ void DracoController::GetCommand(void *command) {
 
 void DracoController::_SaveData() {
 #if B_USE_ZMQ
-  // DracoDataManager *dm = DracoDataManager::GetDataManager();
+  DracoDataManager *dm = DracoDataManager::GetDataManager();
 
-  // task data TODO : saving data here
-  // dm->data_->des_com_pos_ = tci_container_->com_task_->DesiredPos();
-  // dm->data_->act_com_pos_ = tci_container_->com_task_->CurrentPos();
-  // dm->data_->des_com_vel_ = tci_container_->com_task_->DesiredVel();
-  // dm->data_->act_com_vel_ = tci_container_->com_task_->CurrentVel();
-  // tci_container_->task_map["com_xy_task"]->DesiredPos();
+  // task data for meshcat visualize
+  dm->data_->des_com_pos_.head<2>() =
+      tci_container_->task_map_["com_xy_task"]->DesiredPos();
+  dm->data_->des_com_pos_.tail<1>() =
+      tci_container_->task_map_["com_z_task"]
+          ->DesiredPos(); // notice if this is base height
+  dm->data_->act_com_pos_.head<2>() =
+      tci_container_->task_map_["com_xy_task"]->CurrentPos();
+  dm->data_->act_com_pos_.tail<1>() =
+      tci_container_->task_map_["com_z_task"]
+          ->CurrentPos(); // notice if this is base height
+
+  dm->data_->lfoot_pos_ =
+      tci_container_->task_map_["lf_pos_task"]->CurrentPos();
+  dm->data_->rfoot_pos_ =
+      tci_container_->task_map_["rf_pos_task"]->CurrentPos();
+  dm->data_->lfoot_ori_ =
+      tci_container_->task_map_["lf_ori_task"]->CurrentPos();
+  dm->data_->rfoot_ori_ =
+      tci_container_->task_map_["rf_ori_task"]->CurrentPos();
+
+  Eigen::Quaterniond lf_ori_quat(
+      dm->data_->lfoot_ori_[3], dm->data_->lfoot_ori_[0],
+      dm->data_->lfoot_ori_[1], dm->data_->lfoot_ori_[2]);
+  Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
+  rot.topLeftCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
+  rot.bottomRightCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
+
+  dm->data_->lfoot_rf_cmd_ =
+      rot * tci_container_->force_task_map_["lf_force_task"]
+                ->CmdRf(); // global quantity
+
+  Eigen::Quaterniond rf_ori_quat(
+      dm->data_->rfoot_ori_[3], dm->data_->rfoot_ori_[0],
+      dm->data_->rfoot_ori_[1], dm->data_->rfoot_ori_[2]);
+  rot.topLeftCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
+  rot.bottomRightCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
+
+  dm->data_->rfoot_rf_cmd_ =
+      rot * tci_container_->force_task_map_["rf_force_task"]
+                ->CmdRf(); // global quantity
+
 #endif
 
 #if B_USE_MATLOGGER

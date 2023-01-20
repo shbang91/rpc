@@ -26,15 +26,16 @@ target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-lmpc-handler
                                            PUBLIC rpc-filter)
 
-if(BUILD_WITH_MATLOGGER)
-    target_link_libraries(rpc-draco-controller PUBLIC matlogger2::matlogger2)
-endif()
-
 if(BUILD_WITH_ZMQ_PROTOBUF)
     target_link_libraries(rpc-draco-controller PUBLIC ${Protobuf_LIBRARIES}
                                                PUBLIC ${ZMQ_LIBRARIES}
                                                PUBLIC rpc-draco-msg)
 endif()
+
+if(BUILD_WITH_MATLOGGER)
+    target_link_libraries(rpc-draco-controller PUBLIC matlogger2::matlogger2)
+endif()
+
 
 install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${controller_headers} DESTINATION

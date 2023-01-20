@@ -9,6 +9,10 @@
 #include <cmath>
 #include <stdexcept>
 
+#if B_USE_ZMQ
+#include "controller/draco_controller/draco_data_manager.hpp"
+#endif
+
 DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
     : Task(robot, 2), b_sim_(false),
       feedback_source_(feedback_source::kCoMFeedback) {
@@ -126,6 +130,12 @@ void DracoCoMXYTask::UpdateOpCommand() {
     op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
               omega * omega * rot_link_w.transpose() *
                   (ki_.cwiseProduct(local_icp_avg_err));
+
+#if B_USE_ZMQ
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    dm->data_->des_icp = des_icp;
+    dm->data_->des_cmp = des_cmp;
+#endif
 
 #if B_USE_MATLOGGER
     if (sp_->count_ % sp_->data_save_freq_ == 0) {

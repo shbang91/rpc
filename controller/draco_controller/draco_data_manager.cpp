@@ -31,30 +31,39 @@ void DracoDataManager::SendData() {
   msg.set_time(data_->time_);
 
   for (int i = 0; i < 3; ++i) {
-    msg.add_base_joint_pos(data_->base_joint_pos_[i]);
-    msg.add_base_joint_ori(data_->base_joint_ori_[i]);
-    msg.add_base_joint_lin_vel(data_->base_joint_lin_vel_[i]);
-    msg.add_base_joint_ang_vel(data_->base_joint_ang_vel_[i]);
-  }
-  msg.add_base_joint_ori(data_->base_joint_ori_[3]);
-
-  for (int i = 0; i < data_->joint_positions_.size(); ++i) {
-    msg.add_joint_positions(data_->joint_positions_[i]);
-  }
-  for (int i = 0; i < 3; ++i) {
     msg.add_est_base_joint_pos(data_->est_base_joint_pos_[i]);
     msg.add_est_base_joint_ori(data_->est_base_joint_ori_[i]);
-    msg.add_est_base_joint_lin_vel(data_->est_base_joint_lin_vel_[i]);
-    msg.add_est_base_joint_ang_vel(data_->est_base_joint_ang_vel_[i]);
+    msg.add_des_com_pos(data_->des_com_pos_[i]);
+    msg.add_act_com_pos(data_->act_com_pos_[i]);
+    msg.add_lfoot_pos(data_->lfoot_pos_[i]);
+    msg.add_rfoot_pos(data_->rfoot_pos_[i]);
+    msg.add_lfoot_ori(data_->lfoot_ori_[i]);
+    msg.add_rfoot_ori(data_->rfoot_ori_[i]);
   }
   msg.add_est_base_joint_ori(data_->est_base_joint_ori_[3]);
+  msg.add_lfoot_ori(data_->lfoot_ori_[3]);
+  msg.add_rfoot_ori(data_->rfoot_ori_[3]);
 
-  // for (int i(0); i < 3; ++i) {
-  // msg.add_des_com_pos(data_->des_com_pos_[i]);
-  // msg.add_act_com_pos(data_->act_com_pos_[i]);
-  // msg.add_des_com_vel(data_->des_com_vel_[i]);
-  // msg.add_act_com_vel(data_->act_com_vel_[i]);
+  for (auto e : data_->joint_positions_)
+    msg.add_joint_positions(e);
+
+  for (auto e : data_->lfoot_rf_cmd_)
+    msg.add_lfoot_rf_cmd(e);
+  for (auto e : data_->rfoot_rf_cmd_)
+    msg.add_rfoot_rf_cmd(e);
+  for (int i(0); i < 2; i++) {
+    msg.add_est_icp(data_->est_icp[i]);
+    msg.add_des_icp(data_->des_icp[i]);
+    msg.add_des_cmp(data_->des_cmp[i]);
+  }
+
+  // for (int i = 0; i < 3; ++i) {
+  // msg.add_base_joint_pos(data_->base_joint_pos_[i]);
+  // msg.add_base_joint_ori(data_->base_joint_ori_[i]);
+  // msg.add_base_joint_lin_vel(data_->base_joint_lin_vel_[i]);
+  // msg.add_base_joint_ang_vel(data_->base_joint_ang_vel_[i]);
   //}
+  // msg.add_base_joint_ori(data_->base_joint_ori_[3]);
 
   // TODO:TEST
   // draco::msg_list msg_list;
@@ -74,18 +83,3 @@ void DracoDataManager::SendData() {
   memcpy((void *)zmq_msg.data(), encoded_msg.c_str(), encoded_msg.size());
   socket_->send(zmq_msg);
 }
-
-DracoData::DracoData()
-    : time_(0.), base_joint_pos_(Eigen::Vector3d ::Zero()),
-      base_joint_ori_(Eigen::Vector4d::Zero()),
-      base_joint_lin_vel_(Eigen::Vector3d::Zero()),
-      base_joint_ang_vel_(Eigen::Vector3d::Zero()),
-      est_base_joint_pos_(Eigen::Vector3d::Zero()),
-      est_base_joint_ori_(Eigen::Vector4d::Zero()),
-      est_base_joint_lin_vel_(Eigen::Vector3d::Zero()),
-      est_base_joint_ang_vel_(Eigen::Vector3d::Zero()),
-      joint_positions_(Eigen::VectorXd::Zero(27)),
-      des_com_pos_(Eigen::VectorXd::Zero(3)),
-      act_com_pos_(Eigen::VectorXd::Zero(3)),
-      des_com_vel_(Eigen::VectorXd::Zero(3)),
-      act_com_vel_(Eigen::VectorXd::Zero(3)) {}

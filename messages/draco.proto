@@ -5,22 +5,27 @@ package draco;
 message pnc_msg {
   float time = 1;
 
-  repeated float base_joint_pos = 2;
-  repeated float base_joint_ori = 3;
-  repeated float base_joint_lin_vel = 4;
-  repeated float base_joint_ang_vel = 5;
+  repeated float est_base_joint_pos = 2;
+  repeated float est_base_joint_ori = 3;
 
-  repeated float joint_positions = 6;
+  repeated float joint_positions = 4;
 
-  repeated float est_base_joint_pos = 7;
-  repeated float est_base_joint_ori = 8;
-  repeated float est_base_joint_lin_vel = 9;
-  repeated float est_base_joint_ang_vel = 10;
+  repeated float des_com_pos = 5;
+  repeated float act_com_pos = 6;
 
-  repeated float des_com_pos = 11;
-  repeated float act_com_pos = 12;
-  repeated float des_com_vel = 13;
-  repeated float act_com_vel = 14;
+  repeated float lfoot_pos = 7;
+  repeated float rfoot_pos = 8;
+
+  repeated float lfoot_ori = 9;
+  repeated float rfoot_ori = 10;
+
+  repeated float lfoot_rf_cmd = 11;
+  repeated float rfoot_rf_cmd = 12;
+
+  repeated float est_icp = 13;
+  repeated float des_icp = 14;
+
+  repeated float des_cmp = 15;
 }
 
 // TODO:

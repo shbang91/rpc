@@ -5,30 +5,40 @@
 #include <memory>
 #include <zmq.hpp>
 
-class DracoData {
+struct DracoData {
 public:
-  DracoData();
+  DracoData(){};
   ~DracoData() = default;
 
-  double time_;
-  int phase_;
+  double time_ = 0;
+  int phase_ = 1;
 
-  Eigen::Vector3d base_joint_pos_;
-  Eigen::Vector4d base_joint_ori_;
-  Eigen::Vector3d base_joint_lin_vel_;
-  Eigen::Vector3d base_joint_ang_vel_;
+  // Eigen::Vector3d base_joint_pos_;
+  // Eigen::Vector4d base_joint_ori_;
+  // Eigen::Vector3d base_joint_lin_vel_;
+  // Eigen::Vector3d base_joint_ang_vel_;
 
-  Eigen::VectorXd joint_positions_;
+  Eigen::Vector3d est_base_joint_pos_ = Eigen::Vector3d::Zero();
+  Eigen::Vector4d est_base_joint_ori_ = Eigen::Vector4d::Zero();
 
-  Eigen::Vector3d est_base_joint_pos_;
-  Eigen::Vector4d est_base_joint_ori_;
-  Eigen::Vector3d est_base_joint_lin_vel_;
-  Eigen::Vector3d est_base_joint_ang_vel_;
+  Eigen::VectorXd joint_positions_ = Eigen::VectorXd::Zero(27);
 
-  Eigen::VectorXd des_com_pos_;
-  Eigen::VectorXd act_com_pos_;
-  Eigen::VectorXd des_com_vel_;
-  Eigen::VectorXd act_com_vel_;
+  Eigen::Vector3d des_com_pos_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d act_com_pos_ = Eigen::Vector3d::Zero();
+
+  Eigen::VectorXd lfoot_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd rfoot_pos_ = Eigen::VectorXd::Zero(3);
+
+  Eigen::VectorXd lfoot_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd rfoot_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd lfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd rfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
+
+  Eigen::Vector2d est_icp = Eigen::Vector2d::Zero();
+  Eigen::Vector2d des_icp = Eigen::Vector2d::Zero();
+
+  Eigen::Vector2d des_cmp = Eigen::Vector2d::Zero();
 };
 
 // Singleton class

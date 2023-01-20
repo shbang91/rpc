@@ -96,12 +96,12 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   }
 
 #if B_USE_ZMQ
-  // if (sp_->count_ % sp_->data_save_freq_ == 0) {
-  // DracoDataManager *dm = DracoDataManager::GetDataManager();
-  // dm->data_->time_ = sp_->current_time_;
-  // dm->data_->phase_ = sp_->state_;
-  // dm->SendData();
-  //}
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    dm->data_->time_ = sp_->current_time_;
+    dm->data_->phase_ = sp_->state_;
+    dm->SendData();
+  }
 #endif
 
   count_++;
