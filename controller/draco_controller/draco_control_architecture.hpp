@@ -13,6 +13,7 @@ constexpr int kRFContactTransitionStart = 7;
 constexpr int kRFContactTransitionEnd = 8;
 constexpr int kRFSingleSupportSwing = 9;
 constexpr int kDoubleSupportSwayingLmpc = 10;
+constexpr int kDHManipulation = 14;
 } // namespace draco_states
 
 class DracoController;
@@ -42,12 +43,19 @@ public:
   MaxNormalForceTrajectoryManager *rf_max_normal_froce_tm_;
   EndEffectorTrajectoryManager *lf_SE3_tm_;
   EndEffectorTrajectoryManager *rf_SE3_tm_;
+  EndEffectorTrajectoryManager *lh_SE3_tm_;
+  EndEffectorTrajectoryManager *rh_SE3_tm_;
   DCMTrajectoryManager *dcm_tm_;
 
   TaskHierarchyManager *lf_pos_hm_;
   TaskHierarchyManager *lf_ori_hm_;
   TaskHierarchyManager *rf_pos_hm_;
   TaskHierarchyManager *rf_ori_hm_;
+
+  TaskHierarchyManager *lh_pos_hm_;
+  TaskHierarchyManager *lh_ori_hm_;
+  TaskHierarchyManager *rh_pos_hm_;
+  TaskHierarchyManager *rh_ori_hm_;
 
 private:
   DracoController *controller_;
