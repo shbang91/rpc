@@ -54,4 +54,5 @@ protected:
   double background_start_time_;
   double background_time_;
   double background_end_time_;
+  double moving_duration_;
 };

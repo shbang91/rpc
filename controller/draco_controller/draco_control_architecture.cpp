@@ -3,6 +3,7 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_state_machines/manipulation.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
@@ -16,6 +17,7 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 //#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/hand_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -89,9 +91,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   //=============================================================
   // eef trajectory managers
   //=============================================================
-  lh_SE3_tm_ = new EndEffectorTrajectoryManager
+  lh_SE3_tm_ = new HandTrajectoryManager
     (tci_container_->task_map_["lh_pos_task"], tci_container_->task_map_["lh_ori_task"], robot_);
-  rh_SE3_tm_ = new EndEffectorTrajectoryManager
+  rh_SE3_tm_ = new HandTrajectoryManager
     (tci_container_->task_map_["rh_pos_task"], tci_container_->task_map_["rh_ori_task"], robot_);
 
   Eigen::VectorXd weight_at_contact, weight_at_swing;
@@ -147,6 +149,19 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   // eef task hierarchy managers
   // TODO: read weight from config file for weight_at_balance and weight_at_walking
   //=============================================================
+  try 
+  {
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
+                        prefix + "_weight", weight_at_balance);
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
+                        prefix + "_weight_at_walking", weight_at_walking);
+  } 
+  catch (const std::runtime_error &ex) 
+  {
+    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
   lh_pos_hm_ =
       new TaskHierarchyManager
         (tci_container_->task_map_["lh_pos_task"], weight_at_balance, weight_at_walking);
@@ -154,6 +169,19 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       new TaskHierarchyManager
         (tci_container_->task_map_["rh_pos_task"], weight_at_balance, weight_at_walking);
 
+  try 
+  {
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
+                        prefix + "_weight", weight_at_balance);
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
+                        prefix + "_weight_at_walking", weight_at_walking);
+  } 
+  catch (const std::runtime_error &ex) 
+  {
+    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
   lh_ori_hm_ =
       new TaskHierarchyManager
         (tci_container_->task_map_["lh_ori_task"], weight_at_balance, weight_at_walking);
