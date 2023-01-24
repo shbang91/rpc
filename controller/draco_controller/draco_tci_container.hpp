@@ -17,6 +17,10 @@ private:
   Task *rf_pos_task_;
   Task *lf_ori_task_;
   Task *rf_ori_task_;
+  Task *lh_pos_task_;
+  Task *rh_pos_task_;
+  Task *lh_ori_task_;
+  Task *rh_ori_task_;
 
   Contact *lf_contact_;
   Contact *rf_contact_;

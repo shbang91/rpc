@@ -33,6 +33,10 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   rf_pos_task_ = new LinkPosTask(robot_, draco_link::r_foot_contact);
   lf_ori_task_ = new LinkOriTask(robot_, draco_link::l_foot_contact);
   rf_ori_task_ = new LinkOriTask(robot_, draco_link::r_foot_contact);
+  lh_pos_task_ = new LinkPosTask(robot_, draco_link::l_hand_contact);
+  rh_pos_task_ = new LinkPosTask(robot_, draco_link::r_hand_contact);
+  lh_ori_task_ = new LinkOriTask(robot_, draco_link::l_hand_contact);
+  rh_ori_task_ = new LinkOriTask(robot_, draco_link::r_hand_contact);
 
   // wbc task list w/o joint task
   task_map_.clear();
@@ -45,6 +49,11 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.insert(std::make_pair("rf_pos_task", rf_pos_task_));
   task_map_.insert(std::make_pair("lf_ori_task", lf_ori_task_));
   task_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
+  task_map_.insert(std::make_pair("lh_pos_task", lh_pos_task_));
+  task_map_.insert(std::make_pair("rh_pos_task", rh_pos_task_));
+  task_map_.insert(std::make_pair("lh_ori_task", lh_ori_task_));
+  task_map_.insert(std::make_pair("rh_ori_task", rh_ori_task_));
+
 
   //=============================================================
   // Contacts List
@@ -53,10 +62,16 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
                                    0.11, 0.04); // params reset later
   rf_contact_ = new SurfaceContact(robot_, draco_link::r_foot_contact, 0.3,
                                    0.11, 0.04); // params reset later
+  // lh_contact_ = new SurfaceContact(robot_, draco_link::l_hand_contact, 0.3,
+  //                                  0.11, 0.04); // params reset later
+  // rh_contact_ = new SurfaceContact(robot_, draco_link::r_hand_contact, 0.3,
+  //                                  0.11, 0.04); // params reset later
 
   contact_map_.clear();
   contact_map_.insert(std::make_pair("lf_contact", lf_contact_));
   contact_map_.insert(std::make_pair("rf_contact", rf_contact_));
+  // contact_map_.insert(std::make_pair("lh_contact", lh_contact_));
+  // contact_map_.insert(std::make_pair("rh_contact", rh_contact_));
 
   //=============================================================
   // InternalConstraints List
@@ -72,12 +87,18 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   lf_reaction_force_task_ = new ForceTask(lf_contact_->Dim());
   rf_reaction_force_task_ = new ForceTask(rf_contact_->Dim());
+  // lh_reaction_force_task_ = new ForceTask(lh_contact_->Dim());
+  // rh_reaction_force_task_ = new ForceTask(rh_contact_->Dim());
 
   force_task_map_.clear();
   force_task_map_.insert(
       std::make_pair("lf_force_task", lf_reaction_force_task_));
   force_task_map_.insert(
       std::make_pair("rf_force_task", rf_reaction_force_task_));
+  // force_task_map_.insert(
+  //     std::make_pair("lh_force_task", lh_reaction_force_task_));
+  // force_task_map_.insert(
+  //     std::make_pair("rh_force_task", rh_reaction_force_task_));
 
   //=============================================================
   // Tasks, Contacts parameter initialization
@@ -103,14 +124,22 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete rf_pos_task_;
   delete lf_ori_task_;
   delete rf_ori_task_;
+  delete lh_pos_task_;
+  delete rh_pos_task_;
+  delete lh_ori_task_;
+  delete rh_ori_task_;
   // contact
   delete lf_contact_;
   delete rf_contact_;
+  // delete lh_contact_;
+  // delete rh_contact_;
   // internal constraint
   delete rolling_joint_constraint_;
   // force task
   delete lf_reaction_force_task_;
   delete rf_reaction_force_task_;
+  // delete lh_reaction_force_task_;
+  // delete rh_reaction_force_task_;
 }
 
 void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
@@ -124,6 +153,10 @@ void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
   rf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
   lf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
   rf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
+  lh_pos_task_->SetParameters(cfg_["wbc"]["task"]["hand_pos_task"], b_sim);
+  rh_pos_task_->SetParameters(cfg_["wbc"]["task"]["hand_pos_task"], b_sim);
+  lh_ori_task_->SetParameters(cfg_["wbc"]["task"]["hand_ori_task"], b_sim);
+  rh_ori_task_->SetParameters(cfg_["wbc"]["task"]["hand_ori_task"], b_sim);
 
   // contact
   lf_contact_->SetParameters(cfg_["wbc"]["contact"], b_sim);
