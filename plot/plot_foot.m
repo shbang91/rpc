@@ -7,7 +7,7 @@ foot_half_wid = 0.04;
 foot_half_len_ctrl = 0.08;
 foot_half_wid_ctrl = 0.03;
 
-rmat = quat2mat(ori);
+rmat = quat2rotm(ori);
 [xx, yy] = meshgrid(linspace(-foot_half_len, foot_half_len, 2), ...
                      linspace(-foot_half_wid, foot_half_wid, 2));
 [xx_ctrl, yy_ctrl] = ...
