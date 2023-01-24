@@ -30,7 +30,7 @@ void DracoDataManager::SendData() {
   draco::pnc_msg msg;
   msg.set_time(data_->time_);
 
-  for (int i = 0; i < 3; ++i) {
+  for (int i(0); i < 3; ++i) {
     msg.add_est_base_joint_pos(data_->est_base_joint_pos_[i]);
     msg.add_est_base_joint_ori(data_->est_base_joint_ori_[i]);
     msg.add_des_com_pos(data_->des_com_pos_[i]);
@@ -44,13 +44,15 @@ void DracoDataManager::SendData() {
   msg.add_lfoot_ori(data_->lfoot_ori_[3]);
   msg.add_rfoot_ori(data_->rfoot_ori_[3]);
 
-  for (auto e : data_->joint_positions_)
-    msg.add_joint_positions(e);
+  for (int i(0); i < data_->joint_positions_.size(); i++)
+    msg.add_joint_positions(data_->joint_positions_[i]);
 
-  for (auto e : data_->lfoot_rf_cmd_)
-    msg.add_lfoot_rf_cmd(e);
-  for (auto e : data_->rfoot_rf_cmd_)
-    msg.add_rfoot_rf_cmd(e);
+  for (int i(0); i < data_->lfoot_rf_cmd_.size(); i++)
+    msg.add_lfoot_rf_cmd(data_->lfoot_rf_cmd_[i]);
+
+  for (int i(0); i < data_->rfoot_rf_cmd_.size(); i++)
+    msg.add_rfoot_rf_cmd(data_->rfoot_rf_cmd_[i]);
+
   for (int i(0); i < 2; i++) {
     msg.add_est_icp(data_->est_icp[i]);
     msg.add_des_icp(data_->des_icp[i]);
