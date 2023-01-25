@@ -8,7 +8,8 @@
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
+      min_jerk_curves_(nullptr) {
   util::PrettyConstructor(2, "Initialize");
 
   sp_ = DracoStateProvider::GetStateProvider();

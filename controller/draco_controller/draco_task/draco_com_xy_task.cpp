@@ -15,7 +15,8 @@
 
 DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
     : Task(robot, 2), b_sim_(false),
-      feedback_source_(feedback_source::kCoMFeedback) {
+      feedback_source_(feedback_source::kCoMFeedback),
+      icp_integrator_(nullptr) {
   util::PrettyConstructor(3, "DracoCoMXYTask");
 
   sp_ = DracoStateProvider::GetStateProvider();

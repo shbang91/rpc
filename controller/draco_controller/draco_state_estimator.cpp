@@ -18,7 +18,8 @@
 DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
     : robot_(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
       global_leg_odometry_(Eigen::Vector3d::Zero()),
-      prev_base_joint_pos_(Eigen::Vector3d::Zero()), b_first_visit_(true) {
+      prev_base_joint_pos_(Eigen::Vector3d::Zero()), b_first_visit_(true),
+      com_vel_exp_filter_(nullptr) {
   util::PrettyConstructor(1, "DracoStateEstimator");
   sp_ = DracoStateProvider::GetStateProvider();
 
