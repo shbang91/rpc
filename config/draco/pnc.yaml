@@ -5,13 +5,13 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
   ## for simulation please use 000000000
-  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
@@ -19,14 +19,14 @@ state_estimator:
 
   ## IF 1: exponential smoother filter parameter
   com_vel_time_constant: 0.2 
-  com_vel_err_limit: [0.04, 0.04, 0.04]
+  com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
   cut_off_period: 0.01
 
 
 controller:
-  exp_smoothing_command_duration: 0.1 ## this only used when b_sim: false
+  exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
 
 wbc:
@@ -42,9 +42,9 @@ wbc:
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
       sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      sim_icp_kp : [10., 10.]
+      sim_icp_kp : [0., 0.]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
-      sim_icp_ki : [0., 0.] 
+      sim_icp_ki : [10., 10.] 
 
       ## IF icp_integrator_type == 0:
       sim_time_constant : 0.001
@@ -61,7 +61,7 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
       exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      exp_icp_kp : [0.5, 0.3]
+      exp_icp_kp : [0., 0.]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [1., 1.] 
 
@@ -211,8 +211,9 @@ wbc:
 state_machine:
     initialize:
       init_duration: 5.
-      target_joint_pos: [0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., 0.523, 0., -1.57, 0., 0., 0., 0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      b_only_joint_pos_control: true
+      target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      b_only_joint_pos_control: false
+      wait_time: 10.
 
     stand_up:
       standup_duration: 1.
@@ -226,7 +227,7 @@ state_machine:
 
     com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
-      frequency: [0., 0.5, 0.] # [hz]
+      frequency: [0., 0.05, 0.] # [hz]
       #amplitude: [0., 0., 0.03] # [m]
       #frequency: [0., 0., 1.] # [hz]
 
