@@ -41,6 +41,10 @@ addpath(fullfile(erase(mfilepath, '/draco')));
 helper_functions
 
 %%
+num_wbc_data = length(com_vel_raw);
+time = time(end-num_wbc_data+1:end);
+
+%%
 num_fig = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

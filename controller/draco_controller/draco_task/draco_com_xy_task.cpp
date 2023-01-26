@@ -15,7 +15,8 @@
 
 DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
     : Task(robot, 2), b_sim_(false),
-      feedback_source_(feedback_source::kCoMFeedback) {
+      feedback_source_(feedback_source::kCoMFeedback),
+      icp_integrator_(nullptr) {
   util::PrettyConstructor(3, "DracoCoMXYTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -132,9 +133,11 @@ void DracoCoMXYTask::UpdateOpCommand() {
                   (ki_.cwiseProduct(local_icp_avg_err));
 
 #if B_USE_ZMQ
-    DracoDataManager *dm = DracoDataManager::GetDataManager();
-    dm->data_->des_icp = des_icp;
-    dm->data_->des_cmp = des_cmp;
+    if (sp_->count_ % sp_->data_save_freq_ == 0) {
+      DracoDataManager *dm = DracoDataManager::GetDataManager();
+      dm->data_->des_icp = des_icp;
+      dm->data_->des_cmp = des_cmp;
+    }
 #endif
 
 #if B_USE_MATLOGGER

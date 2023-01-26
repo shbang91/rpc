@@ -28,6 +28,7 @@ private:
   Eigen::VectorXd init_joint_pos_;
 
   bool b_stay_here_;
+  double wait_time_;
 
   MinJerkCurveVec *min_jerk_curves_;
 };

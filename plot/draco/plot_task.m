@@ -55,6 +55,10 @@ mfilepath = fileparts(which('plot_task'));
 addpath(fullfile(erase(mfilepath, '/draco')));
 helper_functions
 
+%% wbc time post processing
+num_wbc_data = length(rf_rf_cmd);
+wbc_time = time(end-num_wbc_data+1:end);
+
 %%
 num_fig = 1;
 
@@ -67,9 +71,9 @@ j = 0;
 for i = 1:2
     subplot(2,1,i);
         j = j + 1;
-        plot(time, des_icp(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_icp(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, icp_est(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, icp_est(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_icp(j,:), icp_est(j,:)]);
         max_val = max([des_icp(j,:), icp_est(j,:)]);
@@ -88,9 +92,9 @@ j = 0;
 for i = 1:2
     subplot(2,1,i);
         j = j + 1;
-        plot(time, local_des_icp(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_icp(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, local_act_icp(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_icp(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_icp(j,:), local_act_icp(j,:)]);
         max_val = max([local_des_icp(j,:), local_act_icp(j,:)]);
@@ -114,9 +118,9 @@ for i = 1:4
     subplot(2,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
         max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
@@ -128,9 +132,9 @@ for i = 1:4
         ylabel(xy_label(j))
     else
         k = k + 1;
-        plot(time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
         max_val = max([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
@@ -152,9 +156,9 @@ for i = 1:4
     subplot(2,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
         max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
@@ -166,9 +170,9 @@ for i = 1:4
         ylabel(xy_label(j))
     else
         k = k + 1;
-        plot(time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
         max_val = max([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
@@ -189,9 +193,9 @@ num_fig = num_fig + 1;
 for i = 1 : 2
     if i == 1
         subplot(1,2,i)
-        plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_z_pos, 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_z_pos, 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_z_pos, act_com_z_pos]);
         max_val = max([des_com_z_pos, act_com_z_pos]);
@@ -203,9 +207,9 @@ for i = 1 : 2
         ylabel("z")
     else
         subplot(1,2,i)
-        plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_z_vel, 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_z_vel, 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_z_vel, act_com_z_vel]);
         max_val = max([des_com_z_vel, act_com_z_vel]);
@@ -224,9 +228,9 @@ num_fig = num_fig + 1;
 for i = 1 : 2
     if i == 1
         subplot(1,2,i)
-        plot(time, des_com_z_pos, 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_z_pos, 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_z_pos, 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_z_pos, 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_z_pos, act_com_z_pos]);
         max_val = max([des_com_z_pos, act_com_z_pos]);
@@ -238,9 +242,9 @@ for i = 1 : 2
         ylabel("z")
     else
         subplot(1,2,i)
-        plot(time, des_com_z_vel, 'r', 'LineWidth', 3);
+        plot(wbc_time, des_com_z_vel, 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_com_z_vel, 'b', 'LineWidth', 2);
+        plot(wbc_time, act_com_z_vel, 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_com_z_vel, act_com_z_vel]);
         max_val = max([des_com_z_vel, act_com_z_vel]);
@@ -281,9 +285,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
         max_val = max([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
@@ -295,9 +299,9 @@ for i = 1:6
         ylabel(rpy_label(j))
     else
         k = k + 1;
-        plot(time, des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
         max_val = max([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
@@ -335,9 +339,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, local_torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, local_torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_torso_ori_des_euler_xyz(j,:), local_torso_ori_act_euler_xyz(j,:)]);
         max_val = max([local_torso_ori_des_euler_xyz(j,:), local_torso_ori_act_euler_xyz(j,:)]);
@@ -349,9 +353,9 @@ for i = 1:6
         ylabel(rpy_label(j))
     else
         k = k + 1;
-        plot(time, local_des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, local_act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_torso_ori_vel(j,:), local_act_torso_ori_vel(j,:)]);
         max_val = max([local_des_torso_ori_vel(j,:), local_act_torso_ori_vel(j,:)]);
@@ -377,9 +381,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_lf_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_lf_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_lf_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_lf_pos(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_lf_pos(j,:), act_lf_pos(j,:)]);
         max_val = max([des_lf_pos(j,:), act_lf_pos(j,:)]);
@@ -391,9 +395,9 @@ for i = 1:6
         ylabel(xyz_label(j))
     else
         k = k + 1;
-        plot(time, des_lf_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_lf_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, act_lf_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_lf_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_lf_vel(j,:), act_lf_vel(j,:)]);
         max_val = max([des_lf_vel(j,:), act_lf_vel(j,:)]);
@@ -415,9 +419,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, local_des_lf_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_lf_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, local_act_lf_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_lf_pos(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_lf_pos(j,:), local_act_lf_pos(j,:)]);
         max_val = max([local_des_lf_pos(j,:), local_act_lf_pos(j,:)]);
@@ -429,9 +433,9 @@ for i = 1:6
         ylabel(xyz_label(j))
     else
         k = k + 1;
-        plot(time, local_des_lf_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_lf_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, local_act_lf_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_lf_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_lf_vel(j,:), local_act_lf_vel(j,:)]);
         max_val = max([local_des_lf_vel(j,:), local_act_lf_vel(j,:)]);
@@ -472,9 +476,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_lf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_lf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_lf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_lf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_lf_ori_euler_xyz(j,:), act_lf_ori_euler_xyz(j,:)]);
         max_val = max([des_lf_ori_euler_xyz(j,:), act_lf_ori_euler_xyz(j,:)]);
@@ -486,9 +490,9 @@ for i = 1:6
         ylabel(rpy_label(j))
     else
         k = k + 1;
-        plot(time, des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_lf_ori_vel(j,:), act_lf_ori_vel(j,:)]);
         max_val = max([des_lf_ori_vel(j,:), act_lf_ori_vel(j,:)]);
@@ -526,9 +530,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, local_des_lf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_lf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, local_act_lf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_lf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_lf_ori_euler_xyz(j,:), local_act_lf_ori_euler_xyz(j,:)]);
         max_val = max([local_des_lf_ori_euler_xyz(j,:), local_act_lf_ori_euler_xyz(j,:)]);
@@ -540,9 +544,9 @@ for i = 1:6
         ylabel(rpy_label(j))
     else
         k = k + 1;
-        plot(time, local_des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_lf_ori_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, local_act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_lf_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_lf_ori_vel(j,:), local_act_lf_ori_vel(j,:)]);
         max_val = max([local_des_lf_ori_vel(j,:), local_act_lf_ori_vel(j,:)]);
@@ -567,9 +571,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_rf_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_rf_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_rf_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_rf_pos(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_rf_pos(j,:), act_rf_pos(j,:)]);
         max_val = max([des_rf_pos(j,:), act_rf_pos(j,:)]);
@@ -581,9 +585,9 @@ for i = 1:6
         ylabel(xyz_label(j))
     else
         k = k + 1;
-        plot(time, des_rf_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_rf_vel(k, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_rf_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_rf_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_rf_vel(j,:), act_rf_vel(j,:)]);
         max_val = max([des_rf_vel(j,:), act_rf_vel(j,:)]);
@@ -605,9 +609,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_rf_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_rf_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_rf_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_rf_pos(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_rf_pos(j,:), act_rf_pos(j,:)]);
         max_val = max([des_rf_pos(j,:), act_rf_pos(j,:)]);
@@ -619,9 +623,9 @@ for i = 1:6
         ylabel(xyz_label(j))
     else
         k = k + 1;
-        plot(time, des_rf_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_rf_vel(k, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_rf_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_rf_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_rf_vel(j,:), act_rf_vel(j,:)]);
         max_val = max([des_rf_vel(j,:), act_rf_vel(j,:)]);
@@ -662,9 +666,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, des_rf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_rf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, act_rf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_rf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_rf_ori_euler_xyz(j,:), act_rf_ori_euler_xyz(j,:)]);
         max_val = max([des_rf_ori_euler_xyz(j,:), act_rf_ori_euler_xyz(j,:)]);
@@ -676,9 +680,9 @@ for i = 1:6
         ylabel(rpy_label(j))
     else
         k = k + 1;
-        plot(time, des_rf_ori_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, des_rf_ori_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, act_rf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, act_rf_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([des_rf_ori_vel(j,:), act_rf_ori_vel(j,:)]);
         max_val = max([des_rf_ori_vel(j,:), act_rf_ori_vel(j,:)]);
@@ -716,9 +720,9 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, local_des_rf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_rf_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(time, local_act_rf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_rf_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_rf_ori_euler_xyz(j,:), local_act_rf_ori_euler_xyz(j,:)]);
         max_val = max([local_des_rf_ori_euler_xyz(j,:), local_act_rf_ori_euler_xyz(j,:)]);
@@ -730,9 +734,9 @@ for i = 1:6
         ylabel(rpy_label(j))
     else
         k = k + 1;
-        plot(time, local_des_rf_ori_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_rf_ori_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(time, local_act_rf_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_rf_ori_vel(k, :), 'b', 'LineWidth', 2);
         grid on
         min_val = min([local_des_rf_ori_vel(j,:), local_act_rf_ori_vel(j,:)]);
         max_val = max([local_des_rf_ori_vel(j,:), local_act_rf_ori_vel(j,:)]);
@@ -760,7 +764,7 @@ for i = 1:12
     subplot(6,2,i);
     if mod(i,2) == 1
         j = j + 1;
-        plot(time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
+        plot(wbc_time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
         grid on
         hold on
         min_val = min([lf_rf_cmd(j, :)]);
@@ -776,7 +780,7 @@ for i = 1:12
         end
     else
         k = k + 1;
-        plot(time, rf_rf_cmd(k, :), 'r', 'LineWidth', 2);
+        plot(wbc_time, rf_rf_cmd(k, :), 'r', 'LineWidth', 2);
         grid on
         hold on
         min_val = min([rf_rf_cmd(k, :)]);
@@ -800,7 +804,7 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:6
     subplot(6,1,i);
-    plot(time, fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
+    plot(wbc_time, fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
     grid on
     hold on
     min_val = min([fb_qddot_cmd(i, :)]);
@@ -826,7 +830,7 @@ for i = 1:14
     subplot(7,2,i);
     if mod(i,2) == 1
         j = j + 1;
-        plot(time, joint_acc_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
+        plot(wbc_time, joint_acc_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
         grid on
         hold on
         min_val = min([joint_acc_cmd(draco_lf_idx(j), :)]);
@@ -842,7 +846,7 @@ for i = 1:14
         end
     else
         k = k + 1;
-        plot(time, joint_acc_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
+        plot(wbc_time, joint_acc_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
         grid on
         hold on
         min_val = min([joint_acc_cmd(draco_rf_idx(k), :)]);
