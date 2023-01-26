@@ -23,6 +23,7 @@ use_exp_time = False
 
 # variables to load/display on Meshcat
 exp_time = []
+phase = []
 joint_positions = []
 com_position_des = []
 com_position = []
@@ -93,6 +94,7 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
         try:
             d = pickle.load(file)
             exp_time.append(d['time'])
+            phase.append(d['phase'])
             joint_positions.append(d['est_base_joint_pos'] +
                                    d['est_base_joint_ori'] +
                                    d['joint_positions'])
@@ -107,8 +109,12 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
             lfoot_orientation.append(d['lfoot_ori'])
             rfoot_orientation.append(d['rfoot_ori'])
 
-            lfoot_grf.append(d['lfoot_rf_cmd'])
-            rfoot_grf.append(d['rfoot_rf_cmd'])
+            if phase[-1] == 1:  # if in initialize state, ignore GRFs
+                lfoot_grf.append([float("nan")])
+                rfoot_grf.append([float("nan")])
+            else:
+                lfoot_grf.append(d['lfoot_rf_cmd'])
+                rfoot_grf.append(d['rfoot_rf_cmd'])
 
             cmp_des.append(d['des_cmp'])
 
@@ -156,17 +162,19 @@ for ti in range(len(exp_time)):
     cmp_des_viz.display(cmp_des_viz_q)
 
     # plot GRFs
-    vis_tools.grf_display(arrow_viz["grf_lf"], lfoot_position[ti],
-                          lfoot_orientation[ti], lfoot_grf[ti])
-    vis_tools.grf_display(arrow_viz["grf_rf"], rfoot_position[ti],
-                          rfoot_orientation[ti], rfoot_grf[ti])
+    if phase[ti] != 1:
+        vis_tools.grf_display(arrow_viz["grf_lf"], lfoot_position[ti],
+                              lfoot_orientation[ti], lfoot_grf[ti])
+        vis_tools.grf_display(arrow_viz["grf_rf"], rfoot_position[ti],
+                              rfoot_orientation[ti], rfoot_grf[ti])
 
     # make animation
     with anim.at_frame(viz.viewer, frame_index) as frame:
-        vis_tools.grf_display(frame["grf_lf"], lfoot_position[ti],
-                              lfoot_orientation[ti], lfoot_grf[ti])
-        vis_tools.grf_display(frame["grf_rf"], rfoot_position[ti],
-                              rfoot_orientation[ti], rfoot_grf[ti])
+        if phase[ti] != 1:
+            vis_tools.grf_display(frame["grf_lf"], lfoot_position[ti],
+                                  lfoot_orientation[ti], lfoot_grf[ti])
+            vis_tools.grf_display(frame["grf_rf"], rfoot_position[ti],
+                                  rfoot_orientation[ti], rfoot_grf[ti])
 
         # save other visualizations at current frame
         vis_tools.display_visualizer_frames(viz, frame)  # robot

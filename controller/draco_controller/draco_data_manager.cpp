@@ -29,6 +29,7 @@ void DracoDataManager::SendData() {
 
   draco::pnc_msg msg;
   msg.set_time(data_->time_);
+  msg.set_phase(data_->phase_);
 
   for (int i(0); i < 3; ++i) {
     msg.add_est_base_joint_pos(data_->est_base_joint_pos_[i]);

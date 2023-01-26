@@ -113,6 +113,7 @@ while True:
 
     #save data in pkl file
     data_saver.add('time', msg.time)
+    data_saver.add('phase', msg.phase)
 
     data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
     data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
