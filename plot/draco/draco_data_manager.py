@@ -157,6 +157,17 @@ while True:
         vis_q[3:7] = np.array(msg.est_base_joint_ori)  # quaternion [x,y,z,w]
         vis_q[7:] = np.array(msg.joint_positions)
 
+        com_des_viz_q[0] = msg.des_com_pos[0]
+        com_des_viz_q[1] = msg.des_com_pos[1]
+        com_des_viz_q[2] = msg.des_com_pos[2]
+
+        com_viz_q[0] = msg.act_com_pos[0]
+        com_viz_q[1] = msg.act_com_pos[1]
+        com_viz_q[2] = msg.act_com_pos[2]
+
+        com_proj_viz_q[0] = msg.des_com_pos[0]
+        com_proj_viz_q[1] = msg.des_com_pos[1]
+
         icp_viz_q[0] = msg.est_icp[0]
         icp_viz_q[1] = msg.est_icp[1]
         icp_viz_q[2] = 0.
@@ -170,12 +181,16 @@ while True:
         cmp_des_viz_q[2] = 0.
 
         viz.display(vis_q)
+        com_des_viz.display(com_des_viz_q)
+        com_viz.display(com_viz_q)
+        com_proj_viz.display(com_proj_viz_q)
         icp_viz.display(icp_viz_q)
         icp_des_viz.display(icp_des_viz_q)
         cmp_des_viz.display(cmp_des_viz_q)
 
         # plot GRFs
-        vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
-                              msg.lfoot_ori, msg.lfoot_rf_cmd)
-        vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
-                              msg.rfoot_ori, msg.rfoot_rf_cmd)
+        if msg.phase != 1:
+            vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
+                                  msg.lfoot_ori, msg.lfoot_rf_cmd)
+            vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
+                                  msg.rfoot_ori, msg.rfoot_rf_cmd)
