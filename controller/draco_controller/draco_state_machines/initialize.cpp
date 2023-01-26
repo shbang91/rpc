@@ -8,8 +8,8 @@
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
-      min_jerk_curves_(nullptr) {
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false),
+      wait_time_(0.), min_jerk_curves_(nullptr) {
   util::PrettyConstructor(2, "Initialize");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -65,7 +65,7 @@ bool Initialize::EndOfState() {
   if (b_stay_here_) {
     return false;
   } else {
-    return (state_machine_time_ >= end_time_) ? true : false;
+    return (state_machine_time_ >= end_time_ + wait_time_) ? true : false;
   }
 }
 
@@ -79,6 +79,7 @@ void Initialize::SetParameters(const YAML::Node &node) {
     util::ReadParameter(node, "target_joint_pos", target_joint_pos_);
     sp_->nominal_jpos_ = target_joint_pos_; // set nominal jpos
     util::ReadParameter(node, "b_only_joint_pos_control", b_stay_here_);
+    util::ReadParameter(node, "wait_time", wait_time_);
 
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
