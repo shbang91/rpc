@@ -81,6 +81,15 @@ void DracoStateEstimator::Initialize(DracoSensorData *sensor_data) {
       Eigen::Vector3d::Zero(), Eigen::Quaterniond::Identity(),
       Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), sensor_data->joint_pos_,
       sensor_data->joint_vel_, false);
+
+  // save data
+#if B_USE_MATLOGGER
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    // joint encoder data
+    logger_->add("joint_pos_act", sensor_data->joint_pos_);
+    logger_->add("joint_vel_act", sensor_data->joint_vel_);
+  }
+#endif
 }
 
 void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
