@@ -176,26 +176,28 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     sp_->com_vel_est_ << output[0], output[1], output[2];
   }
 
-#if B_USE_ZMQ
-  // Save estimated floating base joint states
-  DracoDataManager *dm = DracoDataManager::GetDataManager();
-  dm->data_->est_base_joint_pos_ = base_joint_pos;
-  Eigen::Quaterniond base_joint_quat(base_joint_ori_rot);
-  dm->data_->est_base_joint_ori_ << base_joint_quat.normalized().coeffs();
-
-  // Save joint pos data
-  dm->data_->joint_positions_ = sensor_data->joint_pos_;
-
-  dm->data_->est_icp = sp_->dcm_.head<2>();
-  // for simulation only (ground truth data from simulator)
-  // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
-  // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
-  // dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
-  // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
-#endif
-
   // compute dcm
   this->_ComputeDCM();
+
+#if B_USE_ZMQ
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    // Save estimated floating base joint states
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    dm->data_->est_base_joint_pos_ = base_joint_pos;
+    Eigen::Quaterniond base_joint_quat(base_joint_ori_rot);
+    dm->data_->est_base_joint_ori_ << base_joint_quat.normalized().coeffs();
+
+    // Save joint pos data
+    dm->data_->joint_positions_ = sensor_data->joint_pos_;
+
+    dm->data_->est_icp = sp_->dcm_.head<2>();
+    // for simulation only (ground truth data from simulator)
+    // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
+    // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
+    // dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
+    // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
+  }
+#endif
 
   // save data
 #if B_USE_MATLOGGER
