@@ -27,6 +27,9 @@ message pnc_msg {
   repeated float des_icp = 15;
 
   repeated float des_cmp = 16;
+
+  repeated float kf_base_joint_pos = 17;
+  repeated float kf_base_joint_ori = 18;
 }
 
 // TODO:

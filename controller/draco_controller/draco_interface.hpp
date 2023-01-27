@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Eigen/Dense>
 #include <memory>
 
@@ -5,6 +7,7 @@
 #include "controller/interface.hpp"
 
 class DracoStateEstimator;
+class DracoKFStateEstimator;
 class DracoStateProvider;
 
 class DracoSensorData {
@@ -57,6 +60,7 @@ public:
 
 private:
   DracoStateEstimator *se_;
+  DracoKFStateEstimator *se_kf_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
 

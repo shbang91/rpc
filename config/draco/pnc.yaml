@@ -5,11 +5,23 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
+  kf: true
+  sigma_base_vel: [0.0, 0.0, 0.0]
+  sigma_base_acc: [0.5, 0.5, 0.5]
+  sigma_pos_lfoot: [0.001, 0.001, 0.001]
+  sigma_pos_rfoot: [0.001, 0.001, 0.001]
+  sigma_vel_lfoot: [0.005, 0.005, 0.002]
+  sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  base_accel_time_constant: 0.02
+  base_com_vel_time_constant: 1.0
+  sim_num_data_base_accel: [10, 10, 10]
+  sim_num_data_ang_vel: [5, 5, 5]
+
   ## for simulation please use 000000000
   com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
