@@ -875,7 +875,7 @@ for i = 1:14
     subplot(7,2,i);
     if mod(i,2) == 1
         j = j + 1;
-        plot(time, joint_trq_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
+        plot(wbc_time, joint_trq_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 2);
         grid on
         hold on
         min_val = min([joint_trq_cmd(draco_lf_idx(j), :)]);
@@ -891,7 +891,7 @@ for i = 1:14
         end
     else
         k = k + 1;
-        plot(time, joint_trq_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
+        plot(wbc_time, joint_trq_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 2);
         grid on
         hold on
         min_val = min([joint_trq_cmd(draco_rf_idx(k), :)]);

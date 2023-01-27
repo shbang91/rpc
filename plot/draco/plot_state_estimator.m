@@ -42,7 +42,7 @@ helper_functions
 
 %%
 num_wbc_data = length(com_vel_raw);
-time = time(end-num_wbc_data+1:end);
+wbc_time = time(end-num_wbc_data+1:end);
 
 %%
 num_fig = 1;
@@ -54,7 +54,7 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:3
     subplot(3,1, i);
-    plot(time, base_joint_pos_est(i, :), 'b', 'LineWidth',2);
+    plot(wbc_time, base_joint_pos_est(i, :), 'b', 'LineWidth',2);
     grid on
     hold on
     min_val = min(base_joint_pos_est(i,:));
@@ -72,7 +72,7 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:3
     subplot(3, 1, i);
-    plot(time, base_joint_rpy_est(i, :), 'b', 'LineWidth',2);
+    plot(wbc_time, base_joint_rpy_est(i, :), 'b', 'LineWidth',2);
     grid on
     hold on
     min_val = min(base_joint_rpy_est(i,:));
@@ -90,7 +90,7 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:3
     subplot(3, 1, i);
-    plot(time, base_joint_lin_vel_est(i, :), 'b', 'LineWidth',2);
+    plot(wbc_time, base_joint_lin_vel_est(i, :), 'b', 'LineWidth',2);
     grid on
     hold on
     min_val = min(base_joint_lin_vel_est(i,:));
@@ -108,7 +108,7 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:3
     subplot(3, 1, i);
-    plot(time, base_joint_ang_vel_est(i, :), 'b', 'LineWidth',2);
+    plot(wbc_time, base_joint_ang_vel_est(i, :), 'b', 'LineWidth',2);
     grid on
     hold on
     min_val = min(base_joint_ang_vel_est(i,:));
@@ -129,9 +129,9 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:3
      subplot(3,1,i);
-        plot(time, com_vel_raw(i, :), 'k', 'LineWidth', 3);
+        plot(wbc_time, com_vel_raw(i, :), 'k', 'LineWidth', 3);
         hold on
-        plot(time, com_vel_est(i, :), 'r', 'LineWidth', 2);
+        plot(wbc_time, com_vel_est(i, :), 'r', 'LineWidth', 2);
         grid on
         min_val = min([com_vel_raw(i,:), com_vel_est(i,:)]);
         max_val = max([com_vel_raw(i,:), com_vel_est(i,:)]);
@@ -156,7 +156,7 @@ for i = 1:4
     subplot(2, 2, i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(time, icp_est(j, :), 'b', 'LineWidth',2);
+        plot(wbc_time, icp_est(j, :), 'b', 'LineWidth',2);
         grid on
         hold on
         min_val = min(icp_est(j, :));
@@ -172,7 +172,7 @@ for i = 1:4
         end
     else
         k = k + 1;
-        plot(time, icp_vel_est(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, icp_vel_est(k, :), 'b', 'LineWidth', 2);
         grid on
         hold on
         min_val = min(icp_vel_est(k, :));
@@ -196,9 +196,9 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:2
     subplot(2,1,i);
-        plot(time, icp_error_raw(i, :), 'k', 'LineWidth', 3);
+        plot(wbc_time, icp_error_raw(i, :), 'k', 'LineWidth', 3);
         hold on
-        plot(time, icp_avg_err(i, :), 'r', 'LineWidth', 2);
+        plot(wbc_time, icp_avg_err(i, :), 'r', 'LineWidth', 2);
         grid on
         min_val = min([icp_error_raw(i,:), icp_avg_err(i,:)]);
         max_val = max([icp_error_raw(i,:), icp_avg_err(i,:)]);
