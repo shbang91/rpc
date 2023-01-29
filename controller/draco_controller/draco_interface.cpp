@@ -5,7 +5,7 @@
 
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
-#include "controller/draco_controller/draco_interrupt.hpp"
+#include "controller/draco_controller/draco_interrupt_handler.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 
 #include "controller/draco_controller/draco_definition.hpp"
@@ -54,8 +54,8 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
                                     THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);
-  interrupt_ =
-      new DracoInterrupt(static_cast<DracoControlArchitecture *>(ctrl_arch_));
+  interrupt_handler_ = new DracoInterruptHandler(
+      static_cast<DracoControlArchitecture *>(ctrl_arch_));
 
   // assume start with double support
   sp_->b_lf_contact_ = true;
@@ -66,7 +66,7 @@ DracoInterface::~DracoInterface() {
   delete robot_;
   delete se_;
   delete ctrl_arch_;
-  delete interrupt_;
+  delete interrupt_handler_;
 }
 
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
@@ -91,7 +91,9 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   sp_->state_ == draco_states::kInitialize ? se_->Initialize(draco_sensor_data)
                                            : se_->Update(draco_sensor_data);
   ctrl_arch_->GetCommand(draco_command);
-  interrupt_->ProcessInterrupt();
+
+  if (interrupt_handler_->IsSignalReceived())
+    interrupt_handler_->Process();
 
 #if B_USE_ZMQ
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
