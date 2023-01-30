@@ -97,6 +97,7 @@ public:
   Eigen::VectorXd Weight() const { return weight_; }
   Eigen::VectorXd Kp() const { return kp_; }
   Eigen::VectorXd Kd() const { return kd_; }
+  Eigen::VectorXd Ki() const { return ki_; }
   Eigen::VectorXd OpCommand() const { return op_cmd_; }
   int Dim() const { return dim_; }
 
@@ -106,6 +107,7 @@ public:
   void SetWeight(Eigen::VectorXd weight) { weight_ = weight; }
   void SetKp(Eigen::VectorXd kp) { kp_ = kp; }
   void SetKd(Eigen::VectorXd kd) { kd_ = kd; }
+  void SetKi(Eigen::VectorXd ki) { ki_ = ki; }
 
   // Debug
   void Debug() {

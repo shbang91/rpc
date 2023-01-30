@@ -14,9 +14,16 @@ public:
   DracoTaskGainHandler(DracoControlArchitecture *ctrl_arch);
   ~DracoTaskGainHandler() = default;
 
+  //==========================================================================
   // update target task weight, kp, and kd params with rosservice msg
-  void Update(const std::string &task_name, const Eigen::Vector3d &weight,
-              const Eigen::Vector3d &kp, const Eigen::Vector3d &kd);
+  //==========================================================================
+  // for common tasks (1D, 2D, 3D .. etc)
+  void Trigger(const std::string &task_name, const Eigen::VectorXd &weight,
+               const Eigen::VectorXd &kp, const Eigen::VectorXd &kd);
+  // for com_xy task (icp task)
+  void Trigger(const std::string &task_name, const Eigen::VectorXd &weight,
+               const Eigen::VectorXd &kp, const Eigen::VectorXd &kd,
+               const Eigen::VectorXd &ki);
 
   // process updating value with linear interpolation
   void Process();
@@ -30,15 +37,18 @@ private:
   DracoControlArchitecture *ctrl_arch_;
   bool b_signal_received_;
   bool b_first_visit_;
+  bool b_com_xy_task_;
 
-  Eigen::Vector3d init_weight_;
-  Eigen::Vector3d init_kp_;
-  Eigen::Vector3d init_kd_;
+  Eigen::VectorXd init_weight_;
+  Eigen::VectorXd init_kp_;
+  Eigen::VectorXd init_kd_;
+  Eigen::VectorXd init_ki_;
 
   std::string task_name_;
-  Eigen::Vector3d target_weight_;
-  Eigen::Vector3d target_kp_;
-  Eigen::Vector3d target_kd_;
+  Eigen::VectorXd target_weight_;
+  Eigen::VectorXd target_kp_;
+  Eigen::VectorXd target_kd_;
+  Eigen::VectorXd target_ki_;
 
   int count_;
 };
