@@ -71,7 +71,7 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   b_request_offset_reset = false;
 
 #if B_USE_MATLOGGER
-  logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_state_estimator_data");
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_state_estimator_kf_data");
 #endif
 
 }
@@ -121,8 +121,8 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
     // joint encoder data
     logger_->add("joint_pos_act", sensor_data->joint_pos_);
     logger_->add("joint_vel_act", sensor_data->joint_vel_);
-  }
 #endif
+  }
 }
 
 void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
