@@ -3,7 +3,7 @@
 
 class PinocchioRobotSystem;
 class ControlArchitecture;
-class Interrupt;
+class InterruptHandler;
 
 class Interface {
 public:
@@ -13,7 +13,7 @@ public:
 
   virtual void GetCommand(void *sensor_data, void *command) = 0;
 
-  Interrupt *interrupt_;
+  InterruptHandler *interrupt_handler_;
 
 protected:
   int count_;

@@ -25,6 +25,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_visualize", type=bool, default=False)
+parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
 args = parser.parse_args()
 
 ##==========================================================================
@@ -44,9 +45,10 @@ with open("config/draco/pnc.yaml", "r") as yaml_file:
 socket.connect(ip_address)
 socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
-# pj_context = zmq.Context()
-# pj_socket = pj_context.socket(zmq.PUB)
-# pj_socket.bind("tcp://*:9872")
+if args.b_use_plotjuggler:
+    pj_context = zmq.Context()
+    pj_socket = pj_context.socket(zmq.PUB)
+    pj_socket.bind("tcp://*:9872")
 
 msg = pnc_msg()
 
@@ -138,26 +140,62 @@ while True:
     data_saver.add('des_icp', list(msg.des_icp))
 
     data_saver.add('des_cmp', list(msg.des_cmp))
+
     # data_saver.add('base_joint_pos', list(msg.base_joint_pos))
     # data_saver.add('base_joint_ori', list(msg.base_joint_ori))
     # data_saver.add('base_joint_lin_vel', list(msg.base_joint_lin_vel))
     # data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
 
-    ##TODO: TEST
+    data_saver.add('com_xy_weight', list(msg.com_xy_weight))
+    data_saver.add('com_xy_kp', list(msg.com_xy_kp))
+    data_saver.add('com_xy_kd', list(msg.com_xy_kd))
+    data_saver.add('com_xy_ki', list(msg.com_xy_ki))
 
-    # fb_msg = msg.fb
-    # print(fb_msg.bjoint_pos)
-    ##TODO: TEST
+    data_saver.add('com_z_weight', msg.com_z_weight)
+    data_saver.add('com_z_kp', msg.com_z_kp)
+    data_saver.add('com_z_kd', msg.com_z_kd)
+
+    data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
+    data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
+    data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
+
+    data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
+    data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
+    data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
+
+    data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
+    data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
+    data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
+
+    data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
+    data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
+    data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
+
+    data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
+    data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
+    data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
 
     data_saver.advance()
 
     ## publish back to plot juggler
-    # pj_socket.send_string(json.dumps(data_saver.history))
+    if args.b_use_plotjuggler:
+        pj_socket.send_string(json.dumps(data_saver.history))
 
     if args.b_visualize:
         vis_q[0:3] = np.array(msg.kf_base_joint_pos)
         vis_q[3:7] = np.array(msg.kf_base_joint_ori)  # quaternion [x,y,z,w]
         vis_q[7:] = np.array(msg.joint_positions)
+
+        com_des_viz_q[0] = msg.des_com_pos[0]
+        com_des_viz_q[1] = msg.des_com_pos[1]
+        com_des_viz_q[2] = msg.des_com_pos[2]
+
+        com_viz_q[0] = msg.act_com_pos[0]
+        com_viz_q[1] = msg.act_com_pos[1]
+        com_viz_q[2] = msg.act_com_pos[2]
+
+        com_proj_viz_q[0] = msg.des_com_pos[0]
+        com_proj_viz_q[1] = msg.des_com_pos[1]
 
         icp_viz_q[0] = msg.est_icp[0]
         icp_viz_q[1] = msg.est_icp[1]
@@ -172,12 +210,16 @@ while True:
         cmp_des_viz_q[2] = 0.
 
         viz.display(vis_q)
+        com_des_viz.display(com_des_viz_q)
+        com_viz.display(com_viz_q)
+        com_proj_viz.display(com_proj_viz_q)
         icp_viz.display(icp_viz_q)
         icp_des_viz.display(icp_des_viz_q)
         cmp_des_viz.display(cmp_des_viz_q)
 
         # plot GRFs
-        vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
-                              msg.lfoot_ori, msg.lfoot_rf_cmd)
-        vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
-                              msg.rfoot_ori, msg.rfoot_rf_cmd)
+        if msg.phase != 1:
+            vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
+                                  msg.lfoot_ori, msg.lfoot_rf_cmd)
+            vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
+                                  msg.rfoot_ori, msg.rfoot_rf_cmd)
