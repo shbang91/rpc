@@ -7,6 +7,7 @@
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_interrupt_handler.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_task_gain_handler.hpp"
 
 #include "controller/draco_controller/draco_definition.hpp"
 #include "util/util.hpp"
@@ -56,6 +57,8 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
   ctrl_arch_ = new DracoControlArchitecture(robot_);
   interrupt_handler_ = new DracoInterruptHandler(
       static_cast<DracoControlArchitecture *>(ctrl_arch_));
+  task_gain_handler_ = new DracoTaskGainHandler(
+      static_cast<DracoControlArchitecture *>(ctrl_arch_));
 
   // assume start with double support
   sp_->b_lf_contact_ = true;
@@ -90,10 +93,15 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // se_->UpdateGroundTruthSensorData(draco_sensor_data);
   sp_->state_ == draco_states::kInitialize ? se_->Initialize(draco_sensor_data)
                                            : se_->Update(draco_sensor_data);
-  ctrl_arch_->GetCommand(draco_command);
 
+  // process interrupt & task gains
   if (interrupt_handler_->IsSignalReceived())
     interrupt_handler_->Process();
+  if (task_gain_handler_->IsSignalReceived())
+    task_gain_handler_->Process();
+
+  // get control command
+  ctrl_arch_->GetCommand(draco_command);
 
 #if B_USE_ZMQ
   if (sp_->count_ % sp_->data_save_freq_ == 0) {

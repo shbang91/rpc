@@ -7,10 +7,6 @@ DracoInterruptHandler::DracoInterruptHandler(
     DracoControlArchitecture *ctrl_arch)
     : InterruptHandler(), ctrl_arch_(ctrl_arch) {
   util::PrettyConstructor(1, "DracoInterruptHandler");
-  std::string border = "=";
-  for (unsigned int i = 0; i < 79; ++i)
-    border += "=";
-  util::ColorPrint(color::kBoldRed, border);
 }
 
 void DracoInterruptHandler::Process() {

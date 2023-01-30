@@ -95,6 +95,8 @@ public:
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
   Eigen::VectorXd Weight() const { return weight_; }
+  Eigen::VectorXd Kp() const { return kp_; }
+  Eigen::VectorXd Kd() const { return kd_; }
   Eigen::VectorXd OpCommand() const { return op_cmd_; }
   int Dim() const { return dim_; }
 
@@ -102,6 +104,8 @@ public:
 
   // setter
   void SetWeight(Eigen::VectorXd weight) { weight_ = weight; }
+  void SetKp(Eigen::VectorXd kp) { kp_ = kp; }
+  void SetKd(Eigen::VectorXd kd) { kd_ = kd; }
 
   // Debug
   void Debug() {

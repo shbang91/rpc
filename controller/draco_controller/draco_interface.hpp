@@ -6,6 +6,7 @@
 
 class DracoStateEstimator;
 class DracoStateProvider;
+class DracoTaskGainHandler;
 
 class DracoSensorData {
 public:
@@ -54,6 +55,8 @@ public:
   virtual ~DracoInterface();
 
   void GetCommand(void *sensor_data, void *command_data) override;
+
+  DracoTaskGainHandler *task_gain_handler_;
 
 private:
   DracoStateEstimator *se_;
