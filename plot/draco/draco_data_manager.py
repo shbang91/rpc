@@ -117,6 +117,8 @@ while True:
 
     data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
     data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
+    data_saver.add('kf_base_joint_pos', list(msg.kf_base_joint_pos))
+    data_saver.add('kf_base_joint_ori', list(msg.kf_base_joint_ori))
 
     data_saver.add('joint_positions', list(msg.joint_positions))
 
@@ -153,8 +155,8 @@ while True:
     # pj_socket.send_string(json.dumps(data_saver.history))
 
     if args.b_visualize:
-        vis_q[0:3] = np.array(msg.est_base_joint_pos)
-        vis_q[3:7] = np.array(msg.est_base_joint_ori)  # quaternion [x,y,z,w]
+        vis_q[0:3] = np.array(msg.kf_base_joint_pos)
+        vis_q[3:7] = np.array(msg.kf_base_joint_ori)  # quaternion [x,y,z,w]
         vis_q[7:] = np.array(msg.joint_positions)
 
         icp_viz_q[0] = msg.est_icp[0]

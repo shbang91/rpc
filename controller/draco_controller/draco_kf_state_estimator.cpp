@@ -105,11 +105,25 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
                                          accelerometer_input_);
 
   // update system without base linear states
-  robot_->UpdateRobotModel(Eigen::Vector3d::Zero(),
-                           Eigen::Quaterniond(rot_world_to_base).normalized(),
-                           Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
-                           sensor_data->joint_pos_, sensor_data->joint_vel_,
-                           false);}
+  robot_->UpdateRobotModel(
+          Eigen::Vector3d::Zero(), Eigen::Quaterniond::Identity(),
+          Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), sensor_data->joint_pos_,
+          sensor_data->joint_vel_, false);
+
+  // save data
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+#if B_USE_ZMQ
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    dm->data_->joint_positions_ = sensor_data->joint_pos_;
+#endif
+
+#if B_USE_MATLOGGER
+    // joint encoder data
+    logger_->add("joint_pos_act", sensor_data->joint_pos_);
+    logger_->add("joint_vel_act", sensor_data->joint_vel_);
+  }
+#endif
+}
 
 void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
@@ -155,6 +169,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     x_hat_.initialize(world_to_base, robot_->GetLinkIsometry(draco_link::l_foot_contact),
                       robot_->GetLinkIsometry(draco_link::r_foot_contact));
     kalman_filter_.init(x_hat_);
+    b_first_visit_ = false;
   } else {
     world_to_base << x_hat_.base_pos_x(), x_hat_.base_pos_y(),
         x_hat_.base_pos_z();
@@ -306,6 +321,8 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     dm->data_->kf_base_joint_pos_ = base_position_estimate;
     Eigen::Quaterniond quat = Eigen::Quaterniond(rot_world_to_base);
     dm->data_->kf_base_joint_ori_ <<  quat.x(), quat.y(), quat.z(), quat.w();
+
+    dm->data_->est_icp = sp_->dcm_.head<2>();
 
 //    dm->data_->kf_base_joint_lin_vel_ = base_velocity_estimate;
 //    dm->data_->base_quat_kf =
