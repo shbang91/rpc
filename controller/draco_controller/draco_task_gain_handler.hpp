@@ -33,6 +33,7 @@ public:
 
 private:
   void _ResetParams();
+  bool _TaskExists(const std::string &task_name);
 
   DracoControlArchitecture *ctrl_arch_;
   bool b_signal_received_;

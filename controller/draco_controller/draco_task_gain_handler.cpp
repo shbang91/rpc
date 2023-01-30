@@ -23,6 +23,9 @@ void DracoTaskGainHandler::Trigger(const std::string &task_name,
                                    const Eigen::VectorXd &kp,
                                    const Eigen::VectorXd &kd) {
   task_name_ = task_name;
+  if (!_TaskExists(task_name_))
+    return;
+
   target_weight_ = weight;
   target_kp_ = kp;
   target_kd_ = kd;
@@ -36,6 +39,9 @@ void DracoTaskGainHandler::Trigger(const std::string &task_name,
                                    const Eigen::VectorXd &kd,
                                    const Eigen::VectorXd &ki) {
   task_name_ = task_name;
+  if (!_TaskExists(task_name_))
+    return;
+
   target_weight_ = weight;
   target_kp_ = kp;
   target_kd_ = kd;
@@ -101,4 +107,20 @@ void DracoTaskGainHandler::_ResetParams() {
 
   if (b_com_xy_task_)
     b_com_xy_task_ = false;
+}
+
+bool DracoTaskGainHandler::_TaskExists(const std::string &task_name) {
+  // return task_found ? true : false;
+  auto task_map = ctrl_arch_->tci_container_->task_map_;
+
+  if (task_map.find(task_name) == task_map.end()) {
+    std::cout << "================================================"
+              << std::endl;
+    std::cout << "DracoTaskGainHandler: Task not found" << std::endl;
+    std::cout << "================================================"
+              << std::endl;
+    return false;
+  }
+
+  return true;
 }
