@@ -80,7 +80,7 @@ void DracoTaskGainHandler::Process() {
 
     if (b_com_xy_task_) {
       Eigen::VectorXd current_ki =
-          init_ki_ + (target_ki_ = init_ki_) / MAX_COUNT * count_;
+          init_ki_ + (target_ki_ - init_ki_) / MAX_COUNT * count_;
       ctrl_arch_->tci_container_->task_map_[task_name_]->SetKi(current_ki);
     }
 
