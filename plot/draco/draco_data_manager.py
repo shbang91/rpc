@@ -25,6 +25,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_visualize", type=bool, default=False)
+parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
 args = parser.parse_args()
 
 ##==========================================================================
@@ -44,9 +45,10 @@ with open("config/draco/pnc.yaml", "r") as yaml_file:
 socket.connect(ip_address)
 socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
-# pj_context = zmq.Context()
-# pj_socket = pj_context.socket(zmq.PUB)
-# pj_socket.bind("tcp://*:9872")
+if args.b_use_plotjuggler:
+    pj_context = zmq.Context()
+    pj_socket = pj_context.socket(zmq.PUB)
+    pj_socket.bind("tcp://*:9872")
 
 msg = pnc_msg()
 
@@ -136,21 +138,46 @@ while True:
     data_saver.add('des_icp', list(msg.des_icp))
 
     data_saver.add('des_cmp', list(msg.des_cmp))
+
     # data_saver.add('base_joint_pos', list(msg.base_joint_pos))
     # data_saver.add('base_joint_ori', list(msg.base_joint_ori))
     # data_saver.add('base_joint_lin_vel', list(msg.base_joint_lin_vel))
     # data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
 
-    ##TODO: TEST
+    data_saver.add('com_xy_weight', list(msg.com_xy_weight))
+    data_saver.add('com_xy_kp', list(msg.com_xy_kp))
+    data_saver.add('com_xy_kd', list(msg.com_xy_kd))
+    data_saver.add('com_xy_ki', list(msg.com_xy_ki))
 
-    # fb_msg = msg.fb
-    # print(fb_msg.bjoint_pos)
-    ##TODO: TEST
+    data_saver.add('com_z_weight', msg.com_z_weight)
+    data_saver.add('com_z_kp', msg.com_z_kp)
+    data_saver.add('com_z_kd', msg.com_z_kd)
+
+    data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
+    data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
+    data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
+
+    data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
+    data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
+    data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
+
+    data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
+    data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
+    data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
+
+    data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
+    data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
+    data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
+
+    data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
+    data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
+    data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
 
     data_saver.advance()
 
     ## publish back to plot juggler
-    # pj_socket.send_string(json.dumps(data_saver.history))
+    if args.b_use_plotjuggler:
+        pj_socket.send_string(json.dumps(data_saver.history))
 
     if args.b_visualize:
         vis_q[0:3] = np.array(msg.est_base_joint_pos)
