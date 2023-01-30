@@ -1,8 +1,8 @@
 #include "configuration.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
-#include "controller/draco_controller/draco_state_estimator.hpp"
 #include "controller/draco_controller/draco_kf_state_estimator.hpp"
+#include "controller/draco_controller/draco_state_estimator.hpp"
 
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
@@ -33,7 +33,8 @@ DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
 
     sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
-    sp_->b_use_kf_state_estimator_ = util::ReadParameter<bool>(cfg["state_estimator"], "kf");
+    sp_->b_use_kf_state_estimator_ =
+        util::ReadParameter<bool>(cfg["state_estimator"], "kf");
 
 #if B_USE_ZMQ
     if (!DracoDataManager::GetDataManager()->IsInitialized()) {
@@ -97,11 +98,13 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // se_->UpdateGroundTruthSensorData(draco_sensor_data);
 
   if (sp_->b_use_kf_state_estimator_) {
-    sp_->state_ == draco_states::kInitialize ? se_kf_->Initialize(draco_sensor_data)
-                                             : se_kf_->Update(draco_sensor_data);
+    sp_->state_ == draco_states::kInitialize
+        ? se_kf_->Initialize(draco_sensor_data)
+        : se_kf_->Update(draco_sensor_data);
   } else {
-    sp_->state_ == draco_states::kInitialize ? se_->Initialize(draco_sensor_data)
-                                             : se_->Update(draco_sensor_data);
+    sp_->state_ == draco_states::kInitialize
+        ? se_->Initialize(draco_sensor_data)
+        : se_->Update(draco_sensor_data);
   }
 
   // process interrupt & task gains

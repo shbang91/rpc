@@ -18,10 +18,9 @@
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/filter/digital_filters.hpp"
+#include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/state_estimator/MARGFilter.hpp"
 #include "util/util.hpp"
-#include "controller/robot_system/pinocchio_robot_system.hpp"
-
 
 // kalman filter files
 #include "controller/state_estimator/FloatingBaseSystemModel.hpp"
@@ -77,7 +76,7 @@ protected:
   Eigen::Matrix3d rot_world_to_base;
 
   std::vector<SimpleMovingAverage> com_vel_filter_;
-//  std::vector<SimpleMovingAverage> cam_filter_;
+  //  std::vector<SimpleMovingAverage> cam_filter_;
   std::vector<SimpleMovingAverage> base_accel_filter_;
   std::vector<SimpleMovingAverage> imu_ang_vel_filter_;
   ExponentialMovingAverageFilter *base_accel_filt_;
@@ -88,7 +87,6 @@ protected:
   bool b_request_offset_reset;
 
 #if B_USE_MATLOGGER
-    XBot::MatLogger2::Ptr logger_;
+  XBot::MatLogger2::Ptr logger_;
 #endif
-
 };
