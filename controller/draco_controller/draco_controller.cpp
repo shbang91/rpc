@@ -299,6 +299,38 @@ void DracoController::_SaveData() {
       rot * tci_container_->force_task_map_["rf_force_task"]
                 ->CmdRf(); // global quantity
 
+  // task weight, kp, kd, ki for plotting
+  dm->data_->com_xy_weight = tci_container_->task_map_["com_xy_task"]->Weight();
+  dm->data_->com_xy_kp = tci_container_->task_map_["com_xy_task"]->Kp();
+  dm->data_->com_xy_kd = tci_container_->task_map_["com_xy_task"]->Kd();
+  dm->data_->com_xy_ki = tci_container_->task_map_["com_xy_task"]->Ki();
+
+  dm->data_->com_z_weight =
+      tci_container_->task_map_["com_z_task"]->Weight()[0];
+  dm->data_->com_z_kp = tci_container_->task_map_["com_z_task"]->Kp()[0];
+  dm->data_->com_z_kd = tci_container_->task_map_["com_z_task"]->Kd()[0];
+
+  dm->data_->torso_ori_weight =
+      tci_container_->task_map_["torso_ori_task"]->Weight();
+  dm->data_->torso_ori_kp = tci_container_->task_map_["torso_ori_task"]->Kp();
+  dm->data_->torso_ori_kd = tci_container_->task_map_["torso_ori_task"]->Kd();
+
+  dm->data_->lf_pos_weight = tci_container_->task_map_["lf_pos_task"]->Weight();
+  dm->data_->lf_pos_kp = tci_container_->task_map_["lf_pos_task"]->Kp();
+  dm->data_->lf_pos_kd = tci_container_->task_map_["lf_pos_task"]->Kd();
+
+  dm->data_->rf_pos_weight = tci_container_->task_map_["rf_pos_task"]->Weight();
+  dm->data_->rf_pos_kp = tci_container_->task_map_["rf_pos_task"]->Kp();
+  dm->data_->rf_pos_kd = tci_container_->task_map_["rf_pos_task"]->Kd();
+
+  dm->data_->lf_ori_weight = tci_container_->task_map_["lf_ori_task"]->Weight();
+  dm->data_->lf_ori_kp = tci_container_->task_map_["lf_ori_task"]->Kp();
+  dm->data_->lf_ori_kd = tci_container_->task_map_["lf_ori_task"]->Kd();
+
+  dm->data_->rf_ori_weight = tci_container_->task_map_["rf_ori_task"]->Weight();
+  dm->data_->rf_ori_kp = tci_container_->task_map_["rf_ori_task"]->Kp();
+  dm->data_->rf_ori_kd = tci_container_->task_map_["rf_ori_task"]->Kd();
+
 #endif
 
 #if B_USE_MATLOGGER
