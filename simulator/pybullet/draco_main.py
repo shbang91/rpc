@@ -72,6 +72,10 @@ def get_sensor_data_from_pybullet(robot):
 
     imu_ang_vel = np.array(
         pb.getLinkState(robot, DracoLinkIdx.torso_imu, 1, 1)[7])
+
+    imu_dvel = pybullet_util.simulate_dVel_data(robot, link_id_dict,
+                                                previous_torso_velocity)
+
     #LF
     joint_vel[0] = pb.getJointState(robot, DracoJointIdx.l_hip_ie)[1]
     joint_vel[1] = pb.getJointState(robot, DracoJointIdx.l_hip_aa)[1]
@@ -109,7 +113,7 @@ def get_sensor_data_from_pybullet(robot):
                                            1, 1)[0][2] <= 0.05 else False
     b_rf_contact = True if pb.getLinkState(robot, DracoLinkIdx.r_foot_contact,
                                            1, 1)[0][2] <= 0.05 else False
-    return imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact
+    return imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact
 
 
 #TODO:try to modify with setjointmotorcontrol "array" API
@@ -383,6 +387,7 @@ if __name__ == "__main__":
             shutil.rmtree(video_dir)
         os.makedirs(video_dir)
 
+    previous_torso_velocity = np.array([0., 0., 0.])
     while (True):
 
         ###############################################################################
@@ -448,12 +453,13 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressNine()
 
         #get sensor data
-        imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
+        imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
             draco_humanoid)
 
         #copy sensor data to rpc sensor data class
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
         rpc_draco_sensor_data.imu_ang_vel_ = imu_ang_vel
+        rpc_draco_sensor_data.imu_dvel_ = imu_dvel
         rpc_draco_sensor_data.joint_pos_ = joint_pos
         rpc_draco_sensor_data.joint_vel_ = joint_vel
         rpc_draco_sensor_data.b_lf_contact_ = b_lf_contact
@@ -481,6 +487,11 @@ if __name__ == "__main__":
         apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
 
         # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+        # save current torso velocity for next iteration
+        previous_torso_velocity = pybullet_util.get_link_vel(
+            draco_humanoid, link_id_dict['torso_imu'])[3:6]
+
+
         # DracoLinkIdx.l_foot_contact)[0:3, 3]
         # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
         # DracoLinkIdx.r_foot_contact)[0:3, 3]

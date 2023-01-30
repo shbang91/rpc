@@ -95,8 +95,8 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
             d = pickle.load(file)
             exp_time.append(d['time'])
             phase.append(d['phase'])
-            joint_positions.append(d['est_base_joint_pos'] +
-                                   d['est_base_joint_ori'] +
+            joint_positions.append(d['kf_base_joint_pos'] +
+                                   d['kf_base_joint_ori'] +
                                    d['joint_positions'])
 
             com_position_des.append(d['des_com_pos'])
@@ -162,11 +162,11 @@ for ti in range(len(exp_time)):
     cmp_des_viz.display(cmp_des_viz_q)
 
     # plot GRFs
-    if phase[ti] != 1:
-        vis_tools.grf_display(arrow_viz["grf_lf"], lfoot_position[ti],
-                              lfoot_orientation[ti], lfoot_grf[ti])
-        vis_tools.grf_display(arrow_viz["grf_rf"], rfoot_position[ti],
-                              rfoot_orientation[ti], rfoot_grf[ti])
+    # if phase[ti] != 1:
+    #     vis_tools.grf_display(arrow_viz["grf_lf"], lfoot_position[ti],
+    #                           lfoot_orientation[ti], lfoot_grf[ti])
+    #     vis_tools.grf_display(arrow_viz["grf_rf"], rfoot_position[ti],
+    #                           rfoot_orientation[ti], rfoot_grf[ti])
 
     # make animation
     with anim.at_frame(viz.viewer, frame_index) as frame:

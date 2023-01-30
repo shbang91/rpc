@@ -34,6 +34,8 @@ void DracoDataManager::SendData() {
   for (int i(0); i < 3; ++i) {
     msg.add_est_base_joint_pos(data_->est_base_joint_pos_[i]);
     msg.add_est_base_joint_ori(data_->est_base_joint_ori_[i]);
+    msg.add_kf_base_joint_pos(data_->kf_base_joint_pos_[i]);
+    msg.add_kf_base_joint_ori(data_->kf_base_joint_ori_[i]);
     msg.add_des_com_pos(data_->des_com_pos_[i]);
     msg.add_act_com_pos(data_->act_com_pos_[i]);
     msg.add_lfoot_pos(data_->lfoot_pos_[i]);
@@ -42,6 +44,7 @@ void DracoDataManager::SendData() {
     msg.add_rfoot_ori(data_->rfoot_ori_[i]);
   }
   msg.add_est_base_joint_ori(data_->est_base_joint_ori_[3]);
+  msg.add_kf_base_joint_ori(data_->kf_base_joint_ori_[3]);
   msg.add_lfoot_ori(data_->lfoot_ori_[3]);
   msg.add_rfoot_ori(data_->rfoot_ori_[3]);
 

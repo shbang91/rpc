@@ -1,6 +1,7 @@
 #pragma once
 
 #include "draco.pb.h" //in build/messages/
+#include "draco_definition.hpp"
 #include <Eigen/Dense>
 #include <memory>
 #include <zmq.hpp>
@@ -20,6 +21,9 @@ public:
 
   Eigen::Vector3d est_base_joint_pos_ = Eigen::Vector3d::Zero();
   Eigen::Vector4d est_base_joint_ori_ = Eigen::Vector4d::Zero();
+
+  Eigen::Vector3d kf_base_joint_pos_ = Eigen::Vector3d::Zero();
+  Eigen::Vector4d kf_base_joint_ori_ = Eigen::Vector4d::Zero();
 
   Eigen::VectorXd joint_positions_ = Eigen::VectorXd::Zero(27);
 

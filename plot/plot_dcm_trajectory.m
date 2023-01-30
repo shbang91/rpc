@@ -5,15 +5,15 @@ clc;
 
 colors = dictionary(1, 'red', 2, 'magenta', 3, 'blue', 4, 'cyan');
 
-addpath("tmp")
-addpath("yaml")
+addpath("/tmp")
+addpath("plot/yaml_tools")
 
 d = dir("/tmp/draco_controller_data*.mat");
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
-dd = dir("/tmp/draco_state_estimator_data*.mat");
+dd = dir("/tmp/draco_state_estimator_kf_data*.mat");
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')

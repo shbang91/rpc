@@ -9,7 +9,8 @@ d = dir("/tmp/draco_controller_data*.mat");
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
-dd = dir("/tmp/draco_state_estimator_data*.mat");
+% dd = dir("/tmp/draco_state_estimator_data*.mat");
+dd = dir("/tmp/draco_state_estimator_kf_data*.mat");
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
