@@ -17,7 +17,7 @@
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
-DracoInterface::DracoInterface() : Interface(), waiting_count_(10) {
+DracoInterface::DracoInterface() : Interface() {
   std::string border = "=";
   for (unsigned int i = 0; i < 79; ++i)
     border += "=";
