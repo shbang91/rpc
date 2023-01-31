@@ -20,6 +20,7 @@ from plot import meshcat_utils as vis_tools
 
 # for the animation, set if you want to use the experiment time or start animation from t=0
 use_exp_time = False
+b_show_footsteps = True
 
 # variables to load/display on Meshcat
 exp_time = []
@@ -101,9 +102,11 @@ b_footsteps_visible_on_viewer = False
 
 # load all YAML data from dcm trajectory manager to plot planned footsteps
 footstep_plans = 0
+b_footsteps_available = False
 path = 'experiment_data/' + str(footstep_plans) + '.yaml'
-file_exists = True
+file_exists = os.path.isfile(path)
 while file_exists:
+    b_footsteps_available = True
     with open(path, 'r') as stream:
         try:
             cfg = yaml.load(stream, Loader=yaml.FullLoader)
@@ -226,26 +229,27 @@ for ti in range(len(exp_time)):
         vis_tools.display_visualizer_frames(cmp_des_viz, frame)  # desired CMP
 
         # show footsteps ONLY if they have already been planned
-        if t_ini_footsteps_planned[curr_step_plan] < exp_time[ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
-            footsteps_viz["lf_footstep"].set_property("visible", True)
-            footsteps_viz["rf_footstep"].set_property("visible", True)
-            vis_tools.update_footstep(footsteps_viz["lf_footstep"],
-                  lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
-            vis_tools.update_footstep(footsteps_viz["rf_footstep"],
-                  rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
-        else:
-            footsteps_viz["lf_footstep"].set_property("visible", False)
-            footsteps_viz["rf_footstep"].set_property("visible", False)
+        if b_show_footsteps and b_footsteps_available:
+            if t_ini_footsteps_planned[curr_step_plan] < exp_time[ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
+                footsteps_viz["lf_footstep"].set_property("visible", True)
+                footsteps_viz["rf_footstep"].set_property("visible", True)
+                vis_tools.update_footstep(footsteps_viz["lf_footstep"],
+                      lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
+                vis_tools.update_footstep(footsteps_viz["rf_footstep"],
+                      rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
+            else:
+                footsteps_viz["lf_footstep"].set_property("visible", False)
+                footsteps_viz["rf_footstep"].set_property("visible", False)
 
-        vis_tools.update_footstep(frame["lf_footstep"],
-                  lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
-        vis_tools.update_footstep(frame["rf_footstep"],
-                  rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
+            vis_tools.update_footstep(frame["lf_footstep"],
+                      lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
+            vis_tools.update_footstep(frame["rf_footstep"],
+                      rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
 
-    # check if we need to update the index of step plans loaded
-    if exp_time[ti] > t_end_footsteps_planned[curr_step_plan] and \
-            curr_step_plan < (footstep_plans - 1):
-        curr_step_plan += 1
+            # check if we need to update the index of step plans loaded
+            if exp_time[ti] > t_end_footsteps_planned[curr_step_plan] and \
+                    curr_step_plan < (footstep_plans - 1):
+                curr_step_plan += 1
 
     frame_index = frame_index + 1
 
