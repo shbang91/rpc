@@ -66,6 +66,4 @@ private:
   DracoKFStateEstimator *se_kf_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
-
-  int waiting_count_;
 };
