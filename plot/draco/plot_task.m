@@ -2,22 +2,25 @@ close all;
 clear;
 clc;
 
-addpath("/tmp")
+addpath("experiment_data")
+addpath("plot")
 
-d = dir("/tmp/draco_controller_data*.mat");
+exp_data_location = 'experiment_data';
+
+d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
 % dd = dir("/tmp/draco_state_estimator_data*.mat");
-dd = dir("/tmp/draco_state_estimator_kf_data*.mat");
+dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
 load(dd(i).name, 'icp_est')
 
-ddd = dir("/tmp/draco_icp_data*.mat");
+ddd = dir(sprintf("%s/draco_icp_data*.mat", exp_data_location));
 [tmp, i] = max([ddd.datenum]);
 fprintf('loading %s \n', ddd(i).name)
 load(ddd(i).name, 'des_icp')
@@ -26,21 +29,8 @@ load(ddd(i).name, 'local_des_icp')
 load(ddd(i).name, 'local_act_icp')
 
 %%
-quat_label = ["q_x", "q_y", "q_z", "q_w"];
-xyz_label = ["x","y","z"];
-rpy_label = ["roll", "pitch", "yaw"];
-xyz_dot_label = ["x_{dot}", "y_{dot}", "z_{dot}"];
-xy_label = ["x","y"];
-xy_dot_label = ["x_{dot}", "y_{dot}"];
-rf_label = ["trq_{x}", "trq_{y}", "trq_{z}", "f_{x}", "f_{y}", "f_{z}"];
-fb_qddot_label = ["x_{ddot}", "y_{ddot}", "z_{ddot}", "wx_{dot}", "wy_{dot}", "wz_{dot}"];
-
-phase_color = ["#A2142F", "#FF0000","#00FF00", "#0000FF","#00FFFF", "#FF00FF", "#FFFF00",	"#0072BD", "#D95319", "#EDB120"	, "#7E2F8E", "#77AC30", "#A2142F"];
-
-draco_joint_label = ["l\_hip\_ie", "l\_hip\_aa", "l\_hip\_fe", "l\_knee\_fe\_jp", "l\_knee\_fe\_jd", "l\_ankle\_fe", "l\_ankle\_ie", "l\_shoulder\_fe", "l\_shoulder\_aa", "l\_shoulder\_ie", "l\_elbow\_fe", "l\_wrist\_ps", "l\_wrist\_pitch", "neck\_pitch",...
-    "r\_hip\_ie", "r\_hip\_aa", "r\_hip\_fe", "r\_knee\_fe\_jp", "r\_knee\_fe\_jd", "r\_ankle\_fe", "r\_ankle\_ie", "r\_shoulder\_fe", "r\_shoulder\_aa", "r\_shoulder\_ie", "r\_elbow\_fe", "r\_wrist\_ps", "r\_wrist\_pitch" ];
-draco_lf_label = ["l\_hip\_ie", "l\_hip\_aa", "l\_hip\_fe", "l\_knee\_fe\_jp", "l\_knee\_fe\_jd", "l\_ankle\_fe", "l\_ankle\_ie"];
-draco_rf_label = ["r\_hip\_ie", "r\_hip\_aa", "r\_hip\_fe", "r\_knee\_fe\_jp", "r\_knee\_fe\_jd", "r\_ankle\_fe", "r\_ankle\_ie"];
+load_draco_label_names
+load_colors
 
 draco_lf_idx = zeros(1, 7);
 draco_rf_idx = zeros(1, 7);
@@ -917,7 +907,7 @@ num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:14
-    subplot(7,2,i);
+    ax(i) = subplot(7,2,i);
     if mod(i,2) == 1
         j = j + 1;
         plot(time, joint_pos_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
@@ -954,6 +944,7 @@ for i = 1:14
         end
     end
 end
+linkaxes(ax, 'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -962,7 +953,7 @@ num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:14
-    subplot(7,2,i);
+    ax(i) = subplot(7,2,i);
     if mod(i,2) == 1
         j = j + 1;
         plot(time, joint_vel_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
@@ -999,3 +990,4 @@ for i = 1:14
         end
     end
 end
+linkaxes(ax,'x')
