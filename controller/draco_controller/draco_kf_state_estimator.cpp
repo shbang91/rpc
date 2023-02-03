@@ -9,30 +9,64 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   robot_ = _robot;
   sp_ = DracoStateProvider::GetStateProvider();
 
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-
   iso_imu_to_base_com_ =
-      robot_->GetLinkIsometry(draco_link::torso_imu).inverse() *
-      robot_->GetLinkIsometry(draco_link::torso_com_link);
+          robot_->GetLinkIsometry(draco_link::torso_imu).inverse() *
+          robot_->GetLinkIsometry(draco_link::torso_com_link);
 
-  Eigen::Vector3d sigma_base_vel = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "sigma_base_vel");
-  Eigen::Vector3d sigma_base_acc = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "sigma_base_acc");
-  Eigen::Vector3d sigma_pos_lfoot = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "sigma_pos_lfoot");
-  Eigen::Vector3d sigma_pos_rfoot = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "sigma_pos_rfoot");
-  Eigen::Vector3d sigma_vel_lfoot = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "sigma_vel_lfoot");
-  Eigen::Vector3d sigma_vel_rfoot = util::ReadParameter<Eigen::Vector3d>(
-      cfg["state_estimator"], "sigma_vel_rfoot");
+  try{
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+
+    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
+    std::string prefix = b_sim ? "sim" : "exp";
+
+    Eigen::Vector3d sigma_base_vel = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_sigma_base_vel");
+    Eigen::Vector3d sigma_base_acc = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_sigma_base_acc");
+    Eigen::Vector3d sigma_pos_lfoot = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_sigma_pos_lfoot");
+    Eigen::Vector3d sigma_pos_rfoot = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_sigma_pos_rfoot");
+    Eigen::Vector3d sigma_vel_lfoot = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_sigma_vel_lfoot");
+    Eigen::Vector3d sigma_vel_rfoot = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_sigma_vel_rfoot");
+    Eigen::VectorXd n_data_com_vel = util::ReadParameter<Eigen::VectorXd>(
+            cfg["state_estimator"], prefix + "_num_data_com_vel");
+    //  Eigen::VectorXd n_data_cam = util::ReadParameter<Eigen::VectorXd>(
+    //      cfg["state_estimator"], prefix + "n_data_cam");
+    Eigen::VectorXd n_data_base_accel = util::ReadParameter<Eigen::VectorXd>(
+            cfg["state_estimator"], prefix + "_num_data_base_accel");
+    Eigen::VectorXd n_data_ang_vel = util::ReadParameter<Eigen::VectorXd>(
+            cfg["state_estimator"], prefix + "_num_data_ang_vel");
+    double time_constant = util::ReadParameter<double>(
+            cfg["state_estimator"], prefix + "_base_accel_time_constant");
+    Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
+            cfg["state_estimator"], prefix + "_base_accel_limits");
+
+    for (int i = 0; i < 3; ++i) {
+      com_vel_filter_.push_back(SimpleMovingAverage(n_data_com_vel[i]));
+      //    cam_filter_.push_back(SimpleMovingAverage(n_data_cam[i]));
+      base_accel_filter_.push_back(SimpleMovingAverage(n_data_base_accel[i]));
+      imu_ang_vel_filter_.push_back(SimpleMovingAverage(n_data_ang_vel[i]));
+    }
+    // Filtered base velocity
+    base_accel_filt_ = new ExponentialMovingAverageFilter(
+            sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(3),
+            -base_accel_limits, base_accel_limits);
+
+    system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
+                             sigma_vel_lfoot, sigma_vel_rfoot);
+    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot);
+
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
 
   base_acceleration_.setZero();
   x_hat_.setZero();
-  system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
-                           sigma_vel_lfoot, sigma_vel_rfoot);
-  base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot);
   rot_world_to_base.setZero();
   global_linear_offset_.setZero();
   prev_base_com_pos_.setZero();
@@ -40,31 +74,6 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   prev_support_state_ = DOUBLE;
   foot_pos_from_base_pre_transition.setZero();
   foot_pos_from_base_post_transition(0) = NAN;
-
-  Eigen::VectorXd n_data_com_vel = util::ReadParameter<Eigen::VectorXd>(
-      cfg["state_estimator"], "sim_num_data_com_vel");
-  //  Eigen::VectorXd n_data_cam = util::ReadParameter<Eigen::VectorXd>(
-  //      cfg["state_estimator"], "n_data_cam");
-  Eigen::VectorXd n_data_base_accel = util::ReadParameter<Eigen::VectorXd>(
-      cfg["state_estimator"], "sim_num_data_base_accel");
-  Eigen::VectorXd n_data_ang_vel = util::ReadParameter<Eigen::VectorXd>(
-      cfg["state_estimator"], "sim_num_data_ang_vel");
-
-  for (int i = 0; i < 3; ++i) {
-    com_vel_filter_.push_back(SimpleMovingAverage(n_data_com_vel[i]));
-    //    cam_filter_.push_back(SimpleMovingAverage(n_data_cam[i]));
-    base_accel_filter_.push_back(SimpleMovingAverage(n_data_base_accel[i]));
-    imu_ang_vel_filter_.push_back(SimpleMovingAverage(n_data_ang_vel[i]));
-  }
-
-  Eigen::VectorXd base_accel_limits = Eigen::VectorXd::Zero(3);
-  base_accel_limits << 1., 1., 1.;
-  double time_constant = util::ReadParameter<double>(
-      cfg["state_estimator"], "base_accel_time_constant");
-  // Filtered base velocity
-  base_accel_filt_ = new ExponentialMovingAverageFilter(
-      sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(3),
-      -base_accel_limits, base_accel_limits);
 
   // TODO move settings to config/draco/pnc.yaml
   b_first_visit_ = true;
@@ -354,6 +363,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     logger_->add("base_joint_pos_kf", base_position_estimate);
     logger_->add("base_joint_rpy_kf", util::RPYFromSO3(rot_world_to_base));
     logger_->add("base_joint_lin_vel_kf", base_velocity_estimate);
+    logger_->add("base_joint_ang_vel_kf", sensor_data->imu_ang_vel_);
     //    logger_->add("base_joint_ang_vel_kf", imu_ang_vel_filter_.Output());
 
     // com velocities
