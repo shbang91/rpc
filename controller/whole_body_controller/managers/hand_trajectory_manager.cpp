@@ -13,10 +13,6 @@ HandTrajectoryManager::HandTrajectoryManager
 
 HandTrajectoryManager::~HandTrajectoryManager() 
 {
-  if (pos_first_half_curve_ != nullptr)
-    delete pos_first_half_curve_;
-  if (pos_second_half_curve_ != nullptr)
-    delete pos_second_half_curve_;
   if (ori_curve_ != nullptr)
     delete ori_curve_;
 }
@@ -40,8 +36,7 @@ void HandTrajectoryManager::UseCurrent()
   ori_task_->UpdateDesired(des_ori, des_ang_vel, des_acc);
 }
 
-void HandTrajectoryManager::InitializeHandTrajectory
-  (const Eigen::Isometry3d &target_pose, const double start_time, const double duration) 
+void HandTrajectoryManager::InitializeHandTrajectory(const Eigen::Isometry3d &target_pose, const double start_time, const double duration) 
 {
   start_time_ = start_time;
   duration_ = duration;
@@ -51,34 +46,37 @@ void HandTrajectoryManager::InitializeHandTrajectory
   Eigen::VectorXd init_vel(3);
   init_vel << robot_->GetLinkSpatialVel(pos_task_->TargetIdx()).tail<3>();
 
-  Eigen::Quaterniond init_ori_quat(
+  Eigen::Quaterniond init_ori(
       robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear());
-  Eigen::VectorXd init_ori(4);
-  init_ori << des_ori_quat.normalized().coeffs();
 
   Eigen::VectorXd target_pos = Eigen::VectorXd::Zero(3);
-  target_pose_ << target_pose.translation();
+  target_pos_ << target_pose.translation();
   Eigen::Quaterniond target_ori(target_pose.linear());
 
-  ori_curve_ = new HermiteQuaternionCurve
-    (init_ori, init_vel, target_ori, Eigen::Vector3d::Zero(), duration_);
+  Eigen::VectorXd target_vel = Eigen::VectorXd::Zero(3);
+
+  ori_curve_ = 
+    new HermiteQuaternionCurve(init_ori, init_vel, target_ori, Eigen::Vector3d::Zero(), duration_);
 }
 
 void HandTrajectoryManager::UpdateHandPose(const double current_time)
 {
   double s = (current_time - start_time_) / duration_;
   Eigen::VectorXd target_pos = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd target_ori = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd target_vel = Eigen::VectorXd::Zero(3);
+  Eigen::Quaterniond target_ori_quat;
+  Eigen::VectorXd target_ori = Eigen::VectorXd::Zero(3);
 
   for (int i(0); i<3; ++i) 
   {
-    target_pos[i] = interpolation::SmoothPos(
+    target_pos[i] = util::SmoothPos(
         init_pos_[i], target_pos_[i], duration_, current_time - start_time_);
-    target_Vel[i] = interpolation::SmoothVel(
+    target_vel[i] = util::SmoothVel(
         init_pos_[i], target_pos_[i], duration_, current_time - start_time_);
   }
 
-  ori_curve_->Evaluate(current_time - start_time_, target_ori);
+  ori_curve_->Evaluate(current_time - start_time_, target_ori_quat);
+  target_ori << target_ori_quat.normalized().coeffs();
 
   pos_task_->UpdateDesired(target_pos, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
   if (ori_task_ != nullptr)
@@ -89,7 +87,9 @@ void HandTrajectoryManager::UpdateDesired(const Eigen::Isometry3d &target_pose)
 {
   Eigen::VectorXd target_pos = Eigen::VectorXd::Zero(3);
   target_pos << target_pose.translation();
-  Eigen::Quaterniond target_ori(target_pose.linear());
+  Eigen::Quaterniond target_ori_quat(target_pose.linear());
+  Eigen::VectorXd target_ori(4);
+  target_ori << target_ori_quat.normalized().coeffs();
 
   pos_task_->UpdateDesired(target_pos, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
   if (ori_task_ != nullptr)

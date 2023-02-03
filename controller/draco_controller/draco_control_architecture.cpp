@@ -38,7 +38,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   }
   catch (const std::runtime_error &e)
   {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+    std::cerr << "Error reading INITIAL parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
   }
 
@@ -106,7 +106,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   } 
   catch (const std::runtime_error &ex) 
   {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+    std::cerr << "Error reading FOOT POS parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
@@ -126,7 +126,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   } 
   catch (const std::runtime_error &ex) 
   {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+    std::cerr << "Error reading FOOT ORI parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
@@ -149,6 +149,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   // eef task hierarchy managers
   // TODO: read weight from config file for weight_at_balance and weight_at_walking
   //=============================================================
+  Eigen::VectorXd weight_at_balance, weight_at_walking;
   try 
   {
     util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
@@ -158,7 +159,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   } 
   catch (const std::runtime_error &ex) 
   {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+    std::cerr << "Error reading HAND POS parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
@@ -178,7 +179,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   } 
   catch (const std::runtime_error &ex) 
   {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+    std::cerr << "Error reading HAND ORI parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }

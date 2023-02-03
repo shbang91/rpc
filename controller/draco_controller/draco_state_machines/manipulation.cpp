@@ -11,7 +11,7 @@
 
 Manipulation::Manipulation
 (StateId state_id, PinocchioRobotSystem *robot, DracoControlArchitecture *ctrl_arch)
-: StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) 
+: Background(state_id, robot), ctrl_arch_(ctrl_arch) 
 {
   util::PrettyConstructor(2, "BackgroundManipulation");
   sp_ = DracoStateProvider::GetStateProvider();
@@ -25,7 +25,7 @@ Manipulation::Manipulation
   moving_duration_ = 0.0;
   trans_duration_ = 0.0;
 
-  state_machine_time_ = 0.;
+  background_time_ = 0.;
 
 }
 
@@ -82,8 +82,8 @@ void Manipulation::OneStep()
     ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
   }
 
-  ctrl_arch_->lh_SE3_tm_->UpgradeHandPose(sp_->current_time_);
-  ctrl_arch_->rh_SE3_tm_->UpgradeHandPose(sp_->current_time_);
+  ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+  ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
 }
 
 bool Manipulation::EndOfState() 
@@ -93,7 +93,7 @@ bool Manipulation::EndOfState()
 }
 
 void Manipulation::LastVisit() 
-{ state_machine_time_ = 0.; }
+{ background_time_ = 0.; }
 
 StateId Manipulation::GetNextState() 
 {

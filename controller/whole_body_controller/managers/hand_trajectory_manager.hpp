@@ -3,7 +3,6 @@
 
 class Task;
 class PinocchioRobotSystem;
-class HermiteCurveVec;
 class HermiteQuaternionCurve;
 
 class HandTrajectoryManager {
@@ -25,9 +24,10 @@ private:
   Task *ori_task_;
   PinocchioRobotSystem *robot_;
 
-  Eigen::VectorXd &init_pos_;
-  Eigen::VectorXd &target_pose_;
   HermiteQuaternionCurve *ori_curve_;
+
+  Eigen::VectorXd init_pos_;
+  Eigen::VectorXd target_pos_;
 
   double duration_ = 0.;
   double start_time_ = 0.;
