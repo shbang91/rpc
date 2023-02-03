@@ -1,4 +1,5 @@
 #pragma once
+
 #include "controller/state_machine.hpp"
 
 class PinocchioRobotSystem;
@@ -15,6 +16,7 @@ public:
   void OneStep() override;
   bool EndOfState() override;
   void LastVisit() override;
+  StateId GetNextState() override;
 
   void SetParameters(const YAML::Node &node) override;
 

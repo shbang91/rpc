@@ -25,7 +25,7 @@ protected:
   bool b_background_first_visit_;
 
   std::unordered_map<StateId, StateMachine *> state_machine_container_;
-  StateMachine * background_manipuation_;
+  Background * background_manipuation_;
   StateId state_;
   StateId prev_state_;
 

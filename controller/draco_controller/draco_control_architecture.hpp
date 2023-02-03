@@ -23,6 +23,7 @@ class FloatingBaseTrajectoryManager;
 class UpperBodyTrajetoryManager;
 class MaxNormalForceTrajectoryManager;
 class EndEffectorTrajectoryManager;
+class HandTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;

@@ -33,9 +33,9 @@ protected:
 class Background {
 public:
   Background(StateId state_id, PinocchioRobotSystem *robot)
-      : state_id_(state_id), robot_(robot), state_machine_start_time_(0.),
-        state_machine_time_(0.), end_time_(0.) {}
-  virtual ~StateMachine() = default;
+      : state_id_(state_id), robot_(robot), background_start_time_(0.),
+        background_time_(0.), background_end_time_(0.) {}
+  virtual ~Background() = default;
 
   virtual void FirstVisit() = 0;
   virtual void OneStep() = 0;

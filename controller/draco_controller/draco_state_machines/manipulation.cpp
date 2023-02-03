@@ -9,23 +9,23 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 
-Manipulation::Manipulation
-(StateId state_id, PinocchioRobotSystem *robot, DracoControlArchitecture *ctrl_arch)
+Manipulation::Manipulation(
+  StateId state_id, PinocchioRobotSystem *robot, DracoControlArchitecture *ctrl_arch)
 : Background(state_id, robot), ctrl_arch_(ctrl_arch) 
 {
   util::PrettyConstructor(2, "BackgroundManipulation");
   sp_ = DracoStateProvider::GetStateProvider();
 
-  target_rh_pos_ = Eigen::VectorXd::Zero(3);
-  target_rh_ori_ = Eigen::VectorXd::Zero(4);
+  target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  target_rh_ori_ << 0, 0, 0, 1;
 
-  target_lh_pos_ = Eigen::VectorXd::Zero(3);
-  target_lh_ori_ = Eigen::VectorXd::Zero(4);
+  target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  target_lh_ori_ << 0, 0, 0, 1;
 
   moving_duration_ = 0.0;
   trans_duration_ = 0.0;
 
-  background_time_ = 0.;
+  state_machine_time_ = 0.;
 
 }
 
@@ -37,12 +37,24 @@ void Manipulation::FirstVisit()
 
   Eigen::Isometry3d target_rh_iso;
   Eigen::Isometry3d target_lh_iso;
+  Eigen::Quaterniond target_rh_quat;
+  Eigen::Quaterniond target_lh_quat;
 
   target_rh_iso.translation() = target_rh_pos_;
-  target_rh_iso.linear() = target_rh_ori_.normalized().toRotationMatrix();
+  target_rh_quat.x() = target_rh_ori_(0);
+  target_rh_quat.y() = target_rh_ori_(1);
+  target_rh_quat.z() = target_rh_ori_(2);
+  target_rh_quat.w() = target_rh_ori_(3);
+  target_rh_quat = target_rh_quat.normalized();
+  target_rh_iso.linear() = target_rh_quat.toRotationMatrix();
 
   target_lh_iso.translation() = target_lh_pos_;
-  target_lh_iso.linear() = target_lh_ori_.normalized().toRotationMatrix();
+  target_lh_quat.x() = target_lh_ori_(0);
+  target_lh_quat.y() = target_lh_ori_(1);
+  target_lh_quat.z() = target_lh_ori_(2);
+  target_lh_quat.w() = target_lh_ori_(3);
+  target_lh_quat = target_lh_quat.normalized();
+  target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
 
   ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(target_rh_iso, background_start_time_, moving_duration_);
   ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(target_lh_iso, background_start_time_, moving_duration_);
@@ -93,7 +105,7 @@ bool Manipulation::EndOfState()
 }
 
 void Manipulation::LastVisit() 
-{ background_time_ = 0.; }
+{ state_machine_time_ = 0.; }
 
 StateId Manipulation::GetNextState() 
 {
