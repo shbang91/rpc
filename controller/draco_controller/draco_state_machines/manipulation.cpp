@@ -17,9 +17,11 @@ Manipulation::Manipulation(
   sp_ = DracoStateProvider::GetStateProvider();
 
   target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  target_rh_ori_ = Eigen::VectorXd::Zero(4);
   target_rh_ori_ << 0, 0, 0, 1;
 
   target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  target_lh_ori_ = Eigen::VectorXd::Zero(4);
   target_lh_ori_ << 0, 0, 0, 1;
 
   moving_duration_ = 0.0;

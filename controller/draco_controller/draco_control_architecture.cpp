@@ -16,8 +16,8 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 //#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
-#include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/hand_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -88,13 +88,16 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_SE3_tm_ = new EndEffectorTrajectoryManager
     (tci_container_->task_map_["rf_pos_task"], tci_container_->task_map_["rf_ori_task"], robot_);
 
-  //=============================================================
-  // eef trajectory managers
-  //=============================================================
+/////////////////////THIS IS ADDED BY ME////////////////////////
+//   //=============================================================
+//   // eef trajectory managers
+//   //=============================================================
   lh_SE3_tm_ = new HandTrajectoryManager
     (tci_container_->task_map_["lh_pos_task"], tci_container_->task_map_["lh_ori_task"], robot_);
   rh_SE3_tm_ = new HandTrajectoryManager
     (tci_container_->task_map_["rh_pos_task"], tci_container_->task_map_["rh_ori_task"], robot_);
+/////////////////////THIS IS ADDED BY ME////////////////////////
+
 
   Eigen::VectorXd weight_at_contact, weight_at_swing;
   try 
@@ -149,6 +152,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   // eef task hierarchy managers
   // TODO: read weight from config file for weight_at_balance and weight_at_walking
   //=============================================================
+/////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
   Eigen::VectorXd weight_at_balance, weight_at_walking;
   try 
   {
@@ -163,13 +167,18 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
+/////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
+
+/////////////////////THIS IS ADDED BY ME////////////////////////
   lh_pos_hm_ =
       new TaskHierarchyManager
         (tci_container_->task_map_["lh_pos_task"], weight_at_balance, weight_at_walking);
   rh_pos_hm_ =
       new TaskHierarchyManager
         (tci_container_->task_map_["rh_pos_task"], weight_at_balance, weight_at_walking);
+/////////////////////THIS IS ADDED BY ME////////////////////////
 
+/////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
   try 
   {
     util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
@@ -183,12 +192,16 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
+/////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
+
+/////////////////////THIS IS ADDED BY ME////////////////////////
   lh_ori_hm_ =
       new TaskHierarchyManager
         (tci_container_->task_map_["lh_ori_task"], weight_at_balance, weight_at_walking);
   rh_ori_hm_ =
       new TaskHierarchyManager
         (tci_container_->task_map_["rh_ori_task"], weight_at_balance, weight_at_walking);
+/////////////////////THIS IS ADDED BY ME////////////////////////
 
   //=============================================================
   // initialize state machines
@@ -218,8 +231,10 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
 
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
   background_manipuation_ =
       new Manipulation(draco_states::kDHManipulation, robot_, this);
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
 
   this->_InitializeParameters();
 }
@@ -256,6 +271,10 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionEnd];
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
+  
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  delete background_manipuation_;
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -264,8 +283,10 @@ void DracoControlArchitecture::GetCommand(void *command) {
     state_machine_container_[state_]->FirstVisit();
     b_state_first_visit_ = false;
   }
+
   state_machine_container_[state_]->OneStep();
 
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
   // check first visit of background manipulator task
   if (b_background_first_visit_)
   {
@@ -273,6 +294,7 @@ void DracoControlArchitecture::GetCommand(void *command) {
     b_background_first_visit_ = false;
   }
   background_manipuation_->OneStep();
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
 
   // state independent upper body traj setting
   upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
@@ -288,11 +310,13 @@ void DracoControlArchitecture::GetCommand(void *command) {
     b_state_first_visit_ = true;
   }
 
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
   if (background_manipuation_->EndOfState())
   {
     background_manipuation_->LastVisit();
     b_background_first_visit_ = true;
   }
+/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
 
 }
 
