@@ -7,7 +7,8 @@ class PinocchioRobotSystem;
 class ControlArchitecture {
 public:
   ControlArchitecture(PinocchioRobotSystem *robot)
-      : robot_(robot), b_state_first_visit_(true){};
+      : robot_(robot), b_state_first_visit_(true),
+        b_background_first_visit_(true){};
   virtual ~ControlArchitecture() = default;
 
   virtual void GetCommand(void *command) = 0;
