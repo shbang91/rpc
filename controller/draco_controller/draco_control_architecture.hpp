@@ -44,8 +44,6 @@ public:
   MaxNormalForceTrajectoryManager *rf_max_normal_froce_tm_;
   EndEffectorTrajectoryManager *lf_SE3_tm_;
   EndEffectorTrajectoryManager *rf_SE3_tm_;
-  // EndEffectorTrajectoryManager *lh_SE3_tm_;
-  // EndEffectorTrajectoryManager *rh_SE3_tm_;
   HandTrajectoryManager *lh_SE3_tm_;
   HandTrajectoryManager *rh_SE3_tm_;
   DCMTrajectoryManager *dcm_tm_;

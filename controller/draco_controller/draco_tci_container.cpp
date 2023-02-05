@@ -52,10 +52,10 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.insert(std::make_pair("lf_ori_task", lf_ori_task_));
   task_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
   /////////////////////THIS IS ADDED BY ME////////////////////////
-  task_map_.insert(std::make_pair("lh_pos_task", lh_pos_task_));
-  task_map_.insert(std::make_pair("rh_pos_task", rh_pos_task_));
-  task_map_.insert(std::make_pair("lh_ori_task", lh_ori_task_));
-  task_map_.insert(std::make_pair("rh_ori_task", rh_ori_task_));
+  // task_map_.insert(std::make_pair("lh_pos_task", lh_pos_task_));
+  // task_map_.insert(std::make_pair("rh_pos_task", rh_pos_task_));
+  // task_map_.insert(std::make_pair("lh_ori_task", lh_ori_task_));
+  // task_map_.insert(std::make_pair("rh_ori_task", rh_ori_task_));
   /////////////////////THIS IS ADDED BY ME////////////////////////
 
 

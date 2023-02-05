@@ -92,10 +92,10 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 //   //=============================================================
 //   // eef trajectory managers
 //   //=============================================================
-  lh_SE3_tm_ = new HandTrajectoryManager
-    (tci_container_->task_map_["lh_pos_task"], tci_container_->task_map_["lh_ori_task"], robot_);
-  rh_SE3_tm_ = new HandTrajectoryManager
-    (tci_container_->task_map_["rh_pos_task"], tci_container_->task_map_["rh_ori_task"], robot_);
+//   lh_SE3_tm_ = new HandTrajectoryManager
+//     (tci_container_->task_map_["lh_pos_task"], tci_container_->task_map_["lh_ori_task"], robot_);
+//   rh_SE3_tm_ = new HandTrajectoryManager
+//     (tci_container_->task_map_["rh_pos_task"], tci_container_->task_map_["rh_ori_task"], robot_);
 /////////////////////THIS IS ADDED BY ME////////////////////////
 
 
@@ -170,12 +170,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
 
 /////////////////////THIS IS ADDED BY ME////////////////////////
-  lh_pos_hm_ =
-      new TaskHierarchyManager
-        (tci_container_->task_map_["lh_pos_task"], weight_at_balance, weight_at_walking);
-  rh_pos_hm_ =
-      new TaskHierarchyManager
-        (tci_container_->task_map_["rh_pos_task"], weight_at_balance, weight_at_walking);
+//   lh_pos_hm_ =
+//       new TaskHierarchyManager
+//         (tci_container_->task_map_["lh_pos_task"], weight_at_balance, weight_at_walking);
+//   rh_pos_hm_ =
+//       new TaskHierarchyManager
+//         (tci_container_->task_map_["rh_pos_task"], weight_at_balance, weight_at_walking);
 /////////////////////THIS IS ADDED BY ME////////////////////////
 
 /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
@@ -195,12 +195,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO SEE)////////////////////////
 
 /////////////////////THIS IS ADDED BY ME////////////////////////
-  lh_ori_hm_ =
-      new TaskHierarchyManager
-        (tci_container_->task_map_["lh_ori_task"], weight_at_balance, weight_at_walking);
-  rh_ori_hm_ =
-      new TaskHierarchyManager
-        (tci_container_->task_map_["rh_ori_task"], weight_at_balance, weight_at_walking);
+//   lh_ori_hm_ =
+//       new TaskHierarchyManager
+//         (tci_container_->task_map_["lh_ori_task"], weight_at_balance, weight_at_walking);
+//   rh_ori_hm_ =
+//       new TaskHierarchyManager
+//         (tci_container_->task_map_["rh_ori_task"], weight_at_balance, weight_at_walking);
 /////////////////////THIS IS ADDED BY ME////////////////////////
 
   //=============================================================

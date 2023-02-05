@@ -348,6 +348,7 @@ while (True):
     ##debugging state estimator by calculating groundtruth basejoint states
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
+    print(base_com_quat)
     rot_world_basecom = util.quat_to_rot(base_com_quat)
     rot_world_basejoint = np.dot(rot_world_basecom,
                                  rot_basejoint_to_basecom.transpose())
