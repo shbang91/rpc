@@ -44,3 +44,6 @@ octave-workspace
 RLData
 *.json
 note.txt
+
+.cache
+*.mp4
