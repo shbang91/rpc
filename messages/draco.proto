@@ -61,6 +61,23 @@ message pnc_msg {
   repeated float kf_base_joint_ori = 40;
 }
 
+message vr_teleop_msg {
+  repeated float lh_pos = 1;
+  repeated float rh_pos = 2;
+  repeated float lh_ori = 3;
+  repeated float rh_ori = 4;
+
+  float l_trigger = 5;
+  float l_bump = 6;
+  float l_button = 7;
+  float l_pad = 8;
+
+  float r_trigger = 9;
+  float r_bump = 10;
+  float r_button = 11;
+  float r_pad = 12;
+}
+
 // TODO:
 // message msg_list {
 // optional float time = 1;
