@@ -4,7 +4,7 @@ import sys
 cwd = os.getcwd()
 sys.path.append(cwd)
 
-import pickle
+import pickle, yaml
 
 import meshcat
 import numpy as np
@@ -20,6 +20,7 @@ from plot import meshcat_utils as vis_tools
 
 # for the animation, set if you want to use the experiment time or start animation from t=0
 use_exp_time = False
+b_show_footsteps = True
 
 # variables to load/display on Meshcat
 exp_time = []
@@ -34,6 +35,11 @@ lfoot_orientation, rfoot_orientation = [], []
 lfoot_grf, rfoot_grf = [], []
 icp, icp_des = [], []
 cmp_des = []
+
+# variables loaded from yaml
+t_ini_footsteps_planned, t_end_footsteps_planned = [], []
+rfoot_contact_pos, rfoot_contact_ori = [], []
+lfoot_contact_pos, lfoot_contact_ori = [], []
 
 # Create Robot for Meshcat Visualization
 model, collision_model, visual_model = pin.buildModelsFromUrdf(
@@ -85,8 +91,40 @@ cmp_des_viz_q = pin.neutral(cmp_des_model)
 
 # add arrows visualizers to viewer
 arrow_viz = meshcat.Visualizer(window=viz.viewer.window)
-vis_tools.add_arrow(arrow_viz, "grf_lf", color=[0, 0, 1])
-vis_tools.add_arrow(arrow_viz, "grf_rf", color=[1, 0, 0])
+vis_tools.add_arrow(arrow_viz, "grf_lf", color=[1, 0, 0])
+vis_tools.add_arrow(arrow_viz, "grf_rf", color=[0, 0, 1])
+
+# add planned footsteps
+footsteps_viz = meshcat.Visualizer(window=viz.viewer.window)
+vis_tools.add_footstep(footsteps_viz, "lf_footstep", color=[1, 0, 0])
+vis_tools.add_footstep(footsteps_viz, "rf_footstep", color=[0, 0, 1])
+b_footsteps_visible_on_viewer = False
+
+# load all YAML data from dcm trajectory manager to plot planned footsteps
+footstep_plans = 0
+b_footsteps_available = False
+path = 'experiment_data/' + str(footstep_plans) + '.yaml'
+file_exists = os.path.isfile(path)
+while file_exists:
+    b_footsteps_available = True
+    with open(path, 'r') as stream:
+        try:
+            cfg = yaml.load(stream, Loader=yaml.FullLoader)
+            t_ini_footsteps_planned.append(np.array(cfg["temporal_parameters"]["initial_time"]))
+            t_end_footsteps_planned.append(np.array(cfg["temporal_parameters"]["final_time"]))
+            rfoot_contact_pos.append(np.array(cfg["contact"]["right_foot"]["pos"]))
+            rfoot_contact_ori.append(np.array(cfg["contact"]["right_foot"]["ori"]))
+            # assert rfoot_contact_pos.shape[0] == rfoot_contact_ori.shape[0]
+            lfoot_contact_pos.append(np.array(cfg["contact"]["left_foot"]["pos"]))
+            lfoot_contact_ori.append(np.array(cfg["contact"]["left_foot"]["ori"]))
+            # assert lfoot_contact_pos.shape[0] == lfoot_contact_ori.shape[0]
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    # check if there are more steps to queue
+    footstep_plans += 1
+    path = 'experiment_data/' + str(footstep_plans) + '.yaml'
+    file_exists = os.path.isfile(path)
 
 # load pkl data
 with open('experiment_data/pnc.pkl', 'rb') as file:
@@ -124,6 +162,7 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
 time.sleep(3)
 
 # replay data and create animation
+curr_step_plan = 0
 save_freq = 50  # hertz
 anim = Animation(default_framerate=800 / save_freq)
 if use_exp_time:
@@ -189,7 +228,33 @@ for ti in range(len(exp_time)):
 
         vis_tools.display_visualizer_frames(cmp_des_viz, frame)  # desired CMP
 
+        # show footsteps ONLY if they have already been planned
+        if b_show_footsteps and b_footsteps_available:
+            if t_ini_footsteps_planned[curr_step_plan] < exp_time[ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
+                footsteps_viz["lf_footstep"].set_property("visible", True)
+                footsteps_viz["rf_footstep"].set_property("visible", True)
+                vis_tools.update_footstep(footsteps_viz["lf_footstep"],
+                      lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
+                vis_tools.update_footstep(footsteps_viz["rf_footstep"],
+                      rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
+            else:
+                footsteps_viz["lf_footstep"].set_property("visible", False)
+                footsteps_viz["rf_footstep"].set_property("visible", False)
+
+            vis_tools.update_footstep(frame["lf_footstep"],
+                      lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
+            vis_tools.update_footstep(frame["rf_footstep"],
+                      rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
+
+            # check if we need to update the index of step plans loaded
+            if exp_time[ti] > t_end_footsteps_planned[curr_step_plan] and \
+                    curr_step_plan < (footstep_plans - 1):
+                curr_step_plan += 1
+
     frame_index = frame_index + 1
+
+footsteps_viz["lf_footstep"].set_property("visible", True)
+footsteps_viz["rf_footstep"].set_property("visible", True)
 
 print("Experiment initial time: ", exp_time[0])
 print("Experiment final time: ", exp_time[-1])

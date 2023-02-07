@@ -20,6 +20,15 @@ def add_arrow(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
     meshcat_visualizer[obj_name]["head"].set_object(arrow_head, material)
 
 
+def add_footstep(meshcat_visualizer, obj_name, color=[1, 0, 0], foot_length=0.25, foot_width=0.15):
+    footstep = g.Box([foot_length, foot_width, 0.01])
+    material = g.MeshPhongMaterial()
+    material.color = int(color[0] * 255) * 256**2 + int(
+        color[1] * 255) * 256 + int(color[2] * 255)
+    material.opacity = 0.4
+
+    meshcat_visualizer[obj_name].set_object(footstep, material)
+
 def add_sphere(parent_visualizer,
                node_name="sphere",
                urdf_path="robot_model/ground/sphere.urdf",
@@ -76,6 +85,14 @@ def grf_display(meshcat_visualizer, foot_pos, foot_ori, foot_grf):
     T = tf.concatenate_matrices(T_trans, T_grf_ori, T_arrow_vertical, S)
     meshcat_visualizer.set_transform(T)
     meshcat_visualizer["head"].set_transform(T_trans_arrow_head)
+
+
+def update_footstep(meshcat_visualizer, footstep_pos, footstep_ori):
+    T_rot = tf.quaternion_matrix(footstep_ori[0])
+    T_trans = tf.translation_matrix(footstep_pos)
+
+    T = tf.concatenate_matrices(T_trans, T_rot)
+    meshcat_visualizer.set_transform(T)
 
 
 def display_visualizer_frames(meshcat_visualizer, frame):
