@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Eigen/Dense>
 #include <memory>
 
@@ -5,7 +7,9 @@
 #include "controller/interface.hpp"
 
 class DracoStateEstimator;
+class DracoKFStateEstimator;
 class DracoStateProvider;
+class DracoTaskGainHandler;
 
 class DracoSensorData {
 public:
@@ -55,10 +59,11 @@ public:
 
   void GetCommand(void *sensor_data, void *command_data) override;
 
+  DracoTaskGainHandler *task_gain_handler_;
+
 private:
   DracoStateEstimator *se_;
+  DracoKFStateEstimator *se_kf_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
-
-  int waiting_count_;
 };

@@ -15,14 +15,14 @@ EndEffectorTrajectoryManager::EndEffectorTrajectoryManager(
 EndEffectorTrajectoryManager::~EndEffectorTrajectoryManager() {
   if (pos_first_half_curve_ != nullptr)
     delete pos_first_half_curve_;
+
   if (pos_second_half_curve_ != nullptr)
     delete pos_second_half_curve_;
+
   if (ori_curve_ != nullptr)
     delete ori_curve_;
 }
-
 void EndEffectorTrajectoryManager::UseCurrent() {
-
   Eigen::VectorXd des_pos(3);
   des_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
   Eigen::VectorXd des_vel(3);

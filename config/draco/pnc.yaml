@@ -2,15 +2,47 @@ servo_dt: 0.00125
 
 ip_address: "tcp://127.0.0.1:5557"
 
-data_save_freq: 1
+#data_save_freq: 1
+data_save_freq: 50
 
 b_sim: true ## if false, all the "exp_" parameters are used
 #b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
+  kf: true
+  ########################################################################
+  ## sim params
+  ########################################################################
+  sim_sigma_base_vel: [0.0, 0.0, 0.0]
+  sim_sigma_base_acc: [0.5, 0.5, 0.5]
+  sim_sigma_pos_lfoot: [0.001, 0.001, 0.001]
+  sim_sigma_pos_rfoot: [0.001, 0.001, 0.001]
+  sim_sigma_vel_lfoot: [0.005, 0.005, 0.002]
+  sim_sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  sim_base_accel_time_constant: 0.02
+  sim_base_accel_limits: [1., 1., 1.]
+  sim_base_com_vel_time_constant: 1.0
+  sim_num_data_base_accel: [10, 10, 10]
+  sim_num_data_ang_vel: [5, 5, 5]
+
+  ########################################################################
+  ## exp params
+  ########################################################################
+  exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
+  exp_sigma_base_acc: [0.5, 0.5, 0.5]
+  exp_sigma_pos_lfoot: [0.001, 0.001, 0.009]
+  exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
+  exp_sigma_vel_lfoot: [0.002, 0.002, 0.002]
+  exp_sigma_vel_rfoot: [0.002, 0.002, 0.002]
+  exp_base_accel_time_constant: 0.02
+  exp_base_accel_limits: [1., 1., 1.]
+  exp_base_com_vel_time_constant: 1.0
+  exp_num_data_base_accel: [10, 10, 10]
+  exp_num_data_ang_vel: [5, 5, 5]
+
   ## for simulation please use 000000000
-  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
@@ -18,14 +50,15 @@ state_estimator:
 
   ## IF 1: exponential smoother filter parameter
   com_vel_time_constant: 0.2 
-  com_vel_err_limit: [0.04, 0.04, 0.04]
+  com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
   cut_off_period: 0.01
 
 
 controller:
-  exp_smoothing_command_duration: 0.1 ## this only used when b_sim: false
+  exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
+  b_use_modified_swing_foot_jac: true
 
 wbc:
   task:
@@ -40,9 +73,9 @@ wbc:
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
       sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      sim_icp_kp : [10., 10.]
+      sim_icp_kp : [0., 0.]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
-      sim_icp_ki : [0., 0.] 
+      sim_icp_ki : [10., 10.] 
 
       ## IF icp_integrator_type == 0:
       sim_time_constant : 0.001
@@ -59,7 +92,7 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
       exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      exp_icp_kp : [0.5, 0.3]
+      exp_icp_kp : [0., 0.]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [1., 1.] 
 
@@ -100,8 +133,8 @@ wbc:
       ## sim params
       ########################################################################
       sim_weight : [100., 100., 10.]
-      sim_kp : [100., 100., 100.]
-      sim_kd : [10., 10., 10.]
+      sim_kp : [200., 200., 100.]
+      sim_kd : [14., 14., 10.]
 
       ## exp params
       exp_weight : [100., 100., 10.]
@@ -243,8 +276,9 @@ wbc:
 state_machine:
     initialize:
       init_duration: 5.
-      target_joint_pos: [0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., 0.523, 0., -1.57, 0., 0., 0., 0., 0., -0.785, 0.785, 0.785, -0.785, 0., 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      b_only_joint_pos_control: true
+      target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      b_only_joint_pos_control: false
+      wait_time: 10.
 
     stand_up:
       standup_duration: 1.
@@ -258,7 +292,7 @@ state_machine:
 
     com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
-      frequency: [0., 0.5, 0.] # [hz]
+      frequency: [0., 0.05, 0.] # [hz]
       #amplitude: [0., 0., 0.03] # [m]
       #frequency: [0., 0., 1.] # [hz]
 

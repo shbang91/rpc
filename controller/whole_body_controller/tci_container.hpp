@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <string>
 #include <unordered_map>
 
@@ -14,10 +15,10 @@ public:
   virtual ~TCIContainer() = default;
 
   std::unordered_map<std::string, Task *> task_map_;
-  std::unordered_map<std::string, Contact *> contact_map_;
+  std::map<std::string, Contact *> contact_map_;
   std::unordered_map<std::string, InternalConstraint *>
       internal_constraint_map_;
-  std::unordered_map<std::string, ForceTask *> force_task_map_;
+  std::map<std::string, ForceTask *> force_task_map_;
 
 protected:
   PinocchioRobotSystem *robot_;

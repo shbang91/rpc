@@ -75,7 +75,23 @@ void LinkPosTask::UpdateOpCommand() {
   vel_ = robot_->GetLinkSpatialVel(target_idx_).tail(dim_);
   vel_err_ = des_vel_ - vel_;
 
-  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  // local task data
+  Eigen::Matrix3d rot_link_w =
+      robot_->GetLinkIsometry(target_idx_).linear().transpose();
+  local_des_pos_ = rot_link_w * des_pos_;
+  local_pos_ = rot_link_w * pos_;
+  local_pos_err_ = rot_link_w * pos_err_;
+
+  local_des_vel_ = rot_link_w * des_vel_;
+  local_vel_ = rot_link_w * vel_;
+  local_vel_err_ = rot_link_w * vel_err_;
+
+  local_des_acc_ = rot_link_w * des_acc_;
+
+  // operational space command
+  op_cmd_ =
+      des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+                                           kd_.cwiseProduct(local_vel_err_));
 }
 
 void LinkPosTask::UpdateJacobian() {
@@ -92,17 +108,30 @@ LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
   util::PrettyConstructor(3, "LinkOriTask");
   target_idx_ = target_idx;
-  des_pos_.resize(4); // quaternion
-  pos_.resize(4);     // quaternion
+  des_pos_.resize(4);       // quaternion
+  pos_.resize(4);           // quaternion
+  local_des_pos_.resize(4); // quaternion
+  local_pos_.resize(4);     // quaternion
 }
 
 void LinkOriTask::UpdateOpCommand() {
-  Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
 
+  Eigen::Matrix3d rot_link_w =
+      robot_->GetLinkIsometry(target_idx_).linear().transpose();
+  Eigen::Quaterniond local_des_quat(rot_link_w * des_quat.toRotationMatrix());
+  local_des_pos_ << local_des_quat.normalized().coeffs();
+
+  Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
   util::AvoidQuatJump(des_quat, quat);
+
   pos_ << quat.normalized().coeffs();
+
+  Eigen::Quaterniond local_quat(rot_link_w.transpose() *
+                                quat.toRotationMatrix());
+
+  local_pos_ << local_quat.normalized().coeffs();
 
   Eigen::Quaterniond quat_err = des_quat * quat.inverse();
 
@@ -114,7 +143,19 @@ void LinkOriTask::UpdateOpCommand() {
   vel_ = robot_->GetLinkSpatialVel(target_idx_).head(dim_);
   vel_err_ = des_vel_ - vel_;
 
-  op_cmd_ = des_acc_ = kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  // local task data
+  local_pos_err_ = rot_link_w * pos_err_;
+
+  local_des_vel_ = rot_link_w * des_vel_;
+  local_vel_ = rot_link_w * vel_;
+  local_vel_err_ = rot_link_w * vel_err_;
+
+  local_des_acc_ = rot_link_w * des_acc_;
+
+  // operational space command
+  op_cmd_ =
+      des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+                                           kd_.cwiseProduct(local_vel_err_));
 }
 
 void LinkOriTask::UpdateJacobian() {
@@ -129,6 +170,7 @@ void LinkOriTask::UpdateJacobianDotQdot() {
 // Robot Center of Mass Task
 ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
   util::PrettyConstructor(3, "Com Task");
+  // no target idx
 }
 
 void ComTask::UpdateOpCommand() {

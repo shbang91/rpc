@@ -1,7 +1,7 @@
 FILE(GLOB sources "*.cpp")
 FILE(GLOB headers "*.hpp")
 
-add_library(rpc-filter ${sources})
+add_library(rpc-filter ${sources} ${headers})
 target_link_libraries(rpc-filter PUBLIC rpc-util)
 
 install(TARGETS rpc-filter DESTINATION "${INSTALL_LIB_DIR}")

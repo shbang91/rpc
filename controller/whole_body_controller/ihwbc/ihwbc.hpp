@@ -18,10 +18,10 @@ public:
   void UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
                      const Eigen::VectorXd &cori, const Eigen::VectorXd &grav);
   void Solve(const std::unordered_map<std::string, Task *> &task_map,
-             const std::unordered_map<std::string, Contact *> &contact_map,
+             const std::map<std::string, Contact *> &contact_map,
              const std::unordered_map<std::string, InternalConstraint *>
                  &internal_constraint_map,
-             std::unordered_map<std::string, ForceTask *> &force_task_map,
+             std::map<std::string, ForceTask *> &force_task_map,
              Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &trq_cmd);
 
   void SetParameters(const YAML::Node &node);

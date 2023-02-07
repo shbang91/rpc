@@ -34,7 +34,8 @@ service_call:
         weak_kd: 5.
         weak_current_limit: 0.2
     R_Knee_FE:
-        kp: 250.
+        #kp: 250.
+        kp: 450.
         kd: 1.5
         current_limit: 0.7
         weak_kp: 250.
@@ -76,7 +77,8 @@ service_call:
         weak_kd: 5.
         weak_current_limit: 0.2
     L_Knee_FE:
-        kp: 250.
+        #kp: 250.
+        kp: 350.
         kd: 1.5
         current_limit: 0.7
         weak_kp: 250.

@@ -2,7 +2,7 @@
 #include <pybind11/pybind11.h>
 
 #include "controller/draco_controller/draco_interface.hpp"
-#include "controller/interrupt.hpp"
+#include "controller/interrupt_handler.hpp"
 
 class PyInterface : public Interface {
 public:
@@ -24,7 +24,7 @@ PYBIND11_MODULE(draco_interface_py, m) {
 
   py::class_<DracoInterface, Interface>(m, "DracoInterface")
       .def(py::init<>())
-      .def_readwrite("interrupt_", &DracoInterface::interrupt_);
+      .def_readwrite("interrupt_", &DracoInterface::interrupt_handler_);
 
   py::class_<DracoSensorData>(m, "DracoSensorData")
       .def(py::init<>())
@@ -34,6 +34,7 @@ PYBIND11_MODULE(draco_interface_py, m) {
       .def_readwrite("joint_vel_", &DracoSensorData::joint_vel_)
       .def_readwrite("b_lf_contact_", &DracoSensorData::b_lf_contact_)
       .def_readwrite("b_rf_contact_", &DracoSensorData::b_rf_contact_)
+      .def_readwrite("imu_dvel_", &DracoSensorData::imu_dvel_)
 
       // Debug
       .def_readwrite("base_joint_pos_", &DracoSensorData::base_joint_pos_)

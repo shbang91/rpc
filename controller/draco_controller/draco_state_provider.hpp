@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Dense>
+#include <vector>
 
 class DracoStateProvider {
 public:
@@ -12,6 +13,9 @@ public:
 
   int count_;
   double current_time_;
+
+  // should be set outside of controller
+  Eigen::VectorXd nominal_jpos_;
 
   // used in pos estimate in estimator module
   int stance_foot_;
@@ -29,15 +33,15 @@ public:
   int state_;
   int prev_state_;
 
-  // should be set outside of controller
-  Eigen::VectorXd nominal_jpos_;
-
   bool b_use_base_height_;
+  bool b_use_kf_state_estimator_;
 
   double des_com_height_;
   Eigen::Quaterniond des_torso_quat_;
 
   int planning_id_;
+
+  std::vector<int> floating_base_jidx_;
 
 private:
   DracoStateProvider();

@@ -24,7 +24,28 @@ void DracoCoMZTask::UpdateOpCommand() {
 
   pos_err_ = des_pos_ - pos_;
   vel_err_ = des_vel_ - vel_;
-  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+
+  //=============================================================
+  // local com z task data
+  //=============================================================
+  double rot_link_w = robot_->GetLinkIsometry(draco_link::torso_com_link)
+                          .linear()
+                          .transpose()(2, 2);
+
+  local_des_pos_ = rot_link_w * des_pos_;
+  local_pos_ = rot_link_w * pos_;
+  local_pos_err_ = rot_link_w * pos_err_;
+
+  local_des_vel_ = rot_link_w * des_vel_;
+  local_vel_ = rot_link_w * vel_;
+  local_vel_err_ = rot_link_w * vel_err_;
+
+  local_des_acc_ = rot_link_w * des_acc_;
+
+  // op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) +
+  // kd_.cwiseProduct(vel_err_);
+  op_cmd_ = des_acc_ + rot_link_w * (kp_.cwiseProduct(local_pos_err_) +
+                                     kd_.cwiseProduct(local_vel_err_));
 }
 
 void DracoCoMZTask::UpdateJacobian() {

@@ -33,12 +33,14 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   rf_pos_task_ = new LinkPosTask(robot_, draco_link::r_foot_contact);
   lf_ori_task_ = new LinkOriTask(robot_, draco_link::l_foot_contact);
   rf_ori_task_ = new LinkOriTask(robot_, draco_link::r_foot_contact);
-  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  ///SEE)////////////////////////
   lh_pos_task_ = new LinkPosTask(robot_, draco_link::l_hand_contact);
   rh_pos_task_ = new LinkPosTask(robot_, draco_link::r_hand_contact);
   lh_ori_task_ = new LinkOriTask(robot_, draco_link::l_hand_contact);
   rh_ori_task_ = new LinkOriTask(robot_, draco_link::r_hand_contact);
-  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  ///SEE)////////////////////////
 
   // wbc task list w/o joint task
   task_map_.clear();
@@ -57,7 +59,6 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.insert(std::make_pair("lh_ori_task", lh_ori_task_));
   task_map_.insert(std::make_pair("rh_ori_task", rh_ori_task_));
   /////////////////////THIS IS ADDED BY ME////////////////////////
-
 
   //=============================================================
   // Contacts List
@@ -116,12 +117,14 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete rf_pos_task_;
   delete lf_ori_task_;
   delete rf_ori_task_;
-/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  ///SEE)////////////////////////
   delete lh_pos_task_;
   delete rh_pos_task_;
   delete lh_ori_task_;
   delete rh_ori_task_;
-/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  ///SEE)////////////////////////
 
   // contact
   delete lf_contact_;
@@ -131,7 +134,6 @@ DracoTCIContainer::~DracoTCIContainer() {
   // force task
   delete lf_reaction_force_task_;
   delete rf_reaction_force_task_;
-
 }
 
 void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
@@ -146,12 +148,14 @@ void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
   lf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
   rf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
 
-/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  ///SEE)////////////////////////
   lh_pos_task_->SetParameters(cfg_["wbc"]["task"]["hand_pos_task"], b_sim);
   rh_pos_task_->SetParameters(cfg_["wbc"]["task"]["hand_pos_task"], b_sim);
   lh_ori_task_->SetParameters(cfg_["wbc"]["task"]["hand_ori_task"], b_sim);
   rh_ori_task_->SetParameters(cfg_["wbc"]["task"]["hand_ori_task"], b_sim);
-/////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO SEE)////////////////////////
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  ///SEE)////////////////////////
 
   // contact
   lf_contact_->SetParameters(cfg_["wbc"]["contact"], b_sim);
