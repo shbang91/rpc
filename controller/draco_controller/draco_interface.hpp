@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_vr_teleop_manager.hpp"
 #include "controller/interface.hpp"
 
 class DracoStateEstimator;
@@ -66,4 +67,5 @@ private:
   DracoKFStateEstimator *se_kf_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
+  void _ProcessVRInput(DracoVRCommands *commands);
 };

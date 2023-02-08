@@ -29,6 +29,7 @@ option(BUILD_WITH_DART "compile with DART" OFF)
 
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
+option(VR_TELEOP "use VR for teleoperation" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
@@ -77,7 +78,7 @@ endif()
 
 
 #Protobuf & ZMQ
-if (BUILD_WITH_ZMQ_PROTOBUF)
+if (BUILD_WITH_ZMQ_PROTOBUF OR VR_TELEOP)
     find_package(ZMQ)
     find_package(Protobuf)
     if(Protobuf_FOUND AND ZMQ_FOUND)
@@ -88,6 +89,12 @@ if (BUILD_WITH_ZMQ_PROTOBUF)
     set(B_USE_ZMQ true)
 else()
     set(B_USE_ZMQ false)
+endif()
+
+if (VR_TELEOP)
+    set(B_USE_VR_TELEOP true)
+else()
+    set(B_USE_VR_TELEOP false)
 endif()
 
 #Boost

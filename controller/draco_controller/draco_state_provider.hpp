@@ -10,6 +10,7 @@ public:
   // servo dt should be set outside of controller
   double servo_dt_;
   int data_save_freq_;
+  int vr_teleop_freq_;
 
   int count_;
   double current_time_;

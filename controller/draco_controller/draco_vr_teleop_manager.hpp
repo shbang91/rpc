@@ -18,25 +18,25 @@ public:
     Eigen::Vector4d lh_ori = Eigen::Vector4d::Zero();
     Eigen::Vector4d rh_ori = Eigen::Vector4d::Zero();
 
-    float l_trigger = 0;
-    float l_bump = 0;
-    float l_button = 0;
-    float l_pad = 0;
+    bool l_trigger = 0;
+    bool l_bump = 0;
+    bool l_button = 0;
+    bool l_pad = 0;
 
-    float r_trigger = 0;
-    float r_bump = 0;
-    float r_button = 0;
-    float r_pad = 0;
+    bool r_trigger = 0;
+    bool r_bump = 0;
+    bool r_button = 0;
+    bool r_pad = 0;
 };
 
 // Singleton
 class DracoVRTeleopManager {
 public:
-    static DracoVRTeleopManager *GetDataManager();
+    static DracoVRTeleopManager *GetVRTeleopManager();
     ~DracoVRTeleopManager() = default;
 
     void InitializeTeleopSocket(const std::string &ip_address);
-    DracoVRCommands *ReceiveCommands();
+    DracoVRCommands ReceiveCommands();
 
 private:
     DracoVRTeleopManager();

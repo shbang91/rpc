@@ -12,9 +12,14 @@
 
 #include "controller/draco_controller/draco_definition.hpp"
 #include "util/util.hpp"
+#include <chrono>
 
 #if B_USE_ZMQ
 #include "controller/draco_controller/draco_data_manager.hpp"
+#endif
+
+#if B_USE_VR_TELEOP
+#include "controller/draco_controller/draco_vr_teleop_manager.hpp"
 #endif
 
 DracoInterface::DracoInterface() : Interface() {
@@ -33,6 +38,7 @@ DracoInterface::DracoInterface() : Interface() {
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
 
     sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
+    sp_->vr_teleop_freq_ = util::ReadParameter<int>(cfg, "vr_teleop_freq");
     sp_->b_use_kf_state_estimator_ =
         util::ReadParameter<bool>(cfg["state_estimator"], "kf");
 
@@ -43,6 +49,13 @@ DracoInterface::DracoInterface() : Interface() {
       DracoDataManager::GetDataManager()->InitializeSocket(
           socket_address); // initalize data publisher
     }
+#endif
+#if B_USE_VR_TELEOP
+      std::cout << "Connecting to VR socket..." << std::endl;
+      std::string socket_address =
+          util::ReadParameter<std::string>(cfg, "vr_ip_address");
+      DracoVRTeleopManager::GetVRTeleopManager()->InitializeTeleopSocket(socket_address);
+      std::cout << "Connected to VR socket" << std::endl;
 #endif
 
   } catch (const std::runtime_error &ex) {
@@ -78,6 +91,13 @@ DracoInterface::~DracoInterface() {
 }
 
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
+#if B_USE_VR_TELEOP
+  if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
+      // Get commands from zmq, send interrupt
+      DracoVRCommands cmd = DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
+      _ProcessVRInput(&cmd);
+  }
+#endif
   sp_->count_ = count_;
   sp_->current_time_ = static_cast<double>(count_) * sp_->servo_dt_;
   sp_->state_ = ctrl_arch_->state();
@@ -133,4 +153,20 @@ void DracoInterface::_SafeCommand(DracoSensorData *data,
   command->joint_pos_cmd_ = data->joint_pos_;
   command->joint_vel_cmd_.setZero();
   command->joint_trq_cmd_.setZero();
+}
+
+void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
+      if (cmd->l_button) {
+          interrupt_handler_->PressEight();
+      } else if (cmd->l_pad) {
+          interrupt_handler_->PressTwo();
+      } else if (cmd->r_button) {
+          interrupt_handler_->PressFour();
+      } else if (cmd->r_pad) {
+          interrupt_handler_->PressSix();
+      } else if (cmd->l_trigger) {
+          interrupt_handler_->PressSeven();
+      } else if (cmd->r_trigger) {
+          interrupt_handler_->PressNine();
+      }
 }
