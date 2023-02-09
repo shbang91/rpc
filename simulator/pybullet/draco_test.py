@@ -372,7 +372,6 @@ while (True):
     ##debugging state estimator by calculating groundtruth basejoint states
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
-    print(base_com_quat)
     
     rot_world_basecom = util.quat_to_rot(base_com_quat)
     rot_world_basejoint = np.dot(rot_world_basecom,
@@ -450,9 +449,7 @@ while (True):
 
     ##compute control command
     # timer.tic()
-    print("================get command==================")
     rpc_draco_interface.GetCommand(rpc_draco_sensor_data, rpc_draco_command)
-    print("===========command received==========================")
 
     # comp_time = timer.tocvalue()
     # compuation_cal_list.append(comp_time)

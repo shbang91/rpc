@@ -17,13 +17,13 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   std::cout << "Manipulation Constructed" << std::endl;
 
   target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_rh_pos_ << 0.35, -0.12, 0.07;
+  target_rh_pos_ << 0.8, -0.12, 0.2;
 
   target_rh_ori_ = Eigen::VectorXd::Zero(4);
   target_rh_ori_ << -0.66, 0, 0, 0.75;
 
   target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_lh_pos_ << 0.35, 0.12, 0.07;
+  target_lh_pos_ << 0.8, 0.12, 0.2;
 
   target_lh_ori_ = Eigen::VectorXd::Zero(4);
   target_lh_ori_ << -0.66, 0, 0, 0.75;
@@ -60,6 +60,8 @@ void Manipulation::FirstVisit() {
   target_lh_quat = target_lh_quat.normalized();
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
 
+  std::cout << "target_rh_iso: " << target_rh_iso.translation() << std::endl;
+
   ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
       target_rh_iso, background_start_time_, moving_duration_);
   ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(
@@ -93,12 +95,9 @@ void Manipulation::OneStep() {
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
   }
-  std::cout << "Weight has been updated" << std::endl;
 
   ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
-  std::cout << "LH Manipulation OneStep done" << std::endl;
   ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
-  std::cout << "RH Manipulation OneStep done" << std::endl;
 }
 
 bool Manipulation::EndOfState() {
