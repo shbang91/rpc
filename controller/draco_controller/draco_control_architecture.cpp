@@ -242,6 +242,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
 
+  std::cout << "[Draco Control Architecture] Constructed" << std::endl;
+
   this->_InitializeParameters();
 }
 
@@ -291,7 +293,11 @@ void DracoControlArchitecture::GetCommand(void *command) {
     b_state_first_visit_ = false;
   }
 
+  std::cout << "State machine first visit"<< std::endl;
+
   state_machine_container_[state_]->OneStep();
+
+  std::cout << "State machine one step"<< std::endl;
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
@@ -301,15 +307,20 @@ void DracoControlArchitecture::GetCommand(void *command) {
   background_manipuation_->FirstVisit();
   b_background_first_visit_ = false;
   }
+  std::cout << "Background first visit"<< std::endl;
   background_manipuation_->OneStep();
+  std::cout << "Background one step"<< std::endl;
+
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
 
   // state independent upper body traj setting
   upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
+  std::cout << "Upperbody done"<< std::endl;
 
   // get control command
   controller_->GetCommand(command);
+  std::cout << "Command updated"<< std::endl;
 
   if (state_machine_container_[state_]->EndOfState()) {
     state_machine_container_[state_]->LastVisit();
@@ -317,7 +328,9 @@ void DracoControlArchitecture::GetCommand(void *command) {
     state_ = state_machine_container_[state_]->GetNextState();
     b_state_first_visit_ = true;
   }
+  std::cout << "Next step statemachine"<< std::endl;
 
+  std::cout << "[Draco Control Architecture] state: " << state_ << std::endl;
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
   if (background_manipuation_->EndOfState())
@@ -325,6 +338,8 @@ void DracoControlArchitecture::GetCommand(void *command) {
   background_manipuation_->LastVisit();
   b_background_first_visit_ = true;
   }
+  std::cout << "Background firstvisit flag"<< std::endl;
+
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
 }

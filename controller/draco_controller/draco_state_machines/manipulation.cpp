@@ -101,9 +101,12 @@ void Manipulation::OneStep()
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
   }
+  std::cout << "Weight has been updated" << std::endl;
 
   ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+  std::cout << "LH Manipulation OneStep done" << std::endl;
   ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+  std::cout << "RH Manipulation OneStep done" << std::endl;
 }
 
 bool Manipulation::EndOfState() 

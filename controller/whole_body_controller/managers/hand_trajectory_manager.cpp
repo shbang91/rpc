@@ -40,8 +40,12 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   start_time_ = start_time;
   duration_ = duration;
 
+  std::cout << "INITIALIZE HAND TRAJECTORY" << std::endl;
   init_pos_ << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
   target_pos_ << target_pose.translation();
+  std::cout << "INITIALIZED HAND TRAJECTORY" << std::endl;
+  std::cout << "INITIAL POS: " << init_pos_.transpose() << std::endl;
+  std::cout << "TARGET POS: " << target_pos_.transpose() << std::endl;
 
   Eigen::VectorXd init_vel(3);
   init_vel << robot_->GetLinkSpatialVel(pos_task_->TargetIdx()).tail<3>();
@@ -73,12 +77,19 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
                                     current_time - start_time_);
   }
 
+  std::cout << "UPDATED POS" << std::endl;
+
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);
   des_ori << des_ori_quat.normalized().coeffs();
 
+  std::cout << "UPDATED ORI" << std::endl;
+
   pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
+  std::cout << "UPDATED DESIRED POS" << std::endl;
   if (ori_task_ != nullptr);
     ori_task_->UpdateDesired(des_ori, des_ang_vel, des_ang_acc);
+  std::cout << "UPDATED DESIRED ORI" << std::endl;
+  std::cout << "ORI TASK: " << ori_task_ << std::endl;
 }
 
 void HandTrajectoryManager::UpdateDesired(

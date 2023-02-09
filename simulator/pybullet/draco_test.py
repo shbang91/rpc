@@ -450,7 +450,10 @@ while (True):
 
     ##compute control command
     # timer.tic()
+    print("================get command==================")
     rpc_draco_interface.GetCommand(rpc_draco_sensor_data, rpc_draco_command)
+    print("===========command received==========================")
+
     # comp_time = timer.tocvalue()
     # compuation_cal_list.append(comp_time)
 
