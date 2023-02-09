@@ -18,14 +18,18 @@ Manipulation::Manipulation(
   std::cout << "Manipulation Constructed" << std::endl;
 
   target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  target_rh_pos_ << 0.35, -0.12, 0.07;
+
   target_rh_ori_ = Eigen::VectorXd::Zero(4);
-  target_rh_ori_ << 0, 0, 0, 1;
+  target_rh_ori_ << -0.66, 0, 0, 0.75;
 
   target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_lh_ori_ = Eigen::VectorXd::Zero(4);
-  target_lh_ori_ << 0, 0, 0, 1;
+  target_lh_pos_ << 0.35, 0.12, 0.07;
 
-  moving_duration_ = 0.0;
+  target_lh_ori_ = Eigen::VectorXd::Zero(4);
+  target_lh_ori_ << -0.66, 0, 0, 0.75;
+
+  moving_duration_ = 0.001;
   trans_duration_ = 0.0;
 
   state_machine_time_ = 0.;
@@ -59,23 +63,23 @@ void Manipulation::FirstVisit()
   target_lh_quat = target_lh_quat.normalized();
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
 
-  // ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(target_rh_iso, background_start_time_, moving_duration_);
-  // ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(target_lh_iso, background_start_time_, moving_duration_);
+  ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(target_rh_iso, background_start_time_, moving_duration_);
+  ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(target_lh_iso, background_start_time_, moving_duration_);
 
-  // if (state_id_ == draco_states::kDoubleSupportBalance) 
-  // {
-  //   ctrl_arch_->lh_pos_hm_->InitializeRampToMax(trans_duration_);
-  //   ctrl_arch_->lh_ori_hm_->InitializeRampToMax(trans_duration_);
-  //   ctrl_arch_->rh_pos_hm_->InitializeRampToMax(trans_duration_);
-  //   ctrl_arch_->rh_ori_hm_->InitializeRampToMax(trans_duration_);
-  // }
-  // else 
-  // {
-  //   ctrl_arch_->lh_pos_hm_->InitializeRampToMin(trans_duration_);
-  //   ctrl_arch_->lh_ori_hm_->InitializeRampToMin(trans_duration_);
-  //   ctrl_arch_->rh_pos_hm_->InitializeRampToMin(trans_duration_);
-  //   ctrl_arch_->rh_ori_hm_->InitializeRampToMin(trans_duration_);
-  // }
+  if (state_id_ == draco_states::kDoubleSupportBalance) 
+  {
+    ctrl_arch_->lh_pos_hm_->InitializeRampToMax(trans_duration_);
+    ctrl_arch_->lh_ori_hm_->InitializeRampToMax(trans_duration_);
+    ctrl_arch_->rh_pos_hm_->InitializeRampToMax(trans_duration_);
+    ctrl_arch_->rh_ori_hm_->InitializeRampToMax(trans_duration_);
+  }
+  else 
+  {
+    ctrl_arch_->lh_pos_hm_->InitializeRampToMin(trans_duration_);
+    ctrl_arch_->lh_ori_hm_->InitializeRampToMin(trans_duration_);
+    ctrl_arch_->rh_pos_hm_->InitializeRampToMin(trans_duration_);
+    ctrl_arch_->rh_ori_hm_->InitializeRampToMin(trans_duration_);
+  }
 }
 
 void Manipulation::OneStep() 
@@ -83,23 +87,23 @@ void Manipulation::OneStep()
   std::cout << "Manipulation OneStep called" << std::endl;
   background_time_ = sp_->current_time_ - background_start_time_;
 
-  // if (state_id_ == draco_states::kDoubleSupportBalance) 
-  // {
-  //   ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
-  //   ctrl_arch_->lh_ori_hm_->UpdateRampToMax(background_start_time_);
-  //   ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
-  //   ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
-  // } 
-  // else 
-  // {
-  //   ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
-  //   ctrl_arch_->lh_ori_hm_->UpdateRampToMax(background_start_time_);
-  //   ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
-  //   ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
-  // }
+  if (state_id_ == draco_states::kDoubleSupportBalance) 
+  {
+    ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
+    ctrl_arch_->lh_ori_hm_->UpdateRampToMax(background_start_time_);
+    ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
+    ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
+  } 
+  else 
+  {
+    ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
+    ctrl_arch_->lh_ori_hm_->UpdateRampToMax(background_start_time_);
+    ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
+    ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
+  }
 
-  // ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
-  // ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+  ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+  ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
 }
 
 bool Manipulation::EndOfState() 
