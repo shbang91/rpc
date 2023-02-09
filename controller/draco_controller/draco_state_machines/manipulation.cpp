@@ -9,10 +9,9 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 
-Manipulation::Manipulation(
-  StateId state_id, PinocchioRobotSystem *robot, DracoControlArchitecture *ctrl_arch)
-: Background(state_id, robot), ctrl_arch_(ctrl_arch) 
-{
+Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
+                           DracoControlArchitecture *ctrl_arch)
+    : Background(state_id, robot), ctrl_arch_(ctrl_arch) {
   util::PrettyConstructor(2, "BackgroundManipulation");
   sp_ = DracoStateProvider::GetStateProvider();
   std::cout << "Manipulation Constructed" << std::endl;
@@ -33,11 +32,9 @@ Manipulation::Manipulation(
   trans_duration_ = 0.0;
 
   state_machine_time_ = 0.;
-
 }
 
-void Manipulation::FirstVisit() 
-{
+void Manipulation::FirstVisit() {
   background_start_time_ = sp_->current_time_;
 
   std::cout << "draco_background::kDHManipulation" << std::endl;
@@ -63,18 +60,17 @@ void Manipulation::FirstVisit()
   target_lh_quat = target_lh_quat.normalized();
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
 
-  ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(target_rh_iso, background_start_time_, moving_duration_);
-  ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(target_lh_iso, background_start_time_, moving_duration_);
+  ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
+      target_rh_iso, background_start_time_, moving_duration_);
+  ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(
+      target_lh_iso, background_start_time_, moving_duration_);
 
-  if (state_id_ == draco_states::kDoubleSupportBalance) 
-  {
+  if (state_id_ == draco_states::kDoubleSupportBalance) {
     ctrl_arch_->lh_pos_hm_->InitializeRampToMax(trans_duration_);
     ctrl_arch_->lh_ori_hm_->InitializeRampToMax(trans_duration_);
     ctrl_arch_->rh_pos_hm_->InitializeRampToMax(trans_duration_);
     ctrl_arch_->rh_ori_hm_->InitializeRampToMax(trans_duration_);
-  }
-  else 
-  {
+  } else {
     ctrl_arch_->lh_pos_hm_->InitializeRampToMin(trans_duration_);
     ctrl_arch_->lh_ori_hm_->InitializeRampToMin(trans_duration_);
     ctrl_arch_->rh_pos_hm_->InitializeRampToMin(trans_duration_);
@@ -82,20 +78,16 @@ void Manipulation::FirstVisit()
   }
 }
 
-void Manipulation::OneStep() 
-{
+void Manipulation::OneStep() {
   std::cout << "Manipulation OneStep called" << std::endl;
   background_time_ = sp_->current_time_ - background_start_time_;
 
-  if (state_id_ == draco_states::kDoubleSupportBalance) 
-  {
+  if (state_id_ == draco_states::kDoubleSupportBalance) {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->rh_ori_hm_->UpdateRampToMax(background_start_time_);
-  } 
-  else 
-  {
+  } else {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMax(background_start_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(background_start_time_);
@@ -109,19 +101,15 @@ void Manipulation::OneStep()
   std::cout << "RH Manipulation OneStep done" << std::endl;
 }
 
-bool Manipulation::EndOfState() 
-{
+bool Manipulation::EndOfState() {
   // return state_machine_time_ > end_time_ ? true : false;
   return background_time_ > moving_duration_ + 0.1 ? true : false;
 }
 
-void Manipulation::LastVisit() 
-{ state_machine_time_ = 0.; }
+void Manipulation::LastVisit() { state_machine_time_ = 0.; }
 
-StateId Manipulation::GetNextState() 
-{
+StateId Manipulation::GetNextState() {
   return draco_states::kDoubleSupportBalance;
 }
 
-void Manipulation::SetParameters(const YAML::Node &node) 
-{}
+void Manipulation::SetParameters(const YAML::Node &node) {}

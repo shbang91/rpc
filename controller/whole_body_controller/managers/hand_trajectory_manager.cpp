@@ -64,7 +64,7 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   Eigen::VectorXd des_vel = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd des_acc = Eigen::VectorXd::Zero(3);
   Eigen::Quaterniond des_ori_quat;
-  Eigen::VectorXd des_ori = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_ori = Eigen::VectorXd::Zero(4);
   Eigen::VectorXd des_ang_vel = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd des_ang_acc = Eigen::VectorXd::Zero(3);
 
@@ -72,9 +72,9 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
 
   for (int i(0); i < 3; ++i) {
     des_pos[i] = util::SmoothPos(init_pos_[i], target_pos_[i], duration_,
-                                    current_time - start_time_);
+                                 current_time - start_time_);
     des_vel[i] = util::SmoothVel(init_pos_[i], target_pos_[i], duration_,
-                                    current_time - start_time_);
+                                 current_time - start_time_);
   }
 
   std::cout << "UPDATED POS" << std::endl;
@@ -86,8 +86,9 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
 
   pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
   std::cout << "UPDATED DESIRED POS" << std::endl;
-  if (ori_task_ != nullptr);
-    ori_task_->UpdateDesired(des_ori, des_ang_vel, des_ang_acc);
+  if (ori_task_ != nullptr)
+    ;
+  ori_task_->UpdateDesired(des_ori, des_ang_vel, des_ang_acc);
   std::cout << "UPDATED DESIRED ORI" << std::endl;
   std::cout << "ORI TASK: " << ori_task_ << std::endl;
 }
