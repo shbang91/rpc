@@ -1,7 +1,9 @@
 quat_label = ["q_x", "q_y", "q_z", "q_w"];
 xyz_label = ["x","y","z"];
 rpy_label = ["roll", "pitch", "yaw"];
+ang_vel_label = ["wx_{dot}", "wy_{dot}", "wz_{dot}"];
 xyz_dot_label = ["x_{dot}", "y_{dot}", "z_{dot}"];
+xyz_ddot_label = ["$\ddot{x}$", "$\ddot{y}$", "$\ddot{z}$"];
 xy_label = ["x","y"];
 xy_dot_label = ["x_{dot}", "y_{dot}"];
 rf_label = ["trq_{x}", "trq_{y}", "trq_{z}", "f_{x}", "f_{y}", "f_{z}"];
