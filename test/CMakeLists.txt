@@ -28,4 +28,24 @@ if(BUILD_WITH_DART)
     target_link_libraries(draco_dart_test rpc-dart-robot-system)
 endif()
 
+#
+# Gtests
+#
+find_package(PkgConfig)
+include(FetchContent)       # <-- Note: requires CMake version > 3.11
+if(BUILD_GTESTS)
+    if(FETCH_GTEST_PKG)
+        FetchContent_Declare(
+                googletest
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG        e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
+                FIND_PACKAGE_ARGS NAMES GTest
+        )
+        FetchContent_MakeAvailable(googletest)
+    endif()
+    pkg_check_modules(GTEST "gtest" REQUIRED)
+
+    add_executable(ihwbc_test ihwbc_test.cpp)
+    target_link_libraries(ihwbc_test ${GTEST_LIBRARIES} rpc-draco-controller)
+endif()
 

@@ -30,6 +30,9 @@ option(BUILD_WITH_DART "compile with DART" OFF)
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 
+# unit-testing tools
+option(BUILD_GTESTS "build google tests" ON)
+option(FETCH_GTEST_PKG "use fetch pkg to clone google test" OFF)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
 endif()
