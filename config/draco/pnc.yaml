@@ -228,6 +228,7 @@ wbc:
     exp_foot_half_width: 0.075
 
   qp:
+    b_save_costs: false
     lambda_qddot: 1e-7 ##regularization
     lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false

@@ -388,6 +388,8 @@ TEST_F(IHWBCTest, expBalanceUsingEvenGRFs) {
                 tci_container->internal_constraint_map_,
                 tci_container->force_task_map_, wbc_qddot_cmd,
                 joint_trq_cmd); // joint_trq_cmd_ size: 27
+  ihwbc.ComputeTaskCosts(tci_container->task_map_, tci_container->force_task_map_,
+                         tci_container->task_cost_map_);
 
   std::cout << "-----------------------------" << std::endl;
   std::cout << "wbc qddot solution: " << wbc_qddot_cmd.transpose() << std::endl;
@@ -396,6 +398,9 @@ TEST_F(IHWBCTest, expBalanceUsingEvenGRFs) {
   std::cout << "Cmd RF (rfoot): " << tci_container->force_task_map_["rf_force_task"]->CmdRf().transpose() << std::endl;
   std::cout << "Des RF (lfoot): " << tci_container->force_task_map_["lf_force_task"]->DesiredRf().transpose() << std::endl;
   std::cout << "Des RF (rfoot): " << tci_container->force_task_map_["rf_force_task"]->DesiredRf().transpose() << std::endl;
+  for (const auto &[task_str, task_ptr] : tci_container->task_cost_map_) {
+    std::cout << task_str << "_cost: " << tci_container->task_cost_map_[task_str] << std::endl;
+  }
 
 }
 
@@ -450,6 +455,8 @@ TEST_F(IHWBCTest, simBalanceUsingEvenGRFs) {
               tci_container->internal_constraint_map_,
               tci_container->force_task_map_, wbc_qddot_cmd,
               joint_trq_cmd); // joint_trq_cmd_ size: 27
+  ihwbc.ComputeTaskCosts(tci_container->task_map_, tci_container->force_task_map_,
+                         tci_container->task_cost_map_);
 
   std::cout << "-----------------------------" << std::endl;
   std::cout << "wbc qddot solution: " << wbc_qddot_cmd.transpose() << std::endl;
@@ -458,6 +465,9 @@ TEST_F(IHWBCTest, simBalanceUsingEvenGRFs) {
   std::cout << "Cmd RF (rfoot): " << tci_container->force_task_map_["rf_force_task"]->CmdRf().transpose() << std::endl;
   std::cout << "Des RF (lfoot): " << tci_container->force_task_map_["lf_force_task"]->DesiredRf().transpose() << std::endl;
   std::cout << "Des RF (rfoot): " << tci_container->force_task_map_["rf_force_task"]->DesiredRf().transpose() << std::endl;
+  for (const auto &[task_str, task_ptr] : tci_container->task_cost_map_) {
+    std::cout << task_str << "_cost: " << tci_container->task_cost_map_[task_str] << std::endl;
+  }
 
 }
 

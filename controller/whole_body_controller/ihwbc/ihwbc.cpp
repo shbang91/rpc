@@ -472,6 +472,31 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   force_task_map["rf_force_task"]->UpdateCmd(rf_sol_.tail(dim_contact_ / 2));
 }
 
+void IHWBC::ComputeTaskCosts(const std::unordered_map<std::string, Task *> &task_map,
+                             const std::map<std::string, ForceTask *> &force_task_map,
+                             std::unordered_map<std::string, double> &task_cost_map) {
+  if (task_cost_map.empty())
+    return;
+
+  // save cost associated with each task
+  for (const auto &[task_str, task_ptr]: task_map) {
+    Eigen::MatrixXd jac_t = task_ptr->Jacobian();
+    Eigen::MatrixXd jacdot_t_qdot = task_ptr->JacobianDotQdot();
+    Eigen::VectorXd xddot_des_t = task_ptr->OpCommand();
+    Eigen::VectorXd cost_t_sum_vec = jac_t * qddot_sol_ + jacdot_t_qdot - xddot_des_t;
+    task_cost_map[task_str] = cost_t_sum_vec.transpose() * cost_t_sum_vec;
+    //    task_cost_map.at(task_str) = cost_t_sum_vec.transpose() * task_ptr->Weight().asDiagonal() * cost_t_sum_vec;
+  }
+  for (const auto &[force_task_str, force_task_ptr]: force_task_map) {
+    Eigen::VectorXd Fr_soln = force_task_ptr->CmdRf();
+    task_cost_map[force_task_str] = Fr_soln.transpose() * Fr_soln;
+  }
+  if (task_cost_map.count("qddot_regularization_task")) {
+    task_cost_map["qddot_regularization_task"] = qddot_sol_.transpose() * qddot_sol_;
+  }
+
+}
+
 void IHWBC::_SetQPCost(const Eigen::MatrixXd &cost_mat,
                        const Eigen::VectorXd &cost_vec) {
   for (int i(0); i < num_qp_vars_; ++i) {

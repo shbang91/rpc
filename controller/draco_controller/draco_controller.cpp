@@ -249,8 +249,11 @@ void DracoController::GetCommand(void *command) {
   static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
   static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 
-  if (sp_->count_ % sp_->data_save_freq_ == 0)
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    ihwbc_->ComputeTaskCosts(tci_container_->task_map_, tci_container_->force_task_map_,
+                             tci_container_->task_cost_map_);
     this->_SaveData();
+  }
 }
 
 void DracoController::_SaveData() {
@@ -491,6 +494,18 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->DesiredLocalVel());
     logger_->add("local_act_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
+
+    // save WBC cost for each task
+    for (const auto &[task_str, task_ptr] : tci_container_->task_cost_map_) {
+      logger_->add("wbc_cost_" + task_str, tci_container_->task_cost_map_[task_str]);
+    }
+    // task weights
+    for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
+    logger_->add("wbc_weights_" + task_str,
+                 tci_container_->task_map_[task_str]->Weight().diagonal());
+    }
+    logger_->add("wbc_weights_lambda_qddot", ihwbc_->GetLambdaQddot());
+    logger_->add("wbc_weights_lambda_rf", ihwbc_->GetLambdaRf());
   }
 
 #endif
