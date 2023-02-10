@@ -31,6 +31,10 @@ load(ddd(i).name, 'local_act_icp')
 %%
 load_draco_label_names
 load_colors
+task_names = {'com_xy_task', 'com_z_task', 'joint_task', ...
+    'lf_force_task', 'lf_ori_task', 'lf_pos_task', ...
+    'rf_force_task', 'rf_ori_task', 'rf_pos_task', ...
+    'qddot_regularization_task', 'torso_ori_task', 'upper_body_task'};
 
 draco_lf_idx = zeros(1, 7);
 draco_rf_idx = zeros(1, 7);
@@ -991,3 +995,40 @@ for i = 1:14
     end
 end
 linkaxes(ax,'x')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% wbc costs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+num_of_tasks = numel(task_names);
+num_of_columns = 4;
+num_of_rows = ceil(num_of_tasks/num_of_columns);
+for i = 1:num_of_tasks
+    curr_task_cost = eval(sprintf('wbc_cost_%s', task_names{i}));
+    ax(i) = subplot(num_of_rows, num_of_columns, i);
+    plot(wbc_time, curr_task_cost, 'r', 'LineWidth', 3);
+    hold on;
+    grid on
+    if ~(any(isnan(curr_task_cost)))
+        min_val = min(curr_task_cost);  %*ones(size(curr_task_cost));
+        max_val = max(curr_task_cost);  %*ones(size(curr_task_cost));
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    else
+        min_val = 0;
+        max_val = 1;
+    end
+%   set_fig_opt()
+    plot_phase(wbc_time, state, min_val, max_val, phase_color)
+    ylabel(draco_wbc_cost_labels(i))
+    if i == 1
+        title('left foot jvel data', 'FontSize',30)
+    end
+    if i >= (num_of_tasks - num_of_columns)
+        xlabel('time')
+    end
+end
+linkaxes(ax,'x')
+
