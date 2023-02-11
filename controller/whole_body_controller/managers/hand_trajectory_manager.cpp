@@ -40,6 +40,9 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   start_time_ = start_time;
   duration_ = duration;
 
+  //std::cout << "target_pos: " << target_pose.translation() << std::endl;
+  //std::cout << "target_ori: " << target_pose.linear() << std::endl;
+
   init_pos_ << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
   target_pos_ << target_pose.translation();
 
@@ -74,7 +77,7 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);
   des_ori << des_ori_quat.normalized().coeffs();
 
-  std::cout << "des_pos: " << des_pos.transpose() << std::endl;
+  //std::cout << "des_ori: " << des_ori.transpose() << std::endl;
 
   pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
   if (ori_task_ != nullptr)
