@@ -47,16 +47,26 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
 
   // initialize wbc cost task list
-  task_cost_map_.clear();
-  task_cost_map_.insert(std::make_pair("joint_task", NAN));
-  task_cost_map_.insert(std::make_pair("com_xy_task", NAN));
-  task_cost_map_.insert(std::make_pair("com_z_task", NAN));
-  task_cost_map_.insert(std::make_pair("torso_ori_task", NAN));
-  task_cost_map_.insert(std::make_pair("upper_body_task", NAN));
-  task_cost_map_.insert(std::make_pair("lf_pos_task", NAN));
-  task_cost_map_.insert(std::make_pair("rf_pos_task", NAN));
-  task_cost_map_.insert(std::make_pair("lf_ori_task", NAN));
-  task_cost_map_.insert(std::make_pair("rf_ori_task", NAN));
+  task_unweighted_cost_map_.clear();
+  task_unweighted_cost_map_.insert(std::make_pair("joint_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("com_xy_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("com_z_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("torso_ori_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("upper_body_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("lf_pos_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("rf_pos_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("lf_ori_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("rf_ori_task", NAN));
+  task_weighted_cost_map_.clear();
+  task_weighted_cost_map_.insert(std::make_pair("joint_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("com_xy_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("com_z_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("torso_ori_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("upper_body_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("lf_pos_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("rf_pos_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("lf_ori_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("rf_ori_task", NAN));
 
   //=============================================================
   // Contacts List
@@ -90,13 +100,16 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
       std::make_pair("lf_force_task", lf_reaction_force_task_));
   force_task_map_.insert(
       std::make_pair("rf_force_task", rf_reaction_force_task_));
-  task_cost_map_.insert(std::make_pair("lf_force_task", NAN));
-  task_cost_map_.insert(std::make_pair("rf_force_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("lf_force_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("rf_force_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("lf_force_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("rf_force_task", NAN));
 
   //=============================================================
   // Acceleration Regularization Term
   //=============================================================
-  task_cost_map_.insert(std::make_pair("qddot_regularization_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("qddot_regularization_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("qddot_regularization_task", NAN));
 
   //=============================================================
   // Tasks, Contacts parameter initialization
@@ -111,7 +124,8 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   bool b_save_wbc_costs = util::ReadParameter<bool>(cfg_["wbc"]["qp"], "b_save_costs");
   this->_InitializeParameters(b_sim);
   if (!b_save_wbc_costs) {
-    task_cost_map_.clear();
+    task_unweighted_cost_map_.clear();
+    task_weighted_cost_map_.clear();
   }
 }
 

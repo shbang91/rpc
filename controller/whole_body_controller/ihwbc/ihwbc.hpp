@@ -26,7 +26,8 @@ public:
 
   void ComputeTaskCosts(const std::unordered_map<std::string, Task *> &task_map,
                         const std::map<std::string, ForceTask *> &force_task_map,
-                        std::unordered_map<std::string, double> &task_cost_map);
+                        std::unordered_map<std::string, double> &task_unweighted_cost_map,
+                        std::unordered_map<std::string, double> &task_weighted_cost_map);
 
   void SetParameters(const YAML::Node &node);
 
