@@ -43,5 +43,14 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
     result.r_button = m.r_button();
     result.r_pad = m.r_pad();
 
+    for (int i = 0; i < 3; ++i) {
+        result.lh_pos[i] = m.lh_pos(i);
+        result.rh_pos[i] = m.rh_pos(i);
+        for (int j = 0; j < 3; ++j) {
+            result.lh_ori(i, j) = m.lh_ori(i*3 + j);
+            result.rh_ori(i, j) = m.rh_ori(i*3 + j);
+        }
+    }
+
     return result;
 }

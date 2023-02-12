@@ -156,17 +156,20 @@ void DracoInterface::_SafeCommand(DracoSensorData *data,
 }
 
 void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
-      if (cmd->l_button) {
-          interrupt_handler_->PressEight();
-      } else if (cmd->l_pad) {
-          interrupt_handler_->PressTwo();
-      } else if (cmd->r_button) {
-          interrupt_handler_->PressFour();
-      } else if (cmd->r_pad) {
-          interrupt_handler_->PressSix();
-      } else if (cmd->l_trigger) {
-          interrupt_handler_->PressSeven();
-      } else if (cmd->r_trigger) {
-          interrupt_handler_->PressNine();
-      }
+  
+  
+
+  if (cmd->l_button) {
+      interrupt_handler_->PressEight();
+  } else if (cmd->l_pad) {
+      interrupt_handler_->PressTwo();
+  } else if (cmd->r_button) {
+      interrupt_handler_->PressFour();
+  } else if (cmd->r_pad) {
+      interrupt_handler_->PressSix();
+  } else if (cmd->l_trigger) {
+      interrupt_handler_->PressSeven();
+  } else if (cmd->r_trigger) {
+      interrupt_handler_->PressNine();
+  }
 }

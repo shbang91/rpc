@@ -15,8 +15,8 @@ public:
     Eigen::Vector3d lh_pos = Eigen::Vector3d::Zero();
     Eigen::Vector3d rh_pos = Eigen::Vector3d::Zero();
 
-    Eigen::Vector4d lh_ori = Eigen::Vector4d::Zero();
-    Eigen::Vector4d rh_ori = Eigen::Vector4d::Zero();
+    Eigen::Matrix3d lh_ori = Eigen::Matrix3d::Zero();
+    Eigen::Matrix3d rh_ori = Eigen::Matrix3d::Zero();
 
     bool l_trigger = 0;
     bool l_bump = 0;
