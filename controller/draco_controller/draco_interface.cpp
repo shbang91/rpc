@@ -107,6 +107,83 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
       static_cast<DracoSensorData *>(sensor_data);
   DracoCommand *draco_command = static_cast<DracoCommand *>(command_data);
 
+  // NEED TO UPDATE THESE VALUES
+  // OUTPUTS
+  // ctrl_arch_->target_rh_pos_
+  // ctrl_arch_->target_lh_pos_
+  // ctrl_arch_->target_rh_ori_
+  // ctrl_arch_->target_lh_ori_
+
+  // REFER
+  // draco_sensor_data->base_joint_pos_;
+  // draco_sensor_data->base_joint_quat_; // x, y, z, w order
+
+  // INPUTS
+  // vr_command_->target_rh_pos_;
+  // vr_command_->global_lh_pos_;
+  // vr_command_->global_rh_ori_;
+  // vr_command_->global_lh_ori_;
+
+  /*
+  Eigen::Vector3d test_rh_pos;
+  Eigen::Vector3d test_lh_pos;
+  Eigen::Quaterniond test_rh_quat;
+  Eigen::Quaterniond test_lh_quat;
+
+  Eigen::Vector3d target_rh_pos;
+  Eigen::Vector3d target_lh_pos;
+  Eigen::Quaterniond target_rh_quat;
+  Eigen::Quaterniond target_lh_quat;
+
+  Eigen::Vector3d base_pos;
+  Eigen::Quaterniond base_quat;
+
+  Eigen::Quaterniond zero_rh_ori;
+  Eigen::Quaterniond zero_lh_ori;
+
+  test_rh_pos << 0.0, 0.0, 0.0;
+  test_lh_pos << 0.0, 0.0, 0.0;
+
+  test_rh_quat.x() = 0;
+  test_rh_quat.y() = 0;
+  test_rh_quat.z() = 0;
+  test_rh_quat.w() = 1;
+
+  test_lh_quat.x() = 0;
+  test_lh_quat.y() = 0;
+  test_lh_quat.z() = 0;
+  test_lh_quat.w() = 1;
+
+  zero_rh_ori << 0, -0.707, 0, 0.707;
+  zero_lh_ori << 0, -0.707, 0, 0.707;
+
+  Eigen::Matrix3d rot_word_to_base;
+
+  base_pos = draco_sensor_data->base_joint_pos_;
+  base_quat << draco_sensor_data->base_joint_quat_.x(),
+      draco_sensor_data->base_joint_quat_.y(),
+      draco_sensor_data->base_joint_quat_.z(),
+      draco_sensor_data->base_joint_quat_.w();
+
+  rot_word_to_base << base_quat.toRotationMatrix();
+  target_rh_pos = rot_word_to_base * test_rh_pos + base_pos;
+  target_lh_pos = rot_word_to_base * test_lh_pos + base_pos;
+  target_rh_quat = base_quat * test_rh_quat * zero_rh_ori;
+  target_lh_quat = base_quat * test_lh_quat * zero_lh_ori;
+  */
+
+  ctrl_arch_->background_manipulation_->target_rh_pos_<< target_rh_pos;
+  ctrl_arch_->background_manipulation_->target_lh_pos_<< target_lh_pos;
+  ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
+      target_rh_quat.y(),
+      target_rh_quat.z(), 
+      target_rh_quat.w();
+  ctrl_arch_->background_manipulation_->target_lh_ori_<< target_lh_quat.x(), 
+      target_lh_quat.y(),
+      target_lh_quat.z(), 
+      target_lh_quat.w();
+
+
   // if (count_ <= waiting_count_) {
   // for simulation without state estimator
   // se_->UpdateGroundTruthSensorData(draco_sensor_data);

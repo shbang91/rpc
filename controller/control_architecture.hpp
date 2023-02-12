@@ -1,5 +1,6 @@
 #pragma once
 #include "controller/state_machine.hpp"
+#include "controller/draco_controller/draco_state_machines/manipulation.hpp"
 #include <unordered_map>
 
 class PinocchioRobotSystem;
@@ -19,6 +20,7 @@ public:
   std::unordered_map<StateId, StateMachine *> state_machine_container() const {
     return this->state_machine_container_;
   }
+  Manipulation *background_manipulation_;
 
 protected:
   PinocchioRobotSystem *robot_;
@@ -26,7 +28,6 @@ protected:
   bool b_background_first_visit_;
 
   std::unordered_map<StateId, StateMachine *> state_machine_container_;
-  Background *background_manipuation_;
   StateId state_;
   StateId prev_state_;
 

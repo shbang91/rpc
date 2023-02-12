@@ -166,12 +166,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   /////////////////////THIS IS ADDED BY ME////////////////////////
   lh_pos_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["lh_pos_task"], weight_at_balance,
-        weight_at_walking);
+        (tci_container_->task_map_["lh_pos_task"], weight_at_walking,
+	 weight_at_balance);
   rh_pos_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["rh_pos_task"], weight_at_balance,
-        weight_at_walking);
+        (tci_container_->task_map_["rh_pos_task"], weight_at_walking, 
+	 weight_at_balance);
   /////////////////////THIS IS ADDED BY ME////////////////////////
 
   /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO
@@ -192,12 +192,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   /////////////////////THIS IS ADDED BY ME////////////////////////
   lh_ori_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["lh_ori_task"], weight_at_balance,
-        weight_at_walking);
+        (tci_container_->task_map_["lh_ori_task"], weight_at_walking, 
+	weight_at_balance);
   rh_ori_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["rh_ori_task"], weight_at_balance,
-        weight_at_walking);
+        (tci_container_->task_map_["rh_ori_task"], weight_at_walking,
+	 weight_at_balance);
   /////////////////////THIS IS ADDED BY ME////////////////////////
 
   //=============================================================
@@ -237,7 +237,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
-  background_manipuation_ =
+  background_manipulation_ =
    new Manipulation(draco_states::kDHManipulation, robot_, this);
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
@@ -282,7 +282,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
-  delete background_manipuation_;
+  delete background_manipulation_;
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
 }
@@ -300,12 +300,12 @@ void DracoControlArchitecture::GetCommand(void *command) {
   // check first visit of background manipulator task
   if (b_background_first_visit_)
   {
-  std::cout << "Background first visit"<< std::endl;
-  background_manipuation_->FirstVisit();
+  //std::cout << "Background first visit"<< std::endl;
+  background_manipulation_->FirstVisit();
   b_background_first_visit_ = false;
   }
-  background_manipuation_->OneStep();
-  std::cout << "Background one step"<< std::endl;
+  background_manipulation_->OneStep();
+  //std::cout << "Background one step"<< std::endl;
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
@@ -325,9 +325,9 @@ void DracoControlArchitecture::GetCommand(void *command) {
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
-  if (background_manipuation_->EndOfState())
+  if (background_manipulation_->EndOfState())
   {
-  background_manipuation_->LastVisit();
+  background_manipulation_->LastVisit();
   b_background_first_visit_ = true;
   }
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
