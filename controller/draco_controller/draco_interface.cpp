@@ -104,11 +104,12 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // vr_command_->global_rh_ori_;
   // vr_command_->global_lh_ori_;
 
-  /*
-  Eigen::Vector3d test_rh_pos;
-  Eigen::Vector3d test_lh_pos;
+  Eigen::Vector3d test_rh_pos(0.3, -0.3, 0.3);
+  Eigen::Vector3d test_lh_pos(0.3, 0.3, 0.3);
   Eigen::Quaterniond test_rh_quat;
   Eigen::Quaterniond test_lh_quat;
+  test_rh_quat = Eigen::AngleAxisd(0.125*3.14, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+  test_lh_quat = Eigen::AngleAxisd(0.125*3.14, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
 
   Eigen::Vector3d target_rh_pos;
   Eigen::Vector3d target_lh_pos;
@@ -118,51 +119,35 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   Eigen::Vector3d base_pos;
   Eigen::Quaterniond base_quat;
 
-  Eigen::Quaterniond zero_rh_ori;
-  Eigen::Quaterniond zero_lh_ori;
-
-  test_rh_pos << 0.0, 0.0, 0.0;
-  test_lh_pos << 0.0, 0.0, 0.0;
-
-  test_rh_quat.x() = 0;
-  test_rh_quat.y() = 0;
-  test_rh_quat.z() = 0;
-  test_rh_quat.w() = 1;
-
-  test_lh_quat.x() = 0;
-  test_lh_quat.y() = 0;
-  test_lh_quat.z() = 0;
-  test_lh_quat.w() = 1;
-
-  zero_rh_ori << 0, -0.707, 0, 0.707;
-  zero_lh_ori << 0, -0.707, 0, 0.707;
+  Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
+  Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
 
   Eigen::Matrix3d rot_word_to_base;
 
   base_pos = draco_sensor_data->base_joint_pos_;
-  base_quat << draco_sensor_data->base_joint_quat_.x(),
-      draco_sensor_data->base_joint_quat_.y(),
-      draco_sensor_data->base_joint_quat_.z(),
-      draco_sensor_data->base_joint_quat_.w();
+  base_quat.x() = draco_sensor_data->base_joint_quat_[0];
+  base_quat.y() = draco_sensor_data->base_joint_quat_[1];
+  base_quat.z() = draco_sensor_data->base_joint_quat_[2];
+  base_quat.w() = draco_sensor_data->base_joint_quat_[3];
 
-  rot_word_to_base << base_quat.toRotationMatrix();
+  rot_word_to_base = base_quat.toRotationMatrix();
   target_rh_pos = rot_word_to_base * test_rh_pos + base_pos;
   target_lh_pos = rot_word_to_base * test_lh_pos + base_pos;
-  target_rh_quat = base_quat * test_rh_quat * zero_rh_ori;
-  target_lh_quat = base_quat * test_lh_quat * zero_lh_ori;
-  */
+  target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
+  target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
 
   ctrl_arch_->background_manipulation_->target_rh_pos_<< target_rh_pos;
   ctrl_arch_->background_manipulation_->target_lh_pos_<< target_lh_pos;
-  ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
-      target_rh_quat.y(),
-      target_rh_quat.z(), 
-      target_rh_quat.w();
-  ctrl_arch_->background_manipulation_->target_lh_ori_<< target_lh_quat.x(), 
-      target_lh_quat.y(),
-      target_lh_quat.z(), 
-      target_lh_quat.w();
 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[0] = target_rh_quat.x(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[1] = target_rh_quat.y(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[2] = target_rh_quat.z(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[3] = target_rh_quat.w();
+
+  ctrl_arch_->background_manipulation_->target_lh_ori_[0] = target_lh_quat.x(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[1] = target_lh_quat.y(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[2] = target_lh_quat.z(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[3] = target_lh_quat.w();
 
   // if (count_ <= waiting_count_) {
   // for simulation without state estimator
