@@ -45,6 +45,5 @@ RLData
 *.json
 note.txt
 
-# pyenv
 .cache
-.python-version
+*.mp4

@@ -1,0 +1,11 @@
+certifi==2021.5.30
+imageio==2.9.0
+ipdb==0.13.9
+matplotlib==3.4.2
+meshcat==0.1.1
+opencv-python==4.5.2.54
+pybullet==3.0.8
+scipy==1.7.0
+tqdm==4.61.1
+wheel==0.36.2
+

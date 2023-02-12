@@ -8,6 +8,7 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
+#include "controller/draco_controller/draco_state_machines/manipulation.hpp"
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
 //#include
 //"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
@@ -18,6 +19,7 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/hand_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
@@ -33,8 +35,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   try {
     cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
   } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
+    std::cerr << "Error reading INITIAL parameter [" << e.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
   }
 
   bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
@@ -85,6 +87,18 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->task_map_["rf_pos_task"],
       tci_container_->task_map_["rf_ori_task"], robot_);
 
+  /////////////////////THIS IS ADDED BY ME////////////////////////
+  //=============================================================
+  // eef trajectory managers
+  //=============================================================
+  lh_SE3_tm_ = new HandTrajectoryManager
+         (tci_container_->task_map_["lh_pos_task"],
+         tci_container_->task_map_["lh_ori_task"], robot_);
+  rh_SE3_tm_ = new HandTrajectoryManager
+         (tci_container_->task_map_["rh_pos_task"],
+         tci_container_->task_map_["rh_ori_task"], robot_);
+  /////////////////////THIS IS ADDED BY ME////////////////////////
+
   Eigen::VectorXd weight_at_contact, weight_at_swing;
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
@@ -92,8 +106,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
                         prefix + "_weight_at_swing", weight_at_swing);
   } catch (const std::runtime_error &ex) {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
+    std::cerr << "Error reading FOOT POS parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
   lf_pos_hm_ =
@@ -109,8 +123,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
                         prefix + "_weight_at_swing", weight_at_swing);
   } catch (const std::runtime_error &ex) {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
+    std::cerr << "Error reading FOOT ORI parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
   lf_ori_hm_ =
@@ -127,6 +141,64 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->contact_map_["lf_contact"], max_rf_z);
   rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
       tci_container_->contact_map_["rf_contact"], max_rf_z);
+
+  //=============================================================
+  // eef task hierarchy managers
+  // TODO: read weight from config file for weight_at_balance and
+  // weight_at_walking
+  //=============================================================
+  /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO
+  /// SEE)////////////////////////
+  Eigen::VectorXd weight_at_balance, weight_at_walking;
+  try {
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
+                        prefix + "_weight", weight_at_balance);
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
+                        prefix + "_weight_at_walking", weight_at_walking);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading HAND POS parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO
+  /// SEE)////////////////////////
+
+  /////////////////////THIS IS ADDED BY ME////////////////////////
+  lh_pos_hm_ =
+      new TaskHierarchyManager
+        (tci_container_->task_map_["lh_pos_task"], weight_at_balance,
+        weight_at_walking);
+  rh_pos_hm_ =
+      new TaskHierarchyManager
+        (tci_container_->task_map_["rh_pos_task"], weight_at_balance,
+        weight_at_walking);
+  /////////////////////THIS IS ADDED BY ME////////////////////////
+
+  /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO
+  /// SEE)////////////////////////
+  try {
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
+                        prefix + "_weight", weight_at_balance);
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
+                        prefix + "_weight_at_walking", weight_at_walking);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading HAND ORI parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO
+  /// SEE)////////////////////////
+
+  /////////////////////THIS IS ADDED BY ME////////////////////////
+  lh_ori_hm_ =
+      new TaskHierarchyManager
+        (tci_container_->task_map_["lh_ori_task"], weight_at_balance,
+        weight_at_walking);
+  rh_ori_hm_ =
+      new TaskHierarchyManager
+        (tci_container_->task_map_["rh_ori_task"], weight_at_balance,
+        weight_at_walking);
+  /////////////////////THIS IS ADDED BY ME////////////////////////
 
   //=============================================================
   // initialize state machines
@@ -163,6 +235,15 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
 
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
+  background_manipuation_ =
+   new Manipulation(draco_states::kDHManipulation, robot_, this);
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
+
+  std::cout << "[Draco Control Architecture] Constructed" << std::endl;
+
   this->_InitializeParameters();
 }
 
@@ -198,6 +279,12 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionEnd];
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
+
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
+  delete background_manipuation_;
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -207,9 +294,27 @@ void DracoControlArchitecture::GetCommand(void *command) {
   }
 
   state_machine_container_[state_]->OneStep();
-  upper_body_tm_->UseNominalUpperBodyJointPos(
-      sp_->nominal_jpos_);          // state independent upper body traj setting
-  controller_->GetCommand(command); // get control command
+
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
+  // check first visit of background manipulator task
+  if (b_background_first_visit_)
+  {
+  std::cout << "Background first visit"<< std::endl;
+  background_manipuation_->FirstVisit();
+  b_background_first_visit_ = false;
+  }
+  background_manipuation_->OneStep();
+  std::cout << "Background one step"<< std::endl;
+
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
+
+  // state independent upper body traj setting
+  upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
+
+  // get control command
+  controller_->GetCommand(command);
 
   if (state_machine_container_[state_]->EndOfState()) {
     state_machine_container_[state_]->LastVisit();
@@ -217,6 +322,16 @@ void DracoControlArchitecture::GetCommand(void *command) {
     state_ = state_machine_container_[state_]->GetNextState();
     b_state_first_visit_ = true;
   }
+
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
+  if (background_manipuation_->EndOfState())
+  {
+  background_manipuation_->LastVisit();
+  b_background_first_visit_ = true;
+  }
+  /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
+  /// SEE)////////////////////////
 }
 
 void DracoControlArchitecture::_InitializeParameters() {
