@@ -28,7 +28,6 @@ class HandTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
-// class Manipulation;
 // class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
@@ -59,8 +58,6 @@ public:
   TaskHierarchyManager *lh_ori_hm_;
   TaskHierarchyManager *rh_pos_hm_;
   TaskHierarchyManager *rh_ori_hm_;
-
-  // Manipulation *background_manipulation_;
 
 private:
   DracoController *controller_;

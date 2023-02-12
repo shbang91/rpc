@@ -59,12 +59,6 @@ void Manipulation::FirstVisit() {
   target_lh_quat.w() = target_lh_ori_(3);
   target_lh_quat = target_lh_quat.normalized();
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
-
-  //std::cout << "target_rh_iso: " << target_rh_iso.translation() << std::endl;
-  //ctrl_arch_->rh_SE3_tm_->UpdateDesired(
-  //    target_rh_iso);
-  //ctrl_arch_->lh_SE3_tm_->UpdateDesired(
-  //    target_lh_iso);
   
   ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
       target_rh_iso, background_start_time_, moving_duration_);
@@ -87,33 +81,6 @@ void Manipulation::FirstVisit() {
 void Manipulation::OneStep() {
  // std::cout << "Manipulation OneStep called" << std::endl;
   background_time_ = sp_->current_time_ - background_start_time_;
-
-  //Eigen::Isometry3d target_rh_iso;
-  //Eigen::Isometry3d target_lh_iso;
-  //Eigen::Quaterniond target_rh_quat;
-  //Eigen::Quaterniond target_lh_quat;
-
-  //target_rh_iso.translation() = target_rh_pos_;
-  //target_rh_quat.x() = target_rh_ori_(0);
-  //target_rh_quat.y() = target_rh_ori_(1);
-  //target_rh_quat.z() = target_rh_ori_(2);
-  //target_rh_quat.w() = target_rh_ori_(3);
-  //target_rh_quat = target_rh_quat.normalized();
-  //target_rh_iso.linear() = target_rh_quat.toRotationMatrix();
-
-  //target_lh_iso.translation() = target_lh_pos_;
-  //target_lh_quat.x() = target_lh_ori_(0);
-  //target_lh_quat.y() = target_lh_ori_(1);
-  //target_lh_quat.z() = target_lh_ori_(2);
-  //target_lh_quat.w() = target_lh_ori_(3);
-  //target_lh_quat = target_lh_quat.normalized();
-  //target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
-
-  //std::cout << "target_rh_iso: " << target_rh_iso.translation() << std::endl;
-  //ctrl_arch_->rh_SE3_tm_->UpdateDesired(
-  //    target_rh_iso);
-  //ctrl_arch_->lh_SE3_tm_->UpdateDesired(
-  //    target_lh_iso);
 
   if (state_id_ == draco_states::kDoubleSupportBalance) {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMax(background_start_time_);
