@@ -237,7 +237,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
-  background_manipuation_ =
+  background_manipulation_ =
    new Manipulation(draco_states::kDHManipulation, robot_, this);
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
@@ -282,7 +282,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
-  delete background_manipuation_;
+  delete background_manipulation_;
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
 }
@@ -301,10 +301,10 @@ void DracoControlArchitecture::GetCommand(void *command) {
   if (b_background_first_visit_)
   {
   //std::cout << "Background first visit"<< std::endl;
-  background_manipuation_->FirstVisit();
+  background_manipulation_->FirstVisit();
   b_background_first_visit_ = false;
   }
-  background_manipuation_->OneStep();
+  background_manipulation_->OneStep();
   //std::cout << "Background one step"<< std::endl;
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
@@ -325,9 +325,9 @@ void DracoControlArchitecture::GetCommand(void *command) {
 
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO
   /// SEE)////////////////////////
-  if (background_manipuation_->EndOfState())
+  if (background_manipulation_->EndOfState())
   {
-  background_manipuation_->LastVisit();
+  background_manipulation_->LastVisit();
   b_background_first_visit_ = true;
   }
   /////////////////////THIS IS ADDED BY ME (BUT DO NOT NEED TO

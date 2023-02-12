@@ -17,13 +17,13 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   std::cout << "Manipulation Constructed" << std::endl;
 
   target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_rh_pos_ << 0.3, -0.2, 0.5;
+  target_rh_pos_ << 0.3, -0.5, 0.8;
 
   target_rh_ori_ = Eigen::VectorXd::Zero(4);
   target_rh_ori_ << 0, -0.707, 0, 0.707;
 
   target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_lh_pos_ << 0.3, 0.2, 0.5;
+  target_lh_pos_ << 0.3, 0.5, 0.8;
 
   target_lh_ori_ = Eigen::VectorXd::Zero(4);
   target_lh_ori_ << 0, -0.707, 0, 0.707;

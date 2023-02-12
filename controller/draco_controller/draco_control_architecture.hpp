@@ -1,5 +1,6 @@
 #pragma once
 #include "controller/control_architecture.hpp"
+#include "controller/draco_controller/draco_state_machines/manipulation.hpp"
 
 namespace draco_states {
 constexpr int kInitialize = 1;
@@ -27,6 +28,7 @@ class HandTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
+// class Manipulation;
 // class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
@@ -57,6 +59,8 @@ public:
   TaskHierarchyManager *lh_ori_hm_;
   TaskHierarchyManager *rh_pos_hm_;
   TaskHierarchyManager *rh_ori_hm_;
+
+  // Manipulation *background_manipulation_;
 
 private:
   DracoController *controller_;
