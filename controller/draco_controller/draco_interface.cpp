@@ -172,17 +172,6 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   target_lh_quat = base_quat * test_lh_quat * zero_lh_ori;
   */
 
-  ctrl_arch_->background_manipulation_->target_rh_pos_<< target_rh_pos;
-  ctrl_arch_->background_manipulation_->target_lh_pos_<< target_lh_pos;
-  ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
-      target_rh_quat.y(),
-      target_rh_quat.z(), 
-      target_rh_quat.w();
-  ctrl_arch_->background_manipulation_->target_lh_ori_<< target_lh_quat.x(), 
-      target_lh_quat.y(),
-      target_lh_quat.z(), 
-      target_lh_quat.w();
-
 
   // if (count_ <= waiting_count_) {
   // for simulation without state estimator
@@ -233,8 +222,34 @@ void DracoInterface::_SafeCommand(DracoSensorData *data,
 }
 
 void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
+
+  ctrl_arch_->background_manipulation_->target_lh_pos_<< cmd->lh_pos;
+  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
+  ctrl_arch_->background_manipulation_->target_lh_pos_(0) += 0.1;
+  ctrl_arch_->background_manipulation_->target_lh_pos_(1) += 0.1;
+  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
+  ctrl_arch_->background_manipulation_->target_lh_pos_(2) += 1.0;
+
+  ctrl_arch_->background_manipulation_->target_rh_pos_<< cmd->rh_pos;
+  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
+  ctrl_arch_->background_manipulation_->target_rh_pos_(0) += 0.3;
+  ctrl_arch_->background_manipulation_->target_rh_pos_(1) += -0.1;
+  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
+  ctrl_arch_->background_manipulation_->target_rh_pos_(2) += 1.0;
+    std::cout << ctrl_arch_->background_manipulation_->target_lh_pos_ << std::endl;
+    std::cout << ctrl_arch_->background_manipulation_->target_rh_pos_ << std::endl;
   
-  
+  /*
+  ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
+      target_rh_quat.y(),
+      target_rh_quat.z(), 
+      target_rh_quat.w();
+  ctrl_arch_->background_manipulation_->target_lh_ori_<< target_lh_quat.x(), 
+      target_lh_quat.y(),
+      target_lh_quat.z(), 
+      target_lh_quat.w();
+  */
+
 
   if (cmd->l_button) {
       interrupt_handler_->PressEight();

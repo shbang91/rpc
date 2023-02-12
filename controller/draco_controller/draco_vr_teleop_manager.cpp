@@ -1,6 +1,7 @@
 #include <chrono>
 #include <controller/draco_controller/draco_vr_teleop_manager.hpp>
 #include <zmq.hpp>
+#include <google/protobuf/text_format.h>
 
 DracoVRTeleopManager *DracoVRTeleopManager::GetVRTeleopManager() {
     static DracoVRTeleopManager vr;
@@ -20,16 +21,21 @@ void DracoVRTeleopManager::InitializeTeleopSocket(const std::string &ip_address)
 
 DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
     zmq::message_t commands;
-    auto start = std::chrono::high_resolution_clock::now();
-    zmq::recv_result_t bytes_received = teleop_socket_->recv(commands, zmq::recv_flags::dontwait);
+    //auto start = std::chrono::high_resolution_clock::now();
+    zmq::recv_result_t bytes_received = teleop_socket_->recv(commands, zmq::recv_flags::none);
     std::cout << bytes_received.value_or(5555) << std::endl;
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << "Time taken by ZMQ PULL: " << duration.count() << std::endl;
-    std::string commands_str(static_cast<char*>(commands.data()), commands.size());
+    //auto stop = std::chrono::high_resolution_clock::now();
+    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    //std::cout << "Time taken by ZMQ PULL: " << duration.count() << std::endl;
 
     draco::vr_teleop_msg m;
-    m.ParseFromString(commands_str);
+    m.ParseFromArray(commands.data(), commands.size());
+
+    /*
+    std::string s;
+    google::protobuf::TextFormat::PrintToString(m, &s);
+    std::cout << s << std::endl;
+    */
 
     DracoVRCommands result;
 
