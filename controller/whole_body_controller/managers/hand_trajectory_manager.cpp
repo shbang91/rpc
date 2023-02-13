@@ -70,8 +70,8 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   for (int i(0); i < 3; ++i) {
     des_pos[i] = util::SmoothPos(init_pos_[i], target_pos_[i], duration_,
                                  current_time - start_time_);
-    des_vel[i] = util::SmoothVel(init_pos_[i], target_pos_[i], duration_,
-                                 current_time - start_time_);
+    // des_vel[i] = util::SmoothVel(init_pos_[i], target_pos_[i], duration_,
+    //                              current_time - start_time_);
   }
 
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);

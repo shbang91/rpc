@@ -491,6 +491,75 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->DesiredLocalVel());
     logger_->add("local_act_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
+
+    logger_->add("local_des_lh_pos",
+                 tci_container_->task_map_["lh_pos_task"]->DesiredLocalPos());
+    logger_->add("local_act_lh_pos",
+                 tci_container_->task_map_["lh_pos_task"]->CurrentLocalPos());
+    logger_->add("local_des_lh_vel",
+                 tci_container_->task_map_["lh_pos_task"]->DesiredLocalVel());
+    logger_->add("local_act_lh_vel",
+                 tci_container_->task_map_["lh_pos_task"]->CurrentLocalVel());
+    logger_->add("local_des_rh_pos",
+                 tci_container_->task_map_["rh_pos_task"]->DesiredLocalPos());
+    logger_->add("local_act_rh_pos",
+                 tci_container_->task_map_["rh_pos_task"]->CurrentLocalPos());
+    logger_->add("local_des_rh_vel",
+                 tci_container_->task_map_["rh_pos_task"]->DesiredLocalVel());
+    logger_->add("local_act_rh_vel",
+                 tci_container_->task_map_["rh_pos_task"]->CurrentLocalVel());
+
+    logger_->add("local_des_lh_ori",
+                 tci_container_->task_map_["lh_ori_task"]->DesiredLocalPos());
+    logger_->add("local_act_lh_ori",
+                 tci_container_->task_map_["lh_ori_task"]->CurrentLocalPos());
+    logger_->add("local_des_lh_ori_vel",
+                 tci_container_->task_map_["lh_ori_task"]->DesiredLocalVel());
+    logger_->add("local_act_lh_ori_vel",
+                 tci_container_->task_map_["lh_ori_task"]->CurrentLocalVel());
+    logger_->add("local_des_rh_ori",
+                 tci_container_->task_map_["rh_ori_task"]->DesiredLocalPos());
+    logger_->add("local_act_rh_ori",
+                 tci_container_->task_map_["rh_ori_task"]->CurrentLocalPos());
+    logger_->add("local_des_rh_ori_vel",
+                 tci_container_->task_map_["rh_ori_task"]->DesiredLocalVel());
+    logger_->add("local_act_rh_ori_vel",
+                 tci_container_->task_map_["rh_ori_task"]->CurrentLocalVel());
+
+    logger_->add("des_lh_pos",
+                 tci_container_->task_map_["lh_pos_task"]->DesiredPos());
+    logger_->add("act_lh_pos",
+                 tci_container_->task_map_["lh_pos_task"]->CurrentPos());
+    logger_->add("des_lh_vel",
+                 tci_container_->task_map_["lh_pos_task"]->DesiredVel());
+    logger_->add("act_lh_vel",
+                 tci_container_->task_map_["lh_pos_task"]->CurrentVel());
+    logger_->add("des_rh_pos",
+                 tci_container_->task_map_["rh_pos_task"]->DesiredPos());
+    logger_->add("act_rh_pos",
+                 tci_container_->task_map_["rh_pos_task"]->CurrentPos());
+    logger_->add("des_rh_vel",
+                 tci_container_->task_map_["rh_pos_task"]->DesiredVel());
+    logger_->add("act_rh_vel",
+                 tci_container_->task_map_["rh_pos_task"]->CurrentVel());
+
+    logger_->add("des_lh_ori",
+                 tci_container_->task_map_["lh_ori_task"]->DesiredPos());
+    logger_->add("act_lh_ori",
+                 tci_container_->task_map_["lh_ori_task"]->CurrentPos());
+    logger_->add("des_lh_ori_vel",
+                 tci_container_->task_map_["lh_ori_task"]->DesiredVel());
+    logger_->add("act_lh_ori_vel",
+                 tci_container_->task_map_["lh_ori_task"]->CurrentVel());
+    logger_->add("des_rh_ori",
+                 tci_container_->task_map_["rh_ori_task"]->DesiredPos());
+    logger_->add("act_rh_ori",
+                 tci_container_->task_map_["rh_ori_task"]->CurrentPos());
+    logger_->add("des_rh_ori_vel",
+                 tci_container_->task_map_["rh_ori_task"]->DesiredVel());
+    logger_->add("act_rh_ori_vel",
+                 tci_container_->task_map_["rh_ori_task"]->CurrentVel());
+
   }
 
 #endif
