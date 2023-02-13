@@ -41,9 +41,7 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
 
 void Manipulation::FirstVisit() {
   background_start_time_ = sp_->current_time_;
-
-  std::cout << "draco_background::kDHManipulation" << std::endl;
-
+  
   Eigen::Isometry3d target_rh_iso;
   Eigen::Isometry3d target_lh_iso;
   Eigen::Quaterniond target_rh_quat;
@@ -96,7 +94,6 @@ void Manipulation::OneStep() {
     transition_time_ = sp_->current_time_ - transition_start_time_;
 
   if (state_id_ == draco_states::kDHManipulation and initialized_) {
-    std::cout << "Hit here" << std::endl;
     ctrl_arch_->lh_pos_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(transition_time_);
@@ -110,21 +107,14 @@ void Manipulation::OneStep() {
 
   ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
   ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
-
-  std::cout << "trans time: " << transition_time_ << std::endl;
-  std::cout << "background time: " << background_time_ << std::endl;
-  std::cout << "initialized: " << initialized_ << std::endl;
-
 }
 
 bool Manipulation::EndOfState() 
 {
   if (!transitted_)
     transitted_ = transition_time_ > transition_duration_;
-
   if (!initialized_)
     initialized_ = initializaiton_time_ > initializaiton_duration_;
-      
   return background_time_ > moving_duration_;
 }
 
