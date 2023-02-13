@@ -114,8 +114,8 @@ wbc:
       sim_com_kd : [5.]
 
       sim_base_weight : [1000.] # only used when target source : 1
-      sim_base_kp : [100.]
-      sim_base_kd : [5.] # x, y will be ignored
+      sim_base_kp : [500.]
+      sim_base_kd : [50.] # x, y will be ignored
 
       ########################################################################
       ## exp params
@@ -167,8 +167,8 @@ wbc:
       # sim_weight_at_walking : [0., 0., 0.]
       # sim_kp : [0., 0., 0.]
       # sim_kd : [0., 0., 0.]
-      sim_weight : [100., 100., 100.]
-      sim_weight_at_walking : [20., 20., 20.]
+      sim_weight : [20., 20., 20.]
+      sim_weight_at_walking : [0., 0., 0.]
       sim_kp : [150., 150., 150.]
       sim_kd : [20., 20., 20.]
 
@@ -184,8 +184,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [100., 100., 100.]
-      sim_weight_at_walking : [20., 20., 20.]
+      sim_weight : [20., 20., 20.]
+      sim_weight_at_walking : [0., 0., 0.]
       sim_kp : [50., 50., 50.]
       sim_kd : [5., 5., 5.]
       # sim_weight : [1., 1., 1.]

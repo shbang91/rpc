@@ -166,12 +166,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   /////////////////////THIS IS ADDED BY ME////////////////////////
   lh_pos_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["lh_pos_task"], weight_at_walking,
-	 weight_at_balance);
+        (tci_container_->task_map_["lh_pos_task"], weight_at_balance,
+	 weight_at_walking);
   rh_pos_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["rh_pos_task"], weight_at_walking, 
-	 weight_at_balance);
+        (tci_container_->task_map_["rh_pos_task"], weight_at_balance, 
+	 weight_at_walking);
   /////////////////////THIS IS ADDED BY ME////////////////////////
 
   /////////////////////THIS IS ADDED BY ME (YOU DO NOT NEED TO
@@ -192,12 +192,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   /////////////////////THIS IS ADDED BY ME////////////////////////
   lh_ori_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["lh_ori_task"], weight_at_walking, 
-	weight_at_balance);
+        (tci_container_->task_map_["lh_ori_task"], weight_at_balance, 
+    weight_at_walking);
   rh_ori_hm_ =
       new TaskHierarchyManager
-        (tci_container_->task_map_["rh_ori_task"], weight_at_walking,
-	 weight_at_balance);
+        (tci_container_->task_map_["rh_ori_task"], weight_at_balance,
+	  weight_at_walking);
   /////////////////////THIS IS ADDED BY ME////////////////////////
 
   //=============================================================
