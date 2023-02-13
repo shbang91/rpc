@@ -1024,7 +1024,7 @@ for i = 1:num_of_tasks
     plot_phase(wbc_time, state, min_val, max_val, phase_color)
     ylabel(draco_wbc_cost_labels(i))
     if i == 1
-        title('left foot jvel data', 'FontSize',30)
+        sgtitle('WBC Unweighted task costs', 'FontSize',30)
     end
     if i >= (num_of_tasks - num_of_columns)
         xlabel('time')
@@ -1032,3 +1032,37 @@ for i = 1:num_of_tasks
 end
 linkaxes(ax,'x')
 
+% weighted tasks
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+num_of_tasks = numel(task_names);
+num_of_columns = 4;
+num_of_rows = ceil(num_of_tasks/num_of_columns);
+for i = 1:num_of_tasks
+    curr_task_cost = eval(sprintf('wbc_cost_w_%s', task_names{i}));
+    ax(i) = subplot(num_of_rows, num_of_columns, i);
+    plot(wbc_time, curr_task_cost, 'r', 'LineWidth', 3);
+    hold on;
+    grid on
+    if ~(any(isnan(curr_task_cost)))
+        min_val = min(curr_task_cost);  %*ones(size(curr_task_cost));
+        max_val = max(curr_task_cost);  %*ones(size(curr_task_cost));
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    else
+        min_val = 0;
+        max_val = 1;
+    end
+%   set_fig_opt()
+    plot_phase(wbc_time, state, min_val, max_val, phase_color)
+    ylabel(draco_wbc_cost_labels(i))
+    if i == 1
+        sgtitle('WBC Weighted task costs', 'FontSize',30)
+    end
+    if i >= (num_of_tasks - num_of_columns)
+        xlabel('time')
+    end
+end
+linkaxes(ax,'x')
