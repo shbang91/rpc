@@ -7,11 +7,13 @@
 HandTrajectoryManager::HandTrajectoryManager(Task *pos_task, Task *ori_task,
                                              PinocchioRobotSystem *robot)
     : pos_task_(pos_task), ori_task_(ori_task), robot_(robot),
-      ori_curve_(nullptr) {
+      pos_curve_(nullptr), ori_curve_(nullptr) {
   util::PrettyConstructor(2, "HandTrajectoryManager");
 }
 
 HandTrajectoryManager::~HandTrajectoryManager() {
+  if (pos_curve_ != nullptr)
+    delete pos_curve_;
   if (ori_curve_ != nullptr)
     delete ori_curve_;
 }
@@ -43,8 +45,13 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   //std::cout << "target_pos: " << target_pose.translation() << std::endl;
   //std::cout << "target_ori: " << target_pose.linear() << std::endl;
 
-  init_pos_ << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
-  target_pos_ << target_pose.translation();
+  Eigen::VectorXd init_pos(3);
+
+  //init_pos_ << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
+  //target_pos_ << target_pose.translation();
+
+  Eigen::VectorXd target_pos(3);
+  target_pos << target_pose.translation();
 
   Eigen::VectorXd init_vel(3);
   init_vel << robot_->GetLinkSpatialVel(pos_task_->TargetIdx()).tail<3>();
@@ -53,6 +60,8 @@ void HandTrajectoryManager::InitializeHandTrajectory(
       robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear());
   Eigen::Quaterniond target_ori(target_pose.linear());
 
+  pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos, 
+		  			Eigen::Vector3d::Zero(), duration_);
   ori_curve_ = new HermiteQuaternionCurve(init_ori, init_vel, target_ori,
                                           Eigen::Vector3d::Zero(), duration_);
 }
@@ -67,19 +76,23 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   Eigen::VectorXd des_ang_vel = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd des_ang_acc = Eigen::VectorXd::Zero(3);
 
-  for (int i(0); i < 3; ++i) {
-    des_pos[i] = util::SmoothPos(init_pos_[i], target_pos_[i], duration_,
-                                 current_time - start_time_);
+  //for (int i(0); i < 3; ++i) {
+  //  des_pos[i] = util::SmoothPos(init_pos_[i], target_pos_[i], duration_,
+  //                               current_time - start_time_);
     // des_vel[i] = util::SmoothVel(init_pos_[i], target_pos_[i], duration_,
     //                              current_time - start_time_);
-  }
+  //}
 
+  des_pos << pos_curve_->Evaluate(current_time - start_time_);
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);
   des_ori << des_ori_quat.normalized().coeffs();
 
   //std::cout << "des_ori: " << des_ori.transpose() << std::endl;
 
-  pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
+  //pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
+
+  if (pos_task_ != nullptr)
+    pos_task_->UpdateDesired(des_pos, des_vel, des_ang_acc);
   if (ori_task_ != nullptr)
     ori_task_->UpdateDesired(des_ori, des_ang_vel, des_ang_acc);
 }
