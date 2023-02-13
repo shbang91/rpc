@@ -67,5 +67,5 @@ private:
   DracoKFStateEstimator *se_kf_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
-  void _ProcessVRInput(DracoVRCommands *commands);
+  void _ProcessVRInput(DracoVRCommands *commands, void *sensor_data);
 };

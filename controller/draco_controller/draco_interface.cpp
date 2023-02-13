@@ -95,7 +95,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
       // Get commands from zmq, send interrupt
       DracoVRCommands cmd = DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
-      _ProcessVRInput(&cmd);
+      _ProcessVRInput(&cmd, sensor_data);
   }
 #endif
   sp_->count_ = count_;
@@ -204,23 +204,59 @@ void DracoInterface::_SafeCommand(DracoSensorData *data,
   command->joint_trq_cmd_.setZero();
 }
 
-void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
+void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd, void *sensor_data) {
+
+  Eigen::Vector3d test_rh_pos = cmd->rh_pos;
+  Eigen::Vector3d test_lh_pos = cmd->lh_pos;
+  Eigen::Quaterniond test_rh_quat;
+  Eigen::Quaterniond test_lh_quat;
+  test_rh_quat = cmd->rh_ori;
+  test_lh_quat = cmd->lh_ori;
+
+  Eigen::Vector3d target_rh_pos;
+  Eigen::Vector3d target_lh_pos;
+  Eigen::Quaterniond target_rh_quat;
+  Eigen::Quaterniond target_lh_quat;
+
+  Eigen::Vector3d base_pos;
+  Eigen::Quaterniond base_quat;
+
+  Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
+  Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
+
+  Eigen::Matrix3d rot_word_to_base;
+
+  DracoSensorData *draco_sensor_data =
+      static_cast<DracoSensorData *>(sensor_data);
+
+  base_pos = draco_sensor_data->base_joint_pos_;
+  base_pos[2] += 0.5;
+  base_quat.x() = draco_sensor_data->base_joint_quat_[0];
+  base_quat.y() = draco_sensor_data->base_joint_quat_[1];
+  base_quat.z() = draco_sensor_data->base_joint_quat_[2];
+  base_quat.w() = draco_sensor_data->base_joint_quat_[3];
+
+  rot_word_to_base = base_quat.toRotationMatrix();
+  target_rh_pos = rot_word_to_base * test_rh_pos + base_pos;
+  target_lh_pos = rot_word_to_base * test_lh_pos + base_pos;
+  target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
+  target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
+
+  ctrl_arch_->background_manipulation_->target_rh_pos_<< target_rh_pos;
+  ctrl_arch_->background_manipulation_->target_lh_pos_<< target_lh_pos;
+
+  ctrl_arch_->background_manipulation_->target_rh_ori_[0] = target_rh_quat.x(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[1] = target_rh_quat.y(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[2] = target_rh_quat.z(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[3] = target_rh_quat.w();
+
+  ctrl_arch_->background_manipulation_->target_lh_ori_[0] = target_lh_quat.x(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[1] = target_lh_quat.y(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[2] = target_lh_quat.z(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[3] = target_lh_quat.w();
 
   ctrl_arch_->background_manipulation_->target_lh_pos_<< cmd->lh_pos;
-  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
-  ctrl_arch_->background_manipulation_->target_lh_pos_(0) += 0.1;
-  ctrl_arch_->background_manipulation_->target_lh_pos_(1) += 0.1;
-  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
-  ctrl_arch_->background_manipulation_->target_lh_pos_(2) += 1.0;
-
   ctrl_arch_->background_manipulation_->target_rh_pos_<< cmd->rh_pos;
-  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
-  ctrl_arch_->background_manipulation_->target_rh_pos_(0) += 0.3;
-  ctrl_arch_->background_manipulation_->target_rh_pos_(1) += -0.1;
-  // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
-  ctrl_arch_->background_manipulation_->target_rh_pos_(2) += 1.0;
-    //std::cout << ctrl_arch_->background_manipulation_->target_lh_pos_ << std::endl;
-    //std::cout << ctrl_arch_->background_manipulation_->target_rh_pos_ << std::endl;
   
   /*
   ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
