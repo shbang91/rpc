@@ -493,5 +493,7 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
   }
 
+  std::cout << "MAT LOGGER LOGGING" << std::endl;
+
 #endif
 }

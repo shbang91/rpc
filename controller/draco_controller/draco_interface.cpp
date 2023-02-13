@@ -219,8 +219,8 @@ void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
   ctrl_arch_->background_manipulation_->target_rh_pos_(1) += -0.1;
   // YOU MAY NEED TO REMOVE THE OFFSET FOR X AND Y//
   ctrl_arch_->background_manipulation_->target_rh_pos_(2) += 1.0;
-    std::cout << ctrl_arch_->background_manipulation_->target_lh_pos_ << std::endl;
-    std::cout << ctrl_arch_->background_manipulation_->target_rh_pos_ << std::endl;
+    //std::cout << ctrl_arch_->background_manipulation_->target_lh_pos_ << std::endl;
+    //std::cout << ctrl_arch_->background_manipulation_->target_rh_pos_ << std::endl;
   
   /*
   ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
@@ -234,6 +234,7 @@ void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
   */
 
 
+  /*
   if (cmd->l_button) {
       interrupt_handler_->PressEight();
   } else if (cmd->l_pad) {
@@ -247,4 +248,5 @@ void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd) {
   } else if (cmd->r_trigger) {
       interrupt_handler_->PressNine();
   }
+  */
 }

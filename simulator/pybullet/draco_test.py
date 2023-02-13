@@ -344,7 +344,7 @@ pos_basejoint_to_basecom = np.dot(
 rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
                                   rot_world_basecom)
 
-if render_mode != 'gui':
+if render_mode == 'gui':
     video_format = cv2.VideoWriter_fourcc(*'mp4v')
     render_width = 480
     render_height = 360
@@ -479,7 +479,7 @@ while (True):
     #step simulation
     pb.stepSimulation()
     
-    if render_mode != 'gui' and t > record_time + 1.0/30:
+    if render_mode == 'gui' and t > record_time + 1.0/30:
         position = np.array([0.0 , 0.0, 0.75])
         orientation = np.array([0.0, 0.0, 0.0, 1.0])
         view_point, _ = pb.multiplyTransforms(position, orientation, [0.045, 0.0, 0.0], [0, 0, 0, 1])
