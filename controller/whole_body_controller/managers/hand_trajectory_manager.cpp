@@ -9,6 +9,9 @@ HandTrajectoryManager::HandTrajectoryManager(Task *pos_task, Task *ori_task,
     : pos_task_(pos_task), ori_task_(ori_task), robot_(robot),
       pos_curve_(nullptr), ori_curve_(nullptr) {
   util::PrettyConstructor(2, "HandTrajectoryManager");
+  target_pos_ = Eigen::Vector3d::Zero();
+  target_ori_ = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
+
 }
 
 HandTrajectoryManager::~HandTrajectoryManager() {
@@ -45,24 +48,24 @@ void HandTrajectoryManager::InitializeHandTrajectory(
 
   Eigen::VectorXd init_pos(3);
   Eigen::Quaterniond init_ori;
+  Eigen::VectorXd init_vel = Eigen::VectorXd::Zero(3);;
 
   if (!initialized_)
   {
     init_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
-    init_ori = robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear();
-    
+    init_ori = robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear();    
     initialized_ = 1;
+    std::cout << "Initialize Hand Trajectory" << std::endl;
   }
   else
   {
     init_pos << target_pos_;
     init_ori = target_ori_;
+    std::cout << "Update Hand Trajectory" << std::endl;
   }
 
   target_pos_ << target_pose.translation();
   target_ori_ = target_pose.linear();
-
-  Eigen::VectorXd init_vel = Eigen::VectorXd::Zero(3);;
 
   pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos_, 
                                   Eigen::Vector3d::Zero(), duration_);
