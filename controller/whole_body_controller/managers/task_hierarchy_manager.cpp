@@ -28,7 +28,6 @@ void TaskHierarchyManager::UpdateRampToMax(const double state_machine_time) {
   if (state_machine_time >= duration_)
     w_current = w_fin_;
 
-  std::cout << "w_current: " << w_current.transpose() << std::endl;
   task_->SetWeight(w_current);
 }
 
@@ -39,6 +38,5 @@ void TaskHierarchyManager::UpdateRampToMin(const double state_machine_time) {
   if (state_machine_time >= duration_)
     w_current = w_fin_;
 
-  std::cout << "w_current: " << w_current.transpose() << std::endl;
   task_->SetWeight(w_current);
 }

@@ -104,12 +104,15 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // vr_command_->global_rh_ori_;
   // vr_command_->global_lh_ori_;
 
-  Eigen::Vector3d test_rh_pos(0.3, -0.3, 0.1);
-  Eigen::Vector3d test_lh_pos(0.3, 0.3, 0.1);
+  Eigen::Vector3d test_rh_pos(0.3, -0.15, 0.5);
+  Eigen::Vector3d test_lh_pos(0.3, 0.15, 0.5);
   Eigen::Quaterniond test_rh_quat;
   Eigen::Quaterniond test_lh_quat;
-  test_rh_quat = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
-  test_lh_quat = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+  test_rh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+  test_lh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+
+  Eigen::VectorXd clamped_rh_pos(3);
+  Eigen::VectorXd clamped_lh_pos(3);
 
   Eigen::Vector3d target_rh_pos;
   Eigen::Vector3d target_lh_pos;
@@ -124,6 +127,14 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   Eigen::Matrix3d rot_word_to_base;
 
+  clamped_rh_pos[0] = std::min(std::max(test_rh_pos[0], 0.0), 0.55);
+  clamped_rh_pos[1] = std::min(std::max(test_rh_pos[1], -0.45), 0.15);
+  clamped_rh_pos[2] = std::min(std::max(test_rh_pos[2], -0.3), 1.0);
+
+  clamped_lh_pos[0] = std::min(std::max(test_lh_pos[0], 0.0), 0.55);
+  clamped_lh_pos[1] = std::min(std::max(test_lh_pos[1], -0.15), 0.45);
+  clamped_lh_pos[2] = std::min(std::max(test_lh_pos[2], -0.3), 1.0);
+
   base_pos = draco_sensor_data->base_joint_pos_;
   base_quat.x() = draco_sensor_data->base_joint_quat_[0];
   base_quat.y() = draco_sensor_data->base_joint_quat_[1];
@@ -131,8 +142,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   base_quat.w() = draco_sensor_data->base_joint_quat_[3];
 
   rot_word_to_base = base_quat.toRotationMatrix();
-  target_rh_pos = rot_word_to_base * test_rh_pos + base_pos;
-  target_lh_pos = rot_word_to_base * test_lh_pos + base_pos;
+  target_rh_pos = rot_word_to_base * clamped_rh_pos + base_pos;
+  target_lh_pos = rot_word_to_base * clamped_lh_pos + base_pos;
   target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
   target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
 

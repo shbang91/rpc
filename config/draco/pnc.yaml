@@ -73,8 +73,8 @@ wbc:
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
       sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      sim_icp_kp : [0., 0.]
-      sim_icp_kd : [0., 0.,] # x, y will be ignored
+      sim_icp_kp : [5., 5.]
+      sim_icp_kd : [0.5, 0.5,] # x, y will be ignored
       sim_icp_ki : [10., 10.] 
 
       ## IF icp_integrator_type == 0:
@@ -167,10 +167,10 @@ wbc:
       # sim_weight_at_walking : [0., 0., 0.]
       # sim_kp : [0., 0., 0.]
       # sim_kd : [0., 0., 0.]
-      sim_weight : [20., 20., 20.]
-      sim_weight_at_walking : [5., 5., 5.]
-      sim_kp : [150., 150., 150.]
-      sim_kd : [20., 20., 20.]
+      sim_weight : [200., 200., 200.]
+      sim_weight_at_walking : [10., 10., 10.]
+      sim_kp : [100., 100., 100.]
+      sim_kd : [10., 10., 10.]
 
       ########################################################################
       ## exp params
@@ -184,8 +184,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [20., 20., 20.]
-      sim_weight_at_walking : [5., 5., 5.]
+      sim_weight : [200., 200., 200.]
+      sim_weight_at_walking : [10., 10., 10.]
       sim_kp : [50., 50., 50.]
       sim_kd : [5., 5., 5.]
       # sim_weight : [1., 1., 1.]
