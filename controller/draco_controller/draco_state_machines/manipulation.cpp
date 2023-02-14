@@ -17,29 +17,37 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   std::cout << "Manipulation Constructed" << std::endl;
 
   target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_rh_pos_ << 0.3, -0.5, 0.8;
+  target_rh_pos_ << 0.3, -0.3, 0.3;
 
   target_rh_ori_ = Eigen::VectorXd::Zero(4);
   target_rh_ori_ << 0, -0.707, 0, 0.707;
 
   target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
-  target_lh_pos_ << 0.3, 0.5, 0.8;
+  target_lh_pos_ << 0.3, 0.3, 0.3;
 
   target_lh_ori_ = Eigen::VectorXd::Zero(4);
   target_lh_ori_ << 0, -0.707, 0, 0.707;
 
-  moving_duration_ = 0.02;
-
   background_time_ = 0.;
-  initialized_ = 1;
-  initializaiton_duration_ = 1.;
-  initializaiton_start_time_ = sp_->current_time_;
+  moving_duration_ = 0.05;
 
   transitted_ = 0;
-  transition_duration_ = 0.1;
+  transition_duration_ = 0.3;
+
+  ctrl_arch_->lh_pos_hm_->InitializeRampToMin(transition_duration_);
+  ctrl_arch_->lh_ori_hm_->InitializeRampToMin(transition_duration_);
+  ctrl_arch_->rh_pos_hm_->InitializeRampToMin(transition_duration_);
+  ctrl_arch_->rh_ori_hm_->InitializeRampToMin(transition_duration_);
+
+  ctrl_arch_->lh_pos_hm_->UpdateRampToMin(transition_duration_);
+  ctrl_arch_->lh_ori_hm_->UpdateRampToMin(transition_duration_);
+  ctrl_arch_->rh_pos_hm_->UpdateRampToMin(transition_duration_);
+  ctrl_arch_->rh_ori_hm_->UpdateRampToMin(transition_duration_);
+
 }
 
-void Manipulation::FirstVisit() {
+void Manipulation::FirstVisit() 
+{
   background_start_time_ = sp_->current_time_;
   
   Eigen::Isometry3d target_rh_iso;
@@ -64,19 +72,22 @@ void Manipulation::FirstVisit() {
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
   
   ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
-      target_rh_iso, background_start_time_, moving_duration_);
+      target_rh_iso, 0.0, moving_duration_);
   ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(
-      target_lh_iso, background_start_time_, moving_duration_);
+      target_lh_iso, 0.0, moving_duration_);
 
   if (!transitted_)
   {
-    transition_start_time_ = sp_->current_time_;
-    if (state_id_ == draco_states::kDHManipulation and initialized_) {
+    transition_start_time_ = sp_->current_time_; 
+    if (state_id_ == draco_states::kDHManipulation)
+    {
       ctrl_arch_->lh_pos_hm_->InitializeRampToMax(transition_duration_);
       ctrl_arch_->lh_ori_hm_->InitializeRampToMax(transition_duration_);
       ctrl_arch_->rh_pos_hm_->InitializeRampToMax(transition_duration_);
       ctrl_arch_->rh_ori_hm_->InitializeRampToMax(transition_duration_);
-    } else {
+    }
+    else
+    {
       ctrl_arch_->lh_pos_hm_->InitializeRampToMin(transition_duration_);
       ctrl_arch_->lh_ori_hm_->InitializeRampToMin(transition_duration_);
       ctrl_arch_->rh_pos_hm_->InitializeRampToMin(transition_duration_);
@@ -86,35 +97,35 @@ void Manipulation::FirstVisit() {
 }
 
 void Manipulation::OneStep() {
- // std::cout << "Manipulation OneStep called" << std::endl;
+
   background_time_ = sp_->current_time_ - background_start_time_;
-  if (!initialized_)
-    initializaiton_time_ = sp_->current_time_ - initializaiton_start_time_;
+
   if (!transitted_)
     transition_time_ = sp_->current_time_ - transition_start_time_;
 
-  if (state_id_ == draco_states::kDHManipulation and initialized_) {
+  if (state_id_ == draco_states::kDHManipulation)
+  {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->rh_ori_hm_->UpdateRampToMax(transition_time_);
-  } else {
+  }
+  else 
+  {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMin(transition_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMin(transition_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMin(transition_time_);
     ctrl_arch_->rh_ori_hm_->UpdateRampToMin(transition_time_);
   }
 
-  ctrl_arch_->lh_SE3_tm_->UpdateHandPose(sp_->current_time_);
-  ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+  ctrl_arch_->lh_SE3_tm_->UpdateHandPose(background_time_);
+  ctrl_arch_->rh_SE3_tm_->UpdateHandPose(background_time_);
 }
 
 bool Manipulation::EndOfState() 
 {
   if (!transitted_)
     transitted_ = transition_time_ > transition_duration_;
-  if (!initialized_)
-    initialized_ = initializaiton_time_ > initializaiton_duration_;
   return background_time_ > moving_duration_;
 }
 

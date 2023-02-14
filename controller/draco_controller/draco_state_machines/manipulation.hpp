@@ -31,15 +31,11 @@ private:
 
   DracoStateProvider *sp_;
 
-  int initialized_;
-  double initializaiton_duration_;
-  double initializaiton_time_;
-  double initializaiton_start_time_;
+  int transitted_;
 
   double moving_duration_;
-
-  int transitted_;
   double transition_duration_;
+
   double transition_time_;
   double transition_start_time_;
 };
