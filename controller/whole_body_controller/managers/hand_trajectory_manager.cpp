@@ -44,21 +44,29 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   duration_ = duration;
 
   Eigen::VectorXd init_pos(3);
-  init_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
+  Eigen::Quaterniond init_ori;
 
-  Eigen::VectorXd target_pos(3);
-  target_pos << target_pose.translation();
+  if (!initialized_)
+  {
+    init_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
+    init_ori = robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear();
+    
+    initialized_ = 1;
+  }
+  else
+  {
+    init_pos << target_pos_;
+    init_ori = target_ori_;
+  }
 
-  Eigen::VectorXd init_vel(3);
-  init_vel << robot_->GetLinkSpatialVel(pos_task_->TargetIdx()).tail<3>();
+  target_pos_ << target_pose.translation();
+  target_ori_ = target_pose.linear();
 
-  Eigen::Quaterniond init_ori(
-      robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear());
-  Eigen::Quaterniond target_ori(target_pose.linear());
+  Eigen::VectorXd init_vel = Eigen::VectorXd::Zero(3);;
 
-  pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos, 
+  pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos_, 
                                   Eigen::Vector3d::Zero(), duration_);
-  ori_curve_ = new HermiteQuaternionCurve(init_ori, init_vel, target_ori,
+  ori_curve_ = new HermiteQuaternionCurve(init_ori, init_vel, target_ori_,
                                           Eigen::Vector3d::Zero(), duration_);
 }
 
