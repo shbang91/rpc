@@ -2,10 +2,13 @@ close all;
 clear;
 clc;
 
+addpath("/tmp")
 addpath("experiment_data")
 addpath("plot")
+addpath("plot/draco")
 
 exp_data_location = 'experiment_data';
+b_include_lhand_task = true;
 
 d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 [tmp, i] = max([d.datenum]);
@@ -364,6 +367,197 @@ for i = 1:6
     sgtitle('Torso ori task in LOCAL', 'FontSize', 30)
 end
 
+if b_include_lhand_task
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %left hand pos task
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    figure(num_fig)
+    num_fig = num_fig + 1;
+    j = 0;
+    k = 0;
+    for i = 1:6
+        subplot(3,2,i);
+        if mod(i, 2) == 1
+            j = j + 1;
+            plot(wbc_time, des_lh_pos(j, :), 'r', 'LineWidth', 3);
+            hold on
+            plot(wbc_time, act_lh_pos(j, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([des_lh_pos(j,:), act_lh_pos(j,:)]);
+            max_val = max([des_lh_pos(j,:), act_lh_pos(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(xyz_label(j))
+        else
+            k = k + 1;
+            plot(wbc_time, des_lh_vel(k, :), 'r', 'LineWidth', 3);
+             hold on
+            plot(wbc_time, act_lh_vel(k, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([des_lh_vel(j,:), act_lh_vel(j,:)]);
+            max_val = max([des_lh_vel(j,:), act_lh_vel(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(xyz_dot_label(k))
+        end
+        sgtitle('Left Hand Task', 'FontSize', 30)
+    end
+    
+    % orientation
+    [row, col] = size(des_lh_ori);
+    des_lh_quat = zeros(row, col);
+    des_lh_quat(1, :) = des_lh_ori(4, :);
+    des_lh_quat(2:4, :) = des_lh_ori(1:3, :);
+    
+    act_lh_quat = zeros(row, col);
+    act_lh_quat(1, :) = act_lf_ori(4, :);
+    act_lh_quat(2:4, :) = act_lf_ori(1:3, :);
+    
+    des_lh_ori_euler_xyz = zeros(3, col);
+    act_lh_ori_euler_xyz = zeros(3, col);
+    for i = 1: col
+        des_lh_ori_euler_xyz(:, i) = quat2eul(des_lh_quat(:, i).', 'xyz');
+        act_lh_ori_euler_xyz(:, i) = quat2eul(act_lh_quat(:, i).', 'xyz');
+    end
+    
+    figure(num_fig)
+    num_fig = num_fig + 1;
+    j = 0;
+    k = 0;
+    for i = 1:6
+        subplot(3,2,i);
+        if mod(i, 2) == 1
+            j = j + 1;
+            plot(wbc_time, des_lh_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+            hold on
+            plot(wbc_time, act_lh_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([des_lh_ori_euler_xyz(j,:), act_lh_ori_euler_xyz(j,:)]);
+            max_val = max([des_lh_ori_euler_xyz(j,:), act_lh_ori_euler_xyz(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(rpy_label(j))
+        else
+            k = k + 1;
+            plot(wbc_time, des_lh_ori_vel(k, :), 'r', 'LineWidth', 3);
+             hold on
+            plot(wbc_time, act_lh_ori_vel(k, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([des_lh_ori_vel(j,:), act_lh_ori_vel(j,:)]);
+            max_val = max([des_lh_ori_vel(j,:), act_lh_ori_vel(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(xyz_dot_label(k))
+        end
+        sgtitle('Left Hand ori task', 'FontSize', 30)
+    end
+    
+    % Local
+    figure(num_fig)
+    num_fig = num_fig + 1;
+    j = 0;
+    k = 0;
+    for i = 1:6
+        subplot(3,2,i);
+        if mod(i, 2) == 1
+            j = j + 1;
+            plot(wbc_time, local_des_lh_pos(j, :), 'r', 'LineWidth', 3);
+            hold on
+            plot(wbc_time, local_act_lh_pos(j, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([local_des_lh_pos(j,:), local_act_lh_pos(j,:)]);
+            max_val = max([local_des_lh_pos(j,:), local_act_lh_pos(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(xyz_label(j))
+        else
+            k = k + 1;
+            plot(wbc_time, local_des_lh_vel(k, :), 'r', 'LineWidth', 3);
+             hold on
+            plot(wbc_time, local_act_lh_vel(k, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([local_des_lh_vel(j,:), local_act_lh_vel(j,:)]);
+            max_val = max([local_des_lh_vel(j,:), local_act_lh_vel(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(xyz_dot_label(k))
+        end
+        sgtitle('Left Hand Task in LOCAL', 'FontSize', 30)
+    end
+    
+    % orientation
+    [row, col] = size(local_des_lh_ori);
+    local_des_lh_quat = zeros(row, col);
+    local_des_lh_quat(1, :) = local_des_lh_ori(4, :);
+    local_des_lh_quat(2:4, :) = local_des_lh_ori(1:3, :);
+    
+    local_act_lh_quat = zeros(row, col);
+    local_act_lh_quat(1, :) = local_act_lf_ori(4, :);
+    local_act_lh_quat(2:4, :) = local_act_lf_ori(1:3, :);
+    
+    local_des_lh_ori_euler_xyz = zeros(3, col);
+    local_act_lh_ori_euler_xyz = zeros(3, col);
+    for i = 1: col
+        local_des_lh_ori_euler_xyz(:, i) = quat2eul(local_des_lh_quat(:, i).', 'xyz');
+        local_act_lh_ori_euler_xyz(:, i) = quat2eul(local_act_lh_quat(:, i).', 'xyz');
+    end
+    
+    figure(num_fig)
+    num_fig = num_fig + 1;
+    j = 0;
+    k = 0;
+    for i = 1:6
+        subplot(3,2,i);
+        if mod(i, 2) == 1
+            j = j + 1;
+            plot(wbc_time, local_des_lh_ori_euler_xyz(j, :), 'r', 'LineWidth', 3);
+            hold on
+            plot(wbc_time, local_act_lh_ori_euler_xyz(j, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([local_des_lh_ori_euler_xyz(j,:), local_act_lh_ori_euler_xyz(j,:)]);
+            max_val = max([local_des_lh_ori_euler_xyz(j,:), local_act_lh_ori_euler_xyz(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(rpy_label(j))
+        else
+            k = k + 1;
+            plot(wbc_time, local_des_lh_ori_vel(k, :), 'r', 'LineWidth', 3);
+             hold on
+            plot(wbc_time, local_act_lh_ori_vel(k, :), 'b', 'LineWidth', 2);
+            grid on
+            min_val = min([local_des_lh_ori_vel(j,:), local_act_lh_ori_vel(j,:)]);
+            max_val = max([local_des_lh_ori_vel(j,:), local_act_lh_ori_vel(j,:)]);
+            min_val = min_val - 0.1 * (max_val - min_val);
+            max_val = max_val + 0.1 *(max_val - min_val);
+            set_fig_opt()
+            plot_phase(time, state, min_val, max_val, phase_color)
+            xlabel('time')
+            ylabel(xyz_dot_label(k))
+        end
+        sgtitle('Left Hand ori task in LOCAL', 'FontSize', 30)
+    end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %left foot pos task
@@ -998,71 +1192,71 @@ linkaxes(ax,'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % wbc costs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-k = 0;
-num_of_tasks = numel(task_names);
-num_of_columns = 4;
-num_of_rows = ceil(num_of_tasks/num_of_columns);
-for i = 1:num_of_tasks
-    curr_task_cost = eval(sprintf('wbc_cost_%s', task_names{i}));
-    ax(i) = subplot(num_of_rows, num_of_columns, i);
-    plot(wbc_time, curr_task_cost, 'r', 'LineWidth', 3);
-    hold on;
-    grid on
-    if ~(any(isnan(curr_task_cost)))
-        min_val = min(curr_task_cost);  %*ones(size(curr_task_cost));
-        max_val = max(curr_task_cost);  %*ones(size(curr_task_cost));
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-    else
-        min_val = 0;
-        max_val = 1;
-    end
-%   set_fig_opt()
-    plot_phase(wbc_time, state, min_val, max_val, phase_color)
-    ylabel(draco_wbc_cost_labels(i))
-    if i == 1
-        sgtitle('WBC Unweighted task costs', 'FontSize',30)
-    end
-    if i >= (num_of_tasks - num_of_columns)
-        xlabel('time')
-    end
-end
-linkaxes(ax,'x')
-
-% weighted tasks
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-k = 0;
-num_of_tasks = numel(task_names);
-num_of_columns = 4;
-num_of_rows = ceil(num_of_tasks/num_of_columns);
-for i = 1:num_of_tasks
-    curr_task_cost = eval(sprintf('wbc_cost_w_%s', task_names{i}));
-    ax(i) = subplot(num_of_rows, num_of_columns, i);
-    plot(wbc_time, curr_task_cost, 'r', 'LineWidth', 3);
-    hold on;
-    grid on
-    if ~(any(isnan(curr_task_cost)))
-        min_val = min(curr_task_cost);  %*ones(size(curr_task_cost));
-        max_val = max(curr_task_cost);  %*ones(size(curr_task_cost));
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-    else
-        min_val = 0;
-        max_val = 1;
-    end
-%   set_fig_opt()
-    plot_phase(wbc_time, state, min_val, max_val, phase_color)
-    ylabel(draco_wbc_cost_labels(i))
-    if i == 1
-        sgtitle('WBC Weighted task costs', 'FontSize',30)
-    end
-    if i >= (num_of_tasks - num_of_columns)
-        xlabel('time')
-    end
-end
-linkaxes(ax,'x')
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% j = 0;
+% k = 0;
+% num_of_tasks = numel(task_names);
+% num_of_columns = 4;
+% num_of_rows = ceil(num_of_tasks/num_of_columns);
+% for i = 1:num_of_tasks
+%     curr_task_cost = eval(sprintf('wbc_cost_%s', task_names{i}));
+%     ax(i) = subplot(num_of_rows, num_of_columns, i);
+%     plot(wbc_time, curr_task_cost, 'r', 'LineWidth', 3);
+%     hold on;
+%     grid on
+%     if ~(any(isnan(curr_task_cost)))
+%         min_val = min(curr_task_cost);  %*ones(size(curr_task_cost));
+%         max_val = max(curr_task_cost);  %*ones(size(curr_task_cost));
+%         min_val = min_val - 0.1 * (max_val - min_val);
+%         max_val = max_val + 0.1 *(max_val - min_val);
+%     else
+%         min_val = 0;
+%         max_val = 1;
+%     end
+% %   set_fig_opt()
+%     plot_phase(wbc_time, state, min_val, max_val, phase_color)
+%     ylabel(draco_wbc_cost_labels(i))
+%     if i == 1
+%         sgtitle('WBC Unweighted task costs', 'FontSize',30)
+%     end
+%     if i >= (num_of_tasks - num_of_columns)
+%         xlabel('time')
+%     end
+% end
+% linkaxes(ax,'x')
+% 
+% % weighted tasks
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% j = 0;
+% k = 0;
+% num_of_tasks = numel(task_names);
+% num_of_columns = 4;
+% num_of_rows = ceil(num_of_tasks/num_of_columns);
+% for i = 1:num_of_tasks
+%     curr_task_cost = eval(sprintf('wbc_cost_w_%s', task_names{i}));
+%     ax(i) = subplot(num_of_rows, num_of_columns, i);
+%     plot(wbc_time, curr_task_cost, 'r', 'LineWidth', 3);
+%     hold on;
+%     grid on
+%     if ~(any(isnan(curr_task_cost)))
+%         min_val = min(curr_task_cost);  %*ones(size(curr_task_cost));
+%         max_val = max(curr_task_cost);  %*ones(size(curr_task_cost));
+%         min_val = min_val - 0.1 * (max_val - min_val);
+%         max_val = max_val + 0.1 *(max_val - min_val);
+%     else
+%         min_val = 0;
+%         max_val = 1;
+%     end
+% %   set_fig_opt()
+%     plot_phase(wbc_time, state, min_val, max_val, phase_color)
+%     ylabel(draco_wbc_cost_labels(i))
+%     if i == 1
+%         sgtitle('WBC Weighted task costs', 'FontSize',30)
+%     end
+%     if i >= (num_of_tasks - num_of_columns)
+%         xlabel('time')
+%     end
+% end
+% linkaxes(ax,'x')
