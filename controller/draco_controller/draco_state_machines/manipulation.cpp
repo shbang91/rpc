@@ -28,15 +28,15 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   target_lh_ori_ = Eigen::VectorXd::Zero(4);
   target_lh_ori_ << 0, -0.707, 0, 0.707;
 
-  moving_duration_ = 0.1;
+  moving_duration_ = 0.02;
 
   background_time_ = 0.;
-  initialized_ = 0;
+  initialized_ = 1;
   initializaiton_duration_ = 1.;
   initializaiton_start_time_ = sp_->current_time_;
 
   transitted_ = 0;
-  transition_duration_ = 0.3;
+  transition_duration_ = 0.1;
 }
 
 void Manipulation::FirstVisit() {

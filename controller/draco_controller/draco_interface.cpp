@@ -91,13 +91,6 @@ DracoInterface::~DracoInterface() {
 }
 
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
-#if B_USE_VR_TELEOP
-  if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
-      // Get commands from zmq, send interrupt
-      DracoVRCommands cmd = DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
-      _ProcessVRInput(&cmd, sensor_data);
-  }
-#endif
   sp_->count_ = count_;
   sp_->current_time_ = static_cast<double>(count_) * sp_->servo_dt_;
   sp_->state_ = ctrl_arch_->state();
@@ -107,55 +100,58 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
       static_cast<DracoSensorData *>(sensor_data);
   DracoCommand *draco_command = static_cast<DracoCommand *>(command_data);
 
-  // NEED TO UPDATE THESE VALUES
-  // OUTPUTS
-  // ctrl_arch_->target_rh_pos_
-  // ctrl_arch_->target_lh_pos_
-  // ctrl_arch_->target_rh_ori_
-  // ctrl_arch_->target_lh_ori_
+#if B_USE_VR_TELEOP
+  if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
+      // Get commands from zmq, send interrupt
+      DracoVRCommands cmd = DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
+      //_ProcessVRInput(&cmd, sensor_data);
+      Eigen::Vector3d test_rh_pos = cmd.rh_pos;
+      Eigen::Vector3d test_lh_pos = cmd.lh_pos;
+      Eigen::Quaterniond test_rh_quat;
+      Eigen::Quaterniond test_lh_quat;
+      test_rh_quat = cmd.lh_ori;
+      test_lh_quat = cmd.rh_ori;
 
-  // REFER
-  // draco_sensor_data->base_joint_pos_;
-  // draco_sensor_data->base_joint_quat_; // x, y, z, w order
+      Eigen::Vector3d target_rh_pos;
+      Eigen::Vector3d target_lh_pos;
+      Eigen::Quaterniond target_rh_quat;
+      Eigen::Quaterniond target_lh_quat;
 
-  // INPUTS
-  // vr_command_->target_rh_pos_;
-  // vr_command_->global_lh_pos_;
-  // vr_command_->global_rh_ori_;
-  // vr_command_->global_lh_ori_;
+      Eigen::Vector3d base_pos;
+      Eigen::Quaterniond base_quat;
 
-  Eigen::Vector3d test_rh_pos(0.3, -0.3, 0.1);
-  Eigen::Vector3d test_lh_pos(0.3, 0.3, 0.1);
-  Eigen::Quaterniond test_rh_quat;
-  Eigen::Quaterniond test_lh_quat;
-  test_rh_quat = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
-  test_lh_quat = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+      Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
+      Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
 
-  Eigen::Vector3d target_rh_pos;
-  Eigen::Vector3d target_lh_pos;
-  Eigen::Quaterniond target_rh_quat;
-  Eigen::Quaterniond target_lh_quat;
+      Eigen::Matrix3d rot_word_to_base;
 
-  Eigen::Vector3d base_pos;
-  Eigen::Quaterniond base_quat;
+      base_pos = draco_sensor_data->base_joint_pos_;
+      base_quat.x() = draco_sensor_data->base_joint_quat_[0];
+      base_quat.y() = draco_sensor_data->base_joint_quat_[1];
+      base_quat.z() = draco_sensor_data->base_joint_quat_[2];
+      base_quat.w() = draco_sensor_data->base_joint_quat_[3];
 
-  Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
-  Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
+      rot_word_to_base = base_quat.toRotationMatrix();
+      target_rh_pos = rot_word_to_base * test_rh_pos + base_pos;
+      target_lh_pos = rot_word_to_base * test_lh_pos + base_pos;
+      target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
+      target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
 
-  Eigen::Matrix3d rot_word_to_base;
+      ctrl_arch_->background_manipulation_->target_rh_pos_<< target_rh_pos;
+      ctrl_arch_->background_manipulation_->target_lh_pos_<< target_lh_pos;
 
-  base_pos = draco_sensor_data->base_joint_pos_;
-  base_quat.x() = draco_sensor_data->base_joint_quat_[0];
-  base_quat.y() = draco_sensor_data->base_joint_quat_[1];
-  base_quat.z() = draco_sensor_data->base_joint_quat_[2];
-  base_quat.w() = draco_sensor_data->base_joint_quat_[3];
+      ctrl_arch_->background_manipulation_->target_rh_ori_[0] = target_rh_quat.x(); 
+      ctrl_arch_->background_manipulation_->target_rh_ori_[1] = target_rh_quat.y(); 
+      ctrl_arch_->background_manipulation_->target_rh_ori_[2] = target_rh_quat.z(); 
+      ctrl_arch_->background_manipulation_->target_rh_ori_[3] = target_rh_quat.w();
 
-  rot_word_to_base = base_quat.toRotationMatrix();
-  target_rh_pos = rot_word_to_base * test_rh_pos + base_pos;
-  target_lh_pos = rot_word_to_base * test_lh_pos + base_pos;
-  target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
-  target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
+      ctrl_arch_->background_manipulation_->target_lh_ori_[0] = target_lh_quat.x(); 
+      ctrl_arch_->background_manipulation_->target_lh_ori_[1] = target_lh_quat.y(); 
+      ctrl_arch_->background_manipulation_->target_lh_ori_[2] = target_lh_quat.z(); 
+      ctrl_arch_->background_manipulation_->target_lh_ori_[3] = target_lh_quat.w();
 
+  }
+#endif
   // if (count_ <= waiting_count_) {
   // for simulation without state estimator
   // se_->UpdateGroundTruthSensorData(draco_sensor_data);
@@ -206,12 +202,16 @@ void DracoInterface::_SafeCommand(DracoSensorData *data,
 
 void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd, void *sensor_data) {
 
-  Eigen::Vector3d test_rh_pos = cmd->rh_pos;
-  Eigen::Vector3d test_lh_pos = cmd->lh_pos;
+  Eigen::Vector3d test_rh_pos(0.3, -0.3, 0.1);
+  Eigen::Vector3d test_lh_pos(0.3, 0.3, 0.1);
+  // Eigen::Vector3d test_rh_pos = cmd->rh_pos;
+  // Eigen::Vector3d test_lh_pos = cmd->lh_pos;
   Eigen::Quaterniond test_rh_quat;
   Eigen::Quaterniond test_lh_quat;
-  test_rh_quat = cmd->rh_ori;
-  test_lh_quat = cmd->lh_ori;
+  //test_rh_quat = cmd->rh_ori;
+  //test_lh_quat = cmd->lh_ori;
+  test_rh_quat = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+  test_lh_quat = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
 
   Eigen::Vector3d target_rh_pos;
   Eigen::Vector3d target_lh_pos;
@@ -230,7 +230,7 @@ void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd, void *sensor_data) {
       static_cast<DracoSensorData *>(sensor_data);
 
   base_pos = draco_sensor_data->base_joint_pos_;
-  base_pos[2] += 0.5;
+  base_pos[2] += 2;
   base_quat.x() = draco_sensor_data->base_joint_quat_[0];
   base_quat.y() = draco_sensor_data->base_joint_quat_[1];
   base_quat.z() = draco_sensor_data->base_joint_quat_[2];
@@ -257,6 +257,8 @@ void DracoInterface::_ProcessVRInput(DracoVRCommands* cmd, void *sensor_data) {
 
   ctrl_arch_->background_manipulation_->target_lh_pos_<< cmd->lh_pos;
   ctrl_arch_->background_manipulation_->target_rh_pos_<< cmd->rh_pos;
+
+  std::cout << target_lh_pos << std::endl;
   
   /*
   ctrl_arch_->background_manipulation_->target_rh_ori_<< target_rh_quat.x(), 
