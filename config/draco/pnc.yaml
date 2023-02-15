@@ -10,7 +10,7 @@ b_sim: true ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
-  kf: true
+  kf: false
   ########################################################################
   ## sim params
   ########################################################################
@@ -42,7 +42,7 @@ state_estimator:
   exp_num_data_ang_vel: [5, 5, 5]
 
   ## for simulation please use 000000000
-  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
@@ -167,26 +167,26 @@ wbc:
       # sim_weight_at_walking : [0., 0., 0.]
       # sim_kp : [0., 0., 0.]
       # sim_kd : [0., 0., 0.]
-      sim_weight : [200., 200., 200.]
+      sim_weight : [50., 50., 50.]
       sim_weight_at_walking : [10., 10., 10.]
-      sim_kp : [100., 100., 100.]
-      sim_kd : [10., 10., 10.]
+      sim_kp : [10., 10., 10.]
+      sim_kd : [5., 5., 5.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0.]
-      exp_weight_at_walking : [0., 0., 0.]
-      exp_kp : [0., 0., 0.]
-      exp_kd : [0., 0., 0.]
+      exp_weight : [10., 10., 10.]
+      exp_weight_at_walking : [5., 5., 5.]
+      exp_kp : [10., 10., 10.]
+      exp_kd : [1., 1., 1.]
 
     hand_ori_task:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [200., 200., 200.]
+      sim_weight : [50., 50., 50.]
       sim_weight_at_walking : [10., 10., 10.]
-      sim_kp : [50., 50., 50.]
+      sim_kp : [10., 10., 10.]
       sim_kd : [5., 5., 5.]
       # sim_weight : [1., 1., 1.]
       # sim_weight_at_walking : [0., 0., 0.]
@@ -196,10 +196,10 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0.]
-      exp_weight_at_walking : [0., 0., 0.]
-      exp_kp : [0., 0., 0.]
-      exp_kd : [0., 0., 0.]
+      exp_weight : [10., 10., 10.]
+      exp_weight_at_walking : [5., 5., 5.]
+      exp_kp : [10., 10., 10.]
+      exp_kd : [1., 1., 1.]
 
     foot_pos_task:
       ########################################################################
@@ -289,7 +289,7 @@ state_machine:
       wait_time: 10.
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 5.
       target_com_height: 0.658
       target_base_height: 0.90
 

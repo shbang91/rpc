@@ -43,13 +43,11 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   ctrl_arch_->lh_ori_hm_->UpdateRampToMin(transition_duration_);
   ctrl_arch_->rh_pos_hm_->UpdateRampToMin(transition_duration_);
   ctrl_arch_->rh_ori_hm_->UpdateRampToMin(transition_duration_);
-
 }
 
-void Manipulation::FirstVisit() 
-{
+void Manipulation::FirstVisit() {
   background_start_time_ = sp_->current_time_;
-  
+
   Eigen::Isometry3d target_rh_iso;
   Eigen::Isometry3d target_lh_iso;
   Eigen::Quaterniond target_rh_quat;
@@ -70,24 +68,20 @@ void Manipulation::FirstVisit()
   target_lh_quat.w() = target_lh_ori_(3);
   target_lh_quat = target_lh_quat.normalized();
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
-  
-  ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
-      target_rh_iso, 0.0, moving_duration_);
-  ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(
-      target_lh_iso, 0.0, moving_duration_);
 
-  if (!transitted_)
-  {
-    transition_start_time_ = sp_->current_time_; 
-    if (state_id_ == draco_states::kDHManipulation)
-    {
+  ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(target_rh_iso, 0.0,
+                                                   moving_duration_);
+  ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(target_lh_iso, 0.0,
+                                                   moving_duration_);
+
+  if (!transitted_) {
+    transition_start_time_ = sp_->current_time_;
+    if (state_id_ == draco_states::kDHManipulation) {
       ctrl_arch_->lh_pos_hm_->InitializeRampToMax(transition_duration_);
       ctrl_arch_->lh_ori_hm_->InitializeRampToMax(transition_duration_);
       ctrl_arch_->rh_pos_hm_->InitializeRampToMax(transition_duration_);
       ctrl_arch_->rh_ori_hm_->InitializeRampToMax(transition_duration_);
-    }
-    else
-    {
+    } else {
       ctrl_arch_->lh_pos_hm_->InitializeRampToMin(transition_duration_);
       ctrl_arch_->lh_ori_hm_->InitializeRampToMin(transition_duration_);
       ctrl_arch_->rh_pos_hm_->InitializeRampToMin(transition_duration_);
@@ -103,15 +97,12 @@ void Manipulation::OneStep() {
   if (!transitted_)
     transition_time_ = sp_->current_time_ - transition_start_time_;
 
-  if (state_id_ == draco_states::kDHManipulation)
-  {
+  if (state_id_ == draco_states::kDHManipulation) {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMax(transition_time_);
     ctrl_arch_->rh_ori_hm_->UpdateRampToMax(transition_time_);
-  }
-  else 
-  {
+  } else {
     ctrl_arch_->lh_pos_hm_->UpdateRampToMin(transition_time_);
     ctrl_arch_->lh_ori_hm_->UpdateRampToMin(transition_time_);
     ctrl_arch_->rh_pos_hm_->UpdateRampToMin(transition_time_);
@@ -122,8 +113,7 @@ void Manipulation::OneStep() {
   ctrl_arch_->rh_SE3_tm_->UpdateHandPose(background_time_);
 }
 
-bool Manipulation::EndOfState() 
-{
+bool Manipulation::EndOfState() {
   if (!transitted_)
     transitted_ = transition_time_ > transition_duration_;
   return background_time_ > moving_duration_;
@@ -131,8 +121,6 @@ bool Manipulation::EndOfState()
 
 void Manipulation::LastVisit() { background_time_ = 0.; }
 
-StateId Manipulation::GetNextState() {
-  return draco_states::kDHManipulation;
-}
+StateId Manipulation::GetNextState() { return draco_states::kDHManipulation; }
 
 void Manipulation::SetParameters(const YAML::Node &node) {}

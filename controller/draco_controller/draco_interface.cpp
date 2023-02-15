@@ -104,12 +104,16 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // vr_command_->global_rh_ori_;
   // vr_command_->global_lh_ori_;
 
-  Eigen::Vector3d test_rh_pos(0.3, -0.15, 0.5);
-  Eigen::Vector3d test_lh_pos(0.3, 0.15, 0.5);
+  Eigen::Vector3d test_rh_pos(0.2, -0.2, 0.);
+  Eigen::Vector3d test_lh_pos(0.2, 0.2, 0.);
+  // Eigen::Vector3d test_rh_pos(0., 0., 0.);
+  // Eigen::Vector3d test_lh_pos(0., 0., 0.);
   Eigen::Quaterniond test_rh_quat;
   Eigen::Quaterniond test_lh_quat;
-  test_rh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
-  test_lh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+  test_rh_quat = Eigen::AngleAxisd(
+      0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+  test_lh_quat = Eigen::AngleAxisd(
+      0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
 
   Eigen::VectorXd clamped_rh_pos(3);
   Eigen::VectorXd clamped_lh_pos(3);
@@ -122,8 +126,10 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   Eigen::Vector3d base_pos;
   Eigen::Quaterniond base_quat;
 
-  Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
-  Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707, 0.0); //THIS IS IN THE ORDER OF W, X, Y, Z
+  Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707,
+                                   0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
+  Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
+                                   0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
 
   Eigen::Matrix3d rot_word_to_base;
 
@@ -147,17 +153,17 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
   target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
 
-  ctrl_arch_->background_manipulation_->target_rh_pos_<< target_rh_pos;
-  ctrl_arch_->background_manipulation_->target_lh_pos_<< target_lh_pos;
+  ctrl_arch_->background_manipulation_->target_rh_pos_ << target_rh_pos;
+  ctrl_arch_->background_manipulation_->target_lh_pos_ << target_lh_pos;
 
-  ctrl_arch_->background_manipulation_->target_rh_ori_[0] = target_rh_quat.x(); 
-  ctrl_arch_->background_manipulation_->target_rh_ori_[1] = target_rh_quat.y(); 
-  ctrl_arch_->background_manipulation_->target_rh_ori_[2] = target_rh_quat.z(); 
+  ctrl_arch_->background_manipulation_->target_rh_ori_[0] = target_rh_quat.x();
+  ctrl_arch_->background_manipulation_->target_rh_ori_[1] = target_rh_quat.y();
+  ctrl_arch_->background_manipulation_->target_rh_ori_[2] = target_rh_quat.z();
   ctrl_arch_->background_manipulation_->target_rh_ori_[3] = target_rh_quat.w();
 
-  ctrl_arch_->background_manipulation_->target_lh_ori_[0] = target_lh_quat.x(); 
-  ctrl_arch_->background_manipulation_->target_lh_ori_[1] = target_lh_quat.y(); 
-  ctrl_arch_->background_manipulation_->target_lh_ori_[2] = target_lh_quat.z(); 
+  ctrl_arch_->background_manipulation_->target_lh_ori_[0] = target_lh_quat.x();
+  ctrl_arch_->background_manipulation_->target_lh_ori_[1] = target_lh_quat.y();
+  ctrl_arch_->background_manipulation_->target_lh_ori_[2] = target_lh_quat.z();
   ctrl_arch_->background_manipulation_->target_lh_ori_[3] = target_lh_quat.w();
 
   // if (count_ <= waiting_count_) {

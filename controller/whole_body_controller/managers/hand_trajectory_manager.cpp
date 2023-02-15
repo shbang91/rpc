@@ -11,7 +11,6 @@ HandTrajectoryManager::HandTrajectoryManager(Task *pos_task, Task *ori_task,
   util::PrettyConstructor(2, "HandTrajectoryManager");
   target_pos_ = Eigen::Vector3d::Zero();
   target_ori_ = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
-
 }
 
 HandTrajectoryManager::~HandTrajectoryManager() {
@@ -41,24 +40,21 @@ void HandTrajectoryManager::UseCurrent() {
 
 void HandTrajectoryManager::InitializeHandTrajectory(
     const Eigen::Isometry3d &target_pose, const double start_time,
-    const double duration) 
-{
+    const double duration) {
   start_time_ = start_time;
   duration_ = duration;
 
   Eigen::VectorXd init_pos(3);
   Eigen::Quaterniond init_ori;
-  Eigen::VectorXd init_vel = Eigen::VectorXd::Zero(3);;
+  Eigen::VectorXd init_vel = Eigen::VectorXd::Zero(3);
+  ;
 
-  if (!initialized_)
-  {
+  if (!initialized_) {
     init_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
-    init_ori = robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear();    
+    init_ori = robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear();
     initialized_ = 1;
     std::cout << "Initialize Hand Trajectory" << std::endl;
-  }
-  else
-  {
+  } else {
     init_pos << target_pos_;
     init_ori = target_ori_;
     std::cout << "Update Hand Trajectory" << std::endl;
@@ -67,8 +63,8 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   target_pos_ << target_pose.translation();
   target_ori_ = target_pose.linear();
 
-  pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos_, 
-                                  Eigen::Vector3d::Zero(), duration_);
+  pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos_,
+                                   Eigen::Vector3d::Zero(), duration_);
   ori_curve_ = new HermiteQuaternionCurve(init_ori, init_vel, target_ori_,
                                           Eigen::Vector3d::Zero(), duration_);
 }
@@ -94,19 +90,18 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
 }
 
 void HandTrajectoryManager::UpdateDesired(
-    const Eigen::Isometry3d &target_pose) 
-{  
+    const Eigen::Isometry3d &target_pose) {
   Eigen::VectorXd target_pos = Eigen::VectorXd::Zero(3);
   target_pos << target_pose.translation();
 
   Eigen::Quaterniond target_ori_quat(target_pose.linear());
-  
+
   Eigen::VectorXd target_ori(4);
   target_ori << target_ori_quat.normalized().coeffs();
 
   if (pos_task_ != nullptr)
     pos_task_->UpdateDesired(target_pos, Eigen::Vector3d::Zero(),
-                           Eigen::Vector3d::Zero());
+                             Eigen::Vector3d::Zero());
   if (ori_task_ != nullptr)
     ori_task_->UpdateDesired(target_ori, Eigen::Vector3d::Zero(),
                              Eigen::Vector3d::Zero());
