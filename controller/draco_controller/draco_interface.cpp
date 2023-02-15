@@ -104,8 +104,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // vr_command_->global_rh_ori_;
   // vr_command_->global_lh_ori_;
 
-  Eigen::Vector3d test_rh_pos(0.3, -0.15, 0.5);
-  Eigen::Vector3d test_lh_pos(0.3, 0.15, 0.5);
+  Eigen::Vector3d test_rh_pos(0.3, -0.15, 0.0);
+  Eigen::Vector3d test_lh_pos(0.3, 0.15, 0.0);
   Eigen::Quaterniond test_rh_quat;
   Eigen::Quaterniond test_lh_quat;
   test_rh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
@@ -142,8 +142,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   base_quat.w() = draco_sensor_data->base_joint_quat_[3];
 
   rot_word_to_base = base_quat.toRotationMatrix();
-  target_rh_pos = rot_word_to_base * clamped_rh_pos + base_pos;
-  target_lh_pos = rot_word_to_base * clamped_lh_pos + base_pos;
+  target_rh_pos = clamped_rh_pos + base_pos;
+  target_lh_pos = clamped_lh_pos + base_pos;
   target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
   target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
 

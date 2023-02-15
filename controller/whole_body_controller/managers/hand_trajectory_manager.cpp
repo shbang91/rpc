@@ -11,6 +11,7 @@ HandTrajectoryManager::HandTrajectoryManager(Task *pos_task, Task *ori_task,
   util::PrettyConstructor(2, "HandTrajectoryManager");
   target_pos_ = Eigen::Vector3d::Zero();
   target_ori_ = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
+  delta_pos_speed_ = 0.05;
 
 }
 
@@ -41,30 +42,43 @@ void HandTrajectoryManager::UseCurrent() {
 
 void HandTrajectoryManager::InitializeHandTrajectory(
     const Eigen::Isometry3d &target_pose, const double start_time,
-    const double duration) 
+    const double duration, const int initialized) 
 {
   start_time_ = start_time;
   duration_ = duration;
 
-  Eigen::VectorXd init_pos(3);
+  double delta_pos_norm;
   Eigen::Quaterniond init_ori;
   Eigen::VectorXd init_vel = Eigen::VectorXd::Zero(3);;
+  Eigen::VectorXd cmd_pos(3);
+  Eigen::VectorXd delta_pos(3);
+  Eigen::VectorXd init_pos(target_pos_);
 
-  if (!initialized_)
+  if (!initialized)
   {
-    init_pos << robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
+    init_pos = robot_->GetLinkIsometry(pos_task_->TargetIdx()).translation();
     init_ori = robot_->GetLinkIsometry(ori_task_->TargetIdx()).linear();    
-    initialized_ = 1;
     std::cout << "Initialize Hand Trajectory" << std::endl;
   }
   else
   {
-    init_pos << target_pos_;
     init_ori = target_ori_;
     std::cout << "Update Hand Trajectory" << std::endl;
   }
 
-  target_pos_ << target_pose.translation();
+  cmd_pos << target_pose.translation();
+  delta_pos = cmd_pos - init_pos;
+  delta_pos_norm = delta_pos.norm();
+
+  if (delta_pos_norm > duration_ * delta_pos_speed_)
+  {
+    target_pos_ = (duration_ * delta_pos_speed_/delta_pos_norm)*delta_pos + init_pos;
+  }
+  else
+  {
+    target_pos_ = cmd_pos;
+  }
+
   target_ori_ = target_pose.linear();
 
   pos_curve_ = new HermiteCurveVec(init_pos, init_vel, target_pos_, 
@@ -86,6 +100,9 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   des_pos << pos_curve_->Evaluate(current_time - start_time_);
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);
   des_ori << des_ori_quat.normalized().coeffs();
+
+  // des_vel << pos_curve_->EvaluateFirstDerivative(current_time - start_time_);
+  // ori_curve_->GetAngularVelocity(current_time - start_time_, des_ang_vel);
 
   if (pos_task_ != nullptr)
     pos_task_->UpdateDesired(des_pos, des_vel, des_ang_acc);

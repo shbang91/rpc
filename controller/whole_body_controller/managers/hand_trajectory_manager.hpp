@@ -16,7 +16,8 @@ public:
 
   void InitializeHandTrajectory( const Eigen::Isometry3d &target_pose,
                                  const double start_time,
-                                 const double duration);
+                                 const double duration,
+				 const int initialized);
   void UpdateHandPose(const double current_time);
   void UpdateDesired(const Eigen::Isometry3d &target_pose);
 
@@ -31,7 +32,8 @@ private:
   Eigen::VectorXd target_pos_;
   Eigen::Quaterniond target_ori_;
 
-  int initialized_ = 0;
+  //int initialized_ = 0;
   double duration_ = 0.;
   double start_time_ = 0.;
+  double delta_pos_speed_ = 0.;
 };
