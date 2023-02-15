@@ -132,8 +132,7 @@ void LinkOriTask::UpdateOpCommand() {
 
   pos_ << quat.normalized().coeffs();
 
-  Eigen::Quaterniond local_quat(rot_link_w.transpose() *
-                                quat.toRotationMatrix());
+  Eigen::Quaterniond local_quat(rot_link_w * quat.toRotationMatrix());
 
   local_pos_ << local_quat.normalized().coeffs();
 
