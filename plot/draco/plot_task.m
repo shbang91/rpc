@@ -3,12 +3,14 @@ clear;
 clc;
 
 addpath("/tmp")
-addpath("experiment_data")
-addpath("plot")
-addpath("plot/draco")
+% addpath("experiment_data")
+% addpath("plot")
+% addpath("plot/draco")
 
-exp_data_location = 'experiment_data';
-b_include_lhand_task = true;
+% exp_data_location = 'experiment_data';
+exp_data_location = '/tmp';
+
+b_include_lhand_task = false;
 
 d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 [tmp, i] = max([d.datenum]);
@@ -798,12 +800,12 @@ for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(wbc_time, des_rf_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_rf_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(wbc_time, act_rf_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_rf_pos(j, :), 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_rf_pos(j,:), act_rf_pos(j,:)]);
-        max_val = max([des_rf_pos(j,:), act_rf_pos(j,:)]);
+        min_val = min([local_des_rf_pos(j,:), local_act_rf_pos(j,:)]);
+        max_val = max([local_des_rf_pos(j,:), local_act_rf_pos(j,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -812,12 +814,12 @@ for i = 1:6
         ylabel(xyz_label(j))
     else
         k = k + 1;
-        plot(wbc_time, des_rf_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_rf_vel(k, :), 'r', 'LineWidth', 3);
         hold on
-        plot(wbc_time, act_rf_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_rf_vel(k, :), 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_rf_vel(j,:), act_rf_vel(j,:)]);
-        max_val = max([des_rf_vel(j,:), act_rf_vel(j,:)]);
+        min_val = min([local_des_rf_vel(j,:), local_act_rf_vel(j,:)]);
+        max_val = max([local_des_rf_vel(j,:), local_act_rf_vel(j,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
