@@ -62,6 +62,7 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   }
   else
   {
+    init_pos = target_pos_;
     init_ori = target_ori_;
     std::cout << "Update Hand Trajectory" << std::endl;
   }
@@ -98,6 +99,7 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   Eigen::VectorXd des_ang_acc = Eigen::VectorXd::Zero(3);
 
   des_pos << pos_curve_->Evaluate(current_time - start_time_);
+  std::cout << "Desired Pos" << des_pos.transpose() << std::endl;
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);
   des_ori << des_ori_quat.normalized().coeffs();
 

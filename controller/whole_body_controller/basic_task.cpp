@@ -71,7 +71,6 @@ LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_idx)
 void LinkPosTask::UpdateOpCommand() {
   pos_ = robot_->GetLinkIsometry(target_idx_).translation();
   pos_err_ = des_pos_ - pos_;
-
   vel_ = robot_->GetLinkSpatialVel(target_idx_).tail(dim_);
   vel_err_ = des_vel_ - vel_;
 
