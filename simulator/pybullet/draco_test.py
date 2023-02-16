@@ -5,6 +5,7 @@ import os
 cwd = os.getcwd()
 import sys
 
+#cwd = "~/Projects/draco3/rpc_mingyo"
 sys.path.append(cwd)
 sys.path.append(cwd + "/build/lib")  #include pybind module
 
@@ -510,7 +511,7 @@ while (True):
     t += dt
     count += 1
 
-    if t > 10.0:
+    if t > 50.0:
         break
     
 
