@@ -2,7 +2,9 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
-#include "controller/draco_controller/draco_task/draco_com_task.hpp"
+#include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
+#include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -21,10 +23,15 @@ void DoubleSupportSwaying::FirstVisit() {
   std::cout << "draco_states: kDoubleSupportSwaying" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
-  Eigen::VectorXd init_com_pos = robot_->GetRobotComPos();
-  if (sp_->b_use_base_height_)
-    init_com_pos[2] =
-        robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
+  // Eigen::VectorXd init_com_pos = robot_->GetRobotComPos();
+  // if (sp_->b_use_base_height_)
+  // init_com_pos[2] =
+  // robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
+  Eigen::Vector2d des_com_xy =
+      ctrl_arch_->tci_container_->task_map_["com_xy_task"]->DesiredPos();
+  double des_com_z =
+      ctrl_arch_->tci_container_->task_map_["com_z_task"]->DesiredPos()[0];
+  Eigen::Vector3d init_com_pos(des_com_xy[0], des_com_xy[1], des_com_z);
 
   ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_);
 }
