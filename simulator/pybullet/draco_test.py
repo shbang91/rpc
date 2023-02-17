@@ -36,6 +36,7 @@ args = parser.parse_args()
 save_path = args.path
 render_mode = args.mode
 
+
 def get_sensor_data_from_pybullet(robot):
 
     #follow pinocchio robotsystem urdf reading convention
@@ -262,6 +263,7 @@ def set_init_config_pybullet_robot(robot):
     pb.resetJointState(robot, DracoJointIdx.r_ankle_ie,
                        np.radians(hip_yaw_angle), 0.)
 
+
 if render_mode == 'gui':
     pb.connect(pb.GUI)
 else:
@@ -349,12 +351,15 @@ if render_mode != 'gui':
     video_format = cv2.VideoWriter_fourcc(*'mp4v')
     render_width = 480
     render_height = 360
-    recorder = cv2.VideoWriter(os.path.join(save_path, '{}.mp4'.format(datetime.datetime.now().strftime("%m%d_%H%M%S"))),
-                                            video_format, 30, (render_width, render_height))
+    recorder = cv2.VideoWriter(
+        os.path.join(
+            save_path,
+            '{}.mp4'.format(datetime.datetime.now().strftime("%m%d_%H%M%S"))),
+        video_format, 30, (render_width, render_height))
 
     roll = 0.0
-    pitch = -30.0 # * np.pi/180.
-    yaw = 60.0 # * np.pi/180.
+    pitch = -30.0  # * np.pi/180.
+    yaw = 60.0  # * np.pi/180.
     record_time = 0.0
 
 # Run Simulation
@@ -373,7 +378,7 @@ while (True):
     ##debugging state estimator by calculating groundtruth basejoint states
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
-    
+
     rot_world_basecom = util.quat_to_rot(base_com_quat)
     rot_world_basejoint = np.dot(rot_world_basecom,
                                  rot_basejoint_to_basecom.transpose())
@@ -434,9 +439,8 @@ while (True):
                    np.array([compuation_cal_list]),
                    delimiter=',')
 
-    if t> 7:
-        rpc_draco_interface.interrupt_.PressEight()
-
+    # if t> 7:
+    # rpc_draco_interface.interrupt_.PressEight()
 
     #get sensor data
     imu_frame_quat, imu_ang_vel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
@@ -483,40 +487,40 @@ while (True):
 
     #step simulation
     pb.stepSimulation()
-    
-    if render_mode != 'gui' and t > record_time + 1.0/30:
-        position = np.array([0.0 , 0.0, 0.75])
+
+    if render_mode != 'gui' and t > record_time + 1.0 / 30:
+        position = np.array([0.0, 0.0, 0.75])
         orientation = np.array([0.0, 0.0, 0.0, 1.0])
-        view_point, _ = pb.multiplyTransforms(position, orientation, [0.045, 0.0, 0.0], [0, 0, 0, 1])
+        view_point, _ = pb.multiplyTransforms(position, orientation,
+                                              [0.045, 0.0, 0.0], [0, 0, 0, 1])
         view_rpy = pb.getEulerFromQuaternion(orientation)
         view_matrix = pb.computeViewMatrixFromYawPitchRoll(
-                    cameraTargetPosition = view_point,
-                    distance = 2.0,
-                    roll = roll,
-                    pitch = pitch,
-                    yaw = yaw,
-                    upAxisIndex=2)
+            cameraTargetPosition=view_point,
+            distance=2.0,
+            roll=roll,
+            pitch=pitch,
+            yaw=yaw,
+            upAxisIndex=2)
         proj_matrix = pb.computeProjectionMatrixFOV(
-                    fov=60,
-                    aspect=float(render_width) / render_height,
-                    nearVal=0.1,
-                    farVal=100)
-        (_, _, rgb, depth, _) = pb.getCameraImage(
-                                width=render_width,
+            fov=60,
+            aspect=float(render_width) / render_height,
+            nearVal=0.1,
+            farVal=100)
+        (_, _, rgb, depth,
+         _) = pb.getCameraImage(width=render_width,
                                 height=render_height,
                                 renderer=pb.ER_BULLET_HARDWARE_OPENGL,
                                 viewMatrix=view_matrix,
                                 shadow=0,
                                 projectionMatrix=proj_matrix)
-        img = np.array(rgb[:,:,[2, 1, 0]])
+        img = np.array(rgb[:, :, [2, 1, 0]])
         recorder.write(img)
-        record_time += 1.0/30
+        record_time += 1.0 / 30
 
     t += dt
     count += 1
 
     if t > 50.0:
         break
-    
 
 recorder.release()
