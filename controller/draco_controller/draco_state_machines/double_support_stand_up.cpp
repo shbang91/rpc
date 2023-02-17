@@ -66,7 +66,7 @@ void DoubleSupportStandUp::FirstVisit() {
   // initialize reaction force tasks
   // 1) smoothly increase the fz in world frame
   Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
-  des_reaction_force[5] = kGravity * robot_->GetTotalMass();
+  des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   ctrl_arch_->lf_force_tm_->InitializeInterpolation(
       Eigen::VectorXd::Zero(6), des_reaction_force, end_time_);
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
