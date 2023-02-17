@@ -71,7 +71,6 @@ LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_idx)
 void LinkPosTask::UpdateOpCommand() {
   pos_ = robot_->GetLinkIsometry(target_idx_).translation();
   pos_err_ = des_pos_ - pos_;
-
   vel_ = robot_->GetLinkSpatialVel(target_idx_).tail(dim_);
   vel_err_ = des_vel_ - vel_;
 
@@ -132,8 +131,7 @@ void LinkOriTask::UpdateOpCommand() {
 
   pos_ << quat.normalized().coeffs();
 
-  Eigen::Quaterniond local_quat(rot_link_w.transpose() *
-                                quat.toRotationMatrix());
+  Eigen::Quaterniond local_quat(rot_link_w * quat.toRotationMatrix());
 
   local_pos_ << local_quat.normalized().coeffs();
 

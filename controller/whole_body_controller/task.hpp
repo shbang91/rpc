@@ -82,15 +82,15 @@ public:
   Eigen::VectorXd DesiredVel() const { return des_vel_; }
   Eigen::VectorXd DesiredAcc() const { return des_acc_; }
 
-  Eigen::VectorXd DesiredLocalPos() const { return des_pos_; }
-  Eigen::VectorXd DesiredLocalVel() const { return des_vel_; }
-  Eigen::VectorXd DesiredLocalAcc() const { return des_acc_; }
+  Eigen::VectorXd DesiredLocalPos() const { return local_des_pos_; }
+  Eigen::VectorXd DesiredLocalVel() const { return local_des_vel_; }
+  Eigen::VectorXd DesiredLocalAcc() const { return local_des_acc_; }
 
   Eigen::VectorXd CurrentPos() const { return pos_; }
   Eigen::VectorXd CurrentVel() const { return vel_; }
 
-  Eigen::VectorXd CurrentLocalPos() const { return pos_; }
-  Eigen::VectorXd CurrentLocalVel() const { return vel_; }
+  Eigen::VectorXd CurrentLocalPos() const { return local_pos_; }
+  Eigen::VectorXd CurrentLocalVel() const { return local_vel_; }
 
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }

@@ -31,6 +31,9 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   background_time_ = 0.;
   moving_duration_ = 0.05;
 
+  initialized_ = 0;
+  initialization_duration_ = 5.0;
+
   transitted_ = 0;
   transition_duration_ = 0.3;
 
@@ -72,9 +75,19 @@ void Manipulation::FirstVisit()
   target_lh_iso.linear() = target_lh_quat.toRotationMatrix();
   
   ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
-      target_rh_iso, 0.0, moving_duration_);
+      target_rh_iso, 0.0, moving_duration_, initialized_);
   ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(
-      target_lh_iso, 0.0, moving_duration_);
+      target_lh_iso, 0.0, moving_duration_, initialized_);
+
+  if (!initialized_)
+  {
+    ctrl_arch_->rh_SE3_tm_->InitializeHandTrajectory(
+      target_rh_iso, 0.0, initialization_duration_, initialized_);
+    ctrl_arch_->lh_SE3_tm_->InitializeHandTrajectory(
+      target_lh_iso, 0.0, initialization_duration_, initialized_);
+
+  }
+
 
   if (!transitted_)
   {
@@ -124,9 +137,13 @@ void Manipulation::OneStep() {
 
 bool Manipulation::EndOfState() 
 {
+  if (!initialized_)
+    initialized_ = background_time_ > initialization_duration_;
+
   if (!transitted_)
     transitted_ = transition_time_ > transition_duration_;
-  return background_time_ > moving_duration_;
+
+  return (background_time_ > moving_duration_) and initialized_;
 }
 
 void Manipulation::LastVisit() { background_time_ = 0.; }
