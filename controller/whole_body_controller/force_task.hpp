@@ -1,13 +1,15 @@
 #pragma once
+#include "controller/whole_body_controller/basic_contact.hpp"
 #include "util/util.hpp"
 
 // for wrench task -> in order of torque, force
 class ForceTask {
 public:
-  ForceTask(const int dim)
-      : dim_(dim), rf_des_(Eigen::VectorXd::Zero(dim)),
-        rf_cmd_(Eigen::VectorXd::Zero(dim)),
-        weight_(Eigen::VectorXd::Zero(dim)) {
+  ForceTask(Contact *contact)
+      : contact_(contact), dim_(contact_->Dim()),
+        rf_des_(Eigen::VectorXd::Zero(contact_->Dim())),
+        rf_cmd_(Eigen::VectorXd::Zero(contact_->Dim())),
+        weight_(Eigen::VectorXd::Zero(contact_->Dim())) {
     util::PrettyConstructor(3, "ForceTask");
   };
   virtual ~ForceTask() = default;
@@ -21,6 +23,7 @@ public:
   Eigen::VectorXd CmdRf() const { return rf_cmd_; }
   Eigen::VectorXd Weight() const { return weight_; }
   int Dim() const { return dim_; }
+  Contact *contact() { return contact_; }
 
   void SetParameters(const YAML::Node &node, const bool b_sim) {
     try {
@@ -34,6 +37,7 @@ public:
   }
 
 protected:
+  Contact *contact_;
   int dim_;
   Eigen::VectorXd rf_des_; // reference reaction force value
   Eigen::VectorXd rf_cmd_; // wbc command

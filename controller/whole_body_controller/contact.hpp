@@ -34,6 +34,7 @@ public:
   Eigen::VectorXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
   Eigen::MatrixXd UfMatrix() const { return cone_constraint_matrix_; }
   Eigen::VectorXd UfVector() const { return cone_constraint_vector_; }
+  int TargetLinkIdx() const { return target_link_idx_; }
 
 protected:
   PinocchioRobotSystem *robot_;

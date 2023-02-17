@@ -92,8 +92,8 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   // Force Task List
   //=============================================================
-  lf_reaction_force_task_ = new ForceTask(lf_contact_->Dim());
-  rf_reaction_force_task_ = new ForceTask(rf_contact_->Dim());
+  lf_reaction_force_task_ = new ForceTask(lf_contact_);
+  rf_reaction_force_task_ = new ForceTask(rf_contact_);
 
   force_task_map_.clear();
   force_task_map_.insert(
