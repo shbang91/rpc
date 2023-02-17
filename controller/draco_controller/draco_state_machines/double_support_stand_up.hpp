@@ -2,6 +2,10 @@
 
 #include "controller/state_machine.hpp"
 
+namespace {
+constexpr double kGravity = 9.81;
+}
+
 class DracoControlArchitecture;
 class DracoStateProvider;
 class DoubleSupportStandUp : public StateMachine {

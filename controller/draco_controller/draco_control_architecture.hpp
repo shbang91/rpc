@@ -25,6 +25,7 @@ class EndEffectorTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
+class ForceTrajectoryManager;
 // class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
@@ -43,6 +44,8 @@ public:
   EndEffectorTrajectoryManager *lf_SE3_tm_;
   EndEffectorTrajectoryManager *rf_SE3_tm_;
   DCMTrajectoryManager *dcm_tm_;
+  ForceTrajectoryManager *lf_force_tm_;
+  ForceTrajectoryManager *rf_force_tm_;
 
   TaskHierarchyManager *lf_pos_hm_;
   TaskHierarchyManager *lf_ori_hm_;

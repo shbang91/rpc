@@ -7,6 +7,7 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
 
@@ -61,6 +62,15 @@ void DoubleSupportStandUp::FirstVisit() {
       rf_z_max_interp_duration_);
   ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
+
+  // initialize reaction force tasks
+  // 1) smoothly increase the fz in world frame
+  Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
+  des_reaction_force[5] = kGravity * robot_->GetTotalMass();
+  ctrl_arch_->lf_force_tm_->InitializeInterpolation(
+      Eigen::VectorXd::Zero(6), des_reaction_force, end_time_);
+  ctrl_arch_->rf_force_tm_->InitializeInterpolation(
+      Eigen::VectorXd::Zero(6), des_reaction_force, end_time_);
 }
 
 void DoubleSupportStandUp::OneStep() {
@@ -76,6 +86,10 @@ void DoubleSupportStandUp::OneStep() {
   //  increase maximum normal reaction force
   ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
+
+  // update force traj manager
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}

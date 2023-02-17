@@ -19,6 +19,7 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
@@ -127,6 +128,11 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->contact_map_["lf_contact"], max_rf_z);
   rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
       tci_container_->contact_map_["rf_contact"], max_rf_z);
+
+  lf_force_tm_ = new ForceTrajectoryManager(
+      tci_container_->force_task_map_["lf_force_task"], robot_);
+  rf_force_tm_ = new ForceTrajectoryManager(
+      tci_container_->force_task_map_["rf_force_task"], robot_);
 
   //=============================================================
   // initialize state machines
