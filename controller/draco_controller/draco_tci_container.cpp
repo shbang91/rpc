@@ -108,8 +108,10 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   // Acceleration Regularization Term
   //=============================================================
-  task_unweighted_cost_map_.insert(std::make_pair("qddot_regularization_task", NAN));
-  task_weighted_cost_map_.insert(std::make_pair("qddot_regularization_task", NAN));
+  task_unweighted_cost_map_.insert(
+      std::make_pair("qddot_regularization_task", NAN));
+  task_weighted_cost_map_.insert(
+      std::make_pair("qddot_regularization_task", NAN));
 
   //=============================================================
   // Tasks, Contacts parameter initialization
@@ -121,7 +123,8 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
               << __FILE__ << "]" << std::endl;
   }
   bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
-  bool b_save_wbc_costs = util::ReadParameter<bool>(cfg_["wbc"]["qp"], "b_save_costs");
+  bool b_save_wbc_costs =
+      util::ReadParameter<bool>(cfg_["wbc"]["qp"], "b_save_costs");
   this->_InitializeParameters(b_sim);
   if (!b_save_wbc_costs) {
     task_unweighted_cost_map_.clear();
