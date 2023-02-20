@@ -104,8 +104,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // vr_command_->global_rh_ori_;
   // vr_command_->global_lh_ori_;
 
-  Eigen::Vector3d test_rh_pos(0.3, -0.15, 0.0);
-  Eigen::Vector3d test_lh_pos(0.3, 0.15, 0.0);
+  Eigen::Vector3d test_rh_pos(0.35, -0.25, 0.0);
+  Eigen::Vector3d test_lh_pos(0.35, 0.25, 0.0);
   Eigen::Quaterniond test_rh_quat;
   Eigen::Quaterniond test_lh_quat;
   test_rh_quat = Eigen::AngleAxisd(
