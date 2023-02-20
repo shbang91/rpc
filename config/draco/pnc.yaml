@@ -198,7 +198,7 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 1e-4] ## trq, force order
 
       ########################################################################
       ## exp params
@@ -229,9 +229,9 @@ wbc:
     exp_foot_half_width: 0.075
 
   qp:
-    b_save_costs: false
+    b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0., 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
   joint_integrator:

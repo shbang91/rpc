@@ -10,6 +10,8 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
+#include "double_support_stand_up.hpp"
 
 ContactTransitionStart::ContactTransitionStart(
     StateId state_id, PinocchioRobotSystem *robot,
@@ -26,44 +28,6 @@ ContactTransitionStart::ContactTransitionStart(
 
 void ContactTransitionStart::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
-
-  if (state_id_ == draco_states::kLFContactTransitionStart) {
-    // stance foot lfoot
-    std::cout << "draco_states::kLFContactTransitionStart" << std::endl;
-    // =====================================================================
-    // task hierarchy manager initialize
-    // =====================================================================
-    ctrl_arch_->rf_pos_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-    ctrl_arch_->rf_ori_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-
-    // =====================================================================
-    // contact max normal force manager initialize
-    // =====================================================================
-    ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-
-    sp_->b_rf_contact_ = true;
-
-  } else {
-    // stance foot rfoot
-    std::cout << "draco_states::kRFContactTransitionStart" << std::endl;
-    // =====================================================================
-    // task hierarchy manager initialize
-    // =====================================================================
-    ctrl_arch_->lf_pos_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-    ctrl_arch_->lf_ori_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-    // =====================================================================
-    // contact max normal force manager initialize
-    // =====================================================================
-    ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-
-    sp_->b_lf_contact_ = true;
-  }
 
   // =====================================================================
   // dcm planner initialize
@@ -129,6 +93,67 @@ void ContactTransitionStart::FirstVisit() {
           ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime();
     }
   }
+
+  Eigen::VectorXd mid_weight_reaction_force = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd full_weight_reaction_force = Eigen::VectorXd::Zero(6);
+  mid_weight_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
+  full_weight_reaction_force[5] = kGravity * robot_->GetTotalMass();
+  if (state_id_ == draco_states::kLFContactTransitionStart) {
+    // stance foot lfoot
+    std::cout << "draco_states::kLFContactTransitionStart" << std::endl;
+    // =====================================================================
+    // task hierarchy manager initialize
+    // =====================================================================
+    ctrl_arch_->rf_pos_hm_->InitializeRampToMax(
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+    ctrl_arch_->rf_ori_hm_->InitializeRampToMax(
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+
+    // =====================================================================
+    // contact max normal force manager initialize
+    // =====================================================================
+    ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+    // =====================================================================
+    // reaction force manager initialize
+    // =====================================================================
+    Eigen::VectorXd prev_des_final_rf_force = ctrl_arch_->rf_force_tm_->GetDesFinalRf();
+    Eigen::VectorXd prev_des_final_lf_force = ctrl_arch_->lf_force_tm_->GetDesFinalRf();
+    ctrl_arch_->rf_force_tm_->InitializeInterpolation(prev_des_final_rf_force,
+            mid_weight_reaction_force, end_time_);
+    ctrl_arch_->lf_force_tm_->InitializeInterpolation(prev_des_final_lf_force,
+            mid_weight_reaction_force, end_time_);
+
+    sp_->b_rf_contact_ = true;
+
+  } else {
+    // stance foot rfoot
+    std::cout << "draco_states::kRFContactTransitionStart" << std::endl;
+    // =====================================================================
+    // task hierarchy manager initialize
+    // =====================================================================
+    ctrl_arch_->lf_pos_hm_->InitializeRampToMax(
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+    ctrl_arch_->lf_ori_hm_->InitializeRampToMax(
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+    // =====================================================================
+    // contact max normal force manager initialize
+    // =====================================================================
+    ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+    // =====================================================================
+    // reaction force manager initialize
+    // =====================================================================
+    Eigen::VectorXd prev_des_final_rf_force = ctrl_arch_->rf_force_tm_->GetDesFinalRf();
+    Eigen::VectorXd prev_des_final_lf_force = ctrl_arch_->lf_force_tm_->GetDesFinalRf();
+    ctrl_arch_->rf_force_tm_->InitializeInterpolation(prev_des_final_rf_force,
+            Eigen::VectorXd::Zero(6), end_time_);
+    ctrl_arch_->lf_force_tm_->InitializeInterpolation(prev_des_final_lf_force,
+            full_weight_reaction_force, end_time_);
+
+    sp_->b_lf_contact_ = true;
+  }
+
 }
 
 void ContactTransitionStart::OneStep() {
@@ -140,6 +165,10 @@ void ContactTransitionStart::OneStep() {
   // foot pose task update
   ctrl_arch_->lf_SE3_tm_->UseCurrent();
   ctrl_arch_->rf_SE3_tm_->UseCurrent();
+
+  // update force traj manager
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 
   // contact max normal force & foot task hierarchy update
   if (state_id_ == draco_states::kLFContactTransitionStart) {
