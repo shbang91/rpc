@@ -185,6 +185,8 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete lf_max_normal_froce_tm_;
   delete rf_max_normal_froce_tm_;
   delete dcm_tm_;
+  delete lf_force_tm_;
+  delete rf_force_tm_;
 
   // hm
   delete lf_pos_hm_;
