@@ -489,13 +489,19 @@ void IHWBC::ComputeTaskCosts(const std::unordered_map<std::string, Task *> &task
     task_weighted_cost_map.at(task_str) = cost_t_sum_vec.transpose() * task_ptr->Weight().asDiagonal() * cost_t_sum_vec;
   }
   for (const auto &[force_task_str, force_task_ptr]: force_task_map) {
-    Eigen::VectorXd Fr_soln = force_task_ptr->CmdRf();
-    task_unweighted_cost_map[force_task_str] = Fr_soln.transpose() * Fr_soln;
-    task_weighted_cost_map[force_task_str] = Fr_soln.transpose() * lambda_rf_.asDiagonal() * Fr_soln;
+    Eigen::VectorXd Fr_error = force_task_ptr->DesiredRf() - force_task_ptr->CmdRf();
+    Eigen::MatrixXd weight_mat = force_task_ptr->Weight().asDiagonal();
+    task_unweighted_cost_map[force_task_str] = Fr_error.transpose() * Fr_error;
+    task_weighted_cost_map[force_task_str] = Fr_error.transpose() * weight_mat * Fr_error;
   }
   if (task_unweighted_cost_map.count("qddot_regularization_task")) {
     task_unweighted_cost_map["qddot_regularization_task"] = lambda_qddot_ *
             qddot_sol_.transpose() * qddot_sol_;
+  }
+  if (task_unweighted_cost_map.count("Fr_regularization_task")) {
+    task_unweighted_cost_map["Fr_regularization_task"] = rf_sol_.transpose() * rf_sol_;
+    task_weighted_cost_map["Fr_w_regularization_task"] = rf_sol_.transpose() *
+            lambda_rf_.asDiagonal() * rf_sol_;
   }
 
 }
