@@ -495,7 +495,10 @@ void IHWBC::ComputeTaskCosts(const std::unordered_map<std::string, Task *> &task
     task_weighted_cost_map[force_task_str] = Fr_error.transpose() * weight_mat * Fr_error;
   }
   if (task_unweighted_cost_map.count("qddot_regularization_task")) {
-    task_unweighted_cost_map["qddot_regularization_task"] = lambda_qddot_ *
+    task_unweighted_cost_map["qddot_regularization_task"] = qddot_sol_.transpose() * qddot_sol_;
+  }
+  if (task_weighted_cost_map.count("qddot_regularization_task")) {
+    task_weighted_cost_map["qddot_regularization_task"] = lambda_qddot_ *
             qddot_sol_.transpose() * qddot_sol_;
   }
   if (task_unweighted_cost_map.count("Fr_regularization_task")) {
