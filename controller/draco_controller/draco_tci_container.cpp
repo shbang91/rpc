@@ -75,8 +75,9 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
                                    0.11, 0.04); // params reset later
   rf_contact_ = new SurfaceContact(robot_, draco_link::r_foot_contact, 0.3,
                                    0.11, 0.04); // params reset later
-  task_unweighted_cost_map_.insert(std::make_pair("Fr_regularization_task", NAN));
-  task_weighted_cost_map_.insert(std::make_pair("Fr_w_regularization_task", NAN));
+  task_unweighted_cost_map_.insert(
+      std::make_pair("Fr_regularization_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("Fr_regularization_task", NAN));
 
   contact_map_.clear();
   contact_map_.insert(std::make_pair("lf_contact", lf_contact_));

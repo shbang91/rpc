@@ -5,7 +5,7 @@ clc;
 addpath("/tmp")
 % addpath("experiment_data")
 % addpath("plot")
-% addpath("plot/draco")
+addpath("plot/draco")
 
 % exp_data_location = 'experiment_data';
 exp_data_location = '/tmp';
@@ -39,7 +39,7 @@ load_colors
 task_names = {'com_xy_task', 'com_z_task', 'joint_task', ...
     'lf_force_task', 'lf_ori_task', 'lf_pos_task', ...
     'rf_force_task', 'rf_ori_task', 'rf_pos_task', ...
-    'qddot_regularization_task', 'torso_ori_task', 'upper_body_task'};
+    'qddot_regularization_task', 'Fr_regularization_task', 'torso_ori_task', 'upper_body_task'};
 
 draco_lf_idx = zeros(1, 7);
 draco_rf_idx = zeros(1, 7);
