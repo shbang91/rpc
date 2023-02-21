@@ -18,6 +18,7 @@
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 
 static double err_tol = 1e-3;
 
@@ -204,6 +205,10 @@ protected:
       rf_SE3_tm = new EndEffectorTrajectoryManager(
               tci_container->task_map_["rf_pos_task"],
               tci_container->task_map_["rf_ori_task"], _robot);
+      lf_force_tm = new ForceTrajectoryManager(
+              tci_container->force_task_map_["lf_force_task"], robot);
+      rf_force_tm = new ForceTrajectoryManager(
+              tci_container->force_task_map_["rf_force_task"], robot);
 
       double max_rf_z;
       util::ReadParameter(cfg["wbc"]["contact"], "sim_max_rf_z", max_rf_z);
@@ -219,13 +224,17 @@ protected:
     void updateTmDesiredValues(UpperBodyTrajetoryManager *_up_body_tm,
                                FloatingBaseTrajectoryManager *_fb_tm,
                                EndEffectorTrajectoryManager *_lf_SE3_tm,
-                               EndEffectorTrajectoryManager *_rf_SE3_tm)
+                               EndEffectorTrajectoryManager *_rf_SE3_tm,
+                               ForceTrajectoryManager *_lf_force_tm,
+                               ForceTrajectoryManager *_rf_force_tm)
     {
       _up_body_tm->UseNominalUpperBodyJointPos(nominal_joint_pose);
       _fb_tm->InitializeFloatingBaseInterpolation(init_com_pos, target_com_pos, init_torso_quat, target_torso_quat, 1.);
       _fb_tm->UpdateDesired(1.);
       _lf_SE3_tm->UseCurrent();
       _rf_SE3_tm->UseCurrent();
+      _lf_force_tm->UpdateDesired(1.);
+      _rf_force_tm->UpdateDesired(1.);
     }
 
     void setNormalForceToMax(MaxNormalForceTrajectoryManager *_lf_max_force_tm,
@@ -235,6 +244,18 @@ protected:
       _rf_max_force_tm->InitializeRampToMax(0.1);
       _lf_max_force_tm->UpdateRampToMax(1.0);
       _rf_max_force_tm->UpdateRampToMax(1.0);
+    }
+
+    void setDesiredForce(ForceTrajectoryManager *_lf_force_tm,
+                        Eigen::VectorXd &init_lforce,
+                        Eigen::VectorXd &des_lforce,
+                        ForceTrajectoryManager *_rf_force_tm,
+                        Eigen::VectorXd &init_rforce,
+                        Eigen::VectorXd &des_rforce,
+                        double duration)
+    {
+      _lf_force_tm->InitializeInterpolation(init_lforce, des_lforce, duration);
+      _rf_force_tm->InitializeInterpolation(init_rforce, des_rforce, duration);
     }
 
     void updateContactJacobians(TCIContainer *_tci)
@@ -312,6 +333,8 @@ protected:
 //    DCMTrajectoryManager *dcm_tm;
     EndEffectorTrajectoryManager *lf_SE3_tm;
     EndEffectorTrajectoryManager *rf_SE3_tm;
+    ForceTrajectoryManager *lf_force_tm;
+    ForceTrajectoryManager *rf_force_tm;
 
     // contact managers
     MaxNormalForceTrajectoryManager *lf_max_normal_force_tm;
@@ -366,11 +389,14 @@ TEST_F(IHWBCTest, expBalanceUsingEvenGRFs) {
 
   // set tasks as used when in double_support_balance state (corresponding to joint data used)
   // (set Desired)
-  updateTmDesiredValues(upper_body_tm, floating_base_tm, lf_SE3_tm, rf_SE3_tm);
-//  tci_container->force_task_map_["lf_force_task"]->SetParameters(cfg["wbc"]["task"]["foot_rf_task"], true);
-//  tci_container->force_task_map_["rf_force_task"]->SetParameters(cfg["wbc"]["task"]["foot_rf_task"], true);
-//  tci_container->force_task_map_["lf_force_task"]->UpdateDesired(desired_force);
-//  tci_container->force_task_map_["rf_force_task"]->UpdateDesired(desired_force);
+  Eigen::VectorXd init_force = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd des_force = Eigen::VectorXd::Zero(6);
+  des_force = desired_force;
+  std::cout << "des_force: " << des_force.transpose() << std::endl;
+  double duration = 1.0;
+  setDesiredForce(lf_force_tm, init_force, des_force,
+                  rf_force_tm, init_force, des_force, duration);
+  updateTmDesiredValues(upper_body_tm, floating_base_tm, lf_SE3_tm, rf_SE3_tm, lf_force_tm, rf_force_tm);
 //  dcm_tm->InitializeParameters(cfg["dcm_walking"]);
 //  dcm_tm->Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm, init_dcm_vel);
 //  dcm_tm->UpdateDesired(1.0);
@@ -435,11 +461,13 @@ TEST_F(IHWBCTest, simBalanceUsingEvenGRFs) {
 
   // set tasks as used when in double_support_balance state (corresponding to joint data used)
   // (set Desired)
-  updateTmDesiredValues(upper_body_tm, floating_base_tm, lf_SE3_tm, rf_SE3_tm);
-//  tci_container->force_task_map_["lf_force_task"]->SetParameters(cfg["wbc"]["task"]["foot_rf_task"], true);
-//  tci_container->force_task_map_["rf_force_task"]->SetParameters(cfg["wbc"]["task"]["foot_rf_task"], true);
-//  tci_container->force_task_map_["lf_force_task"]->UpdateDesired(desired_force);
-//  tci_container->force_task_map_["rf_force_task"]->UpdateDesired(desired_force);
+  Eigen::VectorXd init_force = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd des_force = Eigen::VectorXd::Zero(6);
+  des_force = desired_force;
+  double duration = 1.0;
+  setDesiredForce(lf_force_tm, init_force, des_force,
+                  rf_force_tm, init_force, des_force, duration);
+  updateTmDesiredValues(upper_body_tm, floating_base_tm, lf_SE3_tm, rf_SE3_tm, lf_force_tm, rf_force_tm);
 //  dcm_tm->InitializeParameters(cfg["dcm_walking"]);
 //  dcm_tm->Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm, init_dcm_vel);
 //  dcm_tm->UpdateDesired(1.0);
