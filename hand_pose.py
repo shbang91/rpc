@@ -20,19 +20,84 @@ value_prefix = {'Right hand position': ['rh_pos', 'rh_vel'],
                 'Right hand orientation': ['rh_ori', 'rh_ori_vel'],
                 'Left hand orientation': ['lh_ori', 'lh_ori_vel'],}
 
-for root, dirs, files in os.walk(path, topdown=False):
-    for name in files:
-        if name.startswith("draco_controller_data") and name.endswith(".mat"):
-            ctrl_data = h5py.File(os.path.join(root, name))
-        if name.startswith("draco_icp_data") and name.endswith(".mat"):
-            icp_data = h5py.File(os.path.join(root, name))
-        if name.startswith("draco_state_estimator_data") and name.endswith(".mat"):
-            estimator_data = h5py.File(os.path.join(root, name))
-        if name.startswith("draco_state_estimator_kf_data") and name.endswith(".mat"):
-            estimator_kf_data = h5py.File(os.path.join(root, name))
+joint_prefixes = {
+    # 0: 'l_hip_ie',
+    # 1: 'l_hip_aa',
+    # 2: 'l_hip_fe',
+    # 3: 'l_knee_fe_jp',
+    # 4: 'l_knee_fe_jd',
+    # 5: 'l_ankle_fe',
+    # 6: 'l_ankle_ie',
+    #LH
+    7: 'l_shoulder_fe',
+    8: 'l_shoulder_aa',
+    9: 'l_shoulder_ie',
+    10: 'l_elbow_fe',
+    11: 'l_wrist_ps',
+    12: 'l_wrist_pitch',
+    #neck
+    13: 'neck_pitch',
+    #RF
+    # 14: 'r_hip_ie',
+    # 15: 'r_hip_aa',
+    # 16: 'r_hip_fe',
+    # 17: 'r_knee_fe_jp',
+    # 18: 'r_knee_fe_jd',
+    # 19: 'r_ankle_fe',
+    # 20: 'r_ankle_ie',
+    #RH
+    # 21: 'r_shoulder_fe',
+    # 22: 'r_shoulder_aa',
+    # 23: 'r_shoulder_ie',
+    # 24: 'r_elbow_fe',
+    # 25: 'r_wrist_ps',
+    # 26: 'r_wrist_pitch',
+}
 
 initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
 initialized_idx = int(initialized_idx)
+
+for idx, value_prefix in joint_prefixes.items():
+    fig, axes = plt.subplots(2)
+    fig.suptitle(value_prefix, fontsize=16)
+
+    axes[0].plot(np.array(joint_data['time']), np.array(joint_data['act_pos'])[:, idx], color='b')
+    axes[0].plot(np.array(joint_data['time']), np.array(joint_data['des_pos'])[:, idx], color='r')
+    axes[0].axvspan(0, ctrl_data['time'][initialized_idx], alpha=0.3, color='green')
+    axes[0].set_ylabel('{} [rad]'.format(value_prefix))
+    axes[0].set_xlim(left=0)
+
+    axes[1].plot(np.array(joint_data['time']), np.array(joint_data['act_vel'])[:, idx], color='b')
+    axes[1].plot(np.array(joint_data['time']), np.array(joint_data['des_vel'])[:, idx], color='r')
+    axes[1].axvspan(0, ctrl_data['time'][initialized_idx], alpha=0.3, color='green')
+    axes[1].set_ylabel('{} [rad/s]'.format(value_prefix))
+    axes[1].set_xlim(left=0)
+
+    axes[1].set_xlabel('time [sec]')
+
+plt.show()
+
+exit()
+# >>> import numpy as np
+# >>> import pickle
+# >>> import h5py
+# >>> name = "0222_012926.pkl"
+# >>> f = open( name, 'rb')
+# >>> joint_data = pickle.load(f, fix_imports=True)
+# >>> dataset = h5py.File('joint_states.hdf5', 'w')
+# >>> dataset.create_dataset('act_pos', data=np.array(joint_data['act_pos']), compression="gzip", chunks=True, dtype='f')
+# <HDF5 dataset "act_pos": shape (40001, 27), type "<f4">
+# >>> dataset.create_dataset('act_vel', data=np.array(joint_data['act_vel']), compression="gzip", chunks=True, dtype='f')
+# <HDF5 dataset "act_vel": shape (40001, 27), type "<f4">
+# >>> dataset.create_dataset('des_pos', data=np.array(joint_data['des_pos']), compression="gzip", chunks=True, dtype='f')
+# <HDF5 dataset "des_pos": shape (40001, 27), type "<f4">
+# >>> dataset.create_dataset('des_vel', data=np.array(joint_data['des_vel']), compression="gzip", chunks=True, dtype='f')
+# <HDF5 dataset "des_vel": shape (40001, 27), type "<f4">
+# >>> dataset.create_dataset('time', data=np.array(joint_data['time']), compression="gzip", chunks=True, dtype='f')
+# <HDF5 dataset "time": shape (40001,), type "<f4">
+# >>> dataset.close()
+# >>> exit()
+
 
 for topic, value_prefix in value_prefix.items():
     fig, axes = plt.subplots(2, 3)
