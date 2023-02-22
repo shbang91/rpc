@@ -27,7 +27,7 @@ import cv2
 # from pytictoc import TicToc
 
 import argparse
-import pickle
+import h5py
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode", type=str, default='gui', help="")
@@ -538,5 +538,10 @@ while (True):
         break
 
 recorder.release()
-with open(os.path.join(save_path, '{}.pkl'.format(recording_name)), 'wb') as f:
-    pickle.dump(joint_state, f)
+dataset = h5py.File(os.path.join(save_path, '{}.pkl'.format(recording_name)), 'w')
+dataset.create_dataset('act_pos', data=np.array(joint_data['act_pos']), compression="gzip", chunks=True, dtype='f')
+dataset.create_dataset('act_vel', data=np.array(joint_data['act_vel']), compression="gzip", chunks=True, dtype='f')
+dataset.create_dataset('des_pos', data=np.array(joint_data['des_pos']), compression="gzip", chunks=True, dtype='f')
+dataset.create_dataset('des_vel', data=np.array(joint_data['des_vel']), compression="gzip", chunks=True, dtype='f')
+dataset.create_dataset('time', data=np.array(joint_data['time']), compression="gzip", chunks=True, dtype='f')
+dataset.close()
