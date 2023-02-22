@@ -110,13 +110,19 @@ while file_exists:
     with open(path, 'r') as stream:
         try:
             cfg = yaml.load(stream, Loader=yaml.FullLoader)
-            t_ini_footsteps_planned.append(np.array(cfg["temporal_parameters"]["initial_time"]))
-            t_end_footsteps_planned.append(np.array(cfg["temporal_parameters"]["final_time"]))
-            rfoot_contact_pos.append(np.array(cfg["contact"]["right_foot"]["pos"]))
-            rfoot_contact_ori.append(np.array(cfg["contact"]["right_foot"]["ori"]))
+            t_ini_footsteps_planned.append(
+                np.array(cfg["temporal_parameters"]["initial_time"]))
+            t_end_footsteps_planned.append(
+                np.array(cfg["temporal_parameters"]["final_time"]))
+            rfoot_contact_pos.append(
+                np.array(cfg["contact"]["right_foot"]["pos"]))
+            rfoot_contact_ori.append(
+                np.array(cfg["contact"]["right_foot"]["ori"]))
             # assert rfoot_contact_pos.shape[0] == rfoot_contact_ori.shape[0]
-            lfoot_contact_pos.append(np.array(cfg["contact"]["left_foot"]["pos"]))
-            lfoot_contact_ori.append(np.array(cfg["contact"]["left_foot"]["ori"]))
+            lfoot_contact_pos.append(
+                np.array(cfg["contact"]["left_foot"]["pos"]))
+            lfoot_contact_ori.append(
+                np.array(cfg["contact"]["left_foot"]["ori"]))
             # assert lfoot_contact_pos.shape[0] == lfoot_contact_ori.shape[0]
         except yaml.YAMLError as exc:
             print(exc)
@@ -230,21 +236,26 @@ for ti in range(len(exp_time)):
 
         # show footsteps ONLY if they have already been planned
         if b_show_footsteps and b_footsteps_available:
-            if t_ini_footsteps_planned[curr_step_plan] < exp_time[ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
+            if t_ini_footsteps_planned[curr_step_plan] < exp_time[
+                    ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
                 footsteps_viz["lf_footstep"].set_property("visible", True)
                 footsteps_viz["rf_footstep"].set_property("visible", True)
                 vis_tools.update_footstep(footsteps_viz["lf_footstep"],
-                      lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
+                                          lfoot_contact_pos[curr_step_plan],
+                                          lfoot_contact_ori[curr_step_plan])
                 vis_tools.update_footstep(footsteps_viz["rf_footstep"],
-                      rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
+                                          rfoot_contact_pos[curr_step_plan],
+                                          rfoot_contact_ori[curr_step_plan])
             else:
                 footsteps_viz["lf_footstep"].set_property("visible", False)
                 footsteps_viz["rf_footstep"].set_property("visible", False)
 
             vis_tools.update_footstep(frame["lf_footstep"],
-                      lfoot_contact_pos[curr_step_plan], lfoot_contact_ori[curr_step_plan])
+                                      lfoot_contact_pos[curr_step_plan],
+                                      lfoot_contact_ori[curr_step_plan])
             vis_tools.update_footstep(frame["rf_footstep"],
-                      rfoot_contact_pos[curr_step_plan], rfoot_contact_ori[curr_step_plan])
+                                      rfoot_contact_pos[curr_step_plan],
+                                      rfoot_contact_ori[curr_step_plan])
 
             # check if we need to update the index of step plans loaded
             if exp_time[ti] > t_end_footsteps_planned[curr_step_plan] and \
