@@ -37,6 +37,7 @@ public:
 
     void InitializeTeleopSocket(const std::string &ip_address);
     DracoVRCommands ReceiveCommands();
+    bool isReady();
 
 private:
     DracoVRTeleopManager();
@@ -44,5 +45,7 @@ private:
     std::unique_ptr<zmq::context_t> context_;
     std::unique_ptr<zmq::socket_t> teleop_socket_;
     std::unique_ptr<zmq::socket_t> streaming_socket_;
+    bool ready_; // After clicking a button, the VR operator is ready to stream commands.
+    bool l_pad_held_;
 };
 

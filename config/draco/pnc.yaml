@@ -1,7 +1,7 @@
 servo_dt: 0.00125
 
 ip_address: "tcp://127.0.0.1:5557"
-vr_ip_address: "tcp://192.168.1.8:5555"
+vr_ip_address: "tcp://192.168.50.50:5555"
 
 #data_save_freq: 1
 data_save_freq: 50
@@ -169,10 +169,10 @@ wbc:
       # sim_weight_at_walking : [0., 0., 0.]
       # sim_kp : [0., 0., 0.]
       # sim_kd : [0., 0., 0.]
-      sim_weight : [10., 10., 10.]
+      sim_weight : [40., 40., 40.]
       sim_weight_at_walking : [10., 10., 10.]
       sim_kp : [400., 400., 400.]
-      sim_kd : [34., 34., 34.]
+      sim_kd : [100., 100., 100.]
 
       ########################################################################
       ## exp params

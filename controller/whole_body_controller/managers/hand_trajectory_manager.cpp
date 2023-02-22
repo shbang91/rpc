@@ -11,7 +11,7 @@ HandTrajectoryManager::HandTrajectoryManager(Task *pos_task, Task *ori_task,
   util::PrettyConstructor(2, "HandTrajectoryManager");
   target_pos_ = Eigen::Vector3d::Zero();
   target_ori_ = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
-  delta_pos_speed_ = .05;
+  delta_pos_speed_ = .1;
 }
 
 HandTrajectoryManager::~HandTrajectoryManager() {
@@ -60,7 +60,7 @@ void HandTrajectoryManager::InitializeHandTrajectory(
   } else {
     init_pos = target_pos_;
     init_ori = target_ori_;
-    std::cout << "Update Hand Trajectory" << std::endl;
+    //std::cout << "Update Hand Trajectory" << std::endl;
   }
 
   cmd_pos << target_pose.translation();
@@ -93,7 +93,7 @@ void HandTrajectoryManager::UpdateHandPose(const double current_time) {
   Eigen::VectorXd des_ang_acc = Eigen::VectorXd::Zero(3);
 
   des_pos << pos_curve_->Evaluate(current_time - start_time_);
-  std::cout << "Desired Pos" << des_pos.transpose() << std::endl;
+  //std::cout << "Desired Pos" << des_pos.transpose() << std::endl;
   ori_curve_->Evaluate(current_time - start_time_, des_ori_quat);
   des_ori << des_ori_quat.normalized().coeffs();
 

@@ -50,7 +50,7 @@ for topic, value_prefix in value_prefix.items():
             axes[idx][subidx].plot(ctrl_data['time'], ctrl_data[f'{sensor_prefix}_{value_prefix[idx]}'][:, subidx], color='b')
             axes[idx][subidx].plot(ctrl_data['time'], ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:, subidx], color='r')
             axes[idx][subidx].axvspan(0, ctrl_data['time'][initialized_idx], alpha=0.3, color='green')
-            axes[idx][subidx].set_ylabel('{} [m]'.format(coord))
+            axes[idx][subidx].set_ylabel('{} [{}]'.format(coord, unit[idx]))
             axes[idx][subidx].set_xlim(left=0)
             if idx == 1:
                 axes[idx][subidx].set_xlabel('time [sec]')
