@@ -156,12 +156,12 @@ for i = 1:4
     subplot(2,2,i);
     if mod(i, 2) == 1
         j = j + 1;
-        plot(wbc_time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
         hold on
-        plot(wbc_time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
-        max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
+        min_val = min([local_des_com_xy_pos(j,:), local_act_com_xy_pos(j,:)]);
+        max_val = max([local_des_com_xy_pos(j,:), local_act_com_xy_pos(j,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -170,12 +170,12 @@ for i = 1:4
         ylabel(xy_label(j))
     else
         k = k + 1;
-        plot(wbc_time, des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_com_xy_vel(k, :), 'r', 'LineWidth', 3);
          hold on
-        plot(wbc_time, act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_com_xy_vel(k, :), 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
-        max_val = max([des_com_xy_vel(k,:), act_com_xy_vel(k,:)]);
+        min_val = min([local_des_com_xy_vel(k,:), local_act_com_xy_vel(k,:)]);
+        max_val = max([local_des_com_xy_vel(k,:), local_act_com_xy_vel(k,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -228,12 +228,12 @@ num_fig = num_fig + 1;
 for i = 1 : 2
     if i == 1
         subplot(1,2,i)
-        plot(wbc_time, des_com_z_pos, 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_com_z_pos, 'r', 'LineWidth', 3);
         hold on
-        plot(wbc_time, act_com_z_pos, 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_com_z_pos, 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_com_z_pos, act_com_z_pos]);
-        max_val = max([des_com_z_pos, act_com_z_pos]);
+        min_val = min([local_des_com_z_pos, local_act_com_z_pos]);
+        max_val = max([local_des_com_z_pos, local_act_com_z_pos]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -242,12 +242,12 @@ for i = 1 : 2
         ylabel("z")
     else
         subplot(1,2,i)
-        plot(wbc_time, des_com_z_vel, 'r', 'LineWidth', 3);
+        plot(wbc_time, local_des_com_z_vel, 'r', 'LineWidth', 3);
         hold on
-        plot(wbc_time, act_com_z_vel, 'b', 'LineWidth', 2);
+        plot(wbc_time, local_act_com_z_vel, 'b', 'LineWidth', 2);
         grid on
-        min_val = min([des_com_z_vel, act_com_z_vel]);
-        max_val = max([des_com_z_vel, act_com_z_vel]);
+        min_val = min([local_des_com_z_vel, local_act_com_z_vel]);
+        max_val = max([local_des_com_z_vel, local_act_com_z_vel]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -1239,12 +1239,12 @@ num_of_rows = ceil(num_of_tasks/num_of_columns);
 for i = 1:num_of_tasks
     curr_task_cost = eval(sprintf('wbc_cost_w_%s', task_names{i}));
     ax(i) = subplot(num_of_rows, num_of_columns, i);
-    plot(wbc_time(5:end), curr_task_cost(5:end), 'r', 'LineWidth', 3);
+    plot(wbc_time(35:end), curr_task_cost(35:end), 'r', 'LineWidth', 3);
     hold on;
     grid on
     if ~(any(isnan(curr_task_cost)))
-        min_val = min(curr_task_cost(5:end));
-        max_val = max(curr_task_cost(5:end));
+        min_val = min(curr_task_cost(35:end));
+        max_val = max(curr_task_cost(35:end));
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
     else
