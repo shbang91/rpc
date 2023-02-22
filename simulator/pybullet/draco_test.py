@@ -27,6 +27,7 @@ import cv2
 # from pytictoc import TicToc
 
 import argparse
+import pickle
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--mode", type=str, default='gui', help="")
@@ -347,15 +348,21 @@ pos_basejoint_to_basecom = np.dot(
 rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
                                   rot_world_basecom)
 
+recording_name = datetime.datetime.now().strftime("%m%d_%H%M%S")
+joint_state = {
+        'time': [],
+        'act_pos': [],
+        'act_vel': [],
+        'des_pos': [],
+        'des_vel': [],
+        }
+
 if render_mode == 'gui':
     video_format = cv2.VideoWriter_fourcc(*'mp4v')
     render_width = 480
     render_height = 360
-    recorder = cv2.VideoWriter(
-        os.path.join(
-            save_path,
-            '{}.mp4'.format(datetime.datetime.now().strftime("%m%d_%H%M%S"))),
-        video_format, 30, (render_width, render_height))
+    recorder = cv2.VideoWriter(os.path.join(save_path, '{}.mp4'.format(recording_name)),
+                                            video_format, 30, (render_width, render_height))
 
     roll = 0.0
     pitch = -30.0  # * np.pi/180.
@@ -488,8 +495,15 @@ while (True):
     #step simulation
     pb.stepSimulation()
 
-    if render_mode == 'gui' and t > record_time + 1.0 / 30:
-        position = np.array([0.0, 0.0, 0.75])
+    joint_state['time'].append(t)
+    joint_state['act_pos'].append(joint_pos)
+    joint_state['act_vel'].append(joint_vel)
+    joint_state['des_pos'].append(rpc_joint_pos_command)
+    joint_state['des_vel'].append(rpc_joint_vel_command)
+
+
+    if render_mode == 'gui' and t > record_time + 1.0/30:
+        position = np.array([0.0 , 0.0, 0.75])
         orientation = np.array([0.0, 0.0, 0.0, 1.0])
         view_point, _ = pb.multiplyTransforms(position, orientation,
                                               [0.045, 0.0, 0.0], [0, 0, 0, 1])
@@ -524,3 +538,5 @@ while (True):
         break
 
 recorder.release()
+with open(os.path.join(save_path, '{}.pkl'.format(recording_name)), 'wb') as f:
+    pickle.dump(joint_state, f)
