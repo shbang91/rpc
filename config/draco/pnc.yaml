@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -198,12 +198,14 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 1e-4] ## trq, force order
+      #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 0., 0., 0.]
+      exp_weight : [0., 0., 0., 0., 0., 5e-6]
+      #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
     ########################################################################
@@ -223,15 +225,16 @@ wbc:
     exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    #exp_foot_half_length: 0.08
-    #exp_foot_half_width: 0.04
-    exp_foot_half_length: 0.125
-    exp_foot_half_width: 0.075
+    exp_foot_half_length: 0.08
+    exp_foot_half_width: 0.04
+    #exp_foot_half_length: 0.125
+    #exp_foot_half_width: 0.075
 
   qp:
-    b_save_costs: false
+    b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0., 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
   joint_integrator:
@@ -249,7 +252,7 @@ state_machine:
       wait_time: 10.
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 5.
       target_com_height: 0.658
       target_base_height: 0.90
 
@@ -259,10 +262,10 @@ state_machine:
       swing_height: 0.04
 
     com_swaying:
-      amplitude: [0., 0.05, 0.] # [m]
-      frequency: [0., 0.05, 0.] # [hz]
-      #amplitude: [0., 0., 0.03] # [m]
-      #frequency: [0., 0., 1.] # [hz]
+      #amplitude: [0., 0.05, 0.] # [m]
+      #frequency: [0., 0.05, 0.] # [hz]
+      amplitude: [0., 0., 0.05] # [m]
+      frequency: [0., 0., 0.05] # [hz]
 
     lmpc_com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
