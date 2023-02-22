@@ -47,3 +47,5 @@ note.txt
 
 .cache
 *.mp4
+
+/data
