@@ -250,10 +250,6 @@ void DracoController::GetCommand(void *command) {
   static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
-    ihwbc_->ComputeTaskCosts(tci_container_->task_map_,
-                             tci_container_->force_task_map_,
-                             tci_container_->task_unweighted_cost_map_,
-                             tci_container_->task_weighted_cost_map_);
     this->_SaveData();
   }
 }
@@ -497,6 +493,11 @@ void DracoController::_SaveData() {
     logger_->add("local_act_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
 
+    // compute optimal WBC task costs
+    ihwbc_->ComputeTaskCosts(tci_container_->task_map_,
+                             tci_container_->force_task_map_,
+                             tci_container_->task_unweighted_cost_map_,
+                             tci_container_->task_weighted_cost_map_);
     // save WBC cost for each task
     for (const auto &[task_str, task_ptr] :
          tci_container_->task_unweighted_cost_map_) {
