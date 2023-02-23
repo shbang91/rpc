@@ -8,6 +8,7 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 
 DoubleSupportSwaying::DoubleSupportSwaying(const StateId state_id,
                                            PinocchioRobotSystem *robot,
@@ -34,6 +35,14 @@ void DoubleSupportSwaying::FirstVisit() {
   Eigen::Vector3d init_com_pos(des_com_xy[0], des_com_xy[1], des_com_z);
 
   ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_);
+
+  // get desired final RF from each foot to use as starting desired reaction force values
+  Eigen::VectorXd des_init_lfoot_rf = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd des_init_rfoot_rf = Eigen::VectorXd::Zero(6);
+  des_init_lfoot_rf = ctrl_arch_->lf_force_tm_->GetFinalDesiredRf();
+  des_init_rfoot_rf = ctrl_arch_->rf_force_tm_->GetFinalDesiredRf();
+  ctrl_arch_->lf_force_tm_->InitializeSwaying(des_init_lfoot_rf, amp_, freq_);
+  ctrl_arch_->rf_force_tm_->InitializeSwaying(des_init_rfoot_rf, amp_, freq_);
 }
 
 void DoubleSupportSwaying::OneStep() {
@@ -45,6 +54,10 @@ void DoubleSupportSwaying::OneStep() {
   // foot pose task
   ctrl_arch_->lf_SE3_tm_->UseCurrent();
   ctrl_arch_->rf_SE3_tm_->UseCurrent();
+
+  // update force traj manager
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 bool DoubleSupportSwaying::EndOfState() { return false; }
