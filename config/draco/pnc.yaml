@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
