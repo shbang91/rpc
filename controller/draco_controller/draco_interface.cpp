@@ -112,21 +112,25 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Quaterniond test_rh_quat;
     Eigen::Quaterniond test_lh_quat;
     if (DracoVRTeleopManager::GetVRTeleopManager()->isReady()) {
-        test_rh_pos = cmd.rh_pos;
-        test_lh_pos = cmd.lh_pos;
-        test_rh_quat = cmd.rh_ori;
-        test_lh_quat = cmd.lh_ori;
+      test_rh_pos = cmd.rh_pos;
+      test_lh_pos = cmd.lh_pos;
+      test_rh_quat = cmd.rh_ori;
+      test_lh_quat = cmd.lh_ori;
     } else {
-        test_rh_pos << 0.35, -0.25, 0.0;
-        test_lh_pos << 0.35, 0.25, 0.0;
-        test_rh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
-        test_lh_quat = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+      test_rh_pos << 0.35, -0.25, 0.0;
+      test_lh_pos << 0.35, 0.25, 0.0;
+      test_rh_quat = Eigen::AngleAxisd(
+          0.0,
+          Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
+      test_lh_quat = Eigen::AngleAxisd(
+          0.0,
+          Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
     }
-     //_ProcessVRInput(&cmd, sensor_data);
+    //_ProcessVRInput(&cmd, sensor_data);
     test_rh_pos[2] += .5;
     test_lh_pos[2] += .5;
-    std::cout << "left\n " << test_lh_pos << std::endl;
-    std::cout << "right\n " << test_rh_pos << std::endl;
+    // std::cout << "left\n " << test_lh_pos << std::endl;
+    // std::cout << "right\n " << test_rh_pos << std::endl;
 
     Eigen::VectorXd clamped_rh_pos(3);
     Eigen::VectorXd clamped_lh_pos(3);
@@ -141,16 +145,16 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
 
-    clamped_lh_pos[0] = std::min(std::max(test_lh_pos[0], 0.0), 0.55);
+    clamped_lh_pos[0] = std::min(std::max(test_lh_pos[0], 0.25), 0.55);
     clamped_lh_pos[1] = std::min(std::max(test_lh_pos[1], -0.15), 0.45);
-    clamped_lh_pos[2] = std::min(std::max(test_lh_pos[2], -0.3), 1.0);
+    clamped_lh_pos[2] = std::min(std::max(test_lh_pos[2], -0.1), 0.5);
 
-    clamped_rh_pos[0] = std::min(std::max(test_rh_pos[0], 0.0), 0.55);
+    clamped_rh_pos[0] = std::min(std::max(test_rh_pos[0], 0.25), 0.55);
     clamped_rh_pos[1] = std::min(std::max(test_rh_pos[1], -0.45), 0.15);
-    clamped_rh_pos[2] = std::min(std::max(test_rh_pos[2], -0.3), 1.0);
+    clamped_rh_pos[2] = std::min(std::max(test_rh_pos[2], -0.1), 0.5);
 
-    std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
-    std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
+    // std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
+    // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
 
     Eigen::Isometry3d torso_iso =
         robot_->GetLinkIsometry(draco_link::torso_com_link);
@@ -183,7 +187,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
         target_lh_quat.z();
     ctrl_arch_->background_manipulation_->target_lh_ori_[3] =
         target_lh_quat.w();
- }
+  }
 #endif
   // if (count_ <= waiting_count_) {
   // for simulation without state estimator

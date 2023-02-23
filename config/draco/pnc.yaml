@@ -1,14 +1,15 @@
 servo_dt: 0.00125
 
 ip_address: "tcp://127.0.0.1:5557"
-vr_ip_address: "tcp://192.168.50.50:5555"
+#vr_ip_address: "tcp://192.168.50.50:5555"
+vr_ip_address: "tcp://192.168.1.8:5555"
 
 #data_save_freq: 1
 data_save_freq: 50
 vr_teleop_freq: 20
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -177,10 +178,10 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [1., 1., 1.]
+      exp_weight : [20., 20., 20.]
       exp_weight_at_walking : [1., 1., 1.]
-      exp_kp : [10., 10., 10.]
-      exp_kd : [1., 1., 1.]
+      exp_kp : [50., 50., 50.]
+      exp_kd : [5., 5., 5.]
 
     hand_ori_task:
       ########################################################################
@@ -198,9 +199,9 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10., 10., 10.]
+      exp_weight : [20., 20., 20.]
       exp_weight_at_walking : [5., 5., 5.]
-      exp_kp : [10., 10., 10.]
+      exp_kp : [20., 20., 20.]
       exp_kd : [1., 1., 1.]
 
     foot_pos_task:

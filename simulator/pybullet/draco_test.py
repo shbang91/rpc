@@ -13,7 +13,6 @@ import time
 import datetime
 
 import numpy as np
-import ipdb
 
 from config.draco.pybullet_simulation import *
 from util.python_utils import pybullet_util
@@ -350,19 +349,20 @@ rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
 
 recording_name = datetime.datetime.now().strftime("%m%d_%H%M%S")
 joint_state = {
-        'time': [],
-        'act_pos': [],
-        'act_vel': [],
-        'des_pos': [],
-        'des_vel': [],
-        }
+    'time': [],
+    'act_pos': [],
+    'act_vel': [],
+    'des_pos': [],
+    'des_vel': [],
+}
 
 if render_mode == 'gui':
     video_format = cv2.VideoWriter_fourcc(*'mp4v')
     render_width = 480
     render_height = 360
-    recorder = cv2.VideoWriter(os.path.join(save_path, '{}.mp4'.format(recording_name)),
-                                            video_format, 30, (render_width, render_height))
+    recorder = cv2.VideoWriter(
+        os.path.join(save_path, '{}.mp4'.format(recording_name)), video_format,
+        30, (render_width, render_height))
 
     roll = 0.0
     pitch = -30.0  # * np.pi/180.
@@ -501,9 +501,8 @@ while (True):
     joint_state['des_pos'].append(rpc_joint_pos_command)
     joint_state['des_vel'].append(rpc_joint_vel_command)
 
-
-    if render_mode == 'gui' and t > record_time + 1.0/30:
-        position = np.array([0.0 , 0.0, 0.75])
+    if render_mode == 'gui' and t > record_time + 1.0 / 30:
+        position = np.array([0.0, 0.0, 0.75])
         orientation = np.array([0.0, 0.0, 0.0, 1.0])
         view_point, _ = pb.multiplyTransforms(position, orientation,
                                               [0.045, 0.0, 0.0], [0, 0, 0, 1])
@@ -538,10 +537,31 @@ while (True):
         break
 
 recorder.release()
-dataset = h5py.File(os.path.join(save_path, '{}.pkl'.format(recording_name)), 'w')
-dataset.create_dataset('act_pos', data=np.array(joint_data['act_pos']), compression="gzip", chunks=True, dtype='f')
-dataset.create_dataset('act_vel', data=np.array(joint_data['act_vel']), compression="gzip", chunks=True, dtype='f')
-dataset.create_dataset('des_pos', data=np.array(joint_data['des_pos']), compression="gzip", chunks=True, dtype='f')
-dataset.create_dataset('des_vel', data=np.array(joint_data['des_vel']), compression="gzip", chunks=True, dtype='f')
-dataset.create_dataset('time', data=np.array(joint_data['time']), compression="gzip", chunks=True, dtype='f')
+dataset = h5py.File(os.path.join(save_path, '{}.hdf5'.format(recording_name)),
+                    'w')
+dataset.create_dataset('act_pos',
+                       data=np.array(joint_state['act_pos']),
+                       compression="gzip",
+                       chunks=True,
+                       dtype='f')
+dataset.create_dataset('act_vel',
+                       data=np.array(joint_state['act_vel']),
+                       compression="gzip",
+                       chunks=True,
+                       dtype='f')
+dataset.create_dataset('des_pos',
+                       data=np.array(joint_state['des_pos']),
+                       compression="gzip",
+                       chunks=True,
+                       dtype='f')
+dataset.create_dataset('des_vel',
+                       data=np.array(joint_state['des_vel']),
+                       compression="gzip",
+                       chunks=True,
+                       dtype='f')
+dataset.create_dataset('time',
+                       data=np.array(joint_state['time']),
+                       compression="gzip",
+                       chunks=True,
+                       dtype='f')
 dataset.close()
