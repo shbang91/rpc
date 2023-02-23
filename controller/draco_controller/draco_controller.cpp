@@ -513,6 +513,8 @@ void DracoController::_SaveData() {
     }
     logger_->add("wbc_weights_lambda_qddot", ihwbc_->GetLambdaQddot());
     logger_->add("wbc_weights_lambda_rf", ihwbc_->GetLambdaRf());
+    logger_->add("des_rf_lfoot", tci_container_->force_task_map_["lf_force_task"]->DesiredRf());
+    logger_->add("des_rf_rfoot", tci_container_->force_task_map_["rf_force_task"]->DesiredRf());
   }
 
 #endif

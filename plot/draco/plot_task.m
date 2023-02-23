@@ -958,6 +958,7 @@ for i = 1:12
         plot(wbc_time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
         grid on
         hold on
+        plot(wbc_time, des_rf_lfoot(j, :), 'k', 'LineWidth', 2);
         min_val = min([lf_rf_cmd(j, :)]);
         max_val = max([lf_rf_cmd(j, :)]);
         min_val = min_val - 0.1 * (max_val - min_val);
@@ -974,6 +975,7 @@ for i = 1:12
         plot(wbc_time, rf_rf_cmd(k, :), 'r', 'LineWidth', 2);
         grid on
         hold on
+        plot(wbc_time, des_rf_rfoot(j, :), 'k', 'LineWidth', 2);
         min_val = min([rf_rf_cmd(k, :)]);
         max_val = max([rf_rf_cmd(k, :)]);
         min_val = min_val - 0.1 * (max_val - min_val);
@@ -986,7 +988,9 @@ for i = 1:12
             title('right foot reaction force', 'FontSize', 30)
         end
     end
+    legend('cmd','des')
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % floating base qddot cmd
