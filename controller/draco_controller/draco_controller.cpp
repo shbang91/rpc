@@ -545,7 +545,7 @@ void DracoController::_SaveData() {
 
     // TEST
     for (const auto &[contact_str, contact_ptr] : tci_container_->contact_map_)
-      logger_->add(contact_str + "rf_z_max", contact_ptr->MaxFz());
+      logger_->add(contact_str + "_rf_z_max", contact_ptr->MaxFz());
   }
 
 #endif

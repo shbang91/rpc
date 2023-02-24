@@ -968,7 +968,7 @@ for i = 1:12
         xlabel('time')
         ylabel(rf_label(j))
         if j == 1
-            title('left foot reaction force', 'FontSize',30)
+            title('left foot reaction force in LOCAL', 'FontSize',30)
         end
     else
         k = k + 1;
@@ -985,12 +985,53 @@ for i = 1:12
         xlabel('time')
         ylabel(rf_label(k))
          if j == 1
-            title('right foot reaction force', 'FontSize', 30)
+            title('right foot reaction force in LOCAL', 'FontSize', 30)
         end
     end
     legend('cmd','des')
 end
 
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:12
+    subplot(6,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(wbc_time, lf_rf_cmd_global(j, :), 'r', 'LineWidth', 2);
+        grid on
+        hold on
+        min_val = min([lf_rf_cmd_global(j, :)]);
+        max_val = max([lf_rf_cmd_global(j, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(rf_label(j))
+        if j == 1
+            title('left foot reaction force in GLOBAL', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(wbc_time, rf_rf_cmd_global(k, :), 'r', 'LineWidth', 2);
+        grid on
+        hold on
+        min_val = min([rf_rf_cmd_global(k, :)]);
+        max_val = max([rf_rf_cmd_global(k, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(rf_label(k))
+         if j == 1
+            title('right foot reaction force in GLOBAL', 'FontSize', 30)
+        end
+    end
+    legend('cmd')
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % floating base qddot cmd
