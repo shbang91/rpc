@@ -122,9 +122,8 @@ void LinkOriTask::UpdateOpCommand() {
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
 
-  Eigen::Matrix3d rot_link_w =
-      robot_->GetLinkIsometry(target_idx_).linear().transpose();
-  Eigen::Quaterniond local_des_quat(rot_link_w * des_quat.toRotationMatrix());
+  rot_link_w_ = robot_->GetLinkIsometry(target_idx_).linear().transpose();
+  Eigen::Quaterniond local_des_quat(rot_link_w_ * des_quat.toRotationMatrix());
   local_des_pos_ << local_des_quat.normalized().coeffs();
 
   Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
@@ -132,7 +131,7 @@ void LinkOriTask::UpdateOpCommand() {
 
   pos_ << quat.normalized().coeffs();
 
-  Eigen::Quaterniond local_quat(rot_link_w * quat.toRotationMatrix());
+  Eigen::Quaterniond local_quat(rot_link_w_ * quat.toRotationMatrix());
 
   local_pos_ << local_quat.normalized().coeffs();
 
@@ -147,18 +146,18 @@ void LinkOriTask::UpdateOpCommand() {
   vel_err_ = des_vel_ - vel_;
 
   // local task data
-  local_pos_err_ = rot_link_w * pos_err_;
+  local_pos_err_ = rot_link_w_ * pos_err_;
 
-  local_des_vel_ = rot_link_w * des_vel_;
-  local_vel_ = rot_link_w * vel_;
-  local_vel_err_ = rot_link_w * vel_err_;
+  local_des_vel_ = rot_link_w_ * des_vel_;
+  local_vel_ = rot_link_w_ * vel_;
+  local_vel_err_ = rot_link_w_ * vel_err_;
 
-  local_des_acc_ = rot_link_w * des_acc_;
+  local_des_acc_ = rot_link_w_ * des_acc_;
 
   // operational space command
   op_cmd_ =
-      des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
-                                           kd_.cwiseProduct(local_vel_err_));
+      des_acc_ + rot_link_w_.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+                                            kd_.cwiseProduct(local_vel_err_));
 }
 
 void LinkOriTask::UpdateJacobian() {

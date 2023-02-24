@@ -8,7 +8,8 @@
 class Task {
 public:
   Task(PinocchioRobotSystem *robot, const int dim)
-      : robot_(robot), dim_(dim), target_idx_(0) {
+      : robot_(robot), dim_(dim), target_idx_(0),
+        rot_link_w_(Eigen::Matrix3d::Identity()) {
 
     des_pos_ = Eigen::VectorXd::Zero(dim_);
     des_vel_ = Eigen::VectorXd::Zero(dim_);
@@ -101,7 +102,9 @@ public:
   Eigen::VectorXd OpCommand() const { return op_cmd_; }
   int Dim() const { return dim_; }
 
+  // TODO: virtual??
   int TargetIdx() const { return target_idx_; }
+  Eigen::Matrix3d Rot() const { return rot_link_w_; }
 
   // setter
   void SetWeight(Eigen::VectorXd weight) { weight_ = weight; }
@@ -126,6 +129,8 @@ protected:
   PinocchioRobotSystem *robot_;
   int dim_;
   int target_idx_;
+
+  Eigen::Matrix3d rot_link_w_;
 
   // measured quantities
   Eigen::VectorXd pos_;
