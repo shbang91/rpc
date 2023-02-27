@@ -64,13 +64,15 @@ void DoubleSupportStandUp::FirstVisit() {
       rf_z_max_interp_duration_);
 
   // initialize reaction force tasks
-  // 1) smoothly increase the fz in world frame
+  // smoothly increase the fz in world frame
+  Eigen::VectorXd init_reaction_force = Eigen::VectorXd::Zero(6);
+  init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
   des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   ctrl_arch_->lf_force_tm_->InitializeInterpolation(
-      Eigen::VectorXd::Zero(6), des_reaction_force, end_time_);
+      init_reaction_force, des_reaction_force, end_time_);
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
-      Eigen::VectorXd::Zero(6), des_reaction_force, end_time_);
+      init_reaction_force, des_reaction_force, end_time_);
 }
 
 void DoubleSupportStandUp::OneStep() {
