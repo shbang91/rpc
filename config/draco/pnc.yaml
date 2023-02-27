@@ -198,7 +198,7 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 1e-4] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 1e-5] ## trq, force order
       #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
@@ -263,7 +263,7 @@ state_machine:
 
     com_swaying:
       #amplitude: [0., 0.05, 0.] # [m]
-      #frequency: [0., 0.05, 0.] # [hz]
+      #frequency: [0., 0.1, 0.] # [hz]
       amplitude: [0., 0., 0.05] # [m]
       frequency: [0., 0., 0.05] # [hz]
 
