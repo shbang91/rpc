@@ -68,50 +68,50 @@ for root, dirs, files in os.walk(path, topdown=False):
         if name.startswith("draco_state_estimator_kf_data") and name.endswith(
                 ".mat"):
             estimator_kf_data = h5py.File(os.path.join(root, name))
-        if name.endswith(".hdf5"):
-            joint_data = h5py.File(os.path.join(root, name))
+        # if name.endswith(".hdf5"):
+        # joint_data = h5py.File(os.path.join(root, name))
 
-print(joint_data.keys())
-initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
-initialized_idx = int(initialized_idx)
+# print(joint_data.keys())
+# initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
+# initialized_idx = int(initialized_idx)
 
-for idx, value_prefix in joint_prefixes.items():
-    fig, axes = plt.subplots(2)
-    fig.suptitle(value_prefix, fontsize=16)
+# for idx, value_prefix in joint_prefixes.items():
+# fig, axes = plt.subplots(2)
+# fig.suptitle(value_prefix, fontsize=16)
 
-    axes[0].plot(np.array(joint_data['time']),
-                 np.array(joint_data['act_pos'])[:, idx],
-                 color='b')
-    axes[0].plot(np.array(joint_data['time']),
-                 np.array(joint_data['des_pos'])[:, idx],
-                 color='r')
-    axes[0].axvspan(0,
-                    ctrl_data['time'][initialized_idx],
-                    alpha=0.3,
-                    color='green')
-    axes[0].set_ylabel('{} [rad]'.format(value_prefix))
-    axes[0].set_xlim(left=0)
+# axes[0].plot(np.array(joint_data['time']),
+# np.array(joint_data['act_pos'])[:, idx],
+# color='b')
+# axes[0].plot(np.array(joint_data['time']),
+# np.array(joint_data['des_pos'])[:, idx],
+# color='r')
+# axes[0].axvspan(0,
+# ctrl_data['time'][initialized_idx],
+# alpha=0.3,
+# color='green')
+# axes[0].set_ylabel('{} [rad]'.format(value_prefix))
+# axes[0].set_xlim(left=0)
 
-    axes[1].plot(np.array(joint_data['time']),
-                 np.array(joint_data['act_vel'])[:, idx],
-                 color='b')
-    axes[1].plot(np.array(joint_data['time']),
-                 np.array(joint_data['des_vel'])[:, idx],
-                 color='r')
-    axes[1].axvspan(0,
-                    ctrl_data['time'][initialized_idx],
-                    alpha=0.3,
-                    color='green')
-    axes[1].set_ylabel('{} [rad/s]'.format(value_prefix))
-    axes[1].set_xlim(left=0)
+# axes[1].plot(np.array(joint_data['time']),
+# np.array(joint_data['act_vel'])[:, idx],
+# color='b')
+# axes[1].plot(np.array(joint_data['time']),
+# np.array(joint_data['des_vel'])[:, idx],
+# color='r')
+# axes[1].axvspan(0,
+# ctrl_data['time'][initialized_idx],
+# alpha=0.3,
+# color='green')
+# axes[1].set_ylabel('{} [rad/s]'.format(value_prefix))
+# axes[1].set_xlim(left=0)
 
-    axes[1].set_xlabel('time [sec]')
+# axes[1].set_xlabel('time [sec]')
 
-    #plt.show()
+#plt.show()
 
-    fig.set_figwidth(20)
-    fig.set_figheight(10)
-    fig.savefig(os.path.join(path, '{}.png'.format(value_prefix)))
+# fig.set_figwidth(20)
+# fig.set_figheight(10)
+# fig.savefig(os.path.join(path, '{}.png'.format(value_prefix)))
 #exit()
 # >>> import numpy as np
 # >>> import pickle

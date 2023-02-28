@@ -170,7 +170,7 @@ wbc:
       # sim_weight_at_walking : [0., 0., 0.]
       # sim_kp : [0., 0., 0.]
       # sim_kd : [0., 0., 0.]
-      sim_weight : [40., 40., 40.]
+      sim_weight : [80., 80., 80.]
       sim_weight_at_walking : [10., 10., 10.]
       sim_kp : [400., 400., 400.]
       sim_kd : [100., 100., 100.]
@@ -181,7 +181,7 @@ wbc:
       exp_weight : [20., 20., 20.]
       exp_weight_at_walking : [1., 1., 1.]
       exp_kp : [50., 50., 50.]
-      exp_kd : [5., 5., 5.]
+      exp_kd : [1., 1., 1.]
 
     hand_ori_task:
       ########################################################################
