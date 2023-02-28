@@ -97,6 +97,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
     b_use_modified_swing_foot_jac_ = util::ReadParameter<bool>(
         cfg["controller"], "b_use_modified_swing_foot_jac");
+    b_use_modified_hand_jac_ =
+        util::ReadParameter<bool>(cfg["controller"], "b_use_modified_hand_jac");
 
     // initialize iwbc qp params
     ihwbc_->SetParameters(cfg["wbc"]["qp"]);
@@ -186,6 +188,17 @@ void DracoController::GetCommand(void *command) {
       tci_container_->task_map_["rf_pos_task"]->ModifyJacobian(
           sp_->floating_base_jidx_);
       tci_container_->task_map_["rf_ori_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+    }
+
+    if (b_use_modified_hand_jac_) {
+      tci_container_->task_map_["lh_pos_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+      tci_container_->task_map_["rh_pos_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+      tci_container_->task_map_["lh_ori_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+      tci_container_->task_map_["rh_ori_task"]->ModifyJacobian(
           sp_->floating_base_jidx_);
     }
 

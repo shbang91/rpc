@@ -35,6 +35,7 @@ private:
 
   bool b_sim_;
   bool b_use_modified_swing_foot_jac_;
+  bool b_use_modified_hand_jac_;
   bool b_int_constraint_first_visit_;
 
   bool b_first_visit_wbc_ctrl_;
