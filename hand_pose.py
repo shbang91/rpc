@@ -72,8 +72,8 @@ for root, dirs, files in os.walk(path, topdown=False):
         # joint_data = h5py.File(os.path.join(root, name))
 
 # print(joint_data.keys())
-# initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
-# initialized_idx = int(initialized_idx)
+initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
+initialized_idx = int(initialized_idx)
 
 # for idx, value_prefix in joint_prefixes.items():
 # fig, axes = plt.subplots(2)
@@ -133,6 +133,9 @@ for root, dirs, files in os.walk(path, topdown=False):
 # >>> dataset.close()
 # >>> exit()
 
+wbc_time = len(ctrl_data['des_lh_pos'])
+time = ctrl_data['time'][len(ctrl_data['time']) - wbc_time:]
+
 for topic, value_prefix in value_prefixes.items():
     fig, axes = plt.subplots(2, 3)
     fig.suptitle(topic, fontsize=16)
@@ -148,11 +151,11 @@ for topic, value_prefix in value_prefixes.items():
     for idx in range(2):
         for subidx, coord in enumerate(label[idx]):
             axes[idx][subidx].plot(
-                ctrl_data['time'],
+                time,
                 ctrl_data[f'{sensor_prefix}_{value_prefix[idx]}'][:, subidx],
                 color='b')
             axes[idx][subidx].plot(
-                ctrl_data['time'],
+                time,
                 ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:, subidx],
                 color='r')
             axes[idx][subidx].axvspan(0,

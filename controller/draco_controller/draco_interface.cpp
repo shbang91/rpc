@@ -127,8 +127,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
           Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
     }
     //_ProcessVRInput(&cmd, sensor_data);
-    test_rh_pos[2] += .5;
-    test_lh_pos[2] += .5;
+    test_rh_pos[2] += .1;
+    test_lh_pos[2] += .1;
     // std::cout << "left\n " << test_lh_pos << std::endl;
     // std::cout << "right\n " << test_rh_pos << std::endl;
 
@@ -145,13 +145,13 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
 
-    clamped_lh_pos[0] = std::min(std::max(test_lh_pos[0], 0.25), 0.55);
-    clamped_lh_pos[1] = std::min(std::max(test_lh_pos[1], -0.15), 0.45);
-    clamped_lh_pos[2] = std::min(std::max(test_lh_pos[2], -0.1), 0.5);
+    clamped_lh_pos[0] = std::min(std::max(test_lh_pos[0], 0.25), 0.50);
+    clamped_lh_pos[1] = std::min(std::max(test_lh_pos[1], 0.05), 0.45);
+    clamped_lh_pos[2] = std::min(std::max(test_lh_pos[2], -0.2), 0.4);
 
-    clamped_rh_pos[0] = std::min(std::max(test_rh_pos[0], 0.25), 0.55);
-    clamped_rh_pos[1] = std::min(std::max(test_rh_pos[1], -0.45), 0.15);
-    clamped_rh_pos[2] = std::min(std::max(test_rh_pos[2], -0.1), 0.5);
+    clamped_rh_pos[0] = std::min(std::max(test_rh_pos[0], 0.25), 0.50);
+    clamped_rh_pos[1] = std::min(std::max(test_rh_pos[1], -0.45), -0.05);
+    clamped_rh_pos[2] = std::min(std::max(test_rh_pos[2], -0.2), 0.4);
 
     // std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;

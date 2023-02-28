@@ -62,6 +62,7 @@ state_estimator:
 controller:
   exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
+  b_use_modified_hand_jac: true
 
 wbc:
   task:
@@ -170,10 +171,10 @@ wbc:
       # sim_weight_at_walking : [0., 0., 0.]
       # sim_kp : [0., 0., 0.]
       # sim_kd : [0., 0., 0.]
-      sim_weight : [80., 80., 80.]
+      sim_weight : [200., 200., 200.]
       sim_weight_at_walking : [10., 10., 10.]
       sim_kp : [400., 400., 400.]
-      sim_kd : [100., 100., 100.]
+      sim_kd : [40., 40., 40.]
 
       ########################################################################
       ## exp params
