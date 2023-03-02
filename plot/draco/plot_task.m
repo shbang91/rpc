@@ -17,8 +17,8 @@ d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
-% dd = dir("/tmp/draco_state_estimator_data*.mat");
-dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
+dd = dir("/tmp/draco_state_estimator_data*.mat");
+% dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
@@ -258,6 +258,48 @@ for i = 1 : 2
     sgtitle('CoM Z Task in LOCAL', 'FontSize', 30)
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%CAM task in GLOBAL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+for i = 1:3
+    subplot(3,1,i);
+    plot(wbc_time, des_cam(i, :), 'r', 'LineWidth', 3);
+    hold on
+    plot(wbc_time, act_cam(i, :), 'b', 'LineWidth', 2);
+    grid on
+    min_val = min([des_cam(i,:), act_cam(i,:)]);
+    max_val = max([des_cam(i,:), act_cam(i,:)]);
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
+    sgtitle('Centroidal Angular Momentum', 'FontSize', 30)
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+for i = 1:3
+    subplot(3,1,i);
+    plot(wbc_time, local_des_cam(i, :), 'r', 'LineWidth', 3);
+    hold on
+    plot(wbc_time, local_act_cam(i, :), 'b', 'LineWidth', 2);
+    grid on
+    min_val = min([local_des_cam(i,:), local_act_cam(i,:)]);
+    max_val = max([local_des_cam(i,:), local_act_cam(i,:)]);
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
+    sgtitle('Centroidal Angular Momentum in LOCAL', 'FontSize', 30)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %torso ori task
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

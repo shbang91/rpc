@@ -179,6 +179,9 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
   // compute dcm
   this->_ComputeDCM();
 
+  // compute CAM
+  sp_->cam_est_ = robot_->GetHg().head<3>();
+
 #if B_USE_ZMQ
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
     // Save estimated floating base joint states

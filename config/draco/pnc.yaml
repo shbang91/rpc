@@ -10,7 +10,7 @@ b_sim: true ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
-  kf: true
+  kf: false
   ########################################################################
   ## sim params
   ########################################################################
@@ -128,6 +128,19 @@ wbc:
       exp_base_kp : [50.]
       exp_base_kd : [1.5] # x, y will be ignored
 
+    cam_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [0., 0., 0.]
+      sim_kd : [1., 1., 1.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      sim_weight : [0., 0., 0.]
+      sim_kd : [1., 1., 1.]
+
     torso_ori_task:
       ########################################################################
       ## sim params
@@ -198,7 +211,7 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 1e-5] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
       #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
@@ -233,7 +246,7 @@ wbc:
   qp:
     b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0., 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 

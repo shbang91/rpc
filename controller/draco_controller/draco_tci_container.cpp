@@ -1,6 +1,7 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
+#include "controller/draco_controller/draco_task/draco_cam_task.hpp"
 #include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
@@ -19,6 +20,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   jpos_task_ = new JointTask(robot_);
   com_xy_task_ = new DracoCoMXYTask(robot_);
   com_z_task_ = new DracoCoMZTask(robot_);
+  cam_task_ = new DracoCAMTask(robot_);
   torso_ori_task_ = new LinkOriTask(robot_, draco_link::torso_com_link);
   std::vector<int> upper_body_jidx{
       draco_joint::l_shoulder_fe, draco_joint::l_shoulder_aa,
@@ -39,6 +41,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.insert(std::make_pair("joint_task", jpos_task_));
   task_map_.insert(std::make_pair("com_xy_task", com_xy_task_));
   task_map_.insert(std::make_pair("com_z_task", com_z_task_));
+  task_map_.insert(std::make_pair("cam_task", cam_task_));
   task_map_.insert(std::make_pair("torso_ori_task", torso_ori_task_));
   task_map_.insert(std::make_pair("upper_body_task", upper_body_task_));
   task_map_.insert(std::make_pair("lf_pos_task", lf_pos_task_));
@@ -51,6 +54,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_unweighted_cost_map_.insert(std::make_pair("joint_task", NAN));
   task_unweighted_cost_map_.insert(std::make_pair("com_xy_task", NAN));
   task_unweighted_cost_map_.insert(std::make_pair("com_z_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("cam_task", NAN));
   task_unweighted_cost_map_.insert(std::make_pair("torso_ori_task", NAN));
   task_unweighted_cost_map_.insert(std::make_pair("upper_body_task", NAN));
   task_unweighted_cost_map_.insert(std::make_pair("lf_pos_task", NAN));
@@ -61,6 +65,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_weighted_cost_map_.insert(std::make_pair("joint_task", NAN));
   task_weighted_cost_map_.insert(std::make_pair("com_xy_task", NAN));
   task_weighted_cost_map_.insert(std::make_pair("com_z_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("cam_task", NAN));
   task_weighted_cost_map_.insert(std::make_pair("torso_ori_task", NAN));
   task_weighted_cost_map_.insert(std::make_pair("upper_body_task", NAN));
   task_weighted_cost_map_.insert(std::make_pair("lf_pos_task", NAN));
@@ -140,6 +145,7 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete jpos_task_;
   delete com_xy_task_;
   delete com_z_task_;
+  delete cam_task_;
   delete torso_ori_task_;
   delete upper_body_task_;
   delete lf_pos_task_;
@@ -160,6 +166,7 @@ void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
   // task
   com_xy_task_->SetParameters(cfg_["wbc"]["task"]["com_xy_task"], b_sim);
   com_z_task_->SetParameters(cfg_["wbc"]["task"]["com_z_task"], b_sim);
+  cam_task_->SetParameters(cfg_["wbc"]["task"]["cam_task"], b_sim);
   torso_ori_task_->SetParameters(cfg_["wbc"]["task"]["torso_ori_task"], b_sim);
   upper_body_task_->SetParameters(cfg_["wbc"]["task"]["upper_body_task"],
                                   b_sim);
