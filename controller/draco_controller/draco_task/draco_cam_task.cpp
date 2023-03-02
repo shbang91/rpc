@@ -24,7 +24,10 @@ void DracoCAMTask::UpdateOpCommand() {
 }
 
 void DracoCAMTask::UpdateJacobian() {
-  jacobian_ = robot_->GetAg().topRows<3>();
+  // jacobian_ = robot_->GetAg().topRows<3>();
+  Eigen::MatrixXd J_cam =
+      robot_->GetIg().inverse() * robot_->GetAg(); // I^-1 * J_cam
+  jacobian_ = J_cam.topRows<3>();
 }
 
 void DracoCAMTask::UpdateJacobianDotQdot() {

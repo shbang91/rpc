@@ -42,7 +42,7 @@ state_estimator:
   exp_num_data_ang_vel: [5, 5, 5]
 
   ## for simulation please use 000000000
-  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
@@ -132,8 +132,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [0., 0., 0.]
-      sim_kd : [1., 1., 1.]
+      sim_weight : [100., 100., 100.]
+      sim_kd : [5., 5., 5.]
 
       ########################################################################
       ## exp params
