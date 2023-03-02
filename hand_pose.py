@@ -72,8 +72,8 @@ for root, dirs, files in os.walk(path, topdown=False):
         # joint_data = h5py.File(os.path.join(root, name))
 
 # print(joint_data.keys())
-initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
-initialized_idx = int(initialized_idx)
+#initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
+#initialized_idx = int(initialized_idx)
 
 # for idx, value_prefix in joint_prefixes.items():
 # fig, axes = plt.subplots(2)
@@ -158,10 +158,10 @@ for topic, value_prefix in value_prefixes.items():
                 time,
                 ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:, subidx],
                 color='r')
-            axes[idx][subidx].axvspan(0,
-                                      ctrl_data['time'][initialized_idx],
-                                      alpha=0.3,
-                                      color='green')
+            #axes[idx][subidx].axvspan(0,
+            #                          ctrl_data['time'][initialized_idx],
+            #                          alpha=0.3,
+            #                          color='green')
             axes[idx][subidx].set_ylabel('{} [{}]'.format(coord, unit[idx]))
             axes[idx][subidx].set_xlim(left=0)
             if idx == 1:
