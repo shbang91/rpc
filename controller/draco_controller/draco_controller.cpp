@@ -25,9 +25,9 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(false),
-      b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
-      b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
-      b_use_modified_swing_foot_jac_(false), smoothing_command_duration_(0.),
+      b_first_visit_pos_ctrl_(true), b_first_visit_wbc_ctrl_(true),
+      b_smoothing_command_(false), b_use_modified_swing_foot_jac_(false),
+      smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
@@ -72,8 +72,20 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     }
   }
 
+  // internal constraints
+  int row_idx(0);
+  Eigen::MatrixXd ji = Eigen::MatrixXd::Zero(num_passive, num_qdot);
+  for (const auto &[internal_const_str, internal_constr_ptr] :
+       tci_container_->internal_constraint_map_) {
+    internal_constr_ptr->UpdateJacobian();
+    Eigen::MatrixXd j_i = internal_constr_ptr->Jacobian();
+    int dim = internal_constr_ptr->Dim();
+    ji.middleRows(row_idx, dim) = j_i;
+    row_idx += dim;
+  }
+
   // ihwbc initialize
-  ihwbc_ = new IHWBC(sa_, &sf, &sv);
+  ihwbc_ = new IHWBC(sa_, &sf, &sv, &ji);
 
   // joint integrator initialize
   Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
@@ -82,7 +94,6 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
   joint_integrator_ = new JointIntegrator(draco::n_adof, sp_->servo_dt_,
                                           jpos_lb, jpos_ub, jvel_lb, jvel_ub);
-
   // read yaml & set params
   try {
     YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
@@ -196,16 +207,6 @@ void DracoController::GetCommand(void *command) {
       contact_ptr->UpdateJacobianDotQdot();
       contact_ptr->UpdateConeConstraint();
       rf_dim += contact_ptr->Dim();
-    }
-    // iterate once b/c jacobian does not change at all depending on
-    // configuration
-    if (b_int_constraint_first_visit_) {
-      for (const auto &[internal_const_str, internal_constr_ptr] :
-           tci_container_->internal_constraint_map_) {
-        internal_constr_ptr->UpdateJacobian();
-        internal_constr_ptr->UpdateJacobianDotQdot();
-        b_int_constraint_first_visit_ = false;
-      }
     }
 
     // force task not iterated b/c not depending on q or qdot

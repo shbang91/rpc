@@ -5,7 +5,7 @@
 #include "controller/whole_body_controller/task.hpp"
 
 IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
-             const Eigen::MatrixXd *sv)
+             const Eigen::MatrixXd *sv, const Eigen::MatrixXd *ji)
     : sa_(sa), dim_contact_(0), dim_cone_constraint_(0), b_contact_(true),
       lambda_qddot_(0.), b_first_visit_(true) {
   util::PrettyConstructor(3, "IHWBC");
@@ -31,6 +31,11 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
     sv_.setZero();
     b_passive_ = false;
     num_passive_ = 0;
+  }
+
+  if (ji != nullptr) {
+    ji_ = *ji;
+    assert(ji_.rows() == num_passive_);
   }
 
   A_.setZero(num_qdot_, num_qdot_);
@@ -139,34 +144,16 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   //=============================================================
 
   // internal constraints setup
-  Eigen::MatrixXd ji = Eigen::MatrixXd::Zero(num_passive_, num_qdot_);
-  Eigen::VectorXd jidot_qdot_vec = Eigen::VectorXd(num_passive_);
-  Eigen::VectorXd ji_transpose_lambda_int_jidot_qdot_vec =
-      Eigen::VectorXd::Zero(num_qdot_);
+  Eigen::VectorXd jidot_qdot_vec = Eigen::VectorXd::Zero(num_passive_);
 
   Eigen::MatrixXd ni;
   Eigen::MatrixXd sa_ni_trc_bar; // TODO: sa_ni_trc_bar using just pseudo inv
                                  // (not dynamically consistent pseudo inv)
   if (b_passive_) {
-    // exist passive joint
-    int row_idx(0);
-    for (const auto [ic_str, ic_ptr] : internal_constraint_map) {
-      Eigen::MatrixXd j_i = ic_ptr->Jacobian();
-      Eigen::VectorXd jidot_qdot = ic_ptr->JacobianDotQdot();
-      int dim = ic_ptr->Dim();
+    Eigen::MatrixXd lambda_int_inv = ji_ * Ainv_ * ji_.transpose();
 
-      ji.middleRows(row_idx, dim) = j_i;
-      jidot_qdot_vec.segment(row_idx, dim) = jidot_qdot;
-      row_idx += dim;
-    }
-
-    Eigen::MatrixXd lambda_int_inv = ji * Ainv_ * ji.transpose();
-    ji_transpose_lambda_int_jidot_qdot_vec =
-        ji.transpose() * util::PseudoInverse(lambda_int_inv, 0.0001) *
-        jidot_qdot_vec;
-
-    Eigen::MatrixXd ji_bar = util::WeightedPseudoInverse(ji, Ainv_, 0.0001);
-    ni = Eigen::MatrixXd::Identity(num_qdot_, num_qdot_) - ji_bar * ji;
+    Eigen::MatrixXd ji_bar = util::WeightedPseudoInverse(ji_, Ainv_, 0.0001);
+    ni = Eigen::MatrixXd::Identity(num_qdot_, num_qdot_) - ji_bar * ji_;
 
     // compuationally efficient pseudo inverse for trq calc (exclude floating
     // base)
@@ -197,7 +184,6 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   } else {
     // no passive joint
     ni.setIdentity(num_qdot_, num_qdot_);
-    ji_transpose_lambda_int_jidot_qdot_vec.setZero(num_qdot_);
     sa_ni_trc_bar.setIdentity(num_active_, num_active_);
   }
 
@@ -250,7 +236,7 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
         eq_int_mat.setZero(num_passive_, num_qdot_ + dim_contact_);
         eq_int_vec.setZero(num_passive_);
 
-        eq_int_mat.leftCols(num_qdot_) = ji;
+        eq_int_mat.leftCols(num_qdot_) = ji_;
         eq_int_vec = jidot_qdot_vec;
 
         eq_mat.setZero(num_float_ + num_passive_, num_qdot_ + dim_contact_);
@@ -285,7 +271,7 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
       if (b_passive_) {
         // floating base: x, internal constraint: o, contact: o
         eq_int_mat.setZero(num_passive_, num_qdot_ + dim_contact_);
-        eq_int_mat.leftCols(num_qdot_) = ji;
+        eq_int_mat.leftCols(num_qdot_) = ji_;
         eq_int_vec = jidot_qdot_vec;
 
         eq_mat = eq_int_mat;
@@ -304,7 +290,7 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
         eq_float_mat = sf_ * A_;
         eq_float_vec = sf_ * ni.transpose() * (cori_ + grav_);
 
-        eq_int_mat = ji;
+        eq_int_mat = ji_;
         eq_int_vec = jidot_qdot_vec;
 
         eq_mat.setZero(num_float_ + num_passive_, num_qdot_);
@@ -325,7 +311,7 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
     } else {
       if (b_passive_) {
         // floating base: x, internal constraint: o, contact: x
-        eq_int_mat = ji;
+        eq_int_mat = ji_;
         eq_int_vec = jidot_qdot_vec;
 
         eq_mat = eq_int_mat;
@@ -373,18 +359,13 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
     l_trq_mat.leftCols(num_qdot_) = sa_ni_trc_bar.transpose() * snf_ * A_;
     l_trq_mat.rightCols(dim_contact_) =
         -sa_ni_trc_bar.transpose() * snf_ * (jc * ni).transpose();
-    l_trq_vec =
-        -joint_trq_limits_.leftCols(1) +
-        sa_ni_trc_bar.transpose() * snf_ * ni.transpose() * (cori_ + grav_) +
-        sa_ni_trc_bar.transpose() * snf_ *
-            ji_transpose_lambda_int_jidot_qdot_vec;
-
+    l_trq_vec = -joint_trq_limits_.leftCols(1) + sa_ni_trc_bar.transpose() *
+                                                     snf_ * ni.transpose() *
+                                                     (cori_ + grav_);
     r_trq_mat = l_trq_mat;
-    r_trq_vec =
-        joint_trq_limits_.rightCols(1) -
-        sa_ni_trc_bar.transpose() * snf_ * ni.transpose() * (cori_ + grav_) -
-        sa_ni_trc_bar.transpose() * snf_ *
-            ji_transpose_lambda_int_jidot_qdot_vec;
+    r_trq_vec = joint_trq_limits_.rightCols(1) - sa_ni_trc_bar.transpose() *
+                                                     snf_ * ni.transpose() *
+                                                     (cori_ + grav_);
 
     ineq_trq_mat.setZero(2 * (num_qdot_ - num_float_), num_qdot_ - num_float_);
     ineq_trq_vec.setZero(2 * (num_qdot_ - num_float_));
@@ -455,14 +436,12 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
     trq_cmd = sa_.rightCols(num_qdot_ - num_float_).transpose() *
               sa_ni_trc_bar.transpose() * snf_ *
               (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) -
-               (jc * ni).transpose() * rf_sol_ +
-               ji_transpose_lambda_int_jidot_qdot_vec);
+               (jc * ni).transpose() * rf_sol_);
   } else {
     // contact: x
     trq_cmd = sa_.rightCols(num_qdot_ - num_float_).transpose() *
               sa_ni_trc_bar.transpose() * snf_ *
-              (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_) +
-               ji_transpose_lambda_int_jidot_qdot_vec);
+              (A_ * qddot_sol_ + ni.transpose() * (cori_ + grav_));
   }
 
   // qddot_cmd = sa_ * qddot_sol_;
