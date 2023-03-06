@@ -11,13 +11,26 @@ class InternalConstraint;
 class ForceTask;
 class IHWBC {
 public:
+  // case1: internal constraints x depends on joint config
   IHWBC(const Eigen::MatrixXd &Sa, const Eigen::MatrixXd *Sf = nullptr,
         const Eigen::MatrixXd *Sv = nullptr,
         const Eigen::MatrixXd *ji = nullptr);
+
+  // case2: internal constraints o depends on joint config
+  IHWBC(const Eigen::MatrixXd &Sa, const Eigen::MatrixXd *Sf = nullptr,
+        const Eigen::MatrixXd *Sv = nullptr);
   virtual ~IHWBC() = default;
 
   void UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
                      const Eigen::VectorXd &cori, const Eigen::VectorXd &grav);
+
+  // case1: internal constraints x depends on joint config
+  void Solve(const std::unordered_map<std::string, Task *> &task_map,
+             const std::map<std::string, Contact *> &contact_map,
+             std::map<std::string, ForceTask *> &force_task_map,
+             Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &trq_cmd);
+
+  // case2: internal constraints o depends on joint config
   void Solve(const std::unordered_map<std::string, Task *> &task_map,
              const std::map<std::string, Contact *> &contact_map,
              const std::unordered_map<std::string, InternalConstraint *>
