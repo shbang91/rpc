@@ -533,7 +533,7 @@ while (True):
     t += dt
     count += 1
 
-    if t > 20.0:
+    if t > 30.0:
         break
 
 recorder.release()

@@ -1,4 +1,4 @@
-RPC_TEST=real_robot_200
+RPC_TEST=sim_new_bb
 PATH_DRACO=.
 python3 $PATH_DRACO/simulator/pybullet/draco_test.py
 mkdir -p $PATH_DRACO/plot_data/$RPC_TEST

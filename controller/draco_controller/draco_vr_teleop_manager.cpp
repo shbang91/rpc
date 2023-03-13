@@ -25,9 +25,7 @@ void DracoVRTeleopManager::InitializeTeleopSocket(
   teleop_socket_->connect(ip_address);
 }
 
-bool DracoVRTeleopManager::isReady() {
-    return ready_;
-}
+bool DracoVRTeleopManager::isReady() { return ready_; }
 
 DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   zmq::message_t commands;
@@ -69,12 +67,12 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   }
 
   if (result.l_pad) {
-      if (!l_pad_held_) {
-          ready_ = !ready_;
-      }
-      l_pad_held_ = true;
+    if (!l_pad_held_) {
+      ready_ = !ready_;
+    }
+    l_pad_held_ = true;
   } else {
-      l_pad_held_ = false;
+    l_pad_held_ = false;
   }
 
   return result;

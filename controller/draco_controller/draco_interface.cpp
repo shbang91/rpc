@@ -107,28 +107,27 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // Get commands from zmq, send interrupt
     DracoVRCommands cmd =
         DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
-    Eigen::Vector3d test_rh_pos;
-    Eigen::Vector3d test_lh_pos;
-    Eigen::Quaterniond test_rh_quat;
-    Eigen::Quaterniond test_lh_quat;
+    Eigen::Vector3d local_rh_pos;
+    Eigen::Vector3d local_lh_pos;
+    Eigen::Quaterniond local_rh_quat;
+    Eigen::Quaterniond local_lh_quat;
     if (DracoVRTeleopManager::GetVRTeleopManager()->isReady()) {
-      test_rh_pos = cmd.rh_pos;
-      test_lh_pos = cmd.lh_pos;
-      test_rh_quat = cmd.rh_ori;
-      test_lh_quat = cmd.lh_ori;
+      local_rh_pos = cmd.rh_pos;
+      local_lh_pos = cmd.lh_pos;
+      local_rh_quat = cmd.rh_ori;
+      local_lh_quat = cmd.lh_ori;
     } else {
-      test_rh_pos << 0.35, -0.25, 0.0;
-      test_lh_pos << 0.35, 0.25, 0.0;
-      test_rh_quat = Eigen::AngleAxisd(
+      local_rh_pos << 0.35, -0.25, 0.0;
+      local_lh_pos << 0.35, 0.25, 0.0;
+      local_rh_quat = Eigen::AngleAxisd(
           0.0,
           Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
-      test_lh_quat = Eigen::AngleAxisd(
+      local_lh_quat = Eigen::AngleAxisd(
           0.0,
           Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
     }
-    //_ProcessVRInput(&cmd, sensor_data);
-    test_rh_pos[2] += .1;
-    test_lh_pos[2] += .1;
+    local_rh_pos[2] += .1;
+    local_lh_pos[2] += .1;
     // std::cout << "left\n " << test_lh_pos << std::endl;
     // std::cout << "right\n " << test_rh_pos << std::endl;
 
@@ -145,14 +144,6 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
 
-    clamped_lh_pos[0] = std::min(std::max(test_lh_pos[0], 0.25), 0.50);
-    clamped_lh_pos[1] = std::min(std::max(test_lh_pos[1], 0.05), 0.45);
-    clamped_lh_pos[2] = std::min(std::max(test_lh_pos[2], -0.2), 0.4);
-
-    clamped_rh_pos[0] = std::min(std::max(test_rh_pos[0], 0.25), 0.50);
-    clamped_rh_pos[1] = std::min(std::max(test_rh_pos[1], -0.45), -0.05);
-    clamped_rh_pos[2] = std::min(std::max(test_rh_pos[2], -0.2), 0.4);
-
     // std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
 
@@ -162,13 +153,21 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Matrix3d rot_world_to_base = torso_iso.linear();
     Eigen::Quaterniond base_quat(rot_world_to_base);
 
-    target_rh_pos = rot_world_to_base * clamped_rh_pos + base_pos;
-    target_lh_pos = rot_world_to_base * clamped_lh_pos + base_pos;
-    target_rh_quat = base_quat * test_rh_quat * zero_rh_quat_;
-    target_lh_quat = base_quat * test_lh_quat * zero_lh_quat_;
+    target_rh_pos = rot_world_to_base * local_rh_pos + base_pos;
+    target_lh_pos = rot_world_to_base * local_lh_pos + base_pos;
+    target_rh_quat = base_quat * local_rh_quat * zero_rh_quat_;
+    target_lh_quat = base_quat * local_lh_quat * zero_lh_quat_;
 
-    ctrl_arch_->background_manipulation_->target_rh_pos_ << target_rh_pos;
-    ctrl_arch_->background_manipulation_->target_lh_pos_ << target_lh_pos;
+    clamped_lh_pos[0] = std::min(std::max(target_lh_pos[0], -.35), -0.);
+    clamped_lh_pos[1] = std::min(std::max(target_lh_pos[1], 0.2), 0.35);
+    clamped_lh_pos[2] = std::min(std::max(target_lh_pos[2], 0.8), 1.1);
+
+    clamped_rh_pos[0] = std::min(std::max(target_rh_pos[0], 0.2), 0.50);
+    clamped_rh_pos[1] = std::min(std::max(target_rh_pos[1], 0.2), 0.35);
+    clamped_rh_pos[2] = std::min(std::max(target_rh_pos[2], 0.8), 1.1);
+
+    ctrl_arch_->background_manipulation_->target_rh_pos_ << clamped_rh_pos;
+    ctrl_arch_->background_manipulation_->target_lh_pos_ << clamped_lh_pos;
 
     ctrl_arch_->background_manipulation_->target_rh_ori_[0] =
         target_rh_quat.x();

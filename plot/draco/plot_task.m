@@ -7,17 +7,19 @@ addpath("/tmp")
 addpath("plot")
 addpath("plot/draco")
 
+
 % exp_data_location = 'experiment_data';
 exp_data_location = '/tmp';
 
-b_include_lhand_task = false;
+b_include_lhand_task = true;
 
 d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
-dd = dir("/tmp/draco_state_estimator_data*.mat");
+% dd = dir("/tmp/draco_state_estimator_data*.mat");
+dd = dir(sprintf("%s/draco_state_estimator_data*.mat", exp_data_location));
 % dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
