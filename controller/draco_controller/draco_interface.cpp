@@ -65,12 +65,12 @@ DracoInterface::DracoInterface() : Interface() {
               << __FILE__ << "]" << std::endl;
   }
 
-  // robot_ =
-  // new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+  robot_ =
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+                               THIS_COM "robot_model/draco", false, false);
+  // robot_ = new PinocchioRobotSystem(THIS_COM
+  //"robot_model/draco/draco3_big_feet.urdf",
   // THIS_COM "robot_model/draco", false, false);
-  robot_ = new PinocchioRobotSystem(THIS_COM
-                                    "robot_model/draco/draco3_big_feet.urdf",
-                                    THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
   se_kf_ = new DracoKFStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);
@@ -147,27 +147,37 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
 
+    clamped_lh_pos[0] = std::min(std::max(local_lh_pos[0], 0.25), 0.50);
+    clamped_lh_pos[1] = std::min(std::max(local_lh_pos[1], 0.05), 0.45);
+    clamped_lh_pos[2] = std::min(std::max(local_lh_pos[2], -0.2), 0.4);
+
+    clamped_rh_pos[0] = std::min(std::max(local_rh_pos[0], 0.25), 0.50);
+    clamped_rh_pos[1] = std::min(std::max(local_rh_pos[1], -0.45), -0.05);
+    clamped_rh_pos[2] = std::min(std::max(local_rh_pos[2], -0.2), 0.4);
+
     Eigen::Isometry3d torso_iso =
         robot_->GetLinkIsometry(draco_link::torso_com_link);
     Eigen::Vector3d base_pos = torso_iso.translation();
     Eigen::Matrix3d rot_world_to_base = torso_iso.linear();
     Eigen::Quaterniond base_quat(rot_world_to_base);
 
-    target_rh_pos = rot_world_to_base * local_rh_pos + base_pos;
-    target_lh_pos = rot_world_to_base * local_lh_pos + base_pos;
+    target_rh_pos = rot_world_to_base * clamped_rh_pos + base_pos;
+    target_lh_pos = rot_world_to_base * clamped_lh_pos + base_pos;
     target_rh_quat = base_quat * local_rh_quat * zero_rh_quat_;
     target_lh_quat = base_quat * local_lh_quat * zero_lh_quat_;
 
-    clamped_lh_pos[0] = std::min(std::max(target_lh_pos[0], -.35), -0.);
-    clamped_lh_pos[1] = std::min(std::max(target_lh_pos[1], 0.2), 0.35);
-    clamped_lh_pos[2] = std::min(std::max(target_lh_pos[2], 0.8), 1.1);
+    /*
+    clamped_lh_pos[0] = std::min(std::max(target_lh_pos[0], -.35), 0.);
+    clamped_lh_pos[1] = std::min(std::max(target_lh_pos[1], 0.15), 0.38);
+    clamped_lh_pos[2] = std::min(std::max(target_lh_pos[2], 0.8), 1.13);
 
     clamped_rh_pos[0] = std::min(std::max(target_rh_pos[0], 0.2), 0.50);
-    clamped_rh_pos[1] = std::min(std::max(target_rh_pos[1], 0.2), 0.35);
-    clamped_rh_pos[2] = std::min(std::max(target_rh_pos[2], 0.8), 1.1);
+    clamped_rh_pos[1] = std::min(std::max(target_rh_pos[1], 0.15), 0.38);
+    clamped_rh_pos[2] = std::min(std::max(target_rh_pos[2], 0.8), 1.13);
+    */
 
-    ctrl_arch_->background_manipulation_->target_rh_pos_ << clamped_rh_pos;
-    ctrl_arch_->background_manipulation_->target_lh_pos_ << clamped_lh_pos;
+    ctrl_arch_->background_manipulation_->target_rh_pos_ << target_rh_pos;
+    ctrl_arch_->background_manipulation_->target_lh_pos_ << target_lh_pos;
 
     ctrl_arch_->background_manipulation_->target_rh_ori_[0] =
         target_rh_quat.x();

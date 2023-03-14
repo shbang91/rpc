@@ -12,11 +12,11 @@ DracoVRTeleopManager *DracoVRTeleopManager::GetVRTeleopManager() {
 DracoVRTeleopManager::DracoVRTeleopManager() {
   // initialize zmq
   context_ = std::make_unique<zmq::context_t>(1);
-  teleop_socket_ = std::make_unique<zmq::socket_t>(*context_, ZMQ_PULL);
-  std::cout << "before setting option" << std::endl;
-  teleop_socket_->setsockopt(54,
-                             1); // discards stale messages
-  std::cout << "after setting option" << std::endl;
+  teleop_socket_ = std::make_unique<zmq::socket_t>(*context_, ZMQ_SUB);
+  teleop_socket_->setsockopt(ZMQ_CONFLATE, 1); // discards stale messages
+  char empty[0];
+  teleop_socket_->setsockopt(ZMQ_SUBSCRIBE, empty); // accept all topics
+  // note that "" doesn't work since sizeof("") = 1.
 }
 
 void DracoVRTeleopManager::InitializeTeleopSocket(

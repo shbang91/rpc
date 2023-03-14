@@ -11,7 +11,7 @@ HandTrajectoryManager::HandTrajectoryManager(Task *pos_task, Task *ori_task,
   util::PrettyConstructor(2, "HandTrajectoryManager");
   target_pos_ = Eigen::Vector3d::Zero();
   target_ori_ = Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ());
-  delta_pos_speed_ = 1;
+  delta_pos_speed_ = .5;
 }
 
 HandTrajectoryManager::~HandTrajectoryManager() {

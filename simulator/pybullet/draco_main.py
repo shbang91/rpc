@@ -254,7 +254,7 @@ def set_init_config_pybullet_robot(robot):
     pb.resetJointState(robot, DracoJointIdx.r_elbow_fe, -np.pi / 2, 0.)
 
     # Lowerbody
-    hip_yaw_angle = 0
+    hip_yaw_angle = 3  #degrees
     pb.resetJointState(robot, DracoJointIdx.l_hip_aa,
                        np.radians(hip_yaw_angle), 0.)
     pb.resetJointState(robot, DracoJointIdx.l_hip_fe, -np.pi / 4, 0.)
@@ -290,15 +290,16 @@ if __name__ == "__main__":
 
     ## robot spawn & initial kinematics and dynamics setting
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    # draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco_modified.urdf",
-    # Config.INITIAL_BASE_JOINT_POS,
-    # Config.INITIAL_BASE_JOINT_QUAT,
-    # useFixedBase=0)
     draco_humanoid = pb.loadURDF(cwd +
-                                 "/robot_model/draco/draco3_big_feet.urdf",
+                                 "/robot_model/draco/draco_modified.urdf",
                                  Config.INITIAL_BASE_JOINT_POS,
                                  Config.INITIAL_BASE_JOINT_QUAT,
                                  useFixedBase=0)
+    # draco_humanoid = pb.loadURDF(cwd +
+    # "/robot_model/draco/draco3_big_feet.urdf",
+    # Config.INITIAL_BASE_JOINT_POS,
+    # Config.INITIAL_BASE_JOINT_QUAT,
+    # useFixedBase=0)
 
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
                          useFixedBase=1)
