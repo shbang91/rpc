@@ -4,7 +4,8 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
-#include "controller/draco_controller/draco_tci_container.hpp"
+//#include "controller/draco_controller/draco_tci_container.hpp"
+#include "controller/draco_controller/draco_tci_container_wbic.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -36,7 +37,8 @@ void DoubleSupportSwaying::FirstVisit() {
 
   ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_);
 
-  // get desired final RF from each foot to use as starting desired reaction force values
+  // get desired final RF from each foot to use as starting desired reaction
+  // force values
   Eigen::VectorXd des_init_lfoot_rf = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd des_init_rfoot_rf = Eigen::VectorXd::Zero(6);
   des_init_lfoot_rf = ctrl_arch_->lf_force_tm_->GetFinalDesiredRf();
