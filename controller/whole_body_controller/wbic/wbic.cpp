@@ -16,7 +16,7 @@ using namespace proxsuite::proxqp;
 using proxsuite::nullopt; // c++17 simply use std::nullopt
 
 WBIC::WBIC(const std::vector<bool> &act_qdot_list, const Eigen::MatrixXd *Ji)
-    : WBC(act_qdot_list, Ji), threshold_(0.001), dim_contact_(0) {
+    : WBC(act_qdot_list, Ji), threshold_(0.0001), dim_contact_(0) {
   util::PrettyConstructor(3, "WBIC");
 }
 
@@ -111,10 +111,19 @@ bool WBIC::FindConfiguration(
       N_pre_dyn *= N_nx_dyn;
     } else {
       // last element
-      jpos_cmd = curr_jpos + delta_q_cmd.tail(num_qdot_);
-      jvel_cmd = qdot_cmd.tail(num_qdot_);
+      jpos_cmd = curr_jpos + delta_q_cmd.tail(num_qdot_ - num_floating_);
+      jvel_cmd = qdot_cmd.tail(num_qdot_ - num_floating_);
       wbc_qddot_cmd = qddot_cmd;
     }
+
+    // std::cout << it->first << ":" << std::endl;
+    // std::cout << "Desired Pos: " << it->second->DesiredPos().transpose()
+    //<< std::endl;
+    // std::cout << "Current Pos: " << it->second->CurrentPos().transpose()
+    //<< std::endl;
+    // std::cout << "Op Command: " << it->second->OpCommand().transpose()
+    //<< std::endl;
+    // std::cout << "qddot cmd: " << qddot_cmd.transpose() << std::endl;
   }
 
   return true;
@@ -204,7 +213,7 @@ void WBIC::_SetQPCost() {
 
 void WBIC::_SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd) {
   A_ = Eigen::MatrixXd::Zero(num_floating_, num_floating_ + dim_contact_);
-  A_.leftCols(num_floating_) = (sf_ * M_).leftCols(num_floating_);
+  A_.leftCols(num_floating_) = sf_ * M_.leftCols(num_floating_);
   A_.rightCols(dim_contact_) = -sf_ * Jc_.transpose();
 
   b_ = Eigen::VectorXd::Zero(num_floating_);
@@ -213,8 +222,13 @@ void WBIC::_SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd) {
 
 void WBIC::_SetQPInEqualityConstraint() {
   // TODO: add trq constraints
-  C_ = Uf_mat_;
+  C_ = Eigen::MatrixXd::Zero(Uf_mat_.rows(), num_floating_ + dim_contact_);
+  C_.rightCols(dim_contact_) = Uf_mat_;
   l_ = Uf_vec_ - Uf_mat_ * des_rf_;
+  // std::cout << "------------------ Uf_ -----------------" << std::endl;
+  // std::cout << Uf_mat_ << std::endl;
+  // std::cout << "------------------ l_ ------------------" << std::endl;
+  // std::cout << l_ << std::endl;
 }
 
 void WBIC::_SolveQP() {
@@ -247,15 +261,27 @@ void WBIC::_SolveQP() {
   Eigen::VectorXd opt_sol = qp.results.x; // primal results
   qp_data_->delta_qddot_ = opt_sol.head(num_floating_);
   qp_data_->delta_rf_ = opt_sol.tail(dim_contact_);
+
+  // TEST
+  // std::cout << "========================================================"
+  //<< std::endl;
+  // util::PrettyPrint(qp_data_->delta_qddot_, std::cout, "delta_qddot sol");
+  // util::PrettyPrint(qp_data_->delta_rf_, std::cout, "delta_rf sol");
 }
 
 void WBIC::_GetSolution(const Eigen::VectorXd &wbc_qddot_cmd,
                         Eigen::VectorXd &jtrq_cmd) {
+  Eigen::VectorXd corrected_qddot_cmd = wbc_qddot_cmd;
+  // Eigen::VectorXd bf_correct = corrected_qddot_cmd.head<6>();
+  // util::PrettyPrint(bf_correct, std::cout, "qddot cmd");
+  corrected_qddot_cmd.head(num_floating_) += qp_data_->delta_qddot_;
+  // Eigen::VectorXd after_correct = corrected_qddot_cmd.head<6>();
+  // util::PrettyPrint(after_correct, std::cout, "qddot cmd after correction");
+
   Eigen::VectorXd trq_trc =
-      M_.rightCols(num_qdot_ - num_floating_) *
-          wbc_qddot_cmd.tail(num_qdot_ - num_floating_) +
-      (Ni_dyn_.transpose()).rightCols(num_qdot_ - num_floating_) *
-          (cori_ + grav_).tail(num_qdot_ - num_floating_) -
+      M_.bottomRows(num_qdot_ - num_floating_) * corrected_qddot_cmd +
+      (Ni_dyn_.transpose()).bottomRows(num_qdot_ - num_floating_) *
+          (cori_ + grav_) -
       ((Jc_ * Ni_dyn_).transpose()).bottomRows(num_qdot_ - num_floating_) *
           (des_rf_ + qp_data_->delta_rf_);
 
@@ -266,7 +292,13 @@ void WBIC::_GetSolution(const Eigen::VectorXd &wbc_qddot_cmd,
   Eigen::MatrixXd UNi_trc_bar;
   _WeightedPseudoInverse(UNi_trc, Minv_trc, UNi_trc_bar);
   //_WeightedPseudoInverse(UNi_trc,
-  // Eigen::MatrixXd::Identity(num_qdot_-num_floating_,
-  // num_qdot_-num_floating_), UNi_trc_bar);
-  jtrq_cmd = UNi_trc_bar.transpose() * trq_trc;
+  // Eigen::MatrixXd::Identity(num_qdot_ - num_floating_,
+  // num_qdot_ - num_floating_),
+  // UNi_trc_bar);
+  jtrq_cmd = UNi_trc_bar.transpose() * trq_trc; // dimension: num_active_
+  jtrq_cmd = sa_.rightCols(num_qdot_ - num_floating_).transpose() *
+             jtrq_cmd; // dimension: num_active_ + num_passive_
+
+  // TEST
+  // std::cout << "jtrq_cmd " << jtrq_cmd.transpose() << std::endl;
 }

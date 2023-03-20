@@ -13,7 +13,10 @@ class ForceTask;
 
 class WBICData {
 public:
-  WBICData(){};
+  WBICData() {
+    delta_qddot_ = Eigen::VectorXd::Zero(6);
+    W_delta_qddot_ = Eigen::VectorXd::Zero(6);
+  };
   ~WBICData() = default;
 
   // input

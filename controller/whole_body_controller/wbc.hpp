@@ -25,6 +25,7 @@ public:
     }
 
     sa_.setZero(num_active_, num_qdot_);
+    sf_.setZero(num_floating_, num_qdot_);
     sv_.setZero(num_passive_, num_qdot_);
     int j(0), k(0), e(0);
     for (int i(0); i < act_qdot_list.size(); i++) {
@@ -60,6 +61,7 @@ public:
     Minv_ = Minv;
     cori_ = cori;
     grav_ = grav;
+    b_update_setting_ = true;
   }
 
 protected:

@@ -39,16 +39,28 @@ DracoTCIContainerWBIC::DracoTCIContainerWBIC(PinocchioRobotSystem *robot)
 
   // wbc task list w/o joint task
   task_ordered_map_.clear();
-  task_ordered_map_.insert(std::make_pair("joint_task", jpos_task_));
+  // task_ordered_map_.insert(std::make_pair("joint_task", jpos_task_));
   task_ordered_map_.insert(std::make_pair("com_xy_task", com_xy_task_));
   task_ordered_map_.insert(std::make_pair("com_z_task", com_z_task_));
-  task_ordered_map_.insert(std::make_pair("cam_task", cam_task_));
+  // task_ordered_map_.insert(std::make_pair("cam_task", cam_task_));
   task_ordered_map_.insert(std::make_pair("torso_ori_task", torso_ori_task_));
   task_ordered_map_.insert(std::make_pair("upper_body_task", upper_body_task_));
   // task_ordered_map_.insert(std::make_pair("lf_pos_task", lf_pos_task_));
   // task_ordered_map_.insert(std::make_pair("rf_pos_task", rf_pos_task_)); //
   // task_ordered_map_.insert(std::make_pair("lf_ori_task", lf_ori_task_));
   // task_ordered_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
+  //
+  task_map_.clear();
+  task_map_.insert(std::make_pair("joint_task", jpos_task_));
+  task_map_.insert(std::make_pair("com_xy_task", com_xy_task_));
+  task_map_.insert(std::make_pair("com_z_task", com_z_task_));
+  task_map_.insert(std::make_pair("cam_task", cam_task_));
+  task_map_.insert(std::make_pair("torso_ori_task", torso_ori_task_));
+  task_map_.insert(std::make_pair("upper_body_task", upper_body_task_));
+  task_map_.insert(std::make_pair("lf_pos_task", lf_pos_task_));
+  task_map_.insert(std::make_pair("rf_pos_task", rf_pos_task_));
+  task_map_.insert(std::make_pair("lf_ori_task", lf_ori_task_));
+  task_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
 
   //=============================================================
   // Contacts List

@@ -179,7 +179,7 @@ void DracoControllerWBIC::GetCommand(void *command) {
         robot_->GetJointPos(), tci_container_->task_ordered_map_,
         tci_container_->contact_map_, joint_pos_cmd_, joint_vel_cmd_,
         wbc_qddot_cmd_); // joint_trq_cmd_ size: 27
-    wbic_data_->W_delta_qddot_ = Eigen::VectorXd::Constant(6, 0.1);
+    wbic_data_->W_delta_qddot_ = Eigen::VectorXd::Constant(6, 1e4);
     wbic_data_->W_delta_rf_ = Eigen::VectorXd::Constant(rf_dim, 1);
     wbic_data_->W_delta_rf_.head<3>() = Eigen::Vector3d::Constant(100);
     wbic_data_->W_delta_rf_.segment<3>(rf_dim / 2) =

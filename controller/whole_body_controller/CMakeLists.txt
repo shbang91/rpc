@@ -16,7 +16,7 @@ endif()
 
 if(BUILD_WITH_PROXQP)
     target_link_libraries(rpc-wbc PUBLIC proxsuite::proxsuite-vectorized)
-    target_compile_options(rpc-wbc PUBLIC "-march=native")
+    #target_compile_options(rpc-wbc PUBLIC "-march=native")
 endif()
 
 install(TARGETS rpc-wbc DESTINATION "${INSTALL_LIB_DIR}")
