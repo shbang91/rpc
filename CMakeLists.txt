@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.10)
 
 project(rpc)
 
@@ -27,12 +27,15 @@ option(PYTHON_BINDING "use pybind11" ON)
 option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
 option(BUILD_WITH_DART "compile with DART" OFF)
 
+option(BUILD_WITH_PROXQP "compile with ProxQP" ON)
+
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 
 # unit-testing tools
-option(BUILD_GTESTS "build google tests" ON)
+option(BUILD_GTESTS "build google tests" OFF)
 option(FETCH_GTEST_PKG "use fetch pkg to clone google test" OFF)
+
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
 endif()
@@ -46,6 +49,10 @@ include_directories("${PROJECT_SOURCE_DIR}/build")
 ##==================================================
 ## Dependency
 ##==================================================
+#ProxQP
+if(BUILD_WITH_PROXQP)
+    find_package(proxsuite REQUIRED)
+endif()
 
 #pybind11
 if(PYTHON_BINDING)

@@ -143,10 +143,18 @@ void PseudoInverse(Eigen::MatrixXd const &matrix, double sigmaThreshold,
 Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd &matrix,
                               const double &threshold);
 
-Eigen::MatrixXd NullSpace(const Eigen::MatrixXd &J,
-                          const double threshold = 0.00001);
+Eigen::MatrixXd GetNullSpace(const Eigen::MatrixXd &J,
+                             const double threshold = 0.00001,
+                             const Eigen::MatrixXd *W = nullptr);
 
 Eigen::MatrixXd WeightedPseudoInverse(const Eigen::MatrixXd &J,
                                       const Eigen::MatrixXd &W,
                                       const double sigma_threshold = 0.0001);
+void WeightedPseudoInverse(const Eigen::MatrixXd &J, const Eigen::MatrixXd &W,
+                           const double sigma_threshold, Eigen::MatrixXd &Jinv);
+
+Eigen::MatrixXd HStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+Eigen::MatrixXd VStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+Eigen::MatrixXd BlockDiagonalMatrix(const Eigen::MatrixXd &a,
+                                    const Eigen::MatrixXd &b);
 } // namespace util

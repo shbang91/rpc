@@ -102,6 +102,8 @@ public:
   Eigen::VectorXd OpCommand() const { return op_cmd_; }
   int Dim() const { return dim_; }
 
+  Eigen::VectorXd PosError() const { return pos_err_; }
+
   // TODO: virtual??
   int TargetIdx() const { return target_idx_; }
   Eigen::Matrix3d Rot() const { return rot_link_w_; }

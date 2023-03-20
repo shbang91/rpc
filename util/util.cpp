@@ -536,13 +536,24 @@ Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd &matrix,
   return cod.pseudoInverse();
 }
 
-Eigen::MatrixXd getNullSpace(const Eigen::MatrixXd &J, const double threshold) {
+Eigen::MatrixXd GetNullSpace(const Eigen::MatrixXd &J, const double threshold,
+                             const Eigen::MatrixXd *W) {
 
   Eigen::MatrixXd ret(J.cols(), J.cols());
   Eigen::MatrixXd J_pinv;
-  util::PseudoInverse(J, threshold, J_pinv);
+  W ? util::WeightedPseudoInverse(J, *W, threshold, J_pinv)
+    : util::PseudoInverse(J, threshold, J_pinv);
   ret = Eigen::MatrixXd::Identity(J.cols(), J.cols()) - J_pinv * J;
   return ret;
+}
+
+void WeightedPseudoInverse(const Eigen::MatrixXd &J, const Eigen::MatrixXd &W,
+                           const double sigma_threshold,
+                           Eigen::MatrixXd &Jinv) {
+  Eigen::MatrixXd lambda(J * W * J.transpose());
+  Eigen::MatrixXd lambda_inv;
+  util::PseudoInverse(lambda, sigma_threshold, lambda_inv);
+  Jinv = W * J.transpose() * lambda_inv;
 }
 
 Eigen::MatrixXd WeightedPseudoInverse(const Eigen::MatrixXd &J,
@@ -554,6 +565,29 @@ Eigen::MatrixXd WeightedPseudoInverse(const Eigen::MatrixXd &J,
   util::PseudoInverse(lambda, sigma_threshold, lambda_inv);
   Jinv = W * J.transpose() * lambda_inv;
   return Jinv;
+}
+
+Eigen::MatrixXd HStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
+  assert(a.rows() == b.rows());
+  Eigen::MatrixXd ab = Eigen::MatrixXd::Zero(a.rows(), a.cols() + b.cols());
+  ab << a, b;
+  return ab;
+}
+
+Eigen::MatrixXd VStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
+  assert(a.cols() == b.cols());
+  Eigen::MatrixXd ab = Eigen::MatrixXd::Zero(a.rows() + b.rows(), a.cols());
+  ab << a, b;
+  return ab;
+}
+
+Eigen::MatrixXd BlockDiagonalMatrix(const Eigen::MatrixXd &a,
+                                    const Eigen::MatrixXd &b) {
+  Eigen::MatrixXd ret =
+      Eigen::MatrixXd::Zero(a.rows() + b.rows(), a.cols() + b.cols());
+  ret.block(0, 0, a.rows(), a.cols()) = a;
+  ret.block(a.rows(), a.cols(), b.rows(), b.cols()) = b;
+  return ret;
 }
 
 } // namespace util
