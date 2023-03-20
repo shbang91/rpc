@@ -1,0 +1,361 @@
+servo_dt: 0.00125
+
+ip_address: "tcp://127.0.0.1:5557"
+#vr_ip_address: "tcp://192.168.50.50:5555"
+vr_ip_address: "tcp://192.168.1.217:5555"
+
+#data_save_freq: 1
+data_save_freq: 50
+vr_teleop_freq: 20
+
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
+
+
+state_estimator:
+  kf: false
+  ########################################################################
+  ## sim params
+  ########################################################################
+  sim_sigma_base_vel: [0.0, 0.0, 0.0]
+  sim_sigma_base_acc: [0.5, 0.5, 0.5]
+  sim_sigma_pos_lfoot: [0.001, 0.001, 0.001]
+  sim_sigma_pos_rfoot: [0.001, 0.001, 0.001]
+  sim_sigma_vel_lfoot: [0.005, 0.005, 0.002]
+  sim_sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  sim_base_accel_time_constant: 0.02
+  sim_base_accel_limits: [1., 1., 1.]
+  sim_base_com_vel_time_constant: 1.0
+  sim_num_data_base_accel: [10, 10, 10]
+  sim_num_data_ang_vel: [5, 5, 5]
+
+  ########################################################################
+  ## exp params
+  ########################################################################
+  exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
+  exp_sigma_base_acc: [0.5, 0.5, 0.5]
+  exp_sigma_pos_lfoot: [0.001, 0.001, 0.009]
+  exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
+  exp_sigma_vel_lfoot: [0.002, 0.002, 0.002]
+  exp_sigma_vel_rfoot: [0.002, 0.002, 0.002]
+  exp_base_accel_time_constant: 0.02
+  exp_base_accel_limits: [1., 1., 1.]
+  exp_base_com_vel_time_constant: 1.0
+  exp_num_data_base_accel: [10, 10, 10]
+  exp_num_data_ang_vel: [5, 5, 5]
+
+  ## for simulation please use 000000000
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+
+  ## IF 0: simple moving average filter parameter
+  sim_num_data_com_vel: [20, 20, 20]
+  exp_num_data_com_vel: [200, 200, 200] 
+
+  ## IF 1: exponential smoother filter parameter
+  com_vel_time_constant: 0.2 
+  com_vel_err_limit: [1., 1., 1.]
+
+  ## IF 2: low-pass filter parameter
+  cut_off_period: 0.01
+
+
+controller:
+  exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
+  b_use_modified_swing_foot_jac: true
+  b_use_modified_hand_jac: true
+
+wbc:
+  task:
+    com_xy_task:
+      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
+      icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
+
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [1000., 1000.]
+      sim_kp : [200., 200.]
+      sim_kd : [10., 10.]
+      sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
+      sim_icp_kp : [5., 5.]
+      sim_icp_kd : [0.5, 0.5,] # x, y will be ignored
+      sim_icp_ki : [10., 10.] 
+
+      ## IF icp_integrator_type == 0:
+      sim_time_constant : 0.001
+      sim_avg_icp_error_limit: [0.04, 0.04]
+
+      ## IF icp_integrator_type == 1:
+      sim_leaky_rate: 0.01
+      sim_leaky_integrator_limit: [0.03, 0.03]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [1000., 1000.]
+      exp_kp : [200., 200.]
+      exp_kd : [10., 10.]
+      exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
+      exp_icp_kp : [0., 0.]
+      exp_icp_kd : [0., 0.] # x, y will be ignored
+      exp_icp_ki : [1., 1.] 
+
+      ## IF icp_integrator_type == 0:
+      exp_time_constant : 0.2
+      exp_avg_icp_error_limit: [0.04, 0.04]
+
+      ## IF icp_integrator_type == 1:
+      exp_leaky_rate: 0.5
+      exp_leaky_integrator_limit: [0.03, 0.03]
+
+    com_z_task:
+      com_height_target_source: 1 # 0: com height / 1: base height
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_com_weight : [1000.]
+      sim_com_kp : [100.]
+      sim_com_kd : [5.]
+
+      sim_base_weight : [1000.] # only used when target source : 1
+      sim_base_kp : [500.]
+      sim_base_kd : [50.] # x, y will be ignored
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_com_weight : [1000.]
+      exp_com_kp : [100.]
+      exp_com_kd : [5.]
+
+      exp_base_weight : [1000.] # only used when target source : 1
+      exp_base_kp : [50.]
+      exp_base_kd : [1.5] # x, y will be ignored
+
+    torso_ori_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [100., 100., 10.]
+      sim_kp : [200., 200., 100.]
+      sim_kd : [14., 14., 10.]
+
+      ## exp params
+      exp_weight : [100., 100., 10.]
+      exp_kp : [30., 30., 20.]
+      exp_kd : [0.2, 0.2, 0.1]
+
+    upper_body_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
+      ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
+      ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
+      sim_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
+      sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
+      sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
+      exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
+      exp_kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+
+    hand_pos_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      # sim_weight : [0., 0., 0.]
+      # sim_weight_at_walking : [0., 0., 0.]
+      # sim_kp : [0., 0., 0.]
+      # sim_kd : [0., 0., 0.]
+      sim_weight : [1000., 1000., 1000.]
+      sim_weight_at_walking : [10., 10., 10.]
+      sim_kp : [400., 400., 400.]
+      sim_kd : [40., 40., 40.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [150., 150., 150.]
+      exp_weight_at_walking : [1., 1., 1.]
+      exp_kp : [50., 50., 50.]
+      exp_kd : [5., 5., 5.]
+
+    hand_ori_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [10., 10., 10.]
+      sim_weight_at_walking : [10., 10., 10.]
+      sim_kp : [200., 200., 200.]
+      sim_kd : [20., 20., 20.]
+      # sim_weight : [1., 1., 1.]
+      # sim_weight_at_walking : [0., 0., 0.]
+      # sim_kp : [10., 10., 10.]
+      # sim_kd : [1., 1., 1.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [20., 20., 20.]
+      exp_weight_at_walking : [5., 5., 5.]
+      exp_kp : [20., 20., 20.]
+      exp_kd : [1., 1., 1.]
+
+    foot_pos_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [10000., 10000., 10000.]
+      sim_weight_at_swing : [500., 500., 500.]
+      sim_kp : [400., 400., 400.]
+      sim_kd : [30., 30., 30.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [10000., 10000., 10000.]
+      exp_weight_at_swing : [500., 500., 500.]
+      exp_kp : [100., 100., 150.]
+      exp_kd : [0.1, 0.1, 1.]
+
+    foot_ori_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [10000., 10000., 10000.]
+      sim_weight_at_swing : [500., 500., 500.]
+      sim_kp : [300., 300., 300.]
+      sim_kd : [30., 30., 30.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [10000., 10000., 10000.]
+      exp_weight_at_swing : [500., 500., 500.]
+      exp_kp : [20., 20., 20.]
+      exp_kd : [0.1, 0.1, 0.1]
+
+    foot_rf_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [0., 0., 0., 0., 0., 0.]
+
+  contact:
+    ########################################################################
+    ## sim params
+    ########################################################################
+    sim_max_rf_z: 400.
+
+    sim_mu: 0.3
+    sim_foot_half_length: 0.08
+    sim_foot_half_width: 0.04 ## 0.04
+    #sim_foot_half_length: 0.125
+    #sim_foot_half_width: 0.075
+
+    ########################################################################
+    ## exp params
+    ########################################################################
+    exp_max_rf_z: 400.
+
+    exp_mu: 0.3
+    #exp_foot_half_length: 0.08
+    #exp_foot_half_width: 0.03
+    exp_foot_half_length: 0.125
+    exp_foot_half_width: 0.075
+
+  qp:
+    lambda_qddot: 1e-7 ##regularization
+    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
+    b_trq_limit: false
+
+  joint_integrator:
+    pos_cutoff_freq: 0.5 #hz
+    vel_cutoff_freq: 2. #hz
+    max_pos_err: 0.2 #rad
+
+
+
+state_machine:
+    initialize:
+      init_duration: 5.
+      #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [0., 0.052, -0.785, 0.785, 0.785, -0.785, 0.248, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.052, -0.785, 0.785, 0.785, -0.785, 0.052, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      b_only_joint_pos_control: false
+      wait_time: 10.
+
+    stand_up:
+      standup_duration: 5.
+      target_com_height: 0.658
+      target_base_height: 0.90
+
+      rf_z_max_interp_duration: 0.1
+
+    single_support_swing:
+      swing_height: 0.04
+
+    com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.05, 0.] # [hz]
+      #amplitude: [0., 0., 0.03] # [m]
+      #frequency: [0., 0., 1.] # [hz]
+
+    lmpc_com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.7, 0.] # [hz]
+
+dcm_walking:
+  t_additional_init_trans: 0.
+  t_contact_trans: 0.45
+  t_swing: 0.55
+  percentage_settle: 0.9
+  alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.
+  #t_contact_trans: 1.8
+  #t_swing: 0.8
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.4
+  #t_contact_trans: 1.6
+  #t_swing: 0.8
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  nominal_footwidth: 0.2025
+  nominal_forward_step: 0.1
+  nominal_backward_step: -0.1
+  nominal_turn_radians: 0.3
+  nominal_strafe_distance: 0.05
+  n_steps: 1
+  first_swing_leg: 1 ## 0: left leg ## 1: right leg
+
+
+lmpc_walking:
+  ##dcm related params
+  t_additional_init_trans: 0.
+  t_contact_trans: 0.45
+  t_swing: 0.55
+  percentage_settle: 0.9
+  alpha_ds: 0.5
+
+  ##footstep related params
+  nominal_footwidth: 0.2
+  nominal_forward_step: 0.1
+  nominal_backward_step: -0.1
+  nominal_turn_radians: 0.3
+  nominal_strafe_distance: 0.02
+  n_steps: 1
+  first_swing_leg: 0 ## 0: left leg ## 1: right leg
+
+

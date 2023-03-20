@@ -148,11 +148,11 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
 
     clamped_lh_pos[0] = std::min(std::max(local_lh_pos[0], 0.25), 0.50);
-    clamped_lh_pos[1] = std::min(std::max(local_lh_pos[1], 0.05), 0.45);
+    clamped_lh_pos[1] = std::min(std::max(local_lh_pos[1], -0.10), 0.45);
     clamped_lh_pos[2] = std::min(std::max(local_lh_pos[2], -0.2), 0.4);
 
     clamped_rh_pos[0] = std::min(std::max(local_rh_pos[0], 0.25), 0.50);
-    clamped_rh_pos[1] = std::min(std::max(local_rh_pos[1], -0.45), -0.05);
+    clamped_rh_pos[1] = std::min(std::max(local_rh_pos[1], -0.45), 0.10);
     clamped_rh_pos[2] = std::min(std::max(local_rh_pos[2], -0.2), 0.4);
 
     Eigen::Isometry3d torso_iso =
