@@ -172,12 +172,10 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     if (feedback_source_ == feedback_source::kCoMFeedback) {
       util::ReadParameter(node, prefix + "_kp", kp_);
       util::ReadParameter(node, prefix + "_kd", kd_);
-      util::ReadParameter(node, prefix + "_weight", weight_);
     } else if (feedback_source_ == feedback_source::kIcpFeedback) {
       util::ReadParameter(node, prefix + "_icp_kp", kp_);
       util::ReadParameter(node, prefix + "_icp_kd", kd_);
       util::ReadParameter(node, prefix + "_icp_ki", ki_);
-      util::ReadParameter(node, prefix + "_icp_weight", weight_);
 
       icp_integrator_type_ =
           util::ReadParameter<int>(node, "icp_integrator_type");

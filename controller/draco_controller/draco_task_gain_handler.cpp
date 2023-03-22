@@ -19,14 +19,12 @@ DracoTaskGainHandler::DracoTaskGainHandler(DracoControlArchitecture *ctrl_arch)
 }
 
 void DracoTaskGainHandler::Trigger(const std::string &task_name,
-                                   const Eigen::VectorXd &weight,
                                    const Eigen::VectorXd &kp,
                                    const Eigen::VectorXd &kd) {
   task_name_ = task_name;
   if (!_TaskExists(task_name_))
     return;
 
-  target_weight_ = weight;
   target_kp_ = kp;
   target_kd_ = kd;
   b_signal_received_ = true;
@@ -34,7 +32,6 @@ void DracoTaskGainHandler::Trigger(const std::string &task_name,
 }
 
 void DracoTaskGainHandler::Trigger(const std::string &task_name,
-                                   const Eigen::VectorXd &weight,
                                    const Eigen::VectorXd &kp,
                                    const Eigen::VectorXd &kd,
                                    const Eigen::VectorXd &ki) {
@@ -42,7 +39,6 @@ void DracoTaskGainHandler::Trigger(const std::string &task_name,
   if (!_TaskExists(task_name_))
     return;
 
-  target_weight_ = weight;
   target_kp_ = kp;
   target_kd_ = kd;
   target_ki_ = ki;
@@ -55,7 +51,6 @@ void DracoTaskGainHandler::Process() {
   count_ += 1;
 
   if (b_first_visit_) {
-    init_weight_ = ctrl_arch_->tci_container_->task_map_[task_name_]->Weight();
     init_kp_ = ctrl_arch_->tci_container_->task_map_[task_name_]->Kp();
     init_kd_ = ctrl_arch_->tci_container_->task_map_[task_name_]->Kd();
     if (b_com_xy_task_)
@@ -65,11 +60,6 @@ void DracoTaskGainHandler::Process() {
   }
 
   if (count_ <= MAX_COUNT) {
-    Eigen::VectorXd current_weight =
-        init_weight_ + (target_weight_ - init_weight_) / MAX_COUNT * count_;
-    ctrl_arch_->tci_container_->task_map_[task_name_]->SetWeight(
-        current_weight);
-
     Eigen::VectorXd current_kp =
         init_kp_ + (target_kp_ - init_kp_) / MAX_COUNT * count_;
     ctrl_arch_->tci_container_->task_map_[task_name_]->SetKp(current_kp);
@@ -92,13 +82,11 @@ void DracoTaskGainHandler::Process() {
 void DracoTaskGainHandler::_ResetParams() {
   b_signal_received_ = false;
 
-  init_weight_.setZero();
   init_kp_.setZero();
   init_kd_.setZero();
   init_ki_.setZero();
 
   task_name_ = "";
-  target_weight_.setZero();
   target_kp_.setZero();
   target_kd_.setZero();
   target_ki_.setZero();

@@ -39,8 +39,6 @@ public:
 
     jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->NumQdot());
     jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
-
-    weight_ = Eigen::VectorXd::Zero(dim_);
   }
   virtual ~Task() = default;
 
@@ -65,7 +63,6 @@ public:
       std::string prefix = b_sim ? "sim" : "exp";
       util::ReadParameter(node, prefix + "_kp", kp_);
       util::ReadParameter(node, prefix + "_kd", kd_);
-      util::ReadParameter(node, prefix + "_weight", weight_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
                 << __FILE__ << "]" << std::endl;
@@ -95,7 +92,6 @@ public:
 
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::MatrixXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
-  Eigen::VectorXd Weight() const { return weight_; }
   Eigen::VectorXd Kp() const { return kp_; }
   Eigen::VectorXd Kd() const { return kd_; }
   Eigen::VectorXd Ki() const { return ki_; }
@@ -109,7 +105,6 @@ public:
   Eigen::Matrix3d Rot() const { return rot_link_w_; }
 
   // setter
-  void SetWeight(Eigen::VectorXd weight) { weight_ = weight; }
   void SetKp(Eigen::VectorXd kp) { kp_ = kp; }
   void SetKd(Eigen::VectorXd kd) { kd_ = kd; }
   void SetKi(Eigen::VectorXd ki) { ki_ = ki; }
@@ -124,7 +119,6 @@ public:
     std::cout << "vel_err: " << vel_err_.transpose() << std::endl;
     std::cout << "des_vel: " << des_vel_.transpose() << std::endl;
     std::cout << "vel: " << vel_.transpose() << std::endl;
-    std::cout << "task_weight: " << weight_.transpose() << std::endl;
   }
 
 protected:
@@ -164,6 +158,4 @@ protected:
 
   Eigen::MatrixXd jacobian_;
   Eigen::VectorXd jacobian_dot_q_dot_;
-
-  Eigen::VectorXd weight_;
 };

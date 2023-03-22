@@ -7,7 +7,6 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
-#include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
@@ -33,11 +32,8 @@ void ContactTransitionStart::FirstVisit() {
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
-    ctrl_arch_->rf_pos_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-    ctrl_arch_->rf_ori_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-
+    // TODO
+    //
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
@@ -52,10 +48,8 @@ void ContactTransitionStart::FirstVisit() {
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
-    ctrl_arch_->lf_pos_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
-    ctrl_arch_->lf_ori_hm_->InitializeRampToMax(
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+    // TODO
+    //
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
@@ -144,12 +138,8 @@ void ContactTransitionStart::OneStep() {
   // contact max normal force & foot task hierarchy update
   if (state_id_ == draco_states::kLFContactTransitionStart) {
     ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
-    ctrl_arch_->rf_pos_hm_->UpdateRampToMax(state_machine_time_);
-    ctrl_arch_->rf_ori_hm_->UpdateRampToMax(state_machine_time_);
   } else {
     ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
-    ctrl_arch_->lf_pos_hm_->UpdateRampToMax(state_machine_time_);
-    ctrl_arch_->lf_ori_hm_->UpdateRampToMax(state_machine_time_);
   }
 }
 

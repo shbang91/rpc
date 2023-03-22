@@ -108,12 +108,10 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     if (com_feedback_source_ == com_feedback_source::kComFeedback) {
       util::ReadParameter(node, prefix + "_kp", kp_);
       util::ReadParameter(node, prefix + "_kd", kd_);
-      util::ReadParameter(node, prefix + "_weight", weight_);
     } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
       util::ReadParameter(node, prefix + "_icp_kp", kp_);
       util::ReadParameter(node, prefix + "_icp_kd", kd_);
       util::ReadParameter(node, prefix + "_icp_ki", ki_);
-      util::ReadParameter(node, prefix + "_icp_weight", weight_);
     } else {
       throw std::invalid_argument("No Matching CoM Feedback Source");
     }

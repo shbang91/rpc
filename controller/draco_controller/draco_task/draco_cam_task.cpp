@@ -38,7 +38,6 @@ void DracoCAMTask::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
     std::string prefix = b_sim ? "sim" : "exp";
     util::ReadParameter(node, prefix + "_kd", kd_);
-    util::ReadParameter(node, prefix + "_weight", weight_);
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

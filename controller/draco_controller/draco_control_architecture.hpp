@@ -24,7 +24,6 @@ class MaxNormalForceTrajectoryManager;
 class EndEffectorTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
-class TaskHierarchyManager;
 class ForceTrajectoryManager;
 
 // class LMPCHandler;
@@ -47,11 +46,6 @@ public:
   DCMTrajectoryManager *dcm_tm_;
   ForceTrajectoryManager *lf_force_tm_;
   ForceTrajectoryManager *rf_force_tm_;
-
-  TaskHierarchyManager *lf_pos_hm_;
-  TaskHierarchyManager *lf_ori_hm_;
-  TaskHierarchyManager *rf_pos_hm_;
-  TaskHierarchyManager *rf_ori_hm_;
 
 private:
   DracoController *controller_;

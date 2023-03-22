@@ -5,7 +5,6 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
-#include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
@@ -32,8 +31,7 @@ void ContactTransitionEnd::FirstVisit() {
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
-    ctrl_arch_->lf_pos_hm_->InitializeRampToMin(end_time_);
-    ctrl_arch_->lf_ori_hm_->InitializeRampToMin(end_time_);
+    // TODO
 
     // =====================================================================
     // contact max normal force manager initialize
@@ -44,8 +42,7 @@ void ContactTransitionEnd::FirstVisit() {
     // =====================================================================
     // task hierarchy manager initialize
     // =====================================================================
-    ctrl_arch_->rf_pos_hm_->InitializeRampToMin(end_time_);
-    ctrl_arch_->rf_ori_hm_->InitializeRampToMin(end_time_);
+    // TODO
 
     // =====================================================================
     // contact max normal force manager initialize
@@ -67,12 +64,8 @@ void ContactTransitionEnd::OneStep() {
   // contact task & force update
   if (state_id_ == draco_states::kLFContactTransitionEnd) {
     ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMin(state_machine_time_);
-    ctrl_arch_->lf_pos_hm_->UpdateRampToMin(state_machine_time_);
-    ctrl_arch_->lf_ori_hm_->UpdateRampToMin(state_machine_time_);
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMin(state_machine_time_);
-    ctrl_arch_->rf_pos_hm_->UpdateRampToMin(state_machine_time_);
-    ctrl_arch_->rf_ori_hm_->UpdateRampToMin(state_machine_time_);
   }
 }
 

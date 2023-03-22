@@ -20,7 +20,6 @@
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
-#include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "util/util.hpp"
@@ -85,41 +84,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->task_map_["rf_pos_task"],
       tci_container_->task_map_["rf_ori_task"], robot_);
-
-  Eigen::VectorXd weight_at_contact, weight_at_swing;
-  try {
-    util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
-                        prefix + "_weight", weight_at_contact);
-    util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
-                        prefix + "_weight_at_swing", weight_at_swing);
-  } catch (const std::runtime_error &ex) {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-    std::exit(EXIT_FAILURE);
-  }
-  lf_pos_hm_ =
-      new TaskHierarchyManager(tci_container_->task_map_["lf_pos_task"],
-                               weight_at_contact, weight_at_swing);
-  rf_pos_hm_ =
-      new TaskHierarchyManager(tci_container_->task_map_["rf_pos_task"],
-                               weight_at_contact, weight_at_swing);
-
-  try {
-    util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
-                        prefix + "_weight", weight_at_contact);
-    util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
-                        prefix + "_weight_at_swing", weight_at_swing);
-  } catch (const std::runtime_error &ex) {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-    std::exit(EXIT_FAILURE);
-  }
-  lf_ori_hm_ =
-      new TaskHierarchyManager(tci_container_->task_map_["lf_ori_task"],
-                               weight_at_contact, weight_at_swing);
-  rf_ori_hm_ =
-      new TaskHierarchyManager(tci_container_->task_map_["rf_ori_task"],
-                               weight_at_contact, weight_at_swing);
 
   // initialize dynamics manager
   double max_rf_z;
@@ -187,12 +151,6 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete dcm_tm_;
   delete lf_force_tm_;
   delete rf_force_tm_;
-
-  // hm
-  delete lf_pos_hm_;
-  delete lf_ori_hm_;
-  delete rf_pos_hm_;
-  delete rf_ori_hm_;
 
   // state machines
   delete state_machine_container_[draco_states::kInitialize];

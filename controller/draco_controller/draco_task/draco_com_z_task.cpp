@@ -77,11 +77,9 @@ void DracoCoMZTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     if (com_height_ == com_height::kCoM) {
       util::ReadParameter(node, prefix + "_com_kp", kp_);
       util::ReadParameter(node, prefix + "_com_kd", kd_);
-      util::ReadParameter(node, prefix + "_com_weight", weight_);
     } else if (com_height_ == com_height::kBase) {
       util::ReadParameter(node, prefix + "_base_kp", kp_);
       util::ReadParameter(node, prefix + "_base_kd", kd_);
-      util::ReadParameter(node, prefix + "_base_weight", weight_);
     } else
       throw std::invalid_argument("No Matching CoM Height Target Source");
 
