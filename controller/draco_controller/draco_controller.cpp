@@ -346,6 +346,31 @@ void DracoController::_SaveData() {
   dm->data_->rf_ori_kp = tci_container_->task_map_["rf_ori_task"]->Kp();
   dm->data_->rf_ori_kd = tci_container_->task_map_["rf_ori_task"]->Kd();
 
+  // things needed for NN
+  dm->data_->local_lf_ori_ =
+      tci_container_->task_map_["lf_ori_task"]->CurrentLocalPos();
+  dm->data_->local_rf_ori_ =
+      tci_container_->task_map_["rf_ori_task"]->CurrentLocalPos();
+  dm->data_->local_lf_pos_ =
+      tci_container_->task_map_["lf_pos_task"]->CurrentLocalPos();
+  dm->data_->local_rf_pos_ =
+      tci_container_->task_map_["rf_pos_task"]->CurrentLocalPos();
+
+  dm->data_->local_lh_ori_ =
+      tci_container_->task_map_["lh_ori_task"]->CurrentLocalPos();
+  dm->data_->local_rh_ori_ =
+      tci_container_->task_map_["rh_ori_task"]->CurrentLocalPos();
+  dm->data_->local_lh_pos_ =
+      tci_container_->task_map_["lh_pos_task"]->CurrentLocalPos();
+  dm->data_->local_rh_pos_ =
+      tci_container_->task_map_["rh_pos_task"]->CurrentLocalPos();
+
+  dm->data_->timestamp =
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count();
+  dm->data_->state = sp_->state_;
+
 #endif
 
 #if B_USE_MATLOGGER

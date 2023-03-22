@@ -103,15 +103,21 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   DracoCommand *draco_command = static_cast<DracoCommand *>(command_data);
 
 #if B_USE_VR_TELEOP
+  Eigen::Vector3d target_rh_pos;
+  Eigen::Vector3d target_lh_pos;
+  Eigen::Quaterniond target_rh_quat;
+  Eigen::Quaterniond target_lh_quat;
+  DracoVRCommands cmd;
+  bool vr_ready;
   if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
     // Get commands from zmq, send interrupt
-    DracoVRCommands cmd =
-        DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
+    cmd = DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
     Eigen::Vector3d local_rh_pos;
     Eigen::Vector3d local_lh_pos;
     Eigen::Quaterniond local_rh_quat;
     Eigen::Quaterniond local_lh_quat;
-    if (DracoVRTeleopManager::GetVRTeleopManager()->isReady()) {
+    vr_ready = DracoVRTeleopManager::GetVRTeleopManager()->isReady();
+    if (vr_ready) {
       local_rh_pos = cmd.rh_pos;
       local_lh_pos = cmd.lh_pos;
       local_rh_quat = cmd.rh_ori;
@@ -133,11 +139,6 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
     Eigen::VectorXd clamped_rh_pos(3);
     Eigen::VectorXd clamped_lh_pos(3);
-
-    Eigen::Vector3d target_rh_pos;
-    Eigen::Vector3d target_lh_pos;
-    Eigen::Quaterniond target_rh_quat;
-    Eigen::Quaterniond target_lh_quat;
 
     Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707,
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
@@ -232,6 +233,16 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     DracoDataManager *dm = DracoDataManager::GetDataManager();
     dm->data_->time_ = sp_->current_time_;
     dm->data_->phase_ = sp_->state_;
+#if B_USE_VR_TELEOP
+    // save VR commands
+    dm->data_->action_local_lh_pos_ = target_lh_pos;
+    dm->data_->action_local_rh_pos_ = target_rh_pos;
+    dm->data_->action_local_lh_ori_ = target_lh_quat.coeffs();
+    dm->data_->action_local_lh_ori_ = target_lh_quat.coeffs();
+    dm->data_->l_gripper = cmd.l_bump;
+    dm->data_->r_gripper = cmd.r_bump;
+    dm->data_->vr_ready = vr_ready;
+#endif
     dm->SendData();
   }
 #endif

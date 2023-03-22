@@ -10,7 +10,7 @@ cwd = os.getcwd()
 parser = argparse.ArgumentParser()
 parser.add_argument("--path", type=str, default='./data/test1', help="")
 args = parser.parse_args()
-#path = os.path.join(cwd, args.path)
+# path = os.path.join(cwd, args.path)
 path = args.path
 print("WORKING ON PATH: ", path)
 sensor_prefix = 'act'
@@ -30,16 +30,16 @@ joint_prefixes = {
     # 4: 'l_knee_fe_jd',
     # 5: 'l_ankle_fe',
     # 6: 'l_ankle_ie',
-    #LH
+    # LH
     7: 'l_shoulder_fe',
     8: 'l_shoulder_aa',
     9: 'l_shoulder_ie',
     10: 'l_elbow_fe',
     11: 'l_wrist_ps',
     12: 'l_wrist_pitch',
-    #neck
+    # neck
     13: 'neck_pitch',
-    #RF
+    # RF
     # 14: 'r_hip_ie',
     # 15: 'r_hip_aa',
     # 16: 'r_hip_fe',
@@ -47,7 +47,7 @@ joint_prefixes = {
     # 18: 'r_knee_fe_jd',
     # 19: 'r_ankle_fe',
     # 20: 'r_ankle_ie',
-    #RH
+    # RH
     # 21: 'r_shoulder_fe',
     # 22: 'r_shoulder_aa',
     # 23: 'r_shoulder_ie',
@@ -72,8 +72,8 @@ for root, dirs, files in os.walk(path, topdown=False):
         # joint_data = h5py.File(os.path.join(root, name))
 
 # print(joint_data.keys())
-#initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
-#initialized_idx = int(initialized_idx)
+# initialized_idx = np.where(np.asarray(ctrl_data['state']) > 2.)[0][0]
+# initialized_idx = int(initialized_idx)
 
 # for idx, value_prefix in joint_prefixes.items():
 # fig, axes = plt.subplots(2)
@@ -107,12 +107,12 @@ for root, dirs, files in os.walk(path, topdown=False):
 
 # axes[1].set_xlabel('time [sec]')
 
-#plt.show()
+# plt.show()
 
 # fig.set_figwidth(20)
 # fig.set_figheight(10)
 # fig.savefig(os.path.join(path, '{}.png'.format(value_prefix)))
-#exit()
+# exit()
 # >>> import numpy as np
 # >>> import pickle
 # >>> import h5py
@@ -137,7 +137,7 @@ wbc_time = len(ctrl_data['des_lh_pos'])
 print(wbc_time)
 print(len(ctrl_data['time']))
 print(ctrl_data['timestamp'])
-#time = ctrl_data['time'][len(ctrl_data['time']) - wbc_time:]
+# time = ctrl_data['time'][len(ctrl_data['time']) - wbc_time:]
 time = ctrl_data['time']
 print(len(time))
 
@@ -157,13 +157,13 @@ for topic, value_prefix in value_prefixes.items():
         for subidx, coord in enumerate(label[idx]):
             axes[idx][subidx].plot(
                 time,
-                ctrl_data[f'{sensor_prefix}_{value_prefix[idx]}'][:9738, subidx],
+                ctrl_data[f'{sensor_prefix}_{value_prefix[idx]}'][:9683, subidx],
                 color='b')
             axes[idx][subidx].plot(
                 time,
-                ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:9738, subidx],
+                ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:9683, subidx],
                 color='r')
-            #axes[idx][subidx].axvspan(0,
+            # axes[idx][subidx].axvspan(0,
             #                          ctrl_data['time'][initialized_idx],
             #                          alpha=0.3,
             #                          color='green')
@@ -175,4 +175,4 @@ for topic, value_prefix in value_prefixes.items():
     fig.set_figheight(10)
     fig.savefig(os.path.join(path, '{}.png'.format(topic)))
 
-#plt.show()
+# plt.show()

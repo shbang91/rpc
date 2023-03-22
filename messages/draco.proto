@@ -59,6 +59,31 @@ message pnc_msg {
   
   repeated float kf_base_joint_pos = 39;
   repeated float kf_base_joint_ori = 40;
+
+  // Neural Network data collection
+  repeated float joint_velocities = 41;
+
+  repeated float local_lh_pos = 42;
+  repeated float local_rh_pos = 43;
+  repeated float local_lh_ori = 44;
+  repeated float local_rh_ori = 45;
+
+  repeated float action_local_lh_pos = 46;
+  repeated float action_local_rh_pos = 47;
+  repeated float action_local_lh_ori = 48;
+  repeated float action_local_rh_ori = 49;
+
+  repeated float local_lf_pos = 50;
+  repeated float local_rf_pos = 51;
+  repeated float local_lf_ori = 52;
+  repeated float local_rf_ori = 53;
+
+  bool l_gripper = 54;
+  bool r_gripper = 55;
+  bool vr_ready = 56;
+
+  float timestamp = 57;
+  uint32 state = 58;
 }
 
 message vr_teleop_msg {
