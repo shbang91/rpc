@@ -252,6 +252,7 @@ def set_init_config_pybullet_robot(robot):
     pb.resetJointState(robot, DracoJointIdx.l_elbow_fe, -np.pi / 2, 0.)
     pb.resetJointState(robot, DracoJointIdx.r_shoulder_aa, -np.pi / 6, 0.)
     pb.resetJointState(robot, DracoJointIdx.r_elbow_fe, -np.pi / 2, 0.)
+    pb.resetJointState(robot, DracoJointIdx.neck_pitch, 0.3, 0.)
 
     # Lowerbody
     hip_yaw_angle = 3  #degrees

@@ -13,6 +13,7 @@
 #include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
 #include "controller/whole_body_controller/ihwbc/joint_integrator.hpp"
 #include "util/interpolation.hpp"
+#include <chrono>
 
 #if B_USE_ZMQ
 #include "controller/draco_controller/draco_data_manager.hpp"
@@ -348,6 +349,19 @@ void DracoController::_SaveData() {
 #endif
 
 #if B_USE_MATLOGGER
+
+  // for syncing with camera data
+  logger_->add("timestamp",
+               std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::system_clock::now().time_since_epoch())
+                   .count());
+  // keep track of VR data
+  DracoVRCommands cmd =
+      DracoVRTeleopManager::GetVRTeleopManager()->prev_commands;
+  logger_->add("vr_ready",
+               DracoVRTeleopManager::GetVRTeleopManager()->isReady());
+  logger_->add("left_gripper", cmd.l_bump);
+  logger_->add("right_gripper", cmd.r_bump);
 
   logger_->add("time", sp_->current_time_); // time plot
   logger_->add("state", sp_->state_);       // draco state machine indicator

@@ -75,5 +75,7 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
     l_pad_held_ = false;
   }
 
+  prev_commands = result;
+
   return result;
 }
