@@ -33,7 +33,6 @@ DracoStateProvider::DracoStateProvider() {
   prev_state_ = draco_states::kInitialize;
 
   b_use_base_height_ = false;
-  b_use_kf_state_estimator_ = false;
 
   des_com_height_ = 0.;
   des_torso_quat_ = Eigen::Quaterniond::Identity();

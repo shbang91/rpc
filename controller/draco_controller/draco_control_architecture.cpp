@@ -1,8 +1,7 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
 #include "controller/draco_controller/draco_control_architecture.hpp"
-//#include "controller/draco_controller/draco_controller.hpp"
-#include "controller/draco_controller/draco_controller_wbic.hpp"
+#include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
@@ -14,8 +13,7 @@
 //"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
-//#include "controller/draco_controller/draco_tci_container.hpp"
-#include "controller/draco_controller/draco_tci_container_wbic.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 //#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
@@ -34,7 +32,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 
   try {
-    // cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
     cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc_wbic.yaml");
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
@@ -54,10 +51,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   //=============================================================
   // initialize task, contact, controller, planner
   //=============================================================
-  // tci_container_ = new DracoTCIContainer(robot_);
-  // controller_ = new DracoController(tci_container_, robot_);
-  tci_container_ = new DracoTCIContainerWBIC(robot_);
-  controller_ = new DracoControllerWBIC(tci_container_, robot_);
+  tci_container_ = new DracoTCIContainer(robot_);
+  controller_ = new DracoController(tci_container_, robot_);
 
   dcm_planner_ = new DCMPlanner();
 

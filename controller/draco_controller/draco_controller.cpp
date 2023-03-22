@@ -10,8 +10,7 @@
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
-#include "controller/whole_body_controller/ihwbc/ihwbc.hpp"
-#include "controller/whole_body_controller/ihwbc/joint_integrator.hpp"
+#include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "util/interpolation.hpp"
 
 #if B_USE_ZMQ
@@ -52,51 +51,31 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
   int num_active(std::count(act_list.begin(), act_list.end(), true));
   int num_passive(num_qdot - num_active - num_float);
 
-  sa_ = Eigen::MatrixXd::Zero(num_active, num_qdot);
-  Eigen::MatrixXd sf = Eigen::MatrixXd::Zero(num_float, num_qdot);
-  Eigen::MatrixXd sv = Eigen::MatrixXd::Zero(num_passive, num_qdot);
-
-  int j(0), k(0), e(0);
-  for (int i(0); i < act_list.size(); ++i) {
-    if (act_list[i]) {
-      sa_(j, i) = 1.;
-      ++j;
-    } else {
-      if (i < num_float) {
-        sf(k, i) = 1.;
-        ++k;
-      } else {
-        sv(e, i) = 1.;
-        ++e;
-      }
-    }
-  }
-
   // internal constraints
   int row_idx(0);
-  Eigen::MatrixXd ji = Eigen::MatrixXd::Zero(num_passive, num_qdot);
-  for (const auto &[internal_const_str, internal_constr_ptr] :
-       tci_container_->internal_constraint_map_) {
-    internal_constr_ptr->UpdateJacobian();
-    Eigen::MatrixXd j_i = internal_constr_ptr->Jacobian();
-    int dim = internal_constr_ptr->Dim();
-    ji.middleRows(row_idx, dim) = j_i;
+  Eigen::MatrixXd Ji = Eigen::MatrixXd::Zero(num_passive, num_qdot);
+  for (const auto internal_constraint :
+       tci_container_->internal_constraint_vector_) {
+    internal_constraint->UpdateJacobian();
+    Eigen::MatrixXd j_i = internal_constraint->Jacobian();
+    int dim = internal_constraint->Dim();
+    Ji.middleRows(row_idx, dim) = j_i;
     row_idx += dim;
   }
 
-  // ihwbc initialize
-  ihwbc_ = new IHWBC(sa_, &sf, &sv, &ji);
+  // jpos & jvel limits
+  // Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
+  // Eigen::VectorXd jpos_ub = robot_->JointPosLimits().rightCols(1);
+  // Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
+  // Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
 
-  // joint integrator initialize
-  Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
-  Eigen::VectorXd jpos_ub = robot_->JointPosLimits().rightCols(1);
-  Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
-  Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
-  joint_integrator_ = new JointIntegrator(draco::n_adof, sp_->servo_dt_,
-                                          jpos_lb, jpos_ub, jvel_lb, jvel_ub);
+  // wbc initialize
+  wbic_ = new WBIC(act_list, &Ji);
+  wbic_data_ = new WBICData();
+
   // read yaml & set params
   try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc_wbic.yaml");
 
     // initialize draco controller params
     b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
@@ -109,27 +88,6 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     b_use_modified_swing_foot_jac_ = util::ReadParameter<bool>(
         cfg["controller"], "b_use_modified_swing_foot_jac");
 
-    // initialize iwbc qp params
-    ihwbc_->SetParameters(cfg["wbc"]["qp"]);
-    if (ihwbc_->IsTrqLimit()) {
-      std::cout << "------------------------------------" << std::endl;
-      std::cout << "Torque Limits are considred in WBC" << std::endl;
-      std::cout << "------------------------------------" << std::endl;
-      Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit =
-          robot_->JointTrqLimits();
-      ihwbc_->SetTrqLimit(trq_limit);
-    }
-
-    // initialize joint integrator params
-    double pos_cutoff_freq = util::ReadParameter<double>(
-        cfg["wbc"]["joint_integrator"], "pos_cutoff_freq");
-    double vel_cutoff_freq = util::ReadParameter<double>(
-        cfg["wbc"]["joint_integrator"], "vel_cutoff_freq");
-    double pos_max_error = util::ReadParameter<double>(
-        cfg["wbc"]["joint_integrator"], "max_pos_err");
-    joint_integrator_->SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq);
-    joint_integrator_->SetMaxPositionError(pos_max_error);
-
   } catch (std::runtime_error &e) {
     std::cout << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl
@@ -138,8 +96,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 }
 
 DracoController::~DracoController() {
-  delete ihwbc_;
-  delete joint_integrator_;
+  delete wbic_;
+  delete wbic_data_;
 }
 
 void DracoController::GetCommand(void *command) {
@@ -158,16 +116,8 @@ void DracoController::GetCommand(void *command) {
   } else {
     // first visit for feedforward torque command
     if (b_first_visit_wbc_ctrl_) {
-      // for joint integrator initialization
+      // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
-
-      // TODO: check this
-      // joint_integrator_->Initialize(init_joint_pos_, robot_->GetJointVel());
-      joint_integrator_->Initialize(init_joint_pos_,
-                                    Eigen::VectorXd::Zero(draco::n_adof));
-
-      // erase jpos task
-      tci_container_->task_map_.erase("joint_task");
 
       // for real experiment smoothing command
       if (!b_sim_) {
@@ -179,10 +129,10 @@ void DracoController::GetCommand(void *command) {
     }
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
-    for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
-      task_ptr->UpdateJacobian();
-      task_ptr->UpdateJacobianDotQdot();
-      task_ptr->UpdateOpCommand();
+    for (const auto task : tci_container_->task_vector_) {
+      task->UpdateJacobian();
+      task->UpdateJacobianDotQdot();
+      task->UpdateOpCommand();
     }
 
     // modified jacobian for swing legs
@@ -212,21 +162,25 @@ void DracoController::GetCommand(void *command) {
     // force task not iterated b/c not depending on q or qdot
 
     // mass, cori, grav update
-    Eigen::MatrixXd A = robot_->GetMassMatrix();
-    Eigen::MatrixXd Ainv = robot_->GetMassMatrix().inverse();
+    Eigen::MatrixXd M = robot_->GetMassMatrix();
+    Eigen::MatrixXd Minv = robot_->GetMassMatrix().inverse();
     Eigen::VectorXd cori = robot_->GetCoriolis();
     Eigen::VectorXd grav = robot_->GetGravity();
-    ihwbc_->UpdateSetting(A, Ainv, cori, grav);
+    wbic_->UpdateSetting(M, Minv, cori, grav);
 
-    ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
-                  tci_container_->force_task_map_, wbc_qddot_cmd_,
-                  joint_trq_cmd_); // joint_trq_cmd_ size: 27
-
-    // joint integrator for real experiment
-    Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd_.tail(robot_->NumActiveDof());
-    joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
-                                 robot_->GetJointVel(), joint_pos_cmd_,
-                                 joint_vel_cmd_);
+    // size of joint_pos_cmd_, joint_vel_cmd_, joint_trq_cmd_ =  27
+    // size of wbc_qddot_cmd_ = 33
+    wbic_->FindConfiguration(robot_->GetJointPos(),
+                             tci_container_->task_vector_,
+                             tci_container_->contact_vector_, joint_pos_cmd_,
+                             joint_vel_cmd_, wbc_qddot_cmd_);
+    wbic_data_->W_delta_qddot_ = Eigen::VectorXd::Constant(6, 1e4);
+    wbic_data_->W_delta_rf_ = Eigen::VectorXd::Constant(rf_dim, 1);
+    wbic_data_->W_delta_rf_.head<3>() = Eigen::Vector3d::Constant(100);
+    wbic_data_->W_delta_rf_.segment<3>(rf_dim / 2) =
+        Eigen::Vector3d::Constant(100);
+    wbic_->MakeTorque(wbc_qddot_cmd_, tci_container_->force_task_vector_,
+                      tci_container_->contact_map_, joint_trq_cmd_, wbic_data_);
   }
 
   if (b_smoothing_command_) {
@@ -309,35 +263,26 @@ void DracoController::_SaveData() {
       rot * tci_container_->force_task_map_["rf_force_task"]
                 ->CmdRf(); // global quantity
 
-  // task weight, kp, kd, ki for plotting
-  dm->data_->com_xy_weight = tci_container_->task_map_["com_xy_task"]->Weight();
+  // task kp, kd, ki for plotting
   dm->data_->com_xy_kp = tci_container_->task_map_["com_xy_task"]->Kp();
   dm->data_->com_xy_kd = tci_container_->task_map_["com_xy_task"]->Kd();
   dm->data_->com_xy_ki = tci_container_->task_map_["com_xy_task"]->Ki();
 
-  dm->data_->com_z_weight =
-      tci_container_->task_map_["com_z_task"]->Weight()[0];
   dm->data_->com_z_kp = tci_container_->task_map_["com_z_task"]->Kp()[0];
   dm->data_->com_z_kd = tci_container_->task_map_["com_z_task"]->Kd()[0];
 
-  dm->data_->torso_ori_weight =
-      tci_container_->task_map_["torso_ori_task"]->Weight();
   dm->data_->torso_ori_kp = tci_container_->task_map_["torso_ori_task"]->Kp();
   dm->data_->torso_ori_kd = tci_container_->task_map_["torso_ori_task"]->Kd();
 
-  dm->data_->lf_pos_weight = tci_container_->task_map_["lf_pos_task"]->Weight();
   dm->data_->lf_pos_kp = tci_container_->task_map_["lf_pos_task"]->Kp();
   dm->data_->lf_pos_kd = tci_container_->task_map_["lf_pos_task"]->Kd();
 
-  dm->data_->rf_pos_weight = tci_container_->task_map_["rf_pos_task"]->Weight();
   dm->data_->rf_pos_kp = tci_container_->task_map_["rf_pos_task"]->Kp();
   dm->data_->rf_pos_kd = tci_container_->task_map_["rf_pos_task"]->Kd();
 
-  dm->data_->lf_ori_weight = tci_container_->task_map_["lf_ori_task"]->Weight();
   dm->data_->lf_ori_kp = tci_container_->task_map_["lf_ori_task"]->Kp();
   dm->data_->lf_ori_kd = tci_container_->task_map_["lf_ori_task"]->Kd();
 
-  dm->data_->rf_ori_weight = tci_container_->task_map_["rf_ori_task"]->Weight();
   dm->data_->rf_ori_kp = tci_container_->task_map_["rf_ori_task"]->Kp();
   dm->data_->rf_ori_kd = tci_container_->task_map_["rf_ori_task"]->Kd();
 
@@ -525,35 +470,6 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->DesiredLocalVel());
     logger_->add("local_act_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
-
-    // compute optimal WBC task costs
-    ihwbc_->ComputeTaskCosts(tci_container_->task_map_,
-                             tci_container_->force_task_map_,
-                             tci_container_->task_unweighted_cost_map_,
-                             tci_container_->task_weighted_cost_map_);
-    // save WBC cost for each task
-    for (const auto &[task_str, task_ptr] :
-         tci_container_->task_unweighted_cost_map_) {
-      logger_->add("wbc_cost_" + task_str,
-                   tci_container_->task_unweighted_cost_map_[task_str]);
-      logger_->add("wbc_cost_w_" + task_str,
-                   tci_container_->task_weighted_cost_map_[task_str]);
-    }
-    // task weights
-    for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
-      logger_->add("wbc_weights_" + task_str,
-                   tci_container_->task_map_[task_str]->Weight().diagonal());
-    }
-    logger_->add("wbc_weights_lambda_qddot", ihwbc_->GetLambdaQddot());
-    logger_->add("wbc_weights_lambda_rf", ihwbc_->GetLambdaRf());
-    logger_->add("des_rf_lfoot",
-                 tci_container_->force_task_map_["lf_force_task"]->DesiredRf());
-    logger_->add("des_rf_rfoot",
-                 tci_container_->force_task_map_["rf_force_task"]->DesiredRf());
-
-    // TEST
-    for (const auto &[contact_str, contact_ptr] : tci_container_->contact_map_)
-      logger_->add(contact_str + "_rf_z_max", contact_ptr->MaxFz());
   }
 
 #endif

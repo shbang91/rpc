@@ -34,7 +34,6 @@ public:
   int prev_state_;
 
   bool b_use_base_height_;
-  bool b_use_kf_state_estimator_;
 
   double des_com_height_;
   Eigen::Quaterniond des_torso_quat_;

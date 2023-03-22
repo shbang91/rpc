@@ -7,11 +7,6 @@ public:
   DracoTCIContainer(PinocchioRobotSystem *robot);
   virtual ~DracoTCIContainer();
 
-  std::unordered_map<std::string, double>
-      task_unweighted_cost_map_; // unweighted task costs
-  std::unordered_map<std::string, double>
-      task_weighted_cost_map_; // unweighted task costs
-
 private:
   Task *jpos_task_;
   Task *com_xy_task_;

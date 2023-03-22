@@ -15,8 +15,8 @@ constexpr int kRFSingleSupportSwing = 10;
 constexpr int kDoubleSupportSwayingLmpc = 11;
 } // namespace draco_states
 
-// class DracoController;
-// class DracoTCIContainer;
+class DracoController;
+class DracoTCIContainer;
 class DCMPlanner;
 class FloatingBaseTrajectoryManager;
 class UpperBodyTrajetoryManager;
@@ -27,8 +27,6 @@ class DracoStateProvider;
 class TaskHierarchyManager;
 class ForceTrajectoryManager;
 
-class DracoControllerWBIC;
-class DracoTCIContainerWBIC;
 // class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
@@ -38,8 +36,7 @@ public:
 
   void GetCommand(void *command) override;
 
-  // DracoTCIContainer *tci_container_;
-  DracoTCIContainerWBIC *tci_container_;
+  DracoTCIContainer *tci_container_;
 
   UpperBodyTrajetoryManager *upper_body_tm_;
   FloatingBaseTrajectoryManager *floating_base_tm_;
@@ -57,8 +54,7 @@ public:
   TaskHierarchyManager *rf_ori_hm_;
 
 private:
-  // DracoController *controller_;
-  DracoControllerWBIC *controller_;
+  DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
   // LMPCHandler *lmpc_handler_;

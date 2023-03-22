@@ -9,7 +9,8 @@
 class PinocchioRobotSystem;
 class DracoTCIContainer;
 class DracoStateProvider;
-class IHWBC;
+class WBIC;
+class WBICData;
 class JointIntegrator;
 
 class DracoController {
@@ -25,8 +26,8 @@ private:
   DracoTCIContainer *tci_container_;
   DracoStateProvider *sp_;
 
-  IHWBC *ihwbc_;
-  JointIntegrator *joint_integrator_;
+  WBIC *wbic_;
+  WBICData *wbic_data_;
 
   Eigen::VectorXd joint_pos_cmd_;
   Eigen::VectorXd joint_vel_cmd_;
@@ -42,8 +43,6 @@ private:
   double smoothing_command_duration_;
   double smoothing_command_start_time_;
   Eigen::VectorXd init_joint_pos_;
-
-  Eigen::MatrixXd sa_; // selection matrix
 
   void _SaveData();
 

@@ -20,12 +20,12 @@ WBIC::WBIC(const std::vector<bool> &act_qdot_list, const Eigen::MatrixXd *Ji)
   util::PrettyConstructor(3, "WBIC");
 }
 
-bool WBIC::FindConfiguration(
-    const Eigen::VectorXd &curr_jpos,
-    const std::map<std::string, Task *> &task_map,
-    const std::map<std::string, Contact *> &contact_map,
-    Eigen::VectorXd &jpos_cmd, Eigen::VectorXd &jvel_cmd,
-    Eigen::VectorXd &wbc_qddot_cmd) {
+bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
+                             const std::vector<Task *> &task_vector,
+                             const std::vector<Contact *> &contact_vector,
+                             Eigen::VectorXd &jpos_cmd,
+                             Eigen::VectorXd &jvel_cmd,
+                             Eigen::VectorXd &wbc_qddot_cmd) {
   if (!b_update_setting_)
     printf("[Warning] WBIC setting is not done\n");
 
@@ -40,16 +40,15 @@ bool WBIC::FindConfiguration(
   // contact
   Eigen::MatrixXd Jc;
   Eigen::VectorXd JcDotQdot;
-  for (auto it = contact_map.begin(); it != contact_map.end(); ++it) {
-    if (it == contact_map.begin()) {
-      Jc = it->second->Jacobian();
-      JcDotQdot = it->second->JacobianDotQdot();
+  for (auto it = contact_vector.begin(); it != contact_vector.end(); ++it) {
+    if (it == contact_vector.begin()) {
+      Jc = (*it)->Jacobian();
+      JcDotQdot = (*it)->JacobianDotQdot();
     } else {
-      Jc = util::VStack(Jc, it->second->Jacobian());
-      JcDotQdot = util::VStack(JcDotQdot, it->second->JacobianDotQdot());
+      Jc = util::VStack(Jc, (*it)->Jacobian());
+      JcDotQdot = util::VStack(JcDotQdot, (*it)->JacobianDotQdot());
     }
   }
-
   // contact projection
   Eigen::MatrixXd JcNi = Jc * Ni; // contact jac projected on internal
                                   // constraints
@@ -69,9 +68,9 @@ bool WBIC::FindConfiguration(
   qddot_cmd = JcNi_bar * (-JcDotQdot);
 
   // iterate through task_list
-  for (auto it = task_map.begin(); it != task_map.end(); ++it) {
-    if (it == task_map.begin()) {
-      const auto &first_task = it->second;
+  for (auto it = task_vector.begin(); it != task_vector.end(); ++it) {
+    if (it == task_vector.begin()) {
+      const auto &first_task = *it;
       Jt = first_task->Jacobian();
       JtDotQdot = first_task->JacobianDotQdot();
       JtPre = Jt * N_pre;
@@ -85,23 +84,22 @@ bool WBIC::FindConfiguration(
       qddot_cmd = qddot_cmd + JtPre_bar * (first_task->OpCommand() - JtDotQdot -
                                            Jt * qddot_cmd);
     } else {
-      Jt = it->second->Jacobian();
-      JtDotQdot = it->second->JacobianDotQdot();
+      Jt = (*it)->Jacobian();
+      JtDotQdot = (*it)->JacobianDotQdot();
       JtPre = Jt * N_pre;
       _PseudoInverse(JtPre, JtPre_pinv);
       JtPre_dyn = Jt * N_pre_dyn;
       _WeightedPseudoInverse(JtPre_dyn, Minv_, JtPre_bar);
-      delta_q_cmd = prev_delta_q_cmd + JtPre_pinv * (it->second->PosError() -
-                                                     Jt * prev_delta_q_cmd);
+      delta_q_cmd = prev_delta_q_cmd +
+                    JtPre_pinv * ((*it)->PosError() - Jt * prev_delta_q_cmd);
       qdot_cmd = prev_qdot_cmd +
-                 JtPre_pinv * (it->second->DesiredVel() - Jt * prev_qdot_cmd);
-      qddot_cmd =
-          prev_qddot_cmd + JtPre_bar * (it->second->OpCommand() - JtDotQdot -
-                                        Jt * prev_qddot_cmd);
+                 JtPre_pinv * ((*it)->DesiredVel() - Jt * prev_qdot_cmd);
+      qddot_cmd = prev_qddot_cmd + JtPre_bar * ((*it)->OpCommand() - JtDotQdot -
+                                                Jt * prev_qddot_cmd);
     }
 
-    // for next task
-    if (std::next(it) != task_map.end()) {
+    if (std::next(it) != task_vector.end()) {
+      // for next task
       prev_delta_q_cmd = delta_q_cmd;
       prev_qdot_cmd = qdot_cmd;
       prev_qddot_cmd = qddot_cmd;
@@ -116,12 +114,12 @@ bool WBIC::FindConfiguration(
       wbc_qddot_cmd = qddot_cmd;
     }
 
-    // std::cout << it->first << ":" << std::endl;
-    // std::cout << "Desired Pos: " << it->second->DesiredPos().transpose()
+    // std::cout <<=============================================== << std::endl;
+    // std::cout << "Desired Pos: " << (*it)->DesiredPos().transpose()
     //<< std::endl;
-    // std::cout << "Current Pos: " << it->second->CurrentPos().transpose()
+    // std::cout << "Current Pos: " << (*it)->CurrentPos().transpose()
     //<< std::endl;
-    // std::cout << "Op Command: " << it->second->OpCommand().transpose()
+    // std::cout << "Op Command: " << (*it)->OpCommand().transpose()
     //<< std::endl;
     // std::cout << "qddot cmd: " << qddot_cmd.transpose() << std::endl;
   }
@@ -130,7 +128,7 @@ bool WBIC::FindConfiguration(
 }
 
 bool WBIC::MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
-                      const std::map<std::string, ForceTask *> &force_task_map,
+                      const std::vector<ForceTask *> &force_task_vector,
                       const std::map<std::string, Contact *> &contact_map,
                       Eigen::VectorXd &jtrq_cmd, void *extra_input) {
   if (!b_update_setting_)
@@ -142,7 +140,7 @@ bool WBIC::MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
   _BuildContactMtxVect(contact_map);
 
   // get desired reaction force
-  _GetDesiredReactionForce(force_task_map);
+  _GetDesiredReactionForce(force_task_vector);
 
   // setup for QP
   _SetQPCost();
@@ -193,12 +191,13 @@ void WBIC::_BuildContactMtxVect(
 }
 
 void WBIC::_GetDesiredReactionForce(
-    const std::map<std::string, ForceTask *> &force_task_map) {
-  for (auto it = force_task_map.begin(); it != force_task_map.end(); ++it) {
-    if (it == force_task_map.begin())
-      des_rf_ = it->second->DesiredRf();
+    const std::vector<ForceTask *> &force_task_vector) {
+  for (auto it = force_task_vector.begin(); it != force_task_vector.end();
+       ++it) {
+    if (it == force_task_vector.begin())
+      des_rf_ = (*it)->DesiredRf();
     else
-      des_rf_ = util::VStack(des_rf_, it->second->DesiredRf());
+      des_rf_ = util::VStack(des_rf_, (*it)->DesiredRf());
   }
 }
 

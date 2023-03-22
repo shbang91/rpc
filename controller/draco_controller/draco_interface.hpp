@@ -66,4 +66,6 @@ private:
   DracoKFStateEstimator *se_kf_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
+
+  bool b_use_kf_state_estimator_;
 };

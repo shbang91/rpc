@@ -17,7 +17,8 @@
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
-DracoInterface::DracoInterface() : Interface() {
+DracoInterface::DracoInterface()
+    : Interface(), b_use_kf_state_estimator_(false) {
   std::string border = "=";
   for (unsigned int i = 0; i < 79; ++i)
     border += "=";
@@ -27,13 +28,13 @@ DracoInterface::DracoInterface() : Interface() {
   sp_ = DracoStateProvider::GetStateProvider();
   try {
     YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+        YAML::LoadFile(THIS_COM "config/draco/pnc_wbic.yaml"); // get yaml node
 
     sp_->servo_dt_ =
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
 
     sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
-    sp_->b_use_kf_state_estimator_ =
+    b_use_kf_state_estimator_ =
         util::ReadParameter<bool>(cfg["state_estimator"], "kf");
 
 #if B_USE_ZMQ
@@ -50,12 +51,12 @@ DracoInterface::DracoInterface() : Interface() {
               << __FILE__ << "]" << std::endl;
   }
 
-  // robot_ =
-  // new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+  robot_ =
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+                               THIS_COM "robot_model/draco", false, false);
+  // robot_ = new PinocchioRobotSystem(THIS_COM
+  //"robot_model/draco/draco3_big_feet.urdf",
   // THIS_COM "robot_model/draco", false, false);
-  robot_ = new PinocchioRobotSystem(THIS_COM
-                                    "robot_model/draco/draco3_big_feet.urdf",
-                                    THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
   se_kf_ = new DracoKFStateEstimator(robot_);
   ctrl_arch_ = new DracoControlArchitecture(robot_);
@@ -97,7 +98,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   // for simulation without state estimator
   // se_->UpdateGroundTruthSensorData(draco_sensor_data);
 
-  if (sp_->b_use_kf_state_estimator_) {
+  if (b_use_kf_state_estimator_) {
     sp_->state_ == draco_states::kInitialize
         ? se_kf_->Initialize(draco_sensor_data)
         : se_kf_->Update(draco_sensor_data);

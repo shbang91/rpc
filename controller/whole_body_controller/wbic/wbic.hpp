@@ -36,14 +36,14 @@ public:
 
   // Compute joint commands (jpos, jvel, jacc) using nullspace projection method
   bool FindConfiguration(const Eigen::VectorXd &curr_jpos,
-                         const std::map<std::string, Task *> &task_map,
-                         const std::map<std::string, Contact *> &contact_map,
+                         const std::vector<Task *> &task_vector,
+                         const std::vector<Contact *> &contact_vector,
                          Eigen::VectorXd &jpos_cmd, Eigen::VectorXd &jvel_cmd,
                          Eigen::VectorXd &wbc_qddot_cmd);
 
   // Compute joint torque using QP
   bool MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
-                  const std::map<std::string, ForceTask *> &force_task_map,
+                  const std::vector<ForceTask *> &force_task_vector,
                   const std::map<std::string, Contact *> &contact_map,
                   Eigen::VectorXd &jtrq_cmd, void *extra_input = nullptr);
 
@@ -55,10 +55,11 @@ private:
   void _BuildProjectionMatrix(const Eigen::MatrixXd &jac, Eigen::MatrixXd &N,
                               const Eigen::MatrixXd *W = nullptr);
 
+  // TODO: need to change if other contact involve (hands) for sequence
   void
   _BuildContactMtxVect(const std::map<std::string, Contact *> &contact_map);
-  void _GetDesiredReactionForce(
-      const std::map<std::string, ForceTask *> &force_task_map);
+  void
+  _GetDesiredReactionForce(const std::vector<ForceTask *> &force_task_vector);
   void _SetQPCost();
   void _SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd);
   void _SetQPInEqualityConstraint();

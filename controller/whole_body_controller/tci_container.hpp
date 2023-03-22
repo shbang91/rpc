@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class Task;
 class Contact;
@@ -15,11 +16,12 @@ public:
   virtual ~TCIContainer() = default;
 
   std::unordered_map<std::string, Task *> task_map_;
-  std::map<std::string, Task *> task_ordered_map_;
+  std::vector<Task *> task_vector_;
   std::map<std::string, Contact *> contact_map_;
-  std::unordered_map<std::string, InternalConstraint *>
-      internal_constraint_map_;
-  std::map<std::string, ForceTask *> force_task_map_;
+  std::vector<Contact *> contact_vector_;
+  std::vector<InternalConstraint *> internal_constraint_vector_;
+  std::unordered_map<std::string, ForceTask *> force_task_map_;
+  std::vector<ForceTask *> force_task_vector_;
 
 protected:
   PinocchioRobotSystem *robot_;
