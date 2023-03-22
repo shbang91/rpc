@@ -108,6 +108,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   Eigen::Quaterniond target_rh_quat;
   Eigen::Quaterniond target_lh_quat;
   DracoVRCommands cmd;
+  bool vr_ready;
   if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
     // Get commands from zmq, send interrupt
     cmd = DracoVRTeleopManager::GetVRTeleopManager()->ReceiveCommands();
@@ -115,7 +116,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Vector3d local_lh_pos;
     Eigen::Quaterniond local_rh_quat;
     Eigen::Quaterniond local_lh_quat;
-    if (DracoVRTeleopManager::GetVRTeleopManager()->isReady()) {
+    vr_ready = DracoVRTeleopManager::GetVRTeleopManager()->isReady();
+    if (vr_ready) {
       local_rh_pos = cmd.rh_pos;
       local_lh_pos = cmd.lh_pos;
       local_rh_quat = cmd.rh_ori;
@@ -239,6 +241,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     dm->data_->action_local_lh_ori_ = target_lh_quat.coeffs();
     dm->data_->l_gripper = cmd.l_bump;
     dm->data_->r_gripper = cmd.r_bump;
+    dm->data_->vr_ready = vr_ready;
 #endif
     dm->SendData();
   }

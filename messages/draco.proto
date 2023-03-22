@@ -80,9 +80,10 @@ message pnc_msg {
 
   bool l_gripper = 54;
   bool r_gripper = 55;
+  bool vr_ready = 56;
 
-  float timestamp = 56;
-  uint32 state = 57;
+  float timestamp = 57;
+  uint32 state = 58;
 }
 
 message vr_teleop_msg {

@@ -118,6 +118,7 @@ void DracoDataManager::SendData() {
   msg.set_state(data_->state);
   msg.set_l_gripper(data_->l_gripper);
   msg.set_r_gripper(data_->r_gripper);
+  msg.set_vr_ready(data_->vr_ready);
 
   // for (int i = 0; i < 3; ++i) {
   // msg.add_base_joint_pos(data_->base_joint_pos_[i]);

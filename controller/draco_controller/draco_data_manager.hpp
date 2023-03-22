@@ -94,6 +94,7 @@ public:
 
   bool l_gripper = false;
   bool r_gripper = false;
+  bool vr_ready = false;
 };
 
 // Singleton class
