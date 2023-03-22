@@ -12,6 +12,7 @@ public:
   ~DracoData() = default;
 
   double time_ = 0;
+  double time_stamp = 0;
   int phase_ = 1;
 
   // Eigen::Vector3d base_joint_pos_;
@@ -26,6 +27,7 @@ public:
   Eigen::Vector4d kf_base_joint_ori_ = Eigen::Vector4d::Zero();
 
   Eigen::VectorXd joint_positions_ = Eigen::VectorXd::Zero(27);
+  Eigen::VectorXd joint_velocities_ = Eigen::VectorXd::Zero(27);
 
   Eigen::Vector3d des_com_pos_ = Eigen::Vector3d::Zero();
   Eigen::Vector3d act_com_pos_ = Eigen::Vector3d::Zero();
@@ -35,6 +37,16 @@ public:
 
   Eigen::VectorXd lfoot_ori_ = Eigen::VectorXd::Zero(4);
   Eigen::VectorXd rfoot_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd local_lh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd local_rh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd local_lh_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd local_rh_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd local_lf_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd local_rf_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd local_lf_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd local_rf_ori_ = Eigen::VectorXd::Zero(4);
 
   Eigen::VectorXd lfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd rfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
@@ -52,6 +64,8 @@ public:
   double com_z_weight = 0;
   double com_z_kp = 0;
   double com_z_kd = 0;
+
+  int state = 0;
 
   Eigen::Vector3d torso_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d torso_ori_kp = Eigen::Vector3d::Zero();

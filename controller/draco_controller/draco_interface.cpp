@@ -102,6 +102,10 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
       static_cast<DracoSensorData *>(sensor_data);
   DracoCommand *draco_command = static_cast<DracoCommand *>(command_data);
 
+  Eigen::Vector3d target_rh_pos;
+  Eigen::Vector3d target_lh_pos;
+  Eigen::Quaterniond target_rh_quat;
+  Eigen::Quaterniond target_lh_quat;
 #if B_USE_VR_TELEOP
   if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
     // Get commands from zmq, send interrupt
@@ -133,11 +137,6 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
     Eigen::VectorXd clamped_rh_pos(3);
     Eigen::VectorXd clamped_lh_pos(3);
-
-    Eigen::Vector3d target_rh_pos;
-    Eigen::Vector3d target_lh_pos;
-    Eigen::Quaterniond target_rh_quat;
-    Eigen::Quaterniond target_lh_quat;
 
     Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707,
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z

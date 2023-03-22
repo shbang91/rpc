@@ -10,6 +10,7 @@ message pnc_msg {
   repeated float est_base_joint_ori = 4;
 
   repeated float joint_positions = 5;
+  repeated float joint_velocities = 41;
 
   repeated float des_com_pos = 6;
   repeated float act_com_pos = 7;
@@ -59,6 +60,19 @@ message pnc_msg {
   
   repeated float kf_base_joint_pos = 39;
   repeated float kf_base_joint_ori = 40;
+
+  repeated float local_lh_pos = 42;
+  repeated float local_rh_pos = 43;
+  repeated float local_lh_ori = 44;
+  repeated float local_rh_ori = 45;
+
+  repeated float local_lf_pos = 46;
+  repeated float local_rf_pos = 47;
+  repeated float local_lf_ori = 48;
+  repeated float local_rf_ori = 49;
+
+  float timestamp = 50;
+  uint32 state = 51;
 }
 
 message vr_teleop_msg {
