@@ -189,6 +189,7 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
 
     // Save joint pos data
     dm->data_->joint_positions_ = sensor_data->joint_pos_;
+    dm->data_->joint_velocities_ = sensor_data->joint_vel_;
 
     dm->data_->est_icp = sp_->dcm_.head<2>();
     // for simulation only (ground truth data from simulator)

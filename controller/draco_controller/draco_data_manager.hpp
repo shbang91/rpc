@@ -12,7 +12,7 @@ public:
   ~DracoData() = default;
 
   double time_ = 0;
-  double time_stamp = 0;
+  double timestamp = 0;
   int phase_ = 1;
 
   // Eigen::Vector3d base_joint_pos_;
@@ -42,6 +42,11 @@ public:
   Eigen::VectorXd local_rh_pos_ = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd local_lh_ori_ = Eigen::VectorXd::Zero(4);
   Eigen::VectorXd local_rh_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd action_local_lh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd action_local_rh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd action_local_lh_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd action_local_rh_ori_ = Eigen::VectorXd::Zero(4);
 
   Eigen::VectorXd local_lf_pos_ = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd local_rf_pos_ = Eigen::VectorXd::Zero(3);
@@ -86,6 +91,9 @@ public:
   Eigen::Vector3d rf_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kd = Eigen::Vector3d::Zero();
+
+  bool l_gripper = false;
+  bool r_gripper = false;
 };
 
 // Singleton class

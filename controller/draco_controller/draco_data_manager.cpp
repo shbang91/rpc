@@ -51,6 +51,9 @@ void DracoDataManager::SendData() {
   for (int i(0); i < data_->joint_positions_.size(); i++)
     msg.add_joint_positions(data_->joint_positions_[i]);
 
+  for (int i(0); i < data_->joint_velocities_.size(); i++)
+    msg.add_joint_velocities(data_->joint_velocities_[i]);
+
   for (int i(0); i < data_->lfoot_rf_cmd_.size(); i++)
     msg.add_lfoot_rf_cmd(data_->lfoot_rf_cmd_[i]);
 
@@ -91,7 +94,30 @@ void DracoDataManager::SendData() {
     msg.add_rf_ori_weight(data_->rf_ori_weight[i]);
     msg.add_rf_ori_kp(data_->rf_ori_kp[i]);
     msg.add_rf_ori_kd(data_->rf_ori_kd[i]);
+
+    msg.add_local_lh_pos(data_->local_lf_pos_[i]);
+    msg.add_local_rh_pos(data_->local_rf_pos_[i]);
+    msg.add_local_lf_pos(data_->local_lf_pos_[i]);
+    msg.add_local_rf_pos(data_->local_rf_pos_[i]);
+
+    msg.add_action_local_lh_pos(data_->action_local_lh_pos_[i]);
+    msg.add_action_local_rh_pos(data_->action_local_rh_pos_[i]);
   }
+
+  for (int i(0); i < 4; i++) {
+    msg.add_local_lh_ori(data_->local_lh_ori_[i]);
+    msg.add_local_rh_ori(data_->local_rh_ori_[i]);
+    msg.add_local_lf_ori(data_->local_lf_ori_[i]);
+    msg.add_local_rf_ori(data_->local_rf_ori_[i]);
+
+    msg.add_action_local_lh_ori(data_->action_local_lh_ori_[i]);
+    msg.add_action_local_rh_ori(data_->action_local_rh_ori_[i]);
+  }
+
+  msg.set_timestamp(data_->timestamp);
+  msg.set_state(data_->state);
+  msg.set_l_gripper(data_->l_gripper);
+  msg.set_r_gripper(data_->r_gripper);
 
   // for (int i = 0; i < 3; ++i) {
   // msg.add_base_joint_pos(data_->base_joint_pos_[i]);
