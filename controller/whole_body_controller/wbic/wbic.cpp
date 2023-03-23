@@ -279,9 +279,9 @@ void WBIC::_GetSolution(const Eigen::VectorXd &wbc_qddot_cmd,
 
   Eigen::VectorXd trq_trc =
       M_.bottomRows(num_qdot_ - num_floating_) * corrected_qddot_cmd +
-      (Ni_dyn_.transpose()).bottomRows(num_qdot_ - num_floating_) *
+      Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
           (cori_ + grav_) -
-      ((Jc_ * Ni_dyn_).transpose()).bottomRows(num_qdot_ - num_floating_) *
+      (Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
           (des_rf_ + qp_data_->delta_rf_);
 
   Eigen::MatrixXd UNi_trc =
