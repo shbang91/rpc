@@ -11,6 +11,7 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
 #include "controller/whole_body_controller/wbic/wbic.hpp"
+#include "util/clock.hpp"
 #include "util/interpolation.hpp"
 
 #if B_USE_ZMQ
@@ -179,8 +180,12 @@ void DracoController::GetCommand(void *command) {
     wbic_data_->W_delta_rf_.head<3>() = Eigen::Vector3d::Constant(100);
     wbic_data_->W_delta_rf_.segment<3>(rf_dim / 2) =
         Eigen::Vector3d::Constant(100);
+    // Clock clock;
+    // clock.Start();
     wbic_->MakeTorque(wbc_qddot_cmd_, tci_container_->force_task_vector_,
                       tci_container_->contact_map_, joint_trq_cmd_, wbic_data_);
+    // clock.Stop();
+    // std::cout << "QP computation time: " << clock.duration() << std::endl;
   }
 
   if (b_smoothing_command_) {
