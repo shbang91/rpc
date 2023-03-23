@@ -1,19 +1,19 @@
 #include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "util/util.hpp"
 
-// for ProxQP
-#include <Eigen/Core>
-#include <iostream>
-#include <proxsuite/helpers/optional.hpp> // for c++14
-#include <proxsuite/proxqp/dense/dense.hpp>
-
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
 #include "controller/whole_body_controller/internal_constraint.hpp"
 
-using namespace proxsuite::proxqp;
-using proxsuite::nullopt; // c++17 simply use std::nullopt
+// for ProxQP
+//#include <Eigen/Core>
+//#include <iostream>
+//#include <proxsuite/helpers/optional.hpp> // for c++14
+//#include <proxsuite/proxqp/dense/dense.hpp>
+
+// using namespace proxsuite::proxqp;
+// using proxsuite::nullopt; // c++17 simply use std::nullopt
 
 WBIC::WBIC(const std::vector<bool> &act_qdot_list, const Eigen::MatrixXd *Ji)
     : WBC(act_qdot_list, Ji), threshold_(0.0001), dim_contact_(0) {
@@ -114,14 +114,17 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       wbc_qddot_cmd = qddot_cmd;
     }
 
-    // std::cout <<=============================================== << std::endl;
+    // std::cout << "= == == == == == == == == == == == == == == == == == == ==
+    // "
+    //"== ==== =="
+    //<< std::endl;
     // std::cout << "Desired Pos: " << (*it)->DesiredPos().transpose()
     //<< std::endl;
     // std::cout << "Current Pos: " << (*it)->CurrentPos().transpose()
     //<< std::endl;
-    // std::cout << "Op Command: " << (*it)->OpCommand().transpose()
-    //<< std::endl;
-    // std::cout << "qddot cmd: " << qddot_cmd.transpose() << std::endl;
+    // std::cout << "Op Command: " << (*it)->OpCommand().transpose() <<
+    // std::endl; std::cout << "qddot cmd: " << qddot_cmd.transpose() <<
+    // std::endl;
   }
 
   return true;
@@ -224,31 +227,34 @@ void WBIC::_SetQPInEqualityConstraint() {
   C_ = Eigen::MatrixXd::Zero(Uf_mat_.rows(), num_floating_ + dim_contact_);
   C_.rightCols(dim_contact_) = Uf_mat_;
   l_ = Uf_vec_ - Uf_mat_ * des_rf_;
-  // std::cout << "------------------ Uf_ -----------------" << std::endl;
-  // std::cout << Uf_mat_ << std::endl;
-  // std::cout << "------------------ l_ ------------------" << std::endl;
-  // std::cout << l_ << std::endl;
 }
 
 void WBIC::_SolveQP() {
+  //========================================================================
+  // ProxQP
+  //========================================================================
   // define the problem
-  double eps_abs = 1e-9; // absolute stopping criterion of the solver
-  dense::isize dim = num_floating_ + dim_contact_;
-  dense::isize n_eq = num_floating_;
-  dense::isize n_ineq = C_.rows();
+  // double eps_abs = 1e-9; // absolute stopping criterion of the solver
+  // dense::isize dim = num_floating_ + dim_contact_;
+  // dense::isize n_eq = num_floating_;
+  // dense::isize n_ineq = C_.rows();
 
   // create qp object and pass some settings
-  dense::QP<double> qp(dim, n_eq, n_ineq);
-  qp.settings.eps_abs = eps_abs;
-  qp.settings.initial_guess =
-      InitialGuessStatus::WARM_START_WITH_PREVIOUS_RESULT;
-  qp.settings.verbose = false;
+  // dense::QP<double> qp(dim, n_eq, n_ineq);
+  // qp.settings.eps_abs = eps_abs;
+  // qp.settings.initial_guess =
+  // InitialGuessStatus::WARM_START_WITH_PREVIOUS_RESULT;
+  // qp.settings.verbose = true;
 
   // initialize qp with matrices describing the problem
   // note: it is also possible to use update here
-  qp.init(H_, nullopt, A_, b_, C_, l_, nullopt);
-  qp.solve();
+  // qp.init(H_, nullopt, A_, b_, C_, l_, nullopt);
+  // qp.solve();
 
+  // Eigen::VectorXd opt_sol = qp.results.x; // primal results
+  // qp_data_->delta_qddot_ = opt_sol.head(num_floating_);
+  // qp_data_->delta_rf_ = opt_sol.tail(dim_contact_);
+  //
   // std::cout << "primal residual: " << qp.results.info.pri_res << std::endl;
   // std::cout << "dual residual: " << qp.results.info.dua_res << std::endl;
   // std::cout << "total number of iteration: " << qp.results.info.iter
@@ -257,9 +263,51 @@ void WBIC::_SolveQP() {
   // "
   //<< qp.results.info.solve_time << std::endl;
 
-  Eigen::VectorXd opt_sol = qp.results.x; // primal results
-  qp_data_->delta_qddot_ = opt_sol.head(num_floating_);
-  qp_data_->delta_rf_ = opt_sol.tail(dim_contact_);
+  //========================================================================
+  // QuadProg
+  //========================================================================
+  int dim = num_floating_ + dim_contact_;
+  int n_eq = num_floating_;
+  int n_ineq = C_.rows();
+
+  // prepare optimization
+  x_.resize(dim);
+  G_.resize(dim, dim);
+  g0_.resize(dim);
+  CE_.resize(dim, n_eq);
+  ce0_.resize(n_eq);
+  CI_.resize(dim, n_ineq);
+  ci0_.resize(n_ineq);
+
+  for (int i(0); i < dim; ++i) {
+    for (int j(0); j < dim; ++j) {
+      G_[j][i] = H_(i, j);
+    }
+    g0_[i] = 0.;
+  }
+
+  for (int i(0); i < n_eq; ++i) {
+    for (int j(0); j < dim; ++j) {
+      CE_[j][i] = A_(i, j);
+    }
+    ce0_[i] = -b_[i];
+  }
+
+  for (int i(0); i < n_ineq; ++i) {
+    for (int j(0); j < dim; ++j) {
+      CI_[j][i] = C_(i, j);
+    }
+    ci0_[i] = -l_[i];
+  }
+
+  // solve
+  solve_quadprog(G_, g0_, CE_, ce0_, CI_, ci0_, x_);
+  Eigen::VectorXd qp_sol = Eigen::VectorXd::Zero(dim);
+  for (int i(0); i < dim; ++i) {
+    qp_sol[i] = x_[i];
+  }
+  qp_data_->delta_qddot_ = qp_sol.head(num_floating_);
+  qp_data_->delta_rf_ = qp_sol.tail(dim_contact_);
 
   // TEST
   // std::cout << "========================================================"
@@ -271,11 +319,7 @@ void WBIC::_SolveQP() {
 void WBIC::_GetSolution(const Eigen::VectorXd &wbc_qddot_cmd,
                         Eigen::VectorXd &jtrq_cmd) {
   Eigen::VectorXd corrected_qddot_cmd = wbc_qddot_cmd;
-  // Eigen::VectorXd bf_correct = corrected_qddot_cmd.head<6>();
-  // util::PrettyPrint(bf_correct, std::cout, "qddot cmd");
   corrected_qddot_cmd.head(num_floating_) += qp_data_->delta_qddot_;
-  // Eigen::VectorXd after_correct = corrected_qddot_cmd.head<6>();
-  // util::PrettyPrint(after_correct, std::cout, "qddot cmd after correction");
 
   Eigen::VectorXd trq_trc =
       M_.bottomRows(num_qdot_ - num_floating_) * corrected_qddot_cmd +

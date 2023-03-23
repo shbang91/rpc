@@ -6,6 +6,8 @@
 
 #include "controller/whole_body_controller/wbc.hpp"
 
+#include "third_party/optimizer/goldfarb/QuadProg++.hh"
+
 class Task;
 class Contact;
 class InternalConstraint;
@@ -84,7 +86,9 @@ private:
   // QP variables
   WBICData *qp_data_;
 
-  // ProxQP variables
+  //=======================================================================
+  // ProxQP
+  //=======================================================================
   /*
    min 0.5 * x H x + g.T x
    s.t.
@@ -94,11 +98,29 @@ private:
   // cost
   Eigen::MatrixXd H_;
   // Eigen::VectorXd g_;
-  //  equality
+  // equality
   Eigen::MatrixXd A_;
   Eigen::VectorXd b_;
   // inequality
   Eigen::MatrixXd C_;
   Eigen::VectorXd l_;
   // Eigen::VectorXd u_; // no upper bound for now
+
+  //=======================================================================
+  // QuadProg
+  //=======================================================================
+  // decision variables
+  GolDIdnani::GVect<double> x_;
+
+  // QP cost
+  GolDIdnani::GMatr<double> G_;
+  GolDIdnani::GVect<double> g0_;
+
+  // QP equality constraint
+  GolDIdnani::GMatr<double> CE_;
+  GolDIdnani::GVect<double> ce0_;
+
+  // QP inequality constraint
+  GolDIdnani::GMatr<double> CI_;
+  GolDIdnani::GVect<double> ci0_;
 };

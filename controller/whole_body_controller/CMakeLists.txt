@@ -14,6 +14,7 @@ if(BUILD_WITH_MATLOGGER)
 endif()
 
 if(BUILD_WITH_PROXQP)
+    #target_link_libraries(rpc-wbc PUBLIC proxsuite::proxsuite)
     target_link_libraries(rpc-wbc PUBLIC proxsuite::proxsuite-vectorized)
     #target_compile_options(rpc-wbc PUBLIC "-march=native")
 endif()
