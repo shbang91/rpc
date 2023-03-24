@@ -15,9 +15,10 @@ class ForceTask;
 
 class WBICData {
 public:
-  WBICData() {
-    delta_qddot_ = Eigen::VectorXd::Zero(6);
-    W_delta_qddot_ = Eigen::VectorXd::Zero(6);
+  WBICData(int num_float, int num_qdot) {
+    W_delta_qddot_ = Eigen::VectorXd::Zero(num_float);
+    delta_qddot_ = Eigen::VectorXd::Zero(num_float);
+    corrected_wbc_qddot_cmd_ = Eigen::VectorXd::Zero(num_qdot);
   };
   ~WBICData() = default;
 
@@ -28,6 +29,9 @@ public:
   // output
   Eigen::VectorXd delta_qddot_;
   Eigen::VectorXd delta_rf_;
+
+  Eigen::VectorXd corrected_wbc_qddot_cmd_;
+  Eigen::VectorXd rf_cmd_;
 };
 
 class WBIC : public WBC {
@@ -47,7 +51,7 @@ public:
   bool MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
                   const std::vector<ForceTask *> &force_task_vector,
                   const std::map<std::string, Contact *> &contact_map,
-                  Eigen::VectorXd &jtrq_cmd, void *extra_input = nullptr);
+                  Eigen::VectorXd &jtrq_cmd, WBICData *qp_data);
 
 private:
   void _PseudoInverse(const Eigen::MatrixXd &jac, Eigen::MatrixXd &jac_inv);
@@ -65,9 +69,8 @@ private:
   void _SetQPCost();
   void _SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd);
   void _SetQPInEqualityConstraint();
-  void _SolveQP();
-  void _GetSolution(const Eigen::VectorXd &wbc_qddot_cmd,
-                    Eigen::VectorXd &jtrq_cmd);
+  void _SolveQP(const Eigen::VectorXd &wbc_qddot_cmd);
+  void _GetSolution(Eigen::VectorXd &jtrq_cmd);
 
   double threshold_;
 
