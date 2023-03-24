@@ -1082,11 +1082,12 @@ figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:6
     subplot(6,1,i);
-    plot(wbc_time, fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
+    plot(wbc_time, fb_qddot_cmd(i, :), 'b', 'LineWidth', 2);
     grid on
     hold on
-    min_val = min([fb_qddot_cmd(i, :)]);
-    max_val = max([fb_qddot_cmd(i, :)]);
+    plot(wbc_time, corrected_fb_qddot_cmd(i, :), 'r', 'LineWidth', 2);
+    min_val = min([fb_qddot_cmd(i, :), corrected_fb_qddot_cmd(i, :)]);
+    max_val = max([fb_qddot_cmd(i, :), corrected_fb_qddot_cmd(i, :)]);
     min_val = min_val - 0.1 * (max_val - min_val);
     max_val = max_val + 0.1 *(max_val - min_val);
 %   set_fig_opt()
@@ -1094,6 +1095,7 @@ for i = 1:6
     xlabel('time')
     ylabel(fb_qddot_label(i))
     sgtitle('floating base qddot cmd', 'FontSize', 30)
+    legend('before correction', 'after correction')
 end
 
 
@@ -1231,7 +1233,7 @@ for i = 1:14
         end
     end
 end
-linkaxes(ax, 'x')
+% linkaxes(ax, 'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1277,5 +1279,5 @@ for i = 1:14
         end
     end
 end
-linkaxes(ax,'x')
+% linkaxes(ax,'x')
 

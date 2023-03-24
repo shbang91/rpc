@@ -313,11 +313,9 @@ void DracoController::_SaveData() {
 
   if (sp_->state_ != draco_states::kInitialize) {
     logger_->add("lf_rf_cmd",
-                 tci_container_->force_task_map_["lf_force_task"]
-                     ->CmdRf()); // local quantity
+                 wbic_data_->rf_cmd_.head<6>()); // local quantity
     logger_->add("rf_rf_cmd",
-                 tci_container_->force_task_map_["rf_force_task"]
-                     ->CmdRf()); // local quantity
+                 wbic_data_->rf_cmd_.tail<6>()); // local quantity
 
     Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
     rot.topLeftCorner<3, 3>() =
@@ -325,18 +323,24 @@ void DracoController::_SaveData() {
     rot.bottomRightCorner<3, 3>() =
         tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
     logger_->add("lf_rf_cmd_global",
-                 rot * tci_container_->force_task_map_["lf_force_task"]
-                           ->CmdRf()); // global quantity
+                 rot * wbic_data_->rf_cmd_.head<6>()); // global quantity
     rot.topLeftCorner<3, 3>() =
         tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
     rot.bottomRightCorner<3, 3>() =
         tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
     logger_->add("rf_rf_cmd_global",
-                 rot * tci_container_->force_task_map_["rf_force_task"]
-                           ->CmdRf()); // global quantity
+                 rot * wbic_data_->rf_cmd_.tail<6>()); // global quantity
+
+    // des reaction force
+    logger_->add("des_rf_lfoot",
+                 tci_container_->force_task_map_["lf_force_task"]->DesiredRf());
+    logger_->add("des_rf_rfoot",
+                 tci_container_->force_task_map_["rf_force_task"]->DesiredRf());
 
     logger_->add("fb_qddot_cmd", wbc_qddot_cmd_.head<6>());
     logger_->add("joint_acc_cmd", wbc_qddot_cmd_.tail<27>());
+    logger_->add("corrected_fb_qddot_cmd",
+                 wbic_data_->corrected_wbc_qddot_cmd_.head<6>());
 
     logger_->add("joint_trq_cmd", joint_trq_cmd_);
 
