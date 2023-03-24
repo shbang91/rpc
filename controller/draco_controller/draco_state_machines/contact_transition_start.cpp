@@ -27,13 +27,8 @@ void ContactTransitionStart::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
 
   if (state_id_ == draco_states::kLFContactTransitionStart) {
-    // stance foot lfoot
+    // stance foot lfoot & right foot touches ground
     std::cout << "draco_states::kLFContactTransitionStart" << std::endl;
-    // =====================================================================
-    // task hierarchy manager initialize
-    // =====================================================================
-    // TODO
-    //
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
@@ -46,11 +41,6 @@ void ContactTransitionStart::FirstVisit() {
     // stance foot rfoot
     std::cout << "draco_states::kRFContactTransitionStart" << std::endl;
     // =====================================================================
-    // task hierarchy manager initialize
-    // =====================================================================
-    // TODO
-    //
-    // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
@@ -58,6 +48,20 @@ void ContactTransitionStart::FirstVisit() {
 
     sp_->b_lf_contact_ = true;
   }
+
+  // build tasks & contacts
+  auto &contact_vector = ctrl_arch_->tci_container_->contact_vector_;
+  auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
+  contact_vector.clear();
+  contact_vector.push_back(contact_map["lf_contact"]);
+  contact_vector.push_back(contact_map["rf_contact"]);
+
+  auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
+  auto &task_map = ctrl_arch_->tci_container_->task_map_;
+  task_vector.push_back(task_map["com_xy_task"]);
+  task_vector.push_back(task_map["com_z_task"]);
+  task_vector.push_back(task_map["torso_ori_task"]);
+  task_vector.push_back(task_map["upper_body_task"]);
 
   // =====================================================================
   // dcm planner initialize

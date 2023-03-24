@@ -29,21 +29,11 @@ void ContactTransitionEnd::FirstVisit() {
   if (state_id_ == draco_states::kLFContactTransitionEnd) {
     std::cout << "draco_States::kLFContactTransitionEnd" << std::endl;
     // =====================================================================
-    // task hierarchy manager initialize
-    // =====================================================================
-    // TODO
-
-    // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     std::cout << "draco_states::kRFContactTransitionEnd" << std::endl;
-    // =====================================================================
-    // task hierarchy manager initialize
-    // =====================================================================
-    // TODO
-
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================

@@ -2,6 +2,7 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
@@ -29,6 +30,21 @@ void SingleSupportSwing::FirstVisit() {
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
     std::cout << "draco_states::kLFSingleSupportSwing" << std::endl;
 
+    // build tasks & contacts
+    auto &contact_vector = ctrl_arch_->tci_container_->contact_vector_;
+    auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
+    contact_vector.clear();
+    contact_vector.push_back(contact_map["rf_contact"]);
+
+    auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
+    auto &task_map = ctrl_arch_->tci_container_->task_map_;
+    task_vector.push_back(task_map["lf_pos_task"]);
+    task_vector.push_back(task_map["lf_ori_task"]);
+    task_vector.push_back(task_map["com_xy_task"]);
+    task_vector.push_back(task_map["com_z_task"]);
+    task_vector.push_back(task_map["torso_ori_task"]);
+    task_vector.push_back(task_map["upper_body_task"]);
+
     Eigen::Isometry3d curr_lfoot_iso =
         robot_->GetLinkIsometry(draco_link::l_foot_contact);
     FootStep::MakeHorizontal(curr_lfoot_iso);
@@ -46,6 +62,21 @@ void SingleSupportSwing::FirstVisit() {
 
   } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
     std::cout << "draco_states::kRFSingleSupportSwing" << std::endl;
+
+    // build tasks & contacts
+    auto &contact_vector = ctrl_arch_->tci_container_->contact_vector_;
+    auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
+    contact_vector.clear();
+    contact_vector.push_back(contact_map["lf_contact"]);
+
+    auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
+    auto &task_map = ctrl_arch_->tci_container_->task_map_;
+    task_vector.push_back(task_map["rf_pos_task"]);
+    task_vector.push_back(task_map["rf_ori_task"]);
+    task_vector.push_back(task_map["com_xy_task"]);
+    task_vector.push_back(task_map["com_z_task"]);
+    task_vector.push_back(task_map["torso_ori_task"]);
+    task_vector.push_back(task_map["upper_body_task"]);
 
     Eigen::Isometry3d curr_rfoot_iso =
         robot_->GetLinkIsometry(draco_link::r_foot_contact);
