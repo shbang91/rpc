@@ -130,10 +130,15 @@ void DracoController::GetCommand(void *command) {
     }
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
-    for (const auto task : tci_container_->task_vector_) {
-      task->UpdateJacobian();
-      task->UpdateJacobianDotQdot();
-      task->UpdateOpCommand();
+    // for (const auto task : tci_container_->task_vector_) {
+    // task->UpdateJacobian();
+    // task->UpdateJacobianDotQdot();
+    // task->UpdateOpCommand();
+    //}
+    for (const auto &[task_name, task_ptr] : tci_container_->task_map_) {
+      task_ptr->UpdateJacobian();
+      task_ptr->UpdateJacobianDotQdot();
+      task_ptr->UpdateOpCommand();
     }
 
     // modified jacobian for swing legs
