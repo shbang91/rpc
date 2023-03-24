@@ -76,6 +76,7 @@ private:
 
   // contact
   Eigen::MatrixXd Jc_;
+  Eigen::VectorXd JcDotQdot_;
   Eigen::MatrixXd Uf_mat_;
   Eigen::MatrixXd Uf_vec_;
   int dim_contact_;

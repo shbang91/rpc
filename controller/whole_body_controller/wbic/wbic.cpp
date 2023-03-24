@@ -181,11 +181,13 @@ void WBIC::_BuildContactMtxVect(
   for (auto it = contact_map.begin(); it != contact_map.end(); ++it) {
     if (it == contact_map.begin()) {
       Jc_ = it->second->Jacobian();
+      JcDotQdot_ = it->second->JacobianDotQdot();
       Uf_mat_ = it->second->UfMatrix();
       Uf_vec_ = it->second->UfVector();
       dim_contact_ = it->second->Dim();
     } else {
       Jc_ = util::VStack(Jc_, it->second->Jacobian());
+      JcDotQdot_ = util::VStack(JcDotQdot_, it->second->JacobianDotQdot());
       Uf_mat_ = util::BlockDiagonalMatrix(Uf_mat_, it->second->UfMatrix());
       Uf_vec_ = util::VStack(Uf_vec_, it->second->UfVector());
       dim_contact_ += it->second->Dim();
@@ -343,5 +345,15 @@ void WBIC::_GetSolution(const Eigen::VectorXd &wbc_qddot_cmd,
              jtrq_cmd; // dimension: num_active_ + num_passive_
 
   // TEST
+  // joint torque command computation
   // std::cout << "jtrq_cmd " << jtrq_cmd.transpose() << std::endl;
+
+  // contact constraint check
+  // Eigen::VectorXd Xc_ddot_bf_correct =
+  // Jc_ * Ni_dyn_ * wbc_qddot_cmd + JcDotQdot_;
+  // Eigen::VectorXd Xc_ddot = Jc_ * Ni_dyn_ * corrected_qddot_cmd + JcDotQdot_;
+  // std::cout << "==================================" << std::endl;
+  // util::PrettyPrint(Xc_ddot_bf_correct, std::cout, "Xc_ddot before
+  // correction"); util::PrettyPrint(Xc_ddot, std::cout, "Xc_ddot after
+  // correction");
 }
