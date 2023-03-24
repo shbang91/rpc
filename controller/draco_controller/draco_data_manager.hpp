@@ -44,32 +44,25 @@ public:
 
   Eigen::Vector2d des_cmp = Eigen::Vector2d::Zero();
 
-  Eigen::Vector2d com_xy_weight = Eigen::Vector2d::Zero();
   Eigen::Vector2d com_xy_kp = Eigen::Vector2d::Zero();
   Eigen::Vector2d com_xy_kd = Eigen::Vector2d::Zero();
   Eigen::Vector2d com_xy_ki = Eigen::Vector2d::Zero();
 
-  double com_z_weight = 0;
   double com_z_kp = 0;
   double com_z_kd = 0;
 
-  Eigen::Vector3d torso_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d torso_ori_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d torso_ori_kd = Eigen::Vector3d::Zero();
 
-  Eigen::Vector3d lf_pos_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d lf_pos_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d lf_pos_kd = Eigen::Vector3d::Zero();
 
-  Eigen::Vector3d rf_pos_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_pos_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_pos_kd = Eigen::Vector3d::Zero();
 
-  Eigen::Vector3d lf_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d lf_ori_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d lf_ori_kd = Eigen::Vector3d::Zero();
 
-  Eigen::Vector3d rf_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kd = Eigen::Vector3d::Zero();
 };

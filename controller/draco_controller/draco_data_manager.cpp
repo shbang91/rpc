@@ -61,34 +61,27 @@ void DracoDataManager::SendData() {
     msg.add_est_icp(data_->est_icp[i]);
     msg.add_des_icp(data_->des_icp[i]);
     msg.add_des_cmp(data_->des_cmp[i]);
-    msg.add_com_xy_weight(data_->com_xy_weight[i]);
     msg.add_com_xy_kp(data_->com_xy_kp[i]);
     msg.add_com_xy_kd(data_->com_xy_kd[i]);
     msg.add_com_xy_ki(data_->com_xy_ki[i]);
   }
 
-  msg.set_com_z_weight(data_->com_z_weight);
   msg.set_com_z_kp(data_->com_z_kp);
   msg.set_com_z_kd(data_->com_z_kd);
 
   for (int i(0); i < 3; i++) {
-    msg.add_torso_ori_weight(data_->torso_ori_weight[i]);
     msg.add_torso_ori_kp(data_->torso_ori_kp[i]);
     msg.add_torso_ori_kd(data_->torso_ori_kd[i]);
 
-    msg.add_lf_pos_weight(data_->lf_pos_weight[i]);
     msg.add_lf_pos_kp(data_->lf_pos_kp[i]);
     msg.add_lf_pos_kd(data_->lf_pos_kd[i]);
 
-    msg.add_rf_pos_weight(data_->rf_pos_weight[i]);
     msg.add_rf_pos_kp(data_->rf_pos_kp[i]);
     msg.add_rf_pos_kd(data_->rf_pos_kd[i]);
 
-    msg.add_lf_ori_weight(data_->lf_ori_weight[i]);
     msg.add_lf_ori_kp(data_->lf_ori_kp[i]);
     msg.add_lf_ori_kd(data_->lf_ori_kd[i]);
 
-    msg.add_rf_ori_weight(data_->rf_ori_weight[i]);
     msg.add_rf_ori_kp(data_->rf_ori_kp[i]);
     msg.add_rf_ori_kd(data_->rf_ori_kd[i]);
   }

@@ -28,37 +28,30 @@ message pnc_msg {
 
   repeated float des_cmp = 16;
 
-  repeated float com_xy_weight = 17;
-  repeated float com_xy_kp = 18;
-  repeated float com_xy_kd = 19;
-  repeated float com_xy_ki = 20;
+  repeated float com_xy_kp = 17;
+  repeated float com_xy_kd = 18;
+  repeated float com_xy_ki = 19;
 
-  float com_z_weight = 21;
-  float com_z_kp = 22;
-  float com_z_kd = 23;
+  float com_z_kp = 20;
+  float com_z_kd = 21;
 
-  repeated float torso_ori_weight = 24;
-  repeated float torso_ori_kp = 25;
-  repeated float torso_ori_kd = 26;
+  repeated float torso_ori_kp = 22;
+  repeated float torso_ori_kd = 23;
 
-  repeated float lf_pos_weight = 27;
-  repeated float lf_pos_kp = 28;
-  repeated float lf_pos_kd = 29;
+  repeated float lf_pos_kp = 24;
+  repeated float lf_pos_kd = 25;
 
-  repeated float rf_pos_weight = 30;
-  repeated float rf_pos_kp = 31;
-  repeated float rf_pos_kd = 32;
+  repeated float rf_pos_kp = 26;
+  repeated float rf_pos_kd = 27;
 
-  repeated float lf_ori_weight = 33;
-  repeated float lf_ori_kp = 34;
-  repeated float lf_ori_kd = 35;
+  repeated float lf_ori_kp = 28;
+  repeated float lf_ori_kd = 29;
 
-  repeated float rf_ori_weight = 36;
-  repeated float rf_ori_kp = 37;
-  repeated float rf_ori_kd = 38;
-  
-  repeated float kf_base_joint_pos = 39;
-  repeated float kf_base_joint_ori = 40;
+  repeated float rf_ori_kp = 30;
+  repeated float rf_ori_kd = 31;
+
+  repeated float kf_base_joint_pos = 32;
+  repeated float kf_base_joint_ori = 33;
 }
 
 // TODO:
