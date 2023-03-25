@@ -279,23 +279,32 @@ void DracoController::_SaveData() {
   dm->data_->rfoot_ori_ =
       tci_container_->task_map_["rf_ori_task"]->CurrentPos();
 
-  Eigen::Quaterniond lf_ori_quat(
-      dm->data_->lfoot_ori_[3], dm->data_->lfoot_ori_[0],
-      dm->data_->lfoot_ori_[1], dm->data_->lfoot_ori_[2]);
-  Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
-  rot.topLeftCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
-  rot.bottomRightCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
+  // Eigen::Quaterniond lf_ori_quat(
+  // dm->data_->lfoot_ori_[3], dm->data_->lfoot_ori_[0],
+  // dm->data_->lfoot_ori_[1], dm->data_->lfoot_ori_[2]);
+  // Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
+  // rot.topLeftCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
+  // rot.bottomRightCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
 
+  Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
+  rot.topLeftCorner<3, 3>() =
+      tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
+  rot.bottomRightCorner<3, 3>() =
+      tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
   dm->data_->lfoot_rf_cmd_ =
       rot * tci_container_->force_task_map_["lf_force_task"]
                 ->CmdRf(); // global quantity
 
-  Eigen::Quaterniond rf_ori_quat(
-      dm->data_->rfoot_ori_[3], dm->data_->rfoot_ori_[0],
-      dm->data_->rfoot_ori_[1], dm->data_->rfoot_ori_[2]);
-  rot.topLeftCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
-  rot.bottomRightCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
+  // Eigen::Quaterniond rf_ori_quat(
+  // dm->data_->rfoot_ori_[3], dm->data_->rfoot_ori_[0],
+  // dm->data_->rfoot_ori_[1], dm->data_->rfoot_ori_[2]);
+  // rot.topLeftCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
+  // rot.bottomRightCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
 
+  rot.topLeftCorner<3, 3>() =
+      tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
+  rot.bottomRightCorner<3, 3>() =
+      tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
   dm->data_->rfoot_rf_cmd_ =
       rot * tci_container_->force_task_map_["rf_force_task"]
                 ->CmdRf(); // global quantity
@@ -353,6 +362,22 @@ void DracoController::_SaveData() {
                  tci_container_->force_task_map_["rf_force_task"]
                      ->CmdRf()); // local quantity
 
+    Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
+    rot.topLeftCorner<3, 3>() =
+        tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
+    rot.bottomRightCorner<3, 3>() =
+        tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
+    logger_->add("lf_rf_cmd_global",
+                 rot * tci_container_->force_task_map_["lf_force_task"]
+                           ->CmdRf()); // global quantity
+    rot.topLeftCorner<3, 3>() =
+        tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
+    rot.bottomRightCorner<3, 3>() =
+        tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
+    logger_->add("rf_rf_cmd_global",
+                 rot * tci_container_->force_task_map_["rf_force_task"]
+                           ->CmdRf()); // global quantity
+
     logger_->add("fb_qddot_cmd", wbc_qddot_cmd_.head<6>());
     logger_->add("joint_acc_cmd", wbc_qddot_cmd_.tail<27>());
 
@@ -378,6 +403,10 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["com_z_task"]->DesiredVel());
     logger_->add("act_com_z_vel",
                  tci_container_->task_map_["com_z_task"]->CurrentVel());
+    logger_->add("des_cam",
+                 tci_container_->task_map_["cam_task"]->DesiredVel());
+    logger_->add("act_cam",
+                 tci_container_->task_map_["cam_task"]->CurrentVel());
     logger_->add("des_torso_ori_pos",
                  tci_container_->task_map_["torso_ori_task"]->DesiredPos());
     logger_->add("act_torso_ori_pos",
@@ -447,6 +476,10 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["com_z_task"]->DesiredLocalVel());
     logger_->add("local_act_com_z_vel",
                  tci_container_->task_map_["com_z_task"]->CurrentLocalVel());
+    logger_->add("local_des_cam",
+                 tci_container_->task_map_["cam_task"]->DesiredLocalVel());
+    logger_->add("local_act_cam",
+                 tci_container_->task_map_["cam_task"]->CurrentLocalVel());
     logger_->add(
         "local_des_torso_ori_pos",
         tci_container_->task_map_["torso_ori_task"]->DesiredLocalPos());
@@ -513,8 +546,14 @@ void DracoController::_SaveData() {
     }
     logger_->add("wbc_weights_lambda_qddot", ihwbc_->GetLambdaQddot());
     logger_->add("wbc_weights_lambda_rf", ihwbc_->GetLambdaRf());
-    logger_->add("des_rf_lfoot", tci_container_->force_task_map_["lf_force_task"]->DesiredRf());
-    logger_->add("des_rf_rfoot", tci_container_->force_task_map_["rf_force_task"]->DesiredRf());
+    logger_->add("des_rf_lfoot",
+                 tci_container_->force_task_map_["lf_force_task"]->DesiredRf());
+    logger_->add("des_rf_rfoot",
+                 tci_container_->force_task_map_["rf_force_task"]->DesiredRf());
+
+    // TEST
+    for (const auto &[contact_str, contact_ptr] : tci_container_->contact_map_)
+      logger_->add(contact_str + "_rf_z_max", contact_ptr->MaxFz());
   }
 
 #endif

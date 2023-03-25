@@ -24,6 +24,8 @@ import signal
 import shutil
 import cv2
 
+from loop_rate_limiters import RateLimiter
+
 import draco_interface_py
 
 if Config.MEASURE_COMPUTATION_TIME:
@@ -371,7 +373,6 @@ if __name__ == "__main__":
                                       rot_world_basecom)
 
     # Run Simulation
-    t = 0
     dt = Config.CONTROLLER_DT
     count = 0
     jpg_count = 0
@@ -389,6 +390,7 @@ if __name__ == "__main__":
 
     previous_torso_velocity = np.array([0., 0., 0.])
     imu_dvel_bias = np.array([0.0, 0.0, 0.0])
+    rate = RateLimiter(frequency=1. / dt)
     while (True):
 
         ###############################################################################
@@ -493,7 +495,6 @@ if __name__ == "__main__":
         previous_torso_velocity = pybullet_util.get_link_vel(
             draco_humanoid, link_id_dict['torso_imu'])[3:6]
 
-
         # DracoLinkIdx.l_foot_contact)[0:3, 3]
         # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
         # DracoLinkIdx.r_foot_contact)[0:3, 3]
@@ -517,9 +518,7 @@ if __name__ == "__main__":
             cv2.imwrite(filename, frame)
             jpg_count += 1
 
-        #step simulation
-        pb.stepSimulation()
-        time.sleep(dt)
+        pb.stepSimulation()  #step simulation
+        rate.sleep()  # while loop rate limiter
 
-        t += dt
         count += 1

@@ -74,14 +74,10 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
                              des_com_pos, des_com_vel, des_com_acc, 1.0);
 
     // update desired com task
-    // com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
-    // des_com_acc.head<2>());
-    // com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
-    // des_com_acc.tail<1>());
     com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
-                                Eigen::VectorXd::Zero(2));
+                                des_com_acc.head<2>());
     com_z_task_->UpdateDesired(des_com_pos.tail<1>(), des_com_vel.tail<1>(),
-                               Eigen::VectorXd::Zero(2));
+                               des_com_acc.tail<1>());
 
   } else {
     // minjerk com traj generation
