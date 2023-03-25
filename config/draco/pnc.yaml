@@ -20,6 +20,7 @@ state_estimator:
   sim_sigma_pos_rfoot: [0.001, 0.001, 0.001]
   sim_sigma_vel_lfoot: [0.005, 0.005, 0.002]
   sim_sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  sim_imu_accel_bias: [0.0, 0.0, 0.0]
   sim_base_accel_time_constant: 0.02
   sim_base_accel_limits: [1., 1., 1.]
   sim_base_com_vel_time_constant: 1.0
@@ -35,6 +36,7 @@ state_estimator:
   exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
   exp_sigma_vel_lfoot: [0.002, 0.002, 0.002]
   exp_sigma_vel_rfoot: [0.002, 0.002, 0.002]
+  exp_imu_accel_bias: [-0.108, -0.023, 0.196 ]
   exp_base_accel_time_constant: 0.02
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 1.0

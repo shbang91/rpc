@@ -30,13 +30,16 @@ class PoseMeasurementModel
 public:
   enum LEG { LEFT = 0, RIGHT };
 
+  Eigen::Vector3d accel_bias;
+
   PoseMeasurementModel() {
     H.setZero();
     V.setIdentity();
   }
 
   void initialize(const Eigen::Vector3d &sigma_pos_lfoot,
-                  const Eigen::Vector3d &sigma_pos_rfoot) {
+                  const Eigen::Vector3d &sigma_pos_rfoot,
+                  const Eigen::Vector3d &_accel_bias) {
     // assign values to LTI matrix C
     H.block(0, 0, 3, 3) = I;
     H.block(0, 6, 3, 3) = -I;
@@ -45,14 +48,16 @@ public:
 
     V.block(0, 0, 3, 3) = sigma_pos_lfoot.asDiagonal();
     V.block(3, 3, 3, 3) = sigma_pos_rfoot.asDiagonal();
+
+    accel_bias = _accel_bias;
   }
 
   void packAccelerationInput(const Eigen::Matrix3d &rot_world_to_base,
                              const Eigen::Vector3d &accelerometer,
                              Control &u_n) {
-    u_n.accel_measurement_x = rot_world_to_base.row(0) * accelerometer;
-    u_n.accel_measurement_y = rot_world_to_base.row(1) * accelerometer;
-    u_n.accel_measurement_z = rot_world_to_base.row(2) * accelerometer;
+    u_n.accel_measurement_x = rot_world_to_base.row(0) * accelerometer - accel_bias(0);
+    u_n.accel_measurement_y = rot_world_to_base.row(1) * accelerometer - accel_bias(1);
+    u_n.accel_measurement_z = rot_world_to_base.row(2) * accelerometer - accel_bias(2);
   }
 
   void update_position_from_lfoot(const Eigen::Vector3d &lfoot_wrt_world,

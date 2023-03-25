@@ -31,6 +31,8 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_sigma_vel_lfoot");
     Eigen::Vector3d sigma_vel_rfoot = util::ReadParameter<Eigen::Vector3d>(
             cfg["state_estimator"], prefix + "_sigma_vel_rfoot");
+    Eigen::Vector3d imu_accel_bias = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_imu_accel_bias");
     Eigen::VectorXd n_data_com_vel = util::ReadParameter<Eigen::VectorXd>(
             cfg["state_estimator"], prefix + "_num_data_com_vel");
     //  Eigen::VectorXd n_data_cam = util::ReadParameter<Eigen::VectorXd>(
@@ -57,8 +59,7 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
-    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot);
-
+    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot, imu_accel_bias);
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
