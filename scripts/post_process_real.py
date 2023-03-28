@@ -1,6 +1,55 @@
 """
 Batch and post-process the datasets collected using nn_inference_and_collection.py
 into a single dataset used to train the neural network.
+
+Input file is in this format:
+├── action
+│   ├── l_gripper 
+│   ├── local_lh_ori 
+│   ├── local_lh_pos 
+│   ├── local_rh_ori 
+│   ├── local_rh_pos 
+│   └── r_gripper 
+├── est_base_joint_ori 
+├── est_base_joint_pos 
+├── kf_base_joint_ori 
+├── kf_base_joint_pos 
+├── obs
+│   ├── joint_pos 
+│   ├── joint_vel 
+│   ├── local_lf_ori 
+│   ├── local_lf_pos 
+│   ├── local_lh_ori 
+│   ├── local_lh_pos 
+│   ├── local_rf_ori 
+│   ├── local_rf_pos 
+│   ├── local_rh_ori 
+│   ├── local_rh_pos 
+│   ├── rgb 
+│   ├── state 
+│   └── stereo 
+└── timestamp 
+
+Output file is in this format:
+└── data
+    ├── demo_0
+    │   ├── actions 
+    │   ├── dones 
+    │   ├── obs
+    │   │   ├── joint 
+    │   │   ├── local_lf_ori 
+    │   │   ├── local_lf_pos 
+    │   │   ├── local_lh_ori 
+    │   │   ├── local_lh_pos 
+    │   │   ├── local_rf_ori 
+    │   │   ├── local_rf_pos 
+    │   │   ├── local_rh_ori 
+    │   │   ├── local_rh_pos 
+    │   │   ├── rgb 
+    │   │   └── stereo 
+    │   └── rewards 
+    ...
+
 """
 
 import argparse
@@ -95,6 +144,8 @@ for root, dirs, files in os.walk(args.path, topdown=False):
                 ep_group.create_dataset("rewards", data=done)
                 ep_group.attrs["num_samples"] = int(done.shape[0])
                 total += int(done.shape[0])
+                demo_count += 1
+
 
 output_file.attrs["total"] = total
 metadata = ""

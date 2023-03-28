@@ -1,16 +1,40 @@
 """A script to execute the neural network policy on the real robot
 or saves the demonstration data for training. 
 
-<<<<<<< HEAD
-This script will listen to 3 zmq queues: one from the control PC and
-the other two from the camera C++ script. It then syncs the data
-and either saves them into an HDF5 file or executes the neural network.
-=======
 This script will listen to 2 zmq queues: one from the control PC and
 the other one from the camera C++ script (which has 2 sockets for the 
 rgb images and stereo grayscale images). It then syncs the data
 and either saves them into an HDF5 file or executes the neural network
->>>>>>> c93c4227115a93d5cee0548b3449f415cf1fe031
+
+The data is saved in the following format:
+├── action
+│   ├── l_gripper 
+│   ├── local_lh_ori 
+│   ├── local_lh_pos 
+│   ├── local_rh_ori 
+│   ├── local_rh_pos 
+│   └── r_gripper 
+├── est_base_joint_ori 
+├── est_base_joint_pos 
+├── kf_base_joint_ori 
+├── kf_base_joint_pos 
+├── obs
+│   ├── joint_pos 
+│   ├── joint_vel 
+│   ├── local_lf_ori 
+│   ├── local_lf_pos 
+│   ├── local_lh_ori 
+│   ├── local_lh_pos 
+│   ├── local_rf_ori 
+│   ├── local_rf_pos 
+│   ├── local_rh_ori 
+│   ├── local_rh_pos 
+│   ├── rgb 
+│   ├── state 
+│   └── stereo 
+└── timestamp 
+
+
 """
 import numpy as np
 from messages.draco_pb2 import *
