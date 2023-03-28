@@ -1,9 +1,9 @@
 """A script to execute the neural network policy on the real robot
-or saves the data for training. 
+or saves the demonstration data for training. 
 
-This script will listen to 2 zmq queues: one from the control PC and
-the other one from the camera C++ script. It then syncs the data
-and either saves them into an HDF5 file or executes the neural network
+This script will listen to 3 zmq queues: one from the control PC and
+the other two from the camera C++ script. It then syncs the data
+and either saves them into an HDF5 file or executes the neural network.
 """
 from ..build.messages.draco_pb2 import *
 import zmq
@@ -18,7 +18,8 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument("--control_ip", type=str, default="")
 parser.add_argument("--camera_ip", type=str, default="")
-parser.add_argument("--save_data", type=bool, default=False)
+parser.add_argument("--save_data", type=bool, default=True,
+                    help="True if we are collect data for training. False if we are executing the policy.")
 args = parser.parse_args()
 save_data = args.save_data
 
@@ -47,6 +48,7 @@ stereo_streaming_socket.setsockopt_string(zmq.SUBSCRIBE, "stereo")
 
 
 if save_data:
+    # record the data real-time in a buffer in memory for performance
     data_buffer = {
         'obs/joint_pos': collections.deque(),
         'obs/joint_vel': collections.deque(),
@@ -80,6 +82,7 @@ if save_data:
     vr_ready_prev = False
 
 while True:
+    # Wait for control PC to send data (20hz)
     msg.ParseFromString(control_socket.recv())
 
     if save_data:
@@ -111,11 +114,15 @@ while True:
         data_buffer['kf_base_joint_ori'].append(list(msg.kf_base_joint_ori))
         data_buffer['timestamp'].append(msg.timestamp)
 
+    # Wait for c++ camera script to send data (20hz)
+    # Note that since we have conflate=True, we will only get the latest image
     rgb_img = rgb_streaming_socket.recv()
     stereo_img = stereo_streaming_socket.recv()
     if save_data:
         data_buffer['obs/rgb'].append(list(rgb_img))
         data_buffer['obs/stereo'].append(list(stereo_img))
+
+        # if we go from controlling the robot to not controlling the robot, save it
         vr_ready = msg.vr_ready
         if not vr_ready and vr_ready_prev:
             print("Saving data...")
