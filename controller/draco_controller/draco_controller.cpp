@@ -380,6 +380,7 @@ void DracoController::_SaveData() {
                std::chrono::duration_cast<std::chrono::milliseconds>(
                    std::chrono::system_clock::now().time_since_epoch())
                    .count());
+
   // keep track of VR data
   DracoVRCommands cmd =
       DracoVRTeleopManager::GetVRTeleopManager()->prev_commands;
