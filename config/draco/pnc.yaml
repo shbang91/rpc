@@ -1,6 +1,6 @@
 servo_dt: 0.00125
 
-ip_address: "tcp://127.0.0.1:5557"
+ip_address: "tcp://*:5557"
 #vr_ip_address: "tcp://192.168.50.50:5555"
 vr_ip_address: "tcp://192.168.1.217:5555"
 
@@ -289,7 +289,7 @@ state_machine:
     initialize:
       init_duration: 5.
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      target_joint_pos: [0., 0.052, -0.785, 0.785, 0.785, -0.785, -0.052, 0., 0.523, 0., -1.57, 0., 0., 0.3, 0., -0.052, -0.785, 0.785, 0.785, -0.785, 0.052, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [0., 0.052, -0.785, 0.785, 0.785, -0.785, -0.052, 0., 0.523, 0., -1.57, 0., 0., 0.5, 0., -0.052, -0.785, 0.785, 0.785, -0.785, 0.052, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
       wait_time: 10.
 
