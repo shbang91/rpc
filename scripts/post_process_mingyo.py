@@ -62,9 +62,9 @@ from scipy.spatial.transform import Rotation as R
 parser = argparse.ArgumentParser()
 # take in the path to the directory containing the hdf5 files as a positional argument
 parser.add_argument(
-    "path", help="the path to the directory containing the hdf5 files")
+    "--path", "-p", help="the path to the directory containing the hdf5 files")
 parser.add_argument(
-    "--output", "-o", help="the output HDF5 file", default="dataset.hdf5")
+    "--output", "-o", help="the output HDF5 file", default="dataset_mingyo.hdf5")
 args = parser.parse_args()
 
 output_file = h5py.File(args.output, "w")
@@ -92,8 +92,22 @@ for root, dirs, files in os.walk(args.path, topdown=False):
                     demo_file['obs/joint_pos']), demo_file['obs/joint_vel']), axis=1), compression="gzip", chunks=True, dtype="f")
                 for key in demo_file['obs'].keys():
                     # don't need joint pos/vel since we already have joint, and state doesn't matter for fixed base
-                    if key not in ["joint_pos", "joint_vel", "state"]:
+                    if key not in ["joint_pos", "joint_vel", "state", "stereo", "rgb"]:
                         demo_file.copy(demo_file[f"obs/{key}"], obs_group, key)
+
+                    if key == "rgb":
+                        demo_file.copy(demo_file[f"obs/{key}"], obs_group, key)
+
+                    if key == "stereo":
+                        obs_group.create_dataset('{}_0'.format(key),
+                                                data=np.copy(demo_file[f"obs/{key}"][:,:,:400]),
+                                                compression="gzip", chunks=True, dtype='uint8')
+                        obs_group.create_dataset('{}_1'.format(key),
+                                                data=np.copy(demo_file[f"obs/{key}"][:,:,400:]),
+                                                compression="gzip", chunks=True, dtype='uint8')
+
+
+                # TODO: flatten video?
 
                 # flatten actions
                 act_discrete = np.column_stack(
@@ -102,8 +116,10 @@ for root, dirs, files in os.walk(args.path, topdown=False):
                 # compute delta pos for trajectory
                 act_trajecory_right_pos = demo_file['action/local_rh_pos']
                 act_trajecory_left_pos = demo_file['action/local_lh_pos']
-                act_trajecory_right_quat = demo_file['action/local_rh_ori']
+                #act_trajecory_right_quat = demo_file['action/local_rh_ori']
+                act_trajecory_right_quat=np.repeat([[0, 0, 0, 1]], demo_file['action/local_rh_ori'].shape[0], axis=0)
                 act_trajecory_left_quat = demo_file['action/local_lh_ori']
+                print(act_trajecory_right_quat.shape)
 
                 act_trajecory_right_delta_pos = np.copy(
                     act_trajecory_right_pos)
