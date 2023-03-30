@@ -13,10 +13,44 @@ SingleSupportSwing::SingleSupportSwing(StateId state_id,
                                        DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), swing_height_(0.) {
 
-  if (state_id_ == draco_states::kLFSingleSupportSwing)
+  if (state_id_ == draco_states::kLFSingleSupportSwing) {
     util::PrettyConstructor(2, "kLFSingleSupportSwing");
-  else if (state_id_ == draco_states::kRFSingleSupportSwing)
+    // contact_vector_.clear();
+    // contact_vector_.push_back(
+    // ctrl_arch_->tci_container_->contact_map_["rf_contact"]);
+
+    // task_vector_.clear();
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["lf_pos_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["lf_ori_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["com_xy_task"]);
+    // task_vector_.push_back(ctrl_arch_->tci_container_->task_map_["com_z_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["torso_ori_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["upper_body_task"]);
+
+  } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
     util::PrettyConstructor(2, "kRFSingleSupportSwing");
+    // contact_vector_.clear();
+    // contact_vector_.push_back(
+    // ctrl_arch_->tci_container_->contact_map_["lf_contact"]);
+
+    // task_vector_.clear();
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["rf_pos_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["rf_ori_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["com_xy_task"]);
+    // task_vector_.push_back(ctrl_arch_->tci_container_->task_map_["com_z_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["torso_ori_task"]);
+    // task_vector_.push_back(
+    // ctrl_arch_->tci_container_->task_map_["upper_body_task"]);
+  }
 
   sp_ = DracoStateProvider::GetStateProvider();
 }
@@ -26,6 +60,9 @@ void SingleSupportSwing::FirstVisit() {
   end_time_ = ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetSwingTime();
 
   int curr_foot_step_idx = ctrl_arch_->dcm_tm_->GetCurrentFootStepIdx();
+
+  // ctrl_arch_->tci_container_->contact_vector_ = contact_vector_;
+  // ctrl_arch_->tci_container_->task_vector_ = task_vector_;
 
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
     std::cout << "draco_states::kLFSingleSupportSwing" << std::endl;

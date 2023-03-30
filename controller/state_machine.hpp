@@ -1,8 +1,12 @@
 #pragma once
 #include "util/util.hpp"
 
+#include <vector>
+
 typedef int StateId;
 class PinocchioRobotSystem;
+class Task;
+class Contact;
 
 class StateMachine {
 public:
@@ -28,4 +32,7 @@ protected:
   double state_machine_start_time_;
   double state_machine_time_;
   double end_time_;
+
+  // std::vector<Task *> task_vector_;
+  // std::vector<Contact *> contact_vector_;
 };
