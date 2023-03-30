@@ -133,12 +133,12 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
 bool WBIC::MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
                       const std::vector<ForceTask *> &force_task_vector,
                       const std::map<std::string, Contact *> &contact_map,
-                      Eigen::VectorXd &jtrq_cmd, WBICData *qp_data) {
+                      Eigen::VectorXd &jtrq_cmd, WBICData *wbic_data) {
   if (!b_update_setting_)
     printf("[Warning] WBIC setting is not done\n");
 
   // qp_data
-  qp_data_ = qp_data;
+  wbic_data_ = wbic_data;
 
   // build contact Jacobian(Jc_), Uf(Uf_mat_), Uf_vec(Uf_vec_)
   _BuildContactMtxVect(contact_map);
@@ -211,9 +211,9 @@ void WBIC::_SetQPCost() {
   H_ = Eigen::MatrixXd::Zero(num_floating_ + dim_contact_,
                              num_floating_ + dim_contact_);
   H_.topLeftCorner(num_floating_, num_floating_) =
-      (qp_data_->W_delta_qddot_).asDiagonal();
+      (wbic_data_->qp_params_->W_delta_qddot_).asDiagonal();
   H_.bottomRightCorner(dim_contact_, dim_contact_) =
-      (qp_data_->W_delta_rf_).asDiagonal();
+      (wbic_data_->qp_params_->W_delta_rf_).asDiagonal();
 }
 
 void WBIC::_SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd) {
@@ -255,8 +255,8 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
   // qp.solve();
 
   // Eigen::VectorXd opt_sol = qp.results.x; // primal results
-  // qp_data_->delta_qddot_ = opt_sol.head(num_floating_);
-  // qp_data_->delta_rf_ = opt_sol.tail(dim_contact_);
+  // wbic_data_->delta_qddot_ = opt_sol.head(num_floating_);
+  // wbic_data_->delta_rf_ = opt_sol.tail(dim_contact_);
   //
   // std::cout << "primal residual: " << qp.results.info.pri_res << std::endl;
   // std::cout << "dual residual: " << qp.results.info.dua_res << std::endl;
@@ -311,28 +311,28 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
   }
 
   // save data
-  qp_data_->delta_qddot_ = qp_sol.head(num_floating_);
-  qp_data_->delta_rf_ = qp_sol.tail(dim_contact_);
-  qp_data_->corrected_wbc_qddot_cmd_ = wbc_qddot_cmd;
-  qp_data_->corrected_wbc_qddot_cmd_.head(num_floating_) +=
-      qp_data_->delta_qddot_;
-  qp_data_->rf_cmd_ = des_rf_ + qp_data_->delta_rf_;
+  wbic_data_->delta_qddot_ = qp_sol.head(num_floating_);
+  wbic_data_->delta_rf_ = qp_sol.tail(dim_contact_);
+  wbic_data_->corrected_wbc_qddot_cmd_ = wbc_qddot_cmd;
+  wbic_data_->corrected_wbc_qddot_cmd_.head(num_floating_) +=
+      wbic_data_->delta_qddot_;
+  wbic_data_->rf_cmd_ = des_rf_ + wbic_data_->delta_rf_;
 
   // TEST
   // std::cout << "========================================================"
   //<< std::endl;
-  // util::PrettyPrint(qp_data_->delta_qddot_, std::cout, "delta_qddot sol");
-  // util::PrettyPrint(qp_data_->delta_rf_, std::cout, "delta_rf sol");
+  // util::PrettyPrint(wbic_data_->delta_qddot_, std::cout, "delta_qddot sol");
+  // util::PrettyPrint(wbic_data_->delta_rf_, std::cout, "delta_rf sol");
 }
 
 void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
   Eigen::VectorXd trq_trc =
       M_.bottomRows(num_qdot_ - num_floating_) *
-          qp_data_->corrected_wbc_qddot_cmd_ +
+          wbic_data_->corrected_wbc_qddot_cmd_ +
       Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
           (cori_ + grav_) -
       (Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
-          (qp_data_->rf_cmd_);
+          (wbic_data_->rf_cmd_);
 
   Eigen::MatrixXd UNi_trc =
       (sa_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_);

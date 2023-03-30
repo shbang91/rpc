@@ -72,7 +72,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
   // wbc initialize
   wbic_ = new WBIC(act_list, &Ji);
-  wbic_data_ = new WBICData(num_float, num_qdot);
+  wbic_data_ = new WBICData(num_float, num_qdot, tci_container_->qp_params_);
 
   // read yaml & set params
   try {
@@ -181,12 +181,6 @@ void DracoController::GetCommand(void *command) {
                              tci_container_->contact_vector_, joint_pos_cmd_,
                              joint_vel_cmd_, wbc_qddot_cmd_);
 
-    // TODO: move this inside each state machines
-    wbic_data_->W_delta_qddot_ = Eigen::VectorXd::Constant(6, 1e4);
-    wbic_data_->W_delta_rf_ = Eigen::VectorXd::Constant(rf_dim, 1);
-    wbic_data_->W_delta_rf_.head<3>() = Eigen::Vector3d::Constant(100);
-    wbic_data_->W_delta_rf_.segment<3>(rf_dim / 2) =
-        Eigen::Vector3d::Constant(100);
     // Clock clock;
     // clock.Start();
     wbic_->MakeTorque(wbc_qddot_cmd_, tci_container_->force_task_vector_,

@@ -7,6 +7,7 @@
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
+#include "controller/whole_body_controller/wbic/wbic.hpp"
 
 #include <utility>
 
@@ -101,6 +102,11 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   force_task_vector_.push_back(rf_reaction_force_task_);
 
   //=============================================================
+  // QP Params
+  //=============================================================
+  qp_params_ = new QPParams(6, lf_contact_->Dim() + rf_contact_->Dim());
+
+  //=============================================================
   // Tasks, Contacts parameter initialization
   //=============================================================
   try {
@@ -133,6 +139,8 @@ DracoTCIContainer::~DracoTCIContainer() {
   // force task
   delete lf_reaction_force_task_;
   delete rf_reaction_force_task_;
+  // QP Params
+  delete qp_params_;
 }
 
 void DracoTCIContainer::_InitializeParameters(const bool b_sim) {

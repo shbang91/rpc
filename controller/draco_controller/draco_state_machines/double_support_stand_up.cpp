@@ -3,11 +3,13 @@
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
 
@@ -62,6 +64,16 @@ void DoubleSupportStandUp::FirstVisit() {
       rf_z_max_interp_duration_);
   ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
+
+  // QP params
+  ctrl_arch_->tci_container_->qp_params_->W_delta_qddot_ =
+      Eigen::VectorXd::Constant(6, 1e4);
+  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_ =
+      Eigen::VectorXd::Constant(12, 1);
+  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_.head<3>() =
+      Eigen::Vector3d::Constant(100);
+  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_.segment<3>(6) =
+      Eigen::Vector3d::Constant(100);
 
   // initialize reaction force tasks
   // smoothly increase the fz in world frame

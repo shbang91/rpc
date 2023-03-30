@@ -41,7 +41,7 @@ state_estimator:
   exp_num_data_base_accel: [10, 10, 10]
   exp_num_data_ang_vel: [5, 5, 5]
 
-  ## for simulation please use 000000000
+  ## for simulation please use 0
   com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
@@ -71,9 +71,9 @@ wbc:
       ########################################################################
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_kp : [0., 0.]
+      sim_icp_kp : [5., 5.]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
-      sim_icp_ki : [10., 10.] 
+      sim_icp_ki : [0., 0.] 
 
       ## IF icp_integrator_type == 0:
       sim_time_constant : 0.001
@@ -108,8 +108,8 @@ wbc:
       sim_com_kp : [100.]
       sim_com_kd : [5.]
 
-      sim_base_kp : [100.]
-      sim_base_kd : [5.] # x, y will be ignored
+      sim_base_kp : [700.]
+      sim_base_kd : [50.] # x, y will be ignored
 
       ########################################################################
       ## exp params

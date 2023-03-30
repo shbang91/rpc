@@ -13,23 +13,35 @@ class Contact;
 class InternalConstraint;
 class ForceTask;
 
-class WBICData {
-public:
-  WBICData(int num_float, int num_qdot) {
+struct QPParams {
+  QPParams(int num_float, int dim_contact) {
     W_delta_qddot_ = Eigen::VectorXd::Zero(num_float);
+    W_delta_rf_ = Eigen::VectorXd::Zero(dim_contact);
+  }
+  ~QPParams() = default;
+
+  Eigen::VectorXd W_delta_qddot_;
+  Eigen::VectorXd W_delta_rf_;
+};
+
+struct WBICData {
+  WBICData(int num_float, int num_qdot, QPParams *qp_params) {
+    qp_params_ = qp_params;
     delta_qddot_ = Eigen::VectorXd::Zero(num_float);
+    delta_rf_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
     corrected_wbc_qddot_cmd_ = Eigen::VectorXd::Zero(num_qdot);
+    rf_cmd_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
   };
   ~WBICData() = default;
 
-  // input
-  Eigen::VectorXd W_delta_qddot_;
-  Eigen::VectorXd W_delta_rf_;
+  // QP input
+  QPParams *qp_params_;
 
-  // output
+  // QP result
   Eigen::VectorXd delta_qddot_;
   Eigen::VectorXd delta_rf_;
 
+  // WBIC result
   Eigen::VectorXd corrected_wbc_qddot_cmd_;
   Eigen::VectorXd rf_cmd_;
 };
@@ -51,7 +63,7 @@ public:
   bool MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
                   const std::vector<ForceTask *> &force_task_vector,
                   const std::map<std::string, Contact *> &contact_map,
-                  Eigen::VectorXd &jtrq_cmd, WBICData *qp_data);
+                  Eigen::VectorXd &jtrq_cmd, WBICData *wbic_data);
 
 private:
   void _PseudoInverse(const Eigen::MatrixXd &jac, Eigen::MatrixXd &jac_inv);
@@ -87,8 +99,8 @@ private:
   // reaction force
   Eigen::VectorXd des_rf_;
 
-  // QP variables
-  WBICData *qp_data_;
+  // WBIC data
+  WBICData *wbic_data_;
 
   //=======================================================================
   // ProxQP

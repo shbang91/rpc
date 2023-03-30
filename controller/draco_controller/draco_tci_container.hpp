@@ -2,10 +2,14 @@
 #include "controller/whole_body_controller/tci_container.hpp"
 #include "util/util.hpp"
 
+class QPParams;
+
 class DracoTCIContainer : public TCIContainer {
 public:
   DracoTCIContainer(PinocchioRobotSystem *robot);
   virtual ~DracoTCIContainer();
+
+  QPParams *qp_params_;
 
 private:
   Task *jpos_task_;
