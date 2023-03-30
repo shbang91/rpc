@@ -82,8 +82,8 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 
   // foot task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
 
   //  increase maximum normal reaction force
   ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);

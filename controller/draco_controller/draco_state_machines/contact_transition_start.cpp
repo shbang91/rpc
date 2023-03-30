@@ -153,8 +153,8 @@ void ContactTransitionStart::OneStep() {
   ctrl_arch_->dcm_tm_->UpdateDesired(sp_->current_time_);
 
   // foot pose task update
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
 
   // contact max normal force & foot task hierarchy update
   if (state_id_ == draco_states::kLFContactTransitionStart) {

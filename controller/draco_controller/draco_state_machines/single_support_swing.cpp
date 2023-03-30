@@ -143,10 +143,10 @@ void SingleSupportSwing::OneStep() {
   // foot task update
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
     ctrl_arch_->lf_SE3_tm_->UpdateDesired(state_machine_time_);
-    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    // ctrl_arch_->rf_SE3_tm_->UseCurrent();
   } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
     ctrl_arch_->rf_SE3_tm_->UpdateDesired(state_machine_time_);
-    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    // ctrl_arch_->lf_SE3_tm_->UseCurrent();
   }
 }
 

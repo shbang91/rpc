@@ -37,8 +37,8 @@ void DoubleSupportBalance::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   // update foot pose task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
 }
 
 bool DoubleSupportBalance::EndOfState() {
