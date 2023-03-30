@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 """A script to execute the neural network policy on the real robot
 or saves the demonstration data for training. 
 
@@ -37,7 +38,6 @@ The data is saved in the following format:
 
 """
 import numpy as np
-from messages.draco_pb2 import *
 import h5py
 import collections
 import argparse
@@ -49,6 +49,7 @@ import time
 cwd = os.getcwd()
 sys.path.append(cwd + '/build')
 sys.path.append(cwd)
+from messages.draco_pb2 import * #noqa
 
 
 parser = argparse.ArgumentParser()
