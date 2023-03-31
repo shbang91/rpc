@@ -76,6 +76,10 @@ class DemoCollector:
                 list(msg.kf_base_joint_pos))
             self.data_buffer['kf_base_joint_ori'].append(
                 list(msg.kf_base_joint_ori))
+            self.data_buffer['global_base_pos'].append(
+                list(msg.global_base_pos))
+            self.data_buffer['global_base_ori'].append(
+                list(msg.global_base_ori))
             self.data_buffer['timestamp'].append(msg.timestamp)
 
             # camera data
@@ -132,5 +136,7 @@ class DemoCollector:
                             'est_base_joint_ori': collections.deque(),
                             'kf_base_joint_pos': collections.deque(),
                             'kf_base_joint_ori': collections.deque(),
+                            'global_base_pos': collections.deque(),
+                            'global_base_ori': collections.deque(),
                             'timestamp': collections.deque(),
                             }

@@ -107,6 +107,8 @@ void DracoDataManager::SendData() {
 
     msg.add_action_local_lh_pos(data_->action_local_lh_pos_[i]);
     msg.add_action_local_rh_pos(data_->action_local_rh_pos_[i]);
+
+    msg.add_global_base_pos(data_->global_base_pos[i]);
   }
 
   for (int i(0); i < 4; i++) {
@@ -122,6 +124,8 @@ void DracoDataManager::SendData() {
 
     msg.add_action_local_lh_ori(data_->action_local_lh_ori_[i]);
     msg.add_action_local_rh_ori(data_->action_local_rh_ori_[i]);
+
+    msg.add_global_base_ori(data_->global_base_ori[i]);
   }
 
   msg.set_timestamp(data_->timestamp);

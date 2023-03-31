@@ -107,6 +107,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   Eigen::Vector3d target_lh_pos;
   Eigen::Quaterniond target_rh_quat;
   Eigen::Quaterniond target_lh_quat;
+  Eigen::Vector3d base_pos;
+  Eigen::Quaterniond base_quat;
   DracoVRCommands cmd;
   bool vr_ready;
   if (sp_->count_ % sp_->vr_teleop_freq_ == 0) {
@@ -158,9 +160,9 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
     Eigen::Isometry3d torso_iso =
         robot_->GetLinkIsometry(draco_link::torso_com_link);
-    Eigen::Vector3d base_pos = torso_iso.translation();
+    base_pos = torso_iso.translation();
     Eigen::Matrix3d rot_world_to_base = torso_iso.linear();
-    Eigen::Quaterniond base_quat(rot_world_to_base);
+    base_quat = rot_world_to_base;
 
     target_rh_pos = rot_world_to_base * clamped_rh_pos + base_pos;
     target_lh_pos = rot_world_to_base * clamped_lh_pos + base_pos;
@@ -239,6 +241,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     dm->data_->action_local_rh_pos_ = target_rh_pos;
     dm->data_->action_local_lh_ori_ = target_lh_quat.coeffs();
     dm->data_->action_local_rh_ori_ = target_rh_quat.coeffs();
+    dm->data_->global_base_pos = base_pos;
+    dm->data_->global_base_ori = base_quat.coeffs();
     dm->data_->l_gripper = cmd.l_bump;
     dm->data_->r_gripper = cmd.r_bump;
     dm->data_->vr_ready = vr_ready;

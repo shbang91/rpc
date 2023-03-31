@@ -3,6 +3,7 @@
 #include "draco.pb.h" //in build/messages/
 #include "draco_definition.hpp"
 #include <Eigen/Dense>
+#include <Eigen/src/Geometry/Transform.h>
 #include <memory>
 #include <zmq.hpp>
 
@@ -101,6 +102,9 @@ public:
   Eigen::Vector3d rf_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kd = Eigen::Vector3d::Zero();
+
+  Eigen::Vector3d global_base_pos = Eigen::Vector3d::Zero();
+  Eigen::VectorXd global_base_ori = Eigen::VectorXd::Zero(4);
 
   bool l_gripper = false;
   bool r_gripper = false;

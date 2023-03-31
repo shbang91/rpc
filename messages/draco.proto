@@ -88,12 +88,15 @@ message pnc_msg {
   repeated float action_local_lh_ori = 60;
   repeated float action_local_rh_ori = 61;
 
-  bool l_gripper = 62;
-  bool r_gripper = 63;
-  bool vr_ready = 64;
+  repeated float global_base_pos = 62;
+  repeated float global_base_ori = 63;
 
-  float timestamp = 65;
-  uint32 state = 66;
+  bool l_gripper = 64;
+  bool r_gripper = 65;
+  bool vr_ready = 66;
+
+  float timestamp = 67;
+  uint32 state = 68;
 }
 
 message vr_teleop_msg {
