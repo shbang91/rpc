@@ -347,23 +347,41 @@ void DracoController::_SaveData() {
   dm->data_->rf_ori_kd = tci_container_->task_map_["rf_ori_task"]->Kd();
 
   // things needed for NN
-  dm->data_->local_lf_ori_ =
-      tci_container_->task_map_["lf_ori_task"]->CurrentLocalPos();
-  dm->data_->local_rf_ori_ =
-      tci_container_->task_map_["rf_ori_task"]->CurrentLocalPos();
-  dm->data_->local_lf_pos_ =
-      tci_container_->task_map_["lf_pos_task"]->CurrentLocalPos();
-  dm->data_->local_rf_pos_ =
-      tci_container_->task_map_["rf_pos_task"]->CurrentLocalPos();
+  dm->data_->act_global_lf_ori_ =
+      tci_container_->task_map_["lf_ori_task"]->CurrentPos();
+  dm->data_->act_global_rf_ori_ =
+      tci_container_->task_map_["rf_ori_task"]->CurrentPos();
+  dm->data_->act_global_lf_pos_ =
+      tci_container_->task_map_["lf_pos_task"]->CurrentPos();
+  dm->data_->act_global_rf_pos_ =
+      tci_container_->task_map_["rf_pos_task"]->CurrentPos();
 
-  dm->data_->local_lh_ori_ =
-      tci_container_->task_map_["lh_ori_task"]->CurrentLocalPos();
-  dm->data_->local_rh_ori_ =
-      tci_container_->task_map_["rh_ori_task"]->CurrentLocalPos();
-  dm->data_->local_lh_pos_ =
-      tci_container_->task_map_["lh_pos_task"]->CurrentLocalPos();
-  dm->data_->local_rh_pos_ =
-      tci_container_->task_map_["rh_pos_task"]->CurrentLocalPos();
+  dm->data_->act_global_lh_ori_ =
+      tci_container_->task_map_["lh_ori_task"]->CurrentPos();
+  dm->data_->act_global_rh_ori_ =
+      tci_container_->task_map_["rh_ori_task"]->CurrentPos();
+  dm->data_->act_global_lh_pos_ =
+      tci_container_->task_map_["lh_pos_task"]->CurrentPos();
+  dm->data_->act_global_rh_pos_ =
+      tci_container_->task_map_["rh_pos_task"]->CurrentPos();
+
+  dm->data_->des_global_lf_ori_ =
+      tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+  dm->data_->des_global_rf_ori_ =
+      tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+  dm->data_->des_global_lf_pos_ =
+      tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+  dm->data_->des_global_rf_pos_ =
+      tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+
+  dm->data_->des_global_lh_ori_ =
+      tci_container_->task_map_["lh_ori_task"]->DesiredPos();
+  dm->data_->des_global_rh_ori_ =
+      tci_container_->task_map_["rh_ori_task"]->DesiredPos();
+  dm->data_->des_global_lh_pos_ =
+      tci_container_->task_map_["lh_pos_task"]->DesiredPos();
+  dm->data_->des_global_rh_pos_ =
+      tci_container_->task_map_["rh_pos_task"]->DesiredPos();
 
   dm->data_->timestamp =
       std::chrono::duration_cast<std::chrono::milliseconds>(

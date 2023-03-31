@@ -21,14 +21,42 @@ class DemoCollector:
             self.data_buffer['obs/joint_pos'].append(list(msg.joint_positions))
             self.data_buffer['obs/joint_vel'].append(
                 list(msg.joint_velocities))
-            self.data_buffer['obs/local_lh_pos'].append(list(msg.local_lh_pos))
-            self.data_buffer['obs/local_rh_pos'].append(list(msg.local_rh_pos))
-            self.data_buffer['obs/local_lf_pos'].append(list(msg.local_lf_pos))
-            self.data_buffer['obs/local_rf_pos'].append(list(msg.local_rf_pos))
-            self.data_buffer['obs/local_lh_ori'].append(list(msg.local_lh_ori))
-            self.data_buffer['obs/local_rh_ori'].append(list(msg.local_rh_ori))
-            self.data_buffer['obs/local_lf_ori'].append(list(msg.local_lf_ori))
-            self.data_buffer['obs/local_rf_ori'].append(list(msg.local_rf_ori))
+
+            # hand and feet poses
+            self.data_buffer['obs/act_global_lh_pos'].append(
+                list(msg.act_global_lh_pos))
+            self.data_buffer['obs/act_global_rh_pos'].append(
+                list(msg.act_global_rh_pos))
+            self.data_buffer['obs/act_global_lf_pos'].append(
+                list(msg.act_global_lf_pos))
+            self.data_buffer['obs/act_global_rf_pos'].append(
+                list(msg.act_global_rf_pos))
+            self.data_buffer['obs/act_global_lh_ori'].append(
+                list(msg.act_global_lh_ori))
+            self.data_buffer['obs/act_global_rh_ori'].append(
+                list(msg.act_global_rh_ori))
+            self.data_buffer['obs/act_global_lf_ori'].append(
+                list(msg.act_global_lf_ori))
+            self.data_buffer['obs/act_global_rf_ori'].append(
+                list(msg.act_global_rf_ori))
+
+            self.data_buffer['obs/des_global_lh_pos'].append(
+                list(msg.des_global_lh_pos))
+            self.data_buffer['obs/des_global_rh_pos'].append(
+                list(msg.des_global_rh_pos))
+            self.data_buffer['obs/des_global_lf_pos'].append(
+                list(msg.des_global_lf_pos))
+            self.data_buffer['obs/des_global_rf_pos'].append(
+                list(msg.des_global_rf_pos))
+            self.data_buffer['obs/des_global_lh_ori'].append(
+                list(msg.des_global_lh_ori))
+            self.data_buffer['obs/des_global_rh_ori'].append(
+                list(msg.des_global_rh_ori))
+            self.data_buffer['obs/des_global_lf_ori'].append(
+                list(msg.des_global_lf_ori))
+            self.data_buffer['obs/des_global_rf_ori'].append(
+                list(msg.des_global_rf_ori))
+
             self.data_buffer['obs/state'].append(msg.state)
             self.data_buffer['action/l_gripper'].append(msg.l_gripper)
             self.data_buffer['action/r_gripper'].append(msg.r_gripper)
@@ -73,14 +101,24 @@ class DemoCollector:
     def clear_buffer(self):
         self.data_buffer = {'obs/joint_pos': collections.deque(),
                             'obs/joint_vel': collections.deque(),
-                            'obs/local_lh_pos': collections.deque(),
-                            'obs/local_rh_pos': collections.deque(),
-                            'obs/local_lf_pos': collections.deque(),
-                            'obs/local_rf_pos':  collections.deque(),
-                            'obs/local_lh_ori': collections.deque(),
-                            'obs/local_rh_ori': collections.deque(),
-                            'obs/local_lf_ori': collections.deque(),
-                            'obs/local_rf_ori': collections.deque(),
+                            'obs/act_global_lh_pos': collections.deque(),
+                            'obs/act_global_rh_pos': collections.deque(),
+                            'obs/act_global_lf_pos': collections.deque(),
+                            'obs/act_global_rf_pos':  collections.deque(),
+                            'obs/act_global_lh_ori': collections.deque(),
+                            'obs/act_global_rh_ori': collections.deque(),
+                            'obs/act_global_lf_ori': collections.deque(),
+                            'obs/act_global_rf_ori': collections.deque(),
+
+                            'obs/des_global_lh_pos': collections.deque(),
+                            'obs/des_global_rh_pos': collections.deque(),
+                            'obs/des_global_lf_pos': collections.deque(),
+                            'obs/des_global_rf_pos':  collections.deque(),
+                            'obs/des_global_lh_ori': collections.deque(),
+                            'obs/des_global_rh_ori': collections.deque(),
+                            'obs/des_global_lf_ori': collections.deque(),
+                            'obs/des_global_rf_ori': collections.deque(),
+
                             'obs/state': collections.deque(),
                             'obs/rgb': collections.deque(),
                             'obs/stereo': collections.deque(),

@@ -63,27 +63,37 @@ message pnc_msg {
   // Neural Network data collection
   repeated float joint_velocities = 41;
 
-  repeated float local_lh_pos = 42;
-  repeated float local_rh_pos = 43;
-  repeated float local_lh_ori = 44;
-  repeated float local_rh_ori = 45;
+  repeated float act_global_lh_pos = 42;
+  repeated float act_global_rh_pos = 43;
+  repeated float act_global_lh_ori = 44;
+  repeated float act_global_rh_ori = 45;
 
-  repeated float action_local_lh_pos = 46;
-  repeated float action_local_rh_pos = 47;
-  repeated float action_local_lh_ori = 48;
-  repeated float action_local_rh_ori = 49;
+  repeated float act_global_lf_pos = 46;
+  repeated float act_global_rf_pos = 47;
+  repeated float act_global_lf_ori = 48;
+  repeated float act_global_rf_ori = 49;
 
-  repeated float local_lf_pos = 50;
-  repeated float local_rf_pos = 51;
-  repeated float local_lf_ori = 52;
-  repeated float local_rf_ori = 53;
+  repeated float des_global_lh_pos = 50;
+  repeated float des_global_rh_pos = 51;
+  repeated float des_global_lh_ori = 52;
+  repeated float des_global_rh_ori = 53;
 
-  bool l_gripper = 54;
-  bool r_gripper = 55;
-  bool vr_ready = 56;
+  repeated float des_global_lf_pos = 54;
+  repeated float des_global_rf_pos = 55;
+  repeated float des_global_lf_ori = 56;
+  repeated float des_global_rf_ori = 57;
 
-  float timestamp = 57;
-  uint32 state = 58;
+  repeated float action_local_lh_pos = 58;
+  repeated float action_local_rh_pos = 59;
+  repeated float action_local_lh_ori = 60;
+  repeated float action_local_rh_ori = 61;
+
+  bool l_gripper = 62;
+  bool r_gripper = 63;
+  bool vr_ready = 64;
+
+  float timestamp = 65;
+  uint32 state = 66;
 }
 
 message vr_teleop_msg {

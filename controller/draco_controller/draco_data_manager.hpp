@@ -38,20 +38,30 @@ public:
   Eigen::VectorXd lfoot_ori_ = Eigen::VectorXd::Zero(4);
   Eigen::VectorXd rfoot_ori_ = Eigen::VectorXd::Zero(4);
 
-  Eigen::VectorXd local_lh_pos_ = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd local_rh_pos_ = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd local_lh_ori_ = Eigen::VectorXd::Zero(4);
-  Eigen::VectorXd local_rh_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd act_global_lh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd act_global_rh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd act_global_lh_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd act_global_rh_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd act_global_lf_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd act_global_rf_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd act_global_lf_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd act_global_rf_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd des_global_lh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_global_rh_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_global_lh_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd des_global_rh_ori_ = Eigen::VectorXd::Zero(4);
+
+  Eigen::VectorXd des_global_lf_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_global_rf_pos_ = Eigen::VectorXd::Zero(3);
+  Eigen::VectorXd des_global_lf_ori_ = Eigen::VectorXd::Zero(4);
+  Eigen::VectorXd des_global_rf_ori_ = Eigen::VectorXd::Zero(4);
 
   Eigen::VectorXd action_local_lh_pos_ = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd action_local_rh_pos_ = Eigen::VectorXd::Zero(3);
   Eigen::VectorXd action_local_lh_ori_ = Eigen::VectorXd::Zero(4);
   Eigen::VectorXd action_local_rh_ori_ = Eigen::VectorXd::Zero(4);
-
-  Eigen::VectorXd local_lf_pos_ = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd local_rf_pos_ = Eigen::VectorXd::Zero(3);
-  Eigen::VectorXd local_lf_ori_ = Eigen::VectorXd::Zero(4);
-  Eigen::VectorXd local_rf_ori_ = Eigen::VectorXd::Zero(4);
 
   Eigen::VectorXd lfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd rfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
