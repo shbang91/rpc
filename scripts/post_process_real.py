@@ -92,12 +92,16 @@ for root, dirs, files in os.walk(args.path, topdown=False):
                     demo_file['obs/joint_pos']), demo_file['obs/joint_vel']), axis=1), compression="gzip", chunks=True, dtype="f")
                 for key in demo_file['obs'].keys():
                     # don't need joint pos/vel since we already have joint, and state doesn't matter for fixed base
-                    if key not in ["joint_pos", "joint_vel", "state"]:
+                    if key not in ["joint_pos", "joint_vel", "state", "act_global_lh_pos", "act_global_rh_pos", "act_global_lh_ori", "act_global_rh_ori", "act_global_lf_pos", "act_global_rf_pos", "act_global_lf_ori", "act_global_rf_ori"]:
                         demo_file.copy(demo_file[f"obs/{key}"], obs_group, key)
 
                 # flatten actions
                 act_discrete = np.column_stack(
                     [demo_file['action/l_gripper'], demo_file['action/r_gripper']])
+
+                # TODO: convert global to local
+
+                # TODO: uncompress image
 
                 # compute delta pos for trajectory
                 act_trajecory_right_pos = demo_file['action/local_rh_pos']
