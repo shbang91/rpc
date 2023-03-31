@@ -5,6 +5,7 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/qp_params_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
@@ -32,12 +33,27 @@ void ContactTransitionEnd::FirstVisit() {
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
+
+    // change left foot rf QP params
+    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
+    target_W_delta_rf.head<3>() = Eigen::Vector3d::Constant(500);
+    target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(5);
+    ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
+                                                        end_time_);
+
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     std::cout << "draco_states::kRFContactTransitionEnd" << std::endl;
     // =====================================================================
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
+
+    // change right foot rf QP params
+    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
+    target_W_delta_rf.segment<3>(6) = Eigen::Vector3d::Constant(500);
+    target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(5);
+    ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
+                                                        end_time_);
   }
 }
 
@@ -57,6 +73,9 @@ void ContactTransitionEnd::OneStep() {
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMin(state_machine_time_);
   }
+
+  // update qp params
+  ctrl_arch_->qp_pm_->UpdateWDeltaRfInterpolation(state_machine_time_);
 }
 
 bool ContactTransitionEnd::EndOfState() {

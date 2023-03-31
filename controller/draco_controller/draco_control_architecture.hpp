@@ -25,6 +25,7 @@ class EndEffectorTrajectoryManager;
 class DCMTrajectoryManager;
 class DracoStateProvider;
 class ForceTrajectoryManager;
+class QPParamsManager;
 
 // class LMPCHandler;
 
@@ -46,6 +47,7 @@ public:
   DCMTrajectoryManager *dcm_tm_;
   ForceTrajectoryManager *lf_force_tm_;
   ForceTrajectoryManager *rf_force_tm_;
+  QPParamsManager *qp_pm_;
 
 private:
   DracoController *controller_;

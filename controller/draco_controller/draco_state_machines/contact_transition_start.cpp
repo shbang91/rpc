@@ -7,6 +7,7 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/qp_params_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
@@ -49,6 +50,14 @@ void ContactTransitionStart::FirstVisit() {
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
+    // change right foot rf QP params
+    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
+    target_W_delta_rf.segment<3>(6) = Eigen::Vector3d::Constant(100);
+    target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(1);
+    ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(
+        target_W_delta_rf,
+        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+
     sp_->b_rf_contact_ = true;
 
   } else {
@@ -58,6 +67,14 @@ void ContactTransitionStart::FirstVisit() {
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
+        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+
+    // change left foot rf QP params
+    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
+    target_W_delta_rf.head<3>() = Eigen::Vector3d::Constant(100);
+    target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(1);
+    ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(
+        target_W_delta_rf,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     sp_->b_lf_contact_ = true;
@@ -162,6 +179,9 @@ void ContactTransitionStart::OneStep() {
   } else {
     ctrl_arch_->lf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
   }
+
+  // update qp params
+  ctrl_arch_->qp_pm_->UpdateWDeltaRfInterpolation(state_machine_time_);
 }
 
 bool ContactTransitionStart::EndOfState() {

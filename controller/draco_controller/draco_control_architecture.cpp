@@ -19,6 +19,7 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/qp_params_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
@@ -98,6 +99,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_force_tm_ = new ForceTrajectoryManager(
       tci_container_->force_task_map_["rf_force_task"], robot_);
 
+  qp_pm_ = new QPParamsManager(tci_container_->qp_params_);
+
   //=============================================================
   // initialize state machines
   //=============================================================
@@ -151,6 +154,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete dcm_tm_;
   delete lf_force_tm_;
   delete rf_force_tm_;
+  delete qp_pm_;
 
   // state machines
   delete state_machine_container_[draco_states::kInitialize];
