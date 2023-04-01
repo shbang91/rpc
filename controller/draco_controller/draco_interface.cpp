@@ -136,6 +136,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     }
     local_rh_pos[2] += .1;
     local_lh_pos[2] += .1;
+    local_rh_quat *= zero_rh_quat_
+    local_lh_quat *= zero_lh_quat_
     // std::cout << "left\n " << test_lh_pos << std::endl;
     // std::cout << "right\n " << test_rh_pos << std::endl;
 
@@ -166,8 +168,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
     target_rh_pos = rot_world_to_base * clamped_rh_pos + base_pos;
     target_lh_pos = rot_world_to_base * clamped_lh_pos + base_pos;
-    target_rh_quat = base_quat * local_rh_quat * zero_rh_quat_;
-    target_lh_quat = base_quat * local_lh_quat * zero_lh_quat_;
+    target_rh_quat = base_quat * local_rh_quat;
+    target_lh_quat = base_quat * local_lh_quat;
 
     /*
     clamped_lh_pos[0] = std::min(std::max(target_lh_pos[0], -.35), 0.);
