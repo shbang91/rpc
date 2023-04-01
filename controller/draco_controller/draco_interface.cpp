@@ -134,20 +134,19 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
           0.0,
           Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
     }
+    Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707,
+                                     0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
+    Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
+                                     0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
     local_rh_pos[2] += .1;
     local_lh_pos[2] += .1;
-    local_rh_quat *= zero_rh_quat_
-    local_lh_quat *= zero_lh_quat_
+    local_rh_quat *= zero_rh_quat_;
+    local_lh_quat *= zero_lh_quat_;
     // std::cout << "left\n " << test_lh_pos << std::endl;
     // std::cout << "right\n " << test_rh_pos << std::endl;
 
     Eigen::VectorXd clamped_rh_pos(3);
     Eigen::VectorXd clamped_lh_pos(3);
-
-    Eigen::Quaterniond zero_rh_quat_(0.707, 0.0, -0.707,
-                                     0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
-    Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
-                                     0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
 
     // std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
