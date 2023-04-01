@@ -16,6 +16,8 @@ class DemoCollector:
         self.clear_buffer()
 
     def save_data(self, msg, rgb_img, stereo_img):
+        print(msg.vr_ready)
+        print(msg.act_global_lh_pos)
         if msg.vr_ready:
             # control pc data
             self.data_buffer['obs/joint_pos'].append(list(msg.joint_positions))
@@ -86,7 +88,7 @@ class DemoCollector:
             self.data_buffer['obs/rgb'].append(np.frombuffer(rgb_img,
                                                              dtype=np.uint8).reshape(200, 400, 3))
             self.data_buffer['obs/stereo'].append(np.frombuffer(
-                stereo_img, dtype=np.uint8).reshape(200, 800, 1))
+                stereo_img, dtype=np.uint8).reshape(200, 800))
         elif self.vr_ready_prev:
             # if we go from controlling the robot to not controlling the robot, save it
             print("Saving data...")

@@ -92,27 +92,29 @@ for root, dirs, files in os.walk(args.path, topdown=False):
                     demo_file['obs/joint_pos']), demo_file['obs/joint_vel']), axis=1), compression="gzip", chunks=True, dtype="f")
                 for key in demo_file['obs'].keys():
                     # don't need joint pos/vel since we already have joint, and state doesn't matter for fixed base
-                    if key not in ["joint_pos", "joint_vel", "state", "rgb", "stereo"]:
+                    if key not in ["joint_pos", "joint_vel", "state"]:
                         demo_file.copy(demo_file[f"obs/{key}"], obs_group, key)
 
                 # flatten actions
                 act_discrete = np.column_stack(
                     [demo_file['action/l_gripper'], demo_file['action/r_gripper']])
 
-                # TODO: convert global to local
-                global_params = ["act_global_lh_pos", "act_global_rh_pos", "act_global_lh_ori", "act_global_rh_ori", "act_global_lf_pos", "act_global_rf_pos", "act_global_lf_ori", "act_global_rf_ori"]
-                rot_global_to_local = R.from_quat(demo_file['obs/global_base_ori']).inv()
-                global_base_pos = demo_file['obs/global_base_pos']
+                # convert global to local
+                global_params = ["obs/act_global_lh_pos", "obs/act_global_rh_pos", "obs/act_global_lh_ori", "obs/act_global_rh_ori", "obs/act_global_lf_pos", "obs/act_global_rf_pos", "obs/act_global_lf_ori", "obs/act_global_rf_ori"]
+                global_base_ori = R.from_quat(demo_file['global_base_ori'])
+                global_base_pos = demo_file['global_base_pos']
                 
                 for param in global_params:
                     if param.endswith("pos"):
-                        demo_file[param.replace("global", "local")] = rot_global_to_local * (demo_file[param] - global_base_pos)
+                        ep_group.create_dataset(param.replace("global", "local"), data = global_base_ori.apply(demo_file[param][()] - global_base_pos[()], inverse=True))
                     else: 
-                        demo_file[param.replace("global", "local")] = rot_global_to_local * demo_file[param]
+                        ep_group.create_dataset(param.replace("global", "local"), data = (global_base_ori.inv() * R.from_quat(demo_file[param])).as_quat())
+                print("global lh", demo_file['obs/act_global_lh_pos'][10])
+                print("local lh", ep_group['obs/act_local_lh_pos'][10])
 
-                # TODO: uncompress image
-                demo_file['obs/rbg'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
-                demo_file['obs/stereo'] = cv2.imdecode(demo_file['obs/stereo'], 0)
+                # uncompress image. Not doing compression right now
+                # demo_file['obs/rbg'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
+                # demo_file['obs/stereo'] = cv2.imdecode(demo_file['obs/stereo'], 0)
 
                 # compute delta pos for trajectory
                 act_trajecory_right_pos = demo_file['action/local_rh_pos']
