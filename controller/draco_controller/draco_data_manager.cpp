@@ -95,13 +95,13 @@ void DracoDataManager::SendData() {
     msg.add_rf_ori_kp(data_->rf_ori_kp[i]);
     msg.add_rf_ori_kd(data_->rf_ori_kd[i]);
 
-    msg.add_act_global_lh_pos(data_->act_global_lf_pos_[i]);
-    msg.add_act_global_rh_pos(data_->act_global_rf_pos_[i]);
+    msg.add_act_global_lh_pos(data_->act_global_lh_pos_[i]);
+    msg.add_act_global_rh_pos(data_->act_global_rh_pos_[i]);
     msg.add_act_global_lf_pos(data_->act_global_lf_pos_[i]);
     msg.add_act_global_rf_pos(data_->act_global_rf_pos_[i]);
 
-    msg.add_des_global_lh_pos(data_->des_global_lf_pos_[i]);
-    msg.add_des_global_rh_pos(data_->des_global_rf_pos_[i]);
+    msg.add_des_global_lh_pos(data_->des_global_lh_pos_[i]);
+    msg.add_des_global_rh_pos(data_->des_global_rh_pos_[i]);
     msg.add_des_global_lf_pos(data_->des_global_lf_pos_[i]);
     msg.add_des_global_rf_pos(data_->des_global_rf_pos_[i]);
 
