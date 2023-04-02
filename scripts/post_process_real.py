@@ -101,16 +101,19 @@ for root, dirs, files in os.walk(args.path, topdown=False):
 
                 # convert global to local
                 global_params = ["obs/act_global_lh_pos", "obs/act_global_rh_pos", "obs/act_global_lh_ori", "obs/act_global_rh_ori", "obs/act_global_lf_pos", "obs/act_global_rf_pos", "obs/act_global_lf_ori", "obs/act_global_rf_ori"]
-                global_base_ori = R.from_quat(demo_file['global_base_ori'])
+                # convert the quaternion from wxyz to xyzw
+                global_base_ori = R.from_quat(demo_file['global_base_ori'][()][:, [3, 0, 1, 2]])
                 global_base_pos = demo_file['global_base_pos']
                 
                 for param in global_params:
                     if param.endswith("pos"):
                         ep_group.create_dataset(param.replace("global", "local"), data = global_base_ori.apply(demo_file[param][()] - global_base_pos[()], inverse=True))
                     else: 
-                        ep_group.create_dataset(param.replace("global", "local"), data = (global_base_ori.inv() * R.from_quat(demo_file[param])).as_quat())
+                        ep_group.create_dataset(param.replace("global", "local"), data = (global_base_ori.inv() * R.from_quat(demo_file[param][()][:, [3, 0, 1, 2]])).as_quat())
                 print("global lh", demo_file['obs/act_global_lh_pos'][10])
                 print("local lh", ep_group['obs/act_local_lh_pos'][10])
+                print("global rh", demo_file['obs/act_global_rh_pos'][10])
+                print("local rh", ep_group['obs/act_local_rh_pos'][10])
 
                 # uncompress image. Not doing compression right now
                 # demo_file['obs/rbg'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)

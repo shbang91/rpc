@@ -47,6 +47,7 @@ note.txt
 
 .cache
 *.hdf5
+*.mat
 *.mp4
 
 /data
