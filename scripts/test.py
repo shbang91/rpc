@@ -11,6 +11,11 @@ args = parser.parse_args()
 
 
 f = h5py.File(args.file_path, "r")
+for i in range(len(f['obs/stereo'])):
+    img = f['obs/rgb'][i]
+    img_ra = np.array(img, dtype=np.uint8)
+    cv2.imshow('test', img)
+    cv2.waitKey(100)
 print('action/local_lh_pos', f['action/local_lh_pos'][40])
 print('obs/act_global_lh_pos', f['obs/act_global_lh_pos'][40])
 print('obs/des_global_lh_pos', f['obs/des_global_lh_pos'][40])

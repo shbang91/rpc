@@ -97,9 +97,15 @@ def main():
 
     demo_count = 0  # total number of episodes
     total = 0  # total number of steps
-    # open the hdf5 files
-    for root, dirs, files in os.walk(args.path, topdown=False):
-        for name in files:
+
+    # open the hdf5 files. Remove the ones in this list (for pruning)
+    idx_to_remove=[]
+    for root, dirs, files in os.walk(args.path, topdown=True):
+        for idx, name in enumerate(sorted(files)):
+            if idx in idx_to_remove:
+                print(name)
+                os.remove(os.path.join(root, name))
+                continue
             if name.endswith(".hdf5"):
                 with h5py.File(os.path.join(root, name)) as demo_file:
 
@@ -132,8 +138,12 @@ def main():
                             ep_group.create_dataset(param.replace("global", "local"), data = ori_global_to_local(global_base_ori, R.from_quat(demo_file[param][()][:, [3, 0, 1, 2]])))
 
                     # uncompress image. Not doing compression right now
-                    # demo_file['obs/rbg'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
+                    # demo_file['obs/rgb'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
                     # demo_file['obs/stereo'] = cv2.imdecode(demo_file['obs/stereo'], 0)
+
+                    # convert an opencv image to a rgb, rightside-up image
+                    #obs_group.create_dataset('rgb', data = np.flip(cv2.cvtColor(demo_file['obs/rgb'][()], cv2.COLOR_BGR2RGB), axis=1))
+                    #obs_group.create_dataset('stereo', data = np.flip(demo_file['obs/stereo'][()], axis=1))
 
                     # copy over all other obs
                     for key in demo_file['obs'].keys():
