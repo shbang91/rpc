@@ -30,25 +30,49 @@ Input file is in this format:
 │   └── stereo 
 └── timestamp 
 
+demo_99
+
+
 Output file is in this format:
 └── data
-    ├── demo_0
-    │   ├── actions 
-    │   ├── dones 
-    │   ├── obs
-    │   │   ├── joint 
-    │   │   ├── local_lf_ori 
-    │   │   ├── local_lf_pos 
-    │   │   ├── local_lh_ori 
-    │   │   ├── local_lh_pos 
-    │   │   ├── local_rf_ori 
-    │   │   ├── local_rf_pos 
-    │   │   ├── local_rh_ori 
-    │   │   ├── local_rh_pos 
-    │   │   ├── rgb 
-    │   │   └── stereo 
-    │   └── rewards 
-    ...
+    └── demo_0
+        ├── action
+        │   ├── local_lh_ori 
+        │   ├── local_lh_pos 
+        │   ├── local_rh_ori 
+        │   └── local_rh_pos 
+        ├── actions 
+        ├── dones 
+        ├── obs
+        │   ├── act_global_lf_ori 
+        │   ├── act_global_lf_pos 
+        │   ├── act_global_lh_ori 
+        │   ├── act_global_lh_pos 
+        │   ├── act_global_rf_ori 
+        │   ├── act_global_rf_pos 
+        │   ├── act_global_rh_ori 
+        │   ├── act_global_rh_pos 
+        │   ├── act_local_lf_ori 
+        │   ├── act_local_lf_pos 
+        │   ├── act_local_lh_ori 
+        │   ├── act_local_lh_pos 
+        │   ├── act_local_rf_ori 
+        │   ├── act_local_rf_pos 
+        │   ├── act_local_rh_ori 
+        │   ├── act_local_rh_pos 
+        │   ├── des_global_lf_ori 
+        │   ├── des_global_lf_pos 
+        │   ├── des_global_lh_ori 
+        │   ├── des_global_lh_pos 
+        │   ├── des_global_rf_ori 
+        │   ├── des_global_rf_pos 
+        │   ├── des_global_rh_ori 
+        │   ├── des_global_rh_pos 
+        │   ├── joint 
+        │   ├── rgb 
+        │   └── stereo 
+        └── rewards 
+        ...
 
 """
 
@@ -59,118 +83,124 @@ import numpy as np
 import cv2
 from scipy.spatial.transform import Rotation as R
 
-parser = argparse.ArgumentParser()
-# take in the path to the directory containing the hdf5 files as a positional argument
-parser.add_argument(
-    "path", help="the path to the directory containing the hdf5 files")
-parser.add_argument(
-    "--output", "-o", help="the output HDF5 file", default="dataset.hdf5")
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser()
+    # take in the path to the directory containing the hdf5 files as a positional argument
+    parser.add_argument(
+        "path", help="the path to the directory containing the hdf5 files")
+    parser.add_argument(
+        "--output", "-o", help="the output HDF5 file", default="dataset.hdf5")
+    args = parser.parse_args()
 
-output_file = h5py.File(args.output, "w")
-output_data = output_file.create_group("data")
+    output_file = h5py.File(args.output, "w")
+    output_data = output_file.create_group("data")
 
-demo_count = 0  # total number of episodes
-total = 0  # total number of steps
+    demo_count = 0  # total number of episodes
+    total = 0  # total number of steps
+    # open the hdf5 files
+    for root, dirs, files in os.walk(args.path, topdown=False):
+        for name in files:
+            if name.endswith(".hdf5"):
+                with h5py.File(os.path.join(root, name)) as demo_file:
 
-# open the hdf5 files
-for root, dirs, files in os.walk(args.path, topdown=False):
-    for name in files:
-        if name.endswith(".hdf5"):
-            with h5py.File(os.path.join(root, name)) as demo_file:
+                    # dummy data since we aren't using RL?
+                    done = np.zeros(
+                        demo_file['obs/joint_pos'].shape[0], dtype='uint64')
 
-                # dummy data since we aren't using RL?
-                done = np.zeros(
-                    demo_file['obs/joint_pos'].shape[0], dtype='uint64')
+                    # all data for this episode goes in this group
+                    ep_group = output_data.create_group(f"demo_{demo_count}")
 
-                # all data for this episode goes in this group
-                ep_group = output_data.create_group(f"demo_{demo_count}")
+                    obs_group = ep_group.create_group("obs")
+                    # cos/sin encoding of joint pos concat with joint vel
+                    obs_group.create_dataset("joint", data=np.concatenate((np.cos(demo_file['obs/joint_pos']), np.sin(
+                        demo_file['obs/joint_pos']), demo_file['obs/joint_vel']), axis=1), compression="gzip", chunks=True, dtype="f")
 
-                obs_group = ep_group.create_group("obs")
-                # cos/sin encoding of joint pos concat with joint vel
-                obs_group.create_dataset("joint", data=np.concatenate((np.cos(demo_file['obs/joint_pos']), np.sin(
-                    demo_file['obs/joint_pos']), demo_file['obs/joint_vel']), axis=1), compression="gzip", chunks=True, dtype="f")
-                for key in demo_file['obs'].keys():
-                    # don't need joint pos/vel since we already have joint, and state doesn't matter for fixed base
-                    if key not in ["joint_pos", "joint_vel", "state"]:
-                        demo_file.copy(demo_file[f"obs/{key}"], obs_group, key)
+                    # flatten actions
+                    act_discrete = np.column_stack(
+                        [demo_file['action/l_gripper'], demo_file['action/r_gripper']])
 
-                # flatten actions
-                act_discrete = np.column_stack(
-                    [demo_file['action/l_gripper'], demo_file['action/r_gripper']])
+                    # convert global to local
+                    global_params = ["obs/act_global_lh_pos", "obs/act_global_rh_pos", "obs/act_global_lh_ori", "obs/act_global_rh_ori", "obs/act_global_lf_pos", "obs/act_global_rf_pos", "obs/act_global_lf_ori", "obs/act_global_rf_ori", "action/local_rh_pos", "action/local_lh_pos", "action/local_rh_ori", "action/local_lh_ori"] # the actions are actually global. TODO: rename them
+                    # convert the quaternion from wxyz to xyzw
+                    global_base_ori = R.from_quat(demo_file['global_base_ori'][()][:, [3, 0, 1, 2]])
+                    global_base_pos = demo_file['global_base_pos'][()]
+                    
+                    for param in global_params:
+                        if param.endswith("pos"):
+                            ep_group.create_dataset(param.replace("global", "local"), data = pos_global_to_local(global_base_pos, global_base_ori, demo_file[param][()]))
+                        else: 
+                            ep_group.create_dataset(param.replace("global", "local"), data = ori_global_to_local(global_base_ori, R.from_quat(demo_file[param][()][:, [3, 0, 1, 2]])))
 
-                # convert global to local
-                global_params = ["obs/act_global_lh_pos", "obs/act_global_rh_pos", "obs/act_global_lh_ori", "obs/act_global_rh_ori", "obs/act_global_lf_pos", "obs/act_global_rf_pos", "obs/act_global_lf_ori", "obs/act_global_rf_ori"]
-                # convert the quaternion from wxyz to xyzw
-                global_base_ori = R.from_quat(demo_file['global_base_ori'][()][:, [3, 0, 1, 2]])
-                global_base_pos = demo_file['global_base_pos']
-                
-                for param in global_params:
-                    if param.endswith("pos"):
-                        ep_group.create_dataset(param.replace("global", "local"), data = global_base_ori.apply(demo_file[param][()] - global_base_pos[()], inverse=True))
-                    else: 
-                        ep_group.create_dataset(param.replace("global", "local"), data = (global_base_ori.inv() * R.from_quat(demo_file[param][()][:, [3, 0, 1, 2]])).as_quat())
-                print("global lh", demo_file['obs/act_global_lh_pos'][10])
-                print("local lh", ep_group['obs/act_local_lh_pos'][10])
-                print("global rh", demo_file['obs/act_global_rh_pos'][10])
-                print("local rh", ep_group['obs/act_local_rh_pos'][10])
+                    # uncompress image. Not doing compression right now
+                    # demo_file['obs/rbg'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
+                    # demo_file['obs/stereo'] = cv2.imdecode(demo_file['obs/stereo'], 0)
 
-                # uncompress image. Not doing compression right now
-                # demo_file['obs/rbg'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
-                # demo_file['obs/stereo'] = cv2.imdecode(demo_file['obs/stereo'], 0)
+                    # copy over all other obs
+                    for key in demo_file['obs'].keys():
+                        # don't need joint pos/vel since we already have joint, and state doesn't matter for fixed base
+                        if key not in ["joint_pos", "joint_vel", "state"] + global_params:
+                            demo_file.copy(demo_file[f"obs/{key}"], obs_group, key)
 
-                # compute delta pos for trajectory
-                act_trajecory_right_pos = demo_file['action/local_rh_pos']
-                act_trajecory_left_pos = demo_file['action/local_lh_pos']
-                act_trajecory_right_quat = demo_file['action/local_rh_ori']
-                act_trajecory_left_quat = demo_file['action/local_lh_ori']
+                    # compute delta pos for trajectory
+                    act_trajecory_right_pos = ep_group['action/local_rh_pos']
+                    act_trajecory_left_pos = ep_group['action/local_lh_pos']
+                    act_trajecory_right_quat = ep_group['action/local_rh_ori']
+                    act_trajecory_left_quat = ep_group['action/local_lh_ori']
 
-                act_trajecory_right_delta_pos = np.copy(
-                    act_trajecory_right_pos)
-                act_trajecory_right_delta_pos[1:
-                                              ] -= act_trajecory_right_pos[:-1]
-                act_trajecory_right_delta_pos[0] -= act_trajecory_right_pos[0]
-                act_trajecory_left_delta_pos = np.copy(act_trajecory_left_pos)
-                act_trajecory_left_delta_pos[1:] -= act_trajecory_left_pos[:-1]
-                act_trajecory_left_delta_pos[0] -= act_trajecory_left_pos[0]
+                    act_trajecory_right_delta_pos = np.copy(
+                        act_trajecory_right_pos)
+                    act_trajecory_right_delta_pos[1:
+                                                  ] -= act_trajecory_right_pos[:-1]
+                    act_trajecory_right_delta_pos[0] -= act_trajecory_right_pos[0]
+                    act_trajecory_left_delta_pos = np.copy(act_trajecory_left_pos)
+                    act_trajecory_left_delta_pos[1:] -= act_trajecory_left_pos[:-1]
+                    act_trajecory_left_delta_pos[0] -= act_trajecory_left_pos[0]
 
-                act_trajecory_right_rot = R.from_quat(
-                    act_trajecory_right_quat).as_matrix()
-                act_trajecory_right_delta_rot = np.copy(
-                    act_trajecory_right_rot)
-                act_trajecory_right_delta_rot[1:] = act_trajecory_right_delta_rot[1:] @ (
-                    act_trajecory_right_rot[:-1].transpose(0, 2, 1))
-                act_trajecory_right_delta_rot[0] = act_trajecory_right_delta_rot[0] @ (
-                    act_trajecory_right_rot[0].transpose())
-                act_trajecory_right_delta_quat = R.from_matrix(
-                    act_trajecory_right_delta_rot).as_quat()
-                act_trajecory_left_rot = R.from_quat(
-                    act_trajecory_left_quat).as_matrix()
-                act_trajecory_left_delta_rot = np.copy(act_trajecory_left_rot)
-                act_trajecory_left_delta_rot[1:] = act_trajecory_left_delta_rot[1:] @ (
-                    act_trajecory_left_rot[:-1].transpose(0, 2, 1))
-                act_trajecory_left_delta_rot[0] = act_trajecory_left_delta_rot[0] @ (
-                    act_trajecory_left_rot[0].transpose())
-                act_trajecory_left_delta_quat = R.from_matrix(
-                    act_trajecory_left_delta_rot).as_quat()
-                act_trajecory = np.column_stack(
-                    [act_trajecory_right_delta_pos, act_trajecory_left_delta_pos, act_trajecory_right_delta_quat, act_trajecory_left_delta_quat])
+                    act_trajecory_right_rot = R.from_quat(
+                        act_trajecory_right_quat).as_matrix()
+                    act_trajecory_right_delta_rot = np.copy(
+                        act_trajecory_right_rot)
+                    act_trajecory_right_delta_rot[1:] = act_trajecory_right_delta_rot[1:] @ (
+                        act_trajecory_right_rot[:-1].transpose(0, 2, 1))
+                    act_trajecory_right_delta_rot[0] = act_trajecory_right_delta_rot[0] @ (
+                        act_trajecory_right_rot[0].transpose())
+                    act_trajecory_right_delta_quat = R.from_matrix(
+                        act_trajecory_right_delta_rot).as_quat()
+                    act_trajecory_left_rot = R.from_quat(
+                        act_trajecory_left_quat).as_matrix()
+                    act_trajecory_left_delta_rot = np.copy(act_trajecory_left_rot)
+                    act_trajecory_left_delta_rot[1:] = act_trajecory_left_delta_rot[1:] @ (
+                        act_trajecory_left_rot[:-1].transpose(0, 2, 1))
+                    act_trajecory_left_delta_rot[0] = act_trajecory_left_delta_rot[0] @ (
+                        act_trajecory_left_rot[0].transpose())
+                    act_trajecory_left_delta_quat = R.from_matrix(
+                        act_trajecory_left_delta_rot).as_quat()
+                    act_trajecory = np.column_stack(
+                        [act_trajecory_right_delta_pos, act_trajecory_left_delta_pos, act_trajecory_right_delta_quat, act_trajecory_left_delta_quat])
 
-                act_concat = np.column_stack([act_discrete, act_trajecory])
+                    act_concat = np.column_stack([act_discrete, act_trajecory])
 
-                ep_group.create_dataset("actions", data=act_concat)
-                ep_group.create_dataset("dones", data=done, dtype='uint64')
-                ep_group.create_dataset("rewards", data=done)
-                ep_group.attrs["num_samples"] = int(done.shape[0])
-                total += int(done.shape[0])
-                demo_count += 1
+                    ep_group.create_dataset("actions", data=act_concat)
+                    ep_group.create_dataset("dones", data=done, dtype='uint64')
+                    ep_group.create_dataset("rewards", data=done)
+                    ep_group.attrs["num_samples"] = int(done.shape[0])
+                    total += int(done.shape[0])
+                    demo_count += 1
 
 
-output_file.attrs["total"] = total
-metadata = ""
-output_file.attrs["env_args"] = metadata
-output_file.close()
+    output_file.attrs["total"] = total
+    metadata = ""
+    output_file.attrs["env_args"] = metadata
+    output_file.close()
 
+def pos_global_to_local(global_base_pos, global_base_ori, pos):
+    return global_base_ori.apply(pos - global_base_pos, inverse=True)
+
+def ori_global_to_local(global_base_ori, ori):
+    return (global_base_ori.inv() * ori).as_quat()
+
+if __name__ == "__main__":
+    main()
 
 """ 
 # get images oberservations
