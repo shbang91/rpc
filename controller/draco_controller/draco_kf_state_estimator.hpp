@@ -86,8 +86,8 @@ protected:
   bool b_use_marg_filter;
   bool b_request_offset_reset;
 
-  int est_ref_foot_frame;
-  int est_non_ref_foot_frame;
+  int est_ref_foot_frame_;
+  int est_non_ref_foot_frame_;
 
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;

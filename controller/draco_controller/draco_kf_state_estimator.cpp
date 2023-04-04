@@ -50,11 +50,11 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
 
     // set the foot that will be used to estimate base in first_visit
     if (foot_frame == 0) {
-      est_ref_foot_frame = draco_link::l_foot_contact;
-      est_non_ref_foot_frame = draco_link::r_foot_contact;
+      est_ref_foot_frame_ = draco_link::l_foot_contact;
+      est_non_ref_foot_frame_ = draco_link::r_foot_contact;
     } else {
-      est_ref_foot_frame = draco_link::r_foot_contact;
-      est_non_ref_foot_frame = draco_link::l_foot_contact;
+      est_ref_foot_frame_ = draco_link::r_foot_contact;
+      est_non_ref_foot_frame_ = draco_link::l_foot_contact;
     }
 
     for (int i = 0; i < 3; ++i) {
@@ -187,11 +187,11 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   if (b_first_visit_) {
     world_to_base =
         global_linear_offset_ -
-        robot_->GetLinkIsometry(est_ref_foot_frame).translation();
+        robot_->GetLinkIsometry(est_ref_foot_frame_).translation();
 
     x_hat_.initialize(world_to_base,
-                      robot_->GetLinkIsometry(est_ref_foot_frame),
-                      robot_->GetLinkIsometry(est_non_ref_foot_frame));
+                      robot_->GetLinkIsometry(est_ref_foot_frame_),
+                      robot_->GetLinkIsometry(est_non_ref_foot_frame_));
     kalman_filter_.init(x_hat_);
     b_first_visit_ = false;
   } else {
