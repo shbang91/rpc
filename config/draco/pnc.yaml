@@ -10,8 +10,8 @@ b_sim: true ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
-  kf: false
   foot_reference_frame: 0   # 0: left foot, 1: right foot
+  kf: true
   ########################################################################
   ## sim params
   ########################################################################
@@ -135,8 +135,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [100., 100., 100.]
-      sim_kd : [5., 5., 5.]
+      sim_weight : [0., 0., 0.]
+      sim_kd : [0., 0., 0.]
 
       ########################################################################
       ## exp params
@@ -230,10 +230,10 @@ wbc:
     sim_max_rf_z: 400.
 
     sim_mu: 0.3
-    #sim_foot_half_length: 0.08
-    #sim_foot_half_width: 0.03 ## 0.04
-    sim_foot_half_length: 0.125
-    sim_foot_half_width: 0.075
+    sim_foot_half_length: 0.08
+    sim_foot_half_width: 0.03 ## 0.04
+#    sim_foot_half_length: 0.125
+#    sim_foot_half_width: 0.075
 
     ########################################################################
     ## exp params
@@ -241,10 +241,10 @@ wbc:
     exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    #exp_foot_half_length: 0.08
-    #exp_foot_half_width: 0.04
-    exp_foot_half_length: 0.125
-    exp_foot_half_width: 0.075
+    exp_foot_half_length: 0.08
+    exp_foot_half_width: 0.04
+#    exp_foot_half_length: 0.125
+#    exp_foot_half_width: 0.075
 
   qp:
     b_save_costs: true

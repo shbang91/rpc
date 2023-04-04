@@ -57,7 +57,7 @@ data_saver = DataSaver()
 ##meshcat visualizer
 if args.b_visualize:
     model, collision_model, visual_model = pin.buildModelsFromUrdf(
-        "robot_model/draco/draco3_big_feet.urdf", "robot_model/draco",
+        "robot_model/draco/draco_modified.urdf", "robot_model/draco",
         pin.JointModelFreeFlyer())
     viz = MeshcatVisualizer(model, collision_model, visual_model)
     try:

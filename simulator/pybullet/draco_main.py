@@ -307,7 +307,7 @@ if __name__ == "__main__":
     # Config.INITIAL_BASE_JOINT_QUAT,
     # useFixedBase=0)
     draco_humanoid = pb.loadURDF(cwd +
-                                 "/robot_model/draco/draco3_big_feet.urdf",
+                                 "/robot_model/draco/draco_modified.urdf",
                                  Config.INITIAL_BASE_JOINT_POS,
                                  Config.INITIAL_BASE_JOINT_QUAT,
                                  useFixedBase=0)
