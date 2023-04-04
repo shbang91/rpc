@@ -45,6 +45,17 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_base_accel_time_constant");
     Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
             cfg["state_estimator"], prefix + "_base_accel_limits");
+    int foot_frame = util::ReadParameter<int>(
+            cfg["state_estimator"], "foot_reference_frame");
+
+    // set the foot that will be used to estimate base in first_visit
+    if (foot_frame == 0) {
+      est_ref_foot_frame = draco_link::l_foot_contact;
+      est_non_ref_foot_frame = draco_link::r_foot_contact;
+    } else {
+      est_ref_foot_frame = draco_link::r_foot_contact;
+      est_non_ref_foot_frame = draco_link::l_foot_contact;
+    }
 
     for (int i = 0; i < 3; ++i) {
       com_vel_filter_.push_back(SimpleMovingAverage(n_data_com_vel[i]));
@@ -176,11 +187,11 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   if (b_first_visit_) {
     world_to_base =
         global_linear_offset_ -
-        robot_->GetLinkIsometry(draco_link::l_foot_contact).translation();
+        robot_->GetLinkIsometry(est_ref_foot_frame).translation();
 
     x_hat_.initialize(world_to_base,
-                      robot_->GetLinkIsometry(draco_link::l_foot_contact),
-                      robot_->GetLinkIsometry(draco_link::r_foot_contact));
+                      robot_->GetLinkIsometry(est_ref_foot_frame),
+                      robot_->GetLinkIsometry(est_non_ref_foot_frame));
     kalman_filter_.init(x_hat_);
     b_first_visit_ = false;
   } else {
