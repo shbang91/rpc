@@ -138,6 +138,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
     Eigen::Quaterniond zero_lh_quat_(0.707, 0.0, -0.707,
                                      0.0); // THIS IS IN THE ORDER OF W, X, Y, Z
+    // TODO: when inferencing, we have to skip these conversions
     local_rh_pos[2] += .1;
     local_lh_pos[2] += .1;
     local_rh_quat *= zero_rh_quat_;
@@ -151,6 +152,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // std::cout << "clamped left\n " << clamped_lh_pos << std::endl;
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
 
+    // restrict workspace for safety
     clamped_lh_pos[0] = std::min(std::max(local_lh_pos[0], 0.25), 0.50);
     clamped_lh_pos[1] = std::min(std::max(local_lh_pos[1], -0.10), 0.45);
     clamped_lh_pos[2] = std::min(std::max(local_lh_pos[2], -0.2), 0.4);
