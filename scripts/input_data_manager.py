@@ -91,3 +91,6 @@ class SocketInputDataManager(InputDataManager):
 
     def get_stereo_img(self):
         return self.stereo_streaming_socket.recv()
+
+
+class ObsRemapper():
