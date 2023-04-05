@@ -89,9 +89,9 @@ class ObservationConverter():
         print(stereo.shape)
         stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
         rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
-        self.converted_data['rgb'] = rgb
-        self.converted_data['stereo_0'] = stereo[..., :400]
-        self.converted_data['stereo_1'] = stereo[..., 400:]
+        self.converted_data['obs/rgb'] = rgb
+        self.converted_data['obs/stereo_0'] = stereo[..., :400, :]
+        self.converted_data['obs/stereo_1'] = stereo[..., 400:, :]
 
         # uncompress image. Not doing compression right now
         # demo_file['obs/rgb'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
@@ -105,7 +105,7 @@ class ObservationConverter():
         """
         cos/sin encoding of joint pos concat with joint vel
         """
-        self.converted_data['joint'] = np.concatenate(
+        self.converted_data['obs/joint'] = np.concatenate(
             (np.cos(joint_pos), np.sin(joint_pos), joint_vel), axis=1)
 
     def get_flattened_action_delta(self, raw_data):

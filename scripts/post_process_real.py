@@ -83,7 +83,7 @@ import numpy as np
 import cv2
 from scipy.spatial.transform import Rotation as R
 
-from data_converter import ObservationConverter
+from observation_converter import ObservationConverter
 
 
 def main():
