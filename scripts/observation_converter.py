@@ -86,12 +86,11 @@ class ObservationConverter():
         # https://stackoverflow.com/questions/46183967/how-to-reshape-only-last-dimensions-in-numpy
         stereo = stereo[()].reshape((stereo.shape[0], -1))
         rgb = rgb[()].reshape((rgb.shape[0], -1))
-        print(stereo.shape)
         stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
         rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
-        self.converted_data['obs/rgb'] = rgb
-        self.converted_data['obs/stereo_0'] = stereo[..., :400, :]
-        self.converted_data['obs/stereo_1'] = stereo[..., 400:, :]
+        self.converted_data['obs/rgb'] = rgb[..., 70:200, :, :]
+        self.converted_data['obs/stereo_0'] = stereo[..., 70:200, :400, :]
+        self.converted_data['obs/stereo_1'] = stereo[..., 70:200, 400:, :]
 
         # uncompress image. Not doing compression right now
         # demo_file['obs/rgb'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
