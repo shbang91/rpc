@@ -36,8 +36,8 @@ void ContactTransitionEnd::FirstVisit() {
 
     // change left foot rf QP params
     Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
-    target_W_delta_rf.head<3>() = Eigen::Vector3d::Constant(500);
-    target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(5);
+    target_W_delta_rf.head<3>() = Eigen::Vector3d::Constant(1e3);
+    target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(10);
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
                                                         end_time_);
 
@@ -50,8 +50,8 @@ void ContactTransitionEnd::FirstVisit() {
 
     // change right foot rf QP params
     Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
-    target_W_delta_rf.segment<3>(6) = Eigen::Vector3d::Constant(500);
-    target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(5);
+    target_W_delta_rf.segment<3>(6) = Eigen::Vector3d::Constant(1e3);
+    target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(10);
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
                                                         end_time_);
   }

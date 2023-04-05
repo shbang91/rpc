@@ -66,6 +66,7 @@ void DoubleSupportStandUp::FirstVisit() {
       rf_z_max_interp_duration_);
 
   // QP params
+  // TODO: make this as yaml
   ctrl_arch_->tci_container_->qp_params_->W_delta_qddot_ =
       Eigen::VectorXd::Constant(6, 1e4);
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_ =
