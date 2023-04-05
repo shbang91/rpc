@@ -5,6 +5,7 @@ Otherwise, it will connect to the zmq sockets to get the data real-time.
 import zmq
 import sys
 import os
+import numpy as np
 
 cwd = os.getcwd()
 sys.path.append(cwd + '/build')
