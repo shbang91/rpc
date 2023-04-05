@@ -114,7 +114,9 @@ void PinocchioRobotSystem::UpdateRobotModel(
     q_ = joint_pos;
     qdot_ = joint_vel;
   }
+
   pinocchio::forwardKinematics(model_, data_, q_, qdot_);
+  pinocchio::computeJointJacobians(model_, data_, q_);
 
   if (b_update_centroid)
     this->_UpdateCentroidalQuantities();
@@ -175,8 +177,6 @@ PinocchioRobotSystem::GetLinkSpatialVel(const int link_idx) const {
 
 Eigen::Matrix<double, 6, Eigen::Dynamic>
 PinocchioRobotSystem::GetLinkJacobian(const int link_idx) {
-  pinocchio::computeJointJacobians(model_, data_, q_);
-
   Eigen::Matrix<double, 6, Eigen::Dynamic> jac =
       Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
   pinocchio::getFrameJacobian(model_, data_, link_idx,
@@ -213,8 +213,6 @@ PinocchioRobotSystem::GetLinkBodySpatialVel(const int link_idx) const {
 
 Eigen::Matrix<double, 6, Eigen::Dynamic>
 PinocchioRobotSystem::GetLinkBodyJacobian(const int link_idx) {
-  pinocchio::computeJointJacobians(model_, data_, q_);
-
   Eigen::Matrix<double, 6, Eigen::Dynamic> jac =
       Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, n_qdot_);
   pinocchio::getFrameJacobian(model_, data_, link_idx, pinocchio::LOCAL, jac);

@@ -34,6 +34,18 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
     bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
 
     std::string prefix = b_sim ? "sim" : "exp";
+    int foot_frame = util::ReadParameter<int>(
+            cfg["state_estimator"], "foot_reference_frame");
+
+    // set the foot that will be used to estimate base in first_visit
+    if (foot_frame == 0) {
+      sp_->stance_foot_ = draco_link::l_foot_contact;
+      sp_->prev_stance_foot_ = draco_link::l_foot_contact;
+    } else {
+      sp_->stance_foot_ = draco_link::r_foot_contact;
+      sp_->prev_stance_foot_ = draco_link::r_foot_contact;
+    }
+
     if (com_vel_filter_type_ == com_vel_filter::kMovingAverage) {
       Eigen::Vector3d num_data_com_vel = util::ReadParameter<Eigen::Vector3d>(
           cfg["state_estimator"], prefix + "_num_data_com_vel");
@@ -178,6 +190,9 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
 
   // compute dcm
   this->_ComputeDCM();
+
+  // compute CAM
+  sp_->cam_est_ = robot_->GetHg().head<3>();
 
 #if B_USE_ZMQ
   if (sp_->count_ % sp_->data_save_freq_ == 0) {

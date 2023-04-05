@@ -54,7 +54,7 @@ DracoInterface::DracoInterface() : Interface() {
   // new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
   // THIS_COM "robot_model/draco", false, false);
   robot_ = new PinocchioRobotSystem(THIS_COM
-                                    "robot_model/draco/draco3_big_feet.urdf",
+                                    "robot_model/draco/draco_modified.urdf",
                                     THIS_COM "robot_model/draco", false, false);
   se_ = new DracoStateEstimator(robot_);
   se_kf_ = new DracoKFStateEstimator(robot_);

@@ -34,6 +34,28 @@ args = parser.parse_args()
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
 
+b_using_kf_estimator = False
+b_using_non_kf_estimator = False
+
+
+def check_if_kf_estimator(kf_pos, est_pos):
+    global b_using_kf_estimator, b_using_non_kf_estimator
+
+    # check if we have already set either the KF or non-KF flag to True
+    if b_using_kf_estimator or b_using_non_kf_estimator:
+        return
+
+    # if both kf_pos and est_pos data are zero's, we have not entered standup
+    if not (np.any(kf_pos) or np.any(est_pos)):
+        return
+
+    # otherwise, we can infer from the current kf_pos and est_pos data
+    if np.any(kf_pos):
+        b_using_kf_estimator = True
+    else:
+        b_using_non_kf_estimator = True
+
+
 ##YAML parse
 with open("config/draco/pnc.yaml", "r") as yaml_file:
     try:
@@ -57,7 +79,7 @@ data_saver = DataSaver()
 ##meshcat visualizer
 if args.b_visualize:
     model, collision_model, visual_model = pin.buildModelsFromUrdf(
-        "robot_model/draco/draco3_big_feet.urdf", "robot_model/draco",
+        "robot_model/draco/draco_modified.urdf", "robot_model/draco",
         pin.JointModelFreeFlyer())
     viz = MeshcatVisualizer(model, collision_model, visual_model)
     try:
@@ -182,8 +204,17 @@ while True:
         pj_socket.send_string(json.dumps(data_saver.history))
 
     if args.b_visualize:
-        vis_q[0:3] = np.array(msg.kf_base_joint_pos)
-        vis_q[3:7] = np.array(msg.kf_base_joint_ori)  # quaternion [x,y,z,w]
+        check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
+
+        if b_using_kf_estimator:
+            base_pos = msg.kf_base_joint_pos
+            base_ori = msg.kf_base_joint_ori
+        else:
+            base_pos = msg.est_base_joint_pos
+            base_ori = msg.est_base_joint_ori
+
+        vis_q[0:3] = np.array(base_pos)
+        vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
         vis_q[7:] = np.array(msg.joint_positions)
 
         com_des_viz_q[0] = msg.des_com_pos[0]

@@ -403,6 +403,10 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["com_z_task"]->DesiredVel());
     logger_->add("act_com_z_vel",
                  tci_container_->task_map_["com_z_task"]->CurrentVel());
+    logger_->add("des_cam",
+                 tci_container_->task_map_["cam_task"]->DesiredVel());
+    logger_->add("act_cam",
+                 tci_container_->task_map_["cam_task"]->CurrentVel());
     logger_->add("des_torso_ori_pos",
                  tci_container_->task_map_["torso_ori_task"]->DesiredPos());
     logger_->add("act_torso_ori_pos",
@@ -472,6 +476,10 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["com_z_task"]->DesiredLocalVel());
     logger_->add("local_act_com_z_vel",
                  tci_container_->task_map_["com_z_task"]->CurrentLocalVel());
+    logger_->add("local_des_cam",
+                 tci_container_->task_map_["cam_task"]->DesiredLocalVel());
+    logger_->add("local_act_cam",
+                 tci_container_->task_map_["cam_task"]->CurrentLocalVel());
     logger_->add(
         "local_des_torso_ori_pos",
         tci_container_->task_map_["torso_ori_task"]->DesiredLocalPos());

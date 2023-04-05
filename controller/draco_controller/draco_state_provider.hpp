@@ -43,6 +43,8 @@ public:
 
   std::vector<int> floating_base_jidx_;
 
+  Eigen::Vector3d cam_est_;
+
 private:
   DracoStateProvider();
 };

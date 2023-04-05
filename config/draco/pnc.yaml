@@ -10,6 +10,7 @@ b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
+  foot_reference_frame: 0   # 0: left foot, 1: right foot
   kf: true
   ########################################################################
   ## sim params
@@ -20,6 +21,7 @@ state_estimator:
   sim_sigma_pos_rfoot: [0.001, 0.001, 0.001]
   sim_sigma_vel_lfoot: [0.005, 0.005, 0.002]
   sim_sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  sim_imu_accel_bias: [0.0, 0.0, 0.0]
   sim_base_accel_time_constant: 0.02
   sim_base_accel_limits: [1., 1., 1.]
   sim_base_com_vel_time_constant: 1.0
@@ -35,6 +37,7 @@ state_estimator:
   exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
   exp_sigma_vel_lfoot: [0.002, 0.002, 0.002]
   exp_sigma_vel_rfoot: [0.002, 0.002, 0.002]
+  exp_imu_accel_bias: [-0.108, -0.023, 0.196 ]
   exp_base_accel_time_constant: 0.02
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 1.0
@@ -42,7 +45,7 @@ state_estimator:
   exp_num_data_ang_vel: [5, 5, 5]
 
   ## for simulation please use 000000000
-  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
@@ -128,6 +131,19 @@ wbc:
       exp_base_kp : [50.]
       exp_base_kd : [1.5] # x, y will be ignored
 
+    cam_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [0., 0., 0.]
+      sim_kd : [0., 0., 0.]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_weight : [0., 0., 0.]
+      exp_kd : [1., 1., 1.]
+
     torso_ori_task:
       ########################################################################
       ## sim params
@@ -198,7 +214,7 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 1e-5] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
       #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
@@ -214,10 +230,10 @@ wbc:
     sim_max_rf_z: 400.
 
     sim_mu: 0.3
-    #sim_foot_half_length: 0.08
-    #sim_foot_half_width: 0.03 ## 0.04
-    sim_foot_half_length: 0.125
-    sim_foot_half_width: 0.075
+    sim_foot_half_length: 0.08
+    sim_foot_half_width: 0.03 ## 0.04
+#    sim_foot_half_length: 0.125
+#    sim_foot_half_width: 0.075
 
     ########################################################################
     ## exp params
@@ -225,15 +241,15 @@ wbc:
     exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    #exp_foot_half_length: 0.08
-    #exp_foot_half_width: 0.04
-    exp_foot_half_length: 0.125
-    exp_foot_half_width: 0.075
+    exp_foot_half_length: 0.08
+    exp_foot_half_width: 0.04
+#    exp_foot_half_length: 0.125
+#    exp_foot_half_width: 0.075
 
   qp:
     b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0., 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 

@@ -31,6 +31,8 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_sigma_vel_lfoot");
     Eigen::Vector3d sigma_vel_rfoot = util::ReadParameter<Eigen::Vector3d>(
             cfg["state_estimator"], prefix + "_sigma_vel_rfoot");
+    Eigen::Vector3d imu_accel_bias = util::ReadParameter<Eigen::Vector3d>(
+            cfg["state_estimator"], prefix + "_imu_accel_bias");
     Eigen::VectorXd n_data_com_vel = util::ReadParameter<Eigen::VectorXd>(
             cfg["state_estimator"], prefix + "_num_data_com_vel");
     //  Eigen::VectorXd n_data_cam = util::ReadParameter<Eigen::VectorXd>(
@@ -43,6 +45,17 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_base_accel_time_constant");
     Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
             cfg["state_estimator"], prefix + "_base_accel_limits");
+    int foot_frame = util::ReadParameter<int>(
+            cfg["state_estimator"], "foot_reference_frame");
+
+    // set the foot that will be used to estimate base in first_visit
+    if (foot_frame == 0) {
+      est_ref_foot_frame_ = draco_link::l_foot_contact;
+      est_non_ref_foot_frame_ = draco_link::r_foot_contact;
+    } else {
+      est_ref_foot_frame_ = draco_link::r_foot_contact;
+      est_non_ref_foot_frame_ = draco_link::l_foot_contact;
+    }
 
     for (int i = 0; i < 3; ++i) {
       com_vel_filter_.push_back(SimpleMovingAverage(n_data_com_vel[i]));
@@ -57,8 +70,7 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
-    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot);
-
+    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot, imu_accel_bias);
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -175,11 +187,11 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   if (b_first_visit_) {
     world_to_base =
         global_linear_offset_ -
-        robot_->GetLinkIsometry(draco_link::l_foot_contact).translation();
+        robot_->GetLinkIsometry(est_ref_foot_frame_).translation();
 
     x_hat_.initialize(world_to_base,
-                      robot_->GetLinkIsometry(draco_link::l_foot_contact),
-                      robot_->GetLinkIsometry(draco_link::r_foot_contact));
+                      robot_->GetLinkIsometry(est_ref_foot_frame_),
+                      robot_->GetLinkIsometry(est_non_ref_foot_frame_));
     kalman_filter_.init(x_hat_);
     b_first_visit_ = false;
   } else {

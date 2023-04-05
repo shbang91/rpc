@@ -307,7 +307,7 @@ if __name__ == "__main__":
     # Config.INITIAL_BASE_JOINT_QUAT,
     # useFixedBase=0)
     draco_humanoid = pb.loadURDF(cwd +
-                                 "/robot_model/draco/draco3_big_feet.urdf",
+                                 "/robot_model/draco/draco_modified.urdf",
                                  Config.INITIAL_BASE_JOINT_POS,
                                  Config.INITIAL_BASE_JOINT_QUAT,
                                  useFixedBase=0)
@@ -389,7 +389,7 @@ if __name__ == "__main__":
         os.makedirs(video_dir)
 
     previous_torso_velocity = np.array([0., 0., 0.])
-
+    imu_dvel_bias = np.array([0.0, 0.0, 0.0])
     rate = RateLimiter(frequency=1. / dt)
     while (True):
 
@@ -458,6 +458,7 @@ if __name__ == "__main__":
         #get sensor data
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
             draco_humanoid)
+        pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
 
         #copy sensor data to rpc sensor data class
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat

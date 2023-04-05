@@ -339,6 +339,10 @@ def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
     return width, height, rgb_img, depth_img, seg_img, view_matrix, projection_matrix, camera_eye_pos
 
 
+def add_sensor_noise(measurement, noise):
+    measurement += noise
+
+
 def make_video(video_dir, delete_jpgs=True):
     images = []
     for file in tqdm(sorted(os.listdir(video_dir)),
