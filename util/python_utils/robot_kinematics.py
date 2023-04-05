@@ -145,7 +145,7 @@ def JacobianBody(Blist, thetalist):
                   [-1.44321167, 2.94561275,  1.43306521, 0.3]
                   [-2.06639565, 1.82881722, -1.58868628, 0.4]])
     """
-    Jb = np.array(Blist).copy().astype(np.float)
+    Jb = np.array(Blist).copy().astype(float)
     T = np.eye(4)
     for i in range(len(thetalist) - 2, -1, -1):
         T = np.dot(T,MatrixExp6(VecTose3(np.array(Blist)[:, i + 1] \
@@ -176,7 +176,7 @@ def JacobianSpace(Slist, thetalist):
                   [0.2, 0.43654132, -2.43712573,  2.77535713]
                   [0.2, 2.96026613,  3.23573065,  2.22512443]])
     """
-    Js = np.array(Slist).copy().astype(np.float)
+    Js = np.array(Slist).copy().astype(float)
     T = np.eye(4)
     for i in range(1, len(thetalist)):
         T = np.dot(T, MatrixExp6(VecTose3(np.array(Slist)[:, i - 1] \

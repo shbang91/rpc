@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     ## spawn draco in pybullet
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    robot = pb.loadURDF(cwd + '/robot_model/atlas/atlas.urdf',
+    robot = pb.loadURDF(cwd + '/robot_model/atlas/atlas_v3.urdf',
                         INITIAL_POS,
                         INITIAL_QUAT,
                         useFixedBase=False)
@@ -76,7 +76,6 @@ if __name__ == "__main__":
     open_chain_joints_name_dict['left_leg'] = [
         'l_leg_hpz', 'l_leg_hpx', 'l_leg_hpy', 'l_leg_kny', 'l_leg_aky',
         'l_leg_akx'
-
     ]
     open_chain_joints_name_dict['right_leg'] = [
         'r_leg_hpz', 'r_leg_hpx', 'r_leg_hpy', 'r_leg_kny', 'r_leg_aky',
@@ -103,7 +102,6 @@ if __name__ == "__main__":
     ## set initial joint pos
     set_initial_config(robot, joint_id)
 
-
     ## get initial sensor data
     nominal_sensor_data = pybullet_util.get_sensor_data(
         robot, joint_id, link_id, pos_basejoint_to_basecom,
@@ -123,7 +121,7 @@ if __name__ == "__main__":
 
     ## update virtual robot model
     robot_system = PinocchioRobotSystem(
-        cwd + '/robot_model/atlas/atlas.urdf', cwd + '/robot_model/atlas',
+        cwd + '/robot_model/atlas/atlas_v3.urdf', cwd + '/robot_model/atlas',
         False, False)
     robot_system.update_system(nominal_sensor_data['base_joint_pos'],
                                nominal_sensor_data['base_joint_quat'],
@@ -131,8 +129,6 @@ if __name__ == "__main__":
                                nominal_sensor_data['base_joint_ang_vel'],
                                nominal_joint_pos,
                                nominal_sensor_data['joint_vel'], True)
-
-
 
     ## calculate rotational CCRBI
     nominal_inertia = robot_system.Ig[0:3, 0:3]
@@ -149,44 +145,47 @@ if __name__ == "__main__":
     SWING_HEIGHT = 0.05 * normalize_factor
     NUM_NODE_PER_SWING = 30
 
-    for one_step_x in np.linspace(ONE_STEP_X_LB, ONE_STEP_X_UB, num = 10):
-        for one_step_y in np.linspace(ONE_STEP_Y_LB, ONE_STEP_Y_UB, num = 10):
+    for one_step_x in np.linspace(ONE_STEP_X_LB, ONE_STEP_X_UB, num=10):
+        for one_step_y in np.linspace(ONE_STEP_Y_LB, ONE_STEP_Y_UB, num=10):
 
-            final_rf_pos = nominal_rf_iso[:3, 3] + np.array([one_step_x, one_step_y, 0])
+            final_rf_pos = nominal_rf_iso[:3, 3] + np.array(
+                [one_step_x, one_step_y, 0])
             final_rf_ea = np.array([0., 0., 0.])
             final_rf_rot = util.euler_to_rot(final_rf_ea)
             final_rf_iso = liegroup.RpToTrans(final_rf_rot, final_rf_pos)
 
-            mid_rf_iso = interpolation.iso_interpolate(nominal_rf_iso, final_rf_iso,
-                                                       0.5)
+            mid_rf_iso = interpolation.iso_interpolate(nominal_rf_iso,
+                                                       final_rf_iso, 0.5)
             mid_rf_iso[2, 3] += SWING_HEIGHT
-            mid_rf_vel = (final_rf_iso[:3, 3] - nominal_rf_iso[:3, 3]) / swing_time
+            mid_rf_vel = (final_rf_iso[:3, 3] -
+                          nominal_rf_iso[:3, 3]) / swing_time
 
             mid_rf_vel[2] = 0.
 
-            final_base_iso = interpolation.iso_interpolate(nominal_lf_iso,
-                                                           final_rf_iso, 0.5)
+            final_base_iso = interpolation.iso_interpolate(
+                nominal_lf_iso, final_rf_iso, 0.5)
             final_base_iso[2, 3] = nominal_base_pos[2]
 
             #### Create curves using one step boundary
-            base_pos_curve = interpolation.HermiteCurveVec(nominal_base_iso[:3, 3],
-                                                           np.zeros(3),
-                                                           final_base_iso[:3, 3],
-                                                           np.zeros(3), swing_time)
+            base_pos_curve = interpolation.HermiteCurveVec(
+                nominal_base_iso[:3, 3], np.zeros(3), final_base_iso[:3, 3],
+                np.zeros(3), swing_time)
             base_quat_curve = interpolation.HermiteCurveQuat(
                 util.rot_to_quat(nominal_base_iso[:3, :3]), np.zeros(3),
-                util.rot_to_quat(final_base_iso[:3, :3]), np.zeros(3), swing_time)
+                util.rot_to_quat(final_base_iso[:3, :3]), np.zeros(3),
+                swing_time)
 
             rf_pos_curve_first_half = interpolation.HermiteCurveVec(
-                nominal_rf_iso[:3, 3], np.zeros(3), mid_rf_iso[:3, 3], mid_rf_vel,
-                swing_time / 2.)
+                nominal_rf_iso[:3, 3], np.zeros(3), mid_rf_iso[:3, 3],
+                mid_rf_vel, swing_time / 2.)
             rf_pos_curve_second_half = interpolation.HermiteCurveVec(
-                mid_rf_iso[:3, 3], mid_rf_vel, final_rf_iso[:3, 3], np.zeros(3),
-                swing_time / 2.)
+                mid_rf_iso[:3, 3], mid_rf_vel, final_rf_iso[:3, 3],
+                np.zeros(3), swing_time / 2.)
 
             rf_quat_curve = interpolation.HermiteCurveQuat(
                 util.rot_to_quat(nominal_rf_iso[:3, :3]), np.zeros(3),
-                util.rot_to_quat(final_rf_iso[:3, :3]), np.zeros(3), swing_time)
+                util.rot_to_quat(final_rf_iso[:3, :3]), np.zeros(3),
+                swing_time)
 
             #### prepare IK
             for t in np.linspace(0., swing_time, num=NUM_NODE_PER_SWING):
@@ -196,7 +195,8 @@ if __name__ == "__main__":
                 if t <= swing_time / 2.:
                     rf_pos = rf_pos_curve_first_half.evaluate(t)
                 else:
-                    rf_pos = rf_pos_curve_second_half.evaluate(t - swing_time / 2.)
+                    rf_pos = rf_pos_curve_second_half.evaluate(t -
+                                                               swing_time / 2.)
 
                 rf_quat = rf_quat_curve.evaluate(t)
 
@@ -205,7 +205,8 @@ if __name__ == "__main__":
 
                 #### calculate IK
                 #### right foot
-                T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat), base_pos)
+                T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
+                                              base_pos)
 
                 T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
                 des_T_base_rf = np.dot(liegroup.TransInv(T_w_base), T_w_rf)
@@ -215,23 +216,24 @@ if __name__ == "__main__":
                     for joint_name in open_chain_joints_name_dict['right_leg']
                 ])
 
-
                 rf_joint_pos_sol, rf_ik_success = robot_kinematics.IKinBody(
                     joint_screws_in_ee_at_home['right_leg'],
-                    ee_SE3_at_home['right_leg'], des_T_base_rf, rf_initial_guess)
+                    ee_SE3_at_home['right_leg'], des_T_base_rf,
+                    rf_initial_guess)
 
                 #### left foot
                 T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
                 des_T_base_lf = np.dot(liegroup.TransInv(T_w_base), T_w_lf)
 
                 lf_initial_guess = np.array([
-                        nominal_joint_pos[joint_name]
-                        for joint_name in open_chain_joints_name_dict['left_leg']
-                    ])
+                    nominal_joint_pos[joint_name]
+                    for joint_name in open_chain_joints_name_dict['left_leg']
+                ])
 
                 lf_joint_pos_sol, lf_ik_success = robot_kinematics.IKinBody(
-                    joint_screws_in_ee_at_home['left_leg'], ee_SE3_at_home['left_leg'],
-                    des_T_base_lf, lf_initial_guess)
+                    joint_screws_in_ee_at_home['left_leg'],
+                    ee_SE3_at_home['left_leg'], des_T_base_lf,
+                    lf_initial_guess)
 
                 # lf_initial_guess = lf_joint_pos_sol
 
@@ -251,17 +253,17 @@ if __name__ == "__main__":
 
                 ## calculate inertia
                 robot_system.update_system(
-                        base_pos,
-                        base_quat,
-                        nominal_sensor_data['base_joint_lin_vel'],
-                        nominal_sensor_data['base_joint_ang_vel'], nominal_joint_pos,
-                        nominal_sensor_data['joint_vel'], True)
+                    base_pos, base_quat,
+                    nominal_sensor_data['base_joint_lin_vel'],
+                    nominal_sensor_data['base_joint_ang_vel'],
+                    nominal_joint_pos, nominal_sensor_data['joint_vel'], True)
 
                 inertia = robot_system.Ig[0:3, 0:3]
 
                 ## compute CII
                 CII = np.linalg.det(
-                        np.dot(np.linalg.inv(inertia), nominal_inertia) - np.eye(3))
+                    np.dot(np.linalg.inv(inertia), nominal_inertia) -
+                    np.eye(3))
 
                 data_saver.add("cii", CII)
                 data_saver.advance()
@@ -269,4 +271,3 @@ if __name__ == "__main__":
     print("=================================================")
     print("Done collecting Data")
     print("=================================================")
-

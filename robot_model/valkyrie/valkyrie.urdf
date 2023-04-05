@@ -306,11 +306,19 @@
     <!--</collision>-->
   </link>
   <link name="torso">
-    <inertial>
-      <mass value="39.47"/>
+    <!--<inertial>-->
+      <!--<mass value="39.47"/>-->
+      <!--<origin rpy="0 0 0" xyz="-0.095548 -0.003337 0.243098"/>-->
+      <!--<inertia ixx="0.87326933" ixy="9.9563e-05" ixz="0.061345211" iyy="1.0108485" iyz="0.00181849" izz="0.77839801"/>-->
+    <!--</inertial>-->
+
+    <!--without battery pack-->
+<inertial> 
+      <mass value="25.47"/>
       <origin rpy="0 0 0" xyz="-0.095548 -0.003337 0.243098"/>
-      <inertia ixx="0.87326933" ixy="9.9563e-05" ixz="0.061345211" iyy="1.0108485" iyz="0.00181849" izz="0.77839801"/>
+      <inertia ixx="0.563529431" ixy="6.4249e-05" ixz="0.039586678" iyy="0.652310646" iyz="0.00117349" izz="0.502308013"/>
     </inertial>
+
     <visual>
       <geometry>
           <mesh filename="package://meshes/torso/torso_textured.obj"/>

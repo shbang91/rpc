@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2013-08-22T20:06:06Z</created><keywords></keywords><modified>2013-08-22T20:06:06Z</modified><revision></revision><subject></subject><title></title><unit meter="1.000000" name="centimeter"></unit><up_axis>Z_UP</up_axis></asset>
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2013-08-22T20:06:06Z</created><keywords></keywords><modified>2013-08-22T20:06:06Z</modified><revision></revision><subject></subject><title></title><unit meter="1.000000" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
   <library_images>
-    <image id="drc_extremities_diffuse-image" name="drc_extremities_diffuse"><init_from>../materials/textures/drc_extremities_diffuse.jpg</init_from></image>
+    <image id="drc_extremities_diffuse-image" name="drc_extremities_diffuse"><init_from>../materials/textures/drc_extremities_diffuse.png</init_from></image>
   </library_images>
   <library_materials>
     <material id="drc_extremities_diffuse" name="drc_extremities_diffuse">

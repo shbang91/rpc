@@ -13,17 +13,16 @@ import pickle
 import ipdb
 
 cii_file_list = [
-    cwd + '/experiment_data/draco_cii_prox.pkl',
-    cwd + '/experiment_data/draco_cii_col.pkl',
-    cwd + '/experiment_data/atlas_cii.pkl',
-    cwd + '/experiment_data/valkyrie_cii.pkl',
-    cwd + '/experiment_data/cassie_cii.pkl',
+    # cwd + '/experiment_data/draco_cii_prox.pkl',
+    # cwd + '/experiment_data/draco_cii_col.pkl',
+    # cwd + '/experiment_data/atlas_cii.pkl',
+    # cwd + '/experiment_data/valkyrie_cii.pkl'
+    # cwd + '/experiment_data/cassie_cii.pkl',
     cwd + '/experiment_data/draco_cii_proximal_walking_traj.pkl',
     cwd + '/experiment_data/draco_cii_collocated_walking_traj.pkl',
     cwd + '/experiment_data/valkyrie_cii_walking_traj.pkl',
     cwd + '/experiment_data/hubo_cii_walking_traj.pkl',
     cwd + '/experiment_data/atlas_cii_walking_traj.pkl'
-
 ]
 
 draco_cii_proximal = []
@@ -59,7 +58,7 @@ for cii_file in cii_file_list:
                 elif cii_file == cwd + '/experiment_data/valkyrie_cii_walking_traj.pkl':
                     valkyrie_cii_one_step.append(data['cii'])
                 elif cii_file == cwd + '/experiment_data/hubo_cii_walking_traj.pkl':
-                    hubo_cii_one_step.append(-1*data['cii'])
+                    hubo_cii_one_step.append(-1 * data['cii'])
                 elif cii_file == cwd + '/experiment_data/atlas_cii_walking_traj.pkl':
                     atlas_cii_one_step.append(-1 * data['cii'])
             except EOFError:
@@ -83,6 +82,37 @@ print(len(draco_cii_one_step_collocated))
 print(len(valkyrie_cii_one_step))
 print(len(hubo_cii_one_step))
 print(len(atlas_cii_one_step))
+
+print("========Atlas========")
+max_val = max(atlas_cii_one_step)
+min_val = min(atlas_cii_one_step)
+print("max", max(atlas_cii_one_step))
+print("min", min(atlas_cii_one_step))
+print(np.log(max_val - min_val))
+print("========Hubo========")
+max_val = max(hubo_cii_one_step)
+min_val = min(hubo_cii_one_step)
+print("max", max(hubo_cii_one_step))
+print("min", min(hubo_cii_one_step))
+print(np.log(max_val - min_val))
+print("========Valkyrie========")
+max_val = max(valkyrie_cii_one_step)
+min_val = min(valkyrie_cii_one_step)
+print("max", max(valkyrie_cii_one_step))
+print("min", min(valkyrie_cii_one_step))
+print(np.log(max_val - min_val))
+print("========Draco collocated========")
+max_val = max(draco_cii_one_step_collocated)
+min_val = min(draco_cii_one_step_collocated)
+print("max", max(draco_cii_one_step_collocated))
+print("min", min(draco_cii_one_step_collocated))
+print(np.log(max_val - min_val))
+print("========Draco proximal========")
+max_val = max(draco_cii_one_step)
+min_val = min(draco_cii_one_step)
+print("max", max(draco_cii_one_step))
+print("min", min(draco_cii_one_step))
+print(np.log(max_val - min_val))
 
 df = pd.DataFrame(pd_data)
 
