@@ -103,7 +103,7 @@ def main():
 
     # open the hdf5 files. Remove the ones in this list (for pruning)
     idx_to_remove = []
-    for root, dirs, files in os.walk(args.path, topdown=True):
+    for root, _, files in os.walk(args.path, topdown=True):
         for idx, name in enumerate(sorted(files)):
             if idx in idx_to_remove:
                 print(name)

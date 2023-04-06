@@ -113,7 +113,7 @@ class ObservationConverter():
         i = num_images - 1
         while l_gripper[i] == 0 and r_gripper[i] == 0 and i > 0:
             i -= 1
-        i += 20 # a second is 20 frames
+        i += 40 # a second is 20 frames
         self.converted_data['obs/rgb'] = self.converted_data['obs/rgb'][:i]
         self.converted_data['obs/stereo_0'] = self.converted_data['obs/stereo_0'][:i]
         self.converted_data['obs/stereo_1'] = self.converted_data['obs/stereo_1'][:i]
