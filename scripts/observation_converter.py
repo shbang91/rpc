@@ -16,11 +16,14 @@ class ObservationConverter():
     """
     A class to take observations from either hdf5 or protobuf and converts them to
     a representation used to train or evaluate the neural network.
+    Note that the protobuf messages will be singular messages while the hdf5 data 
+    will be vectors. The code can deal with both vectors and single messages.
     """
 
-    def __init__(self, include_actions=False, include_desired=False):
+    def __init__(self, include_actions=False, include_desired=False, trim_demo_video=False):
         self.include_actions = include_actions
         self.include_desired = include_desired
+        self.trim_demo_video = trim_demo_video 
         self.converted_data = {}
 
     def convert(self, raw_data):
@@ -37,6 +40,8 @@ class ObservationConverter():
         self.get_images(raw_data['obs/rgb'], raw_data['obs/stereo'])
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
+        if self.trim_demo_video:
+            self.trim_video(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
         return self.converted_data
 
     def get_local_trajectories(self, raw_data):
@@ -81,13 +86,15 @@ class ObservationConverter():
             rgb: the rgb image from the robot
             stereo: the stereo image from the robot
         """
+        # flatten the images TODO: remove this so it's always flattened
+        stereo = stereo[()].reshape((stereo.shape[0], -1))
+        rgb = rgb[()].reshape((rgb.shape[0], -1))
         # the usage of ... and this reshape trip allows us to process both vector and single images
         # for more information about the reshape call, see
         # https://stackoverflow.com/questions/46183967/how-to-reshape-only-last-dimensions-in-numpy
-        stereo = stereo[()].reshape((stereo.shape[0], -1))
-        rgb = rgb[()].reshape((rgb.shape[0], -1))
         stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
         rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
+
         self.converted_data['obs/rgb'] = rgb[..., 70:200, :, :]
         self.converted_data['obs/stereo_0'] = stereo[..., 70:200, :400, :]
         self.converted_data['obs/stereo_1'] = stereo[..., 70:200, 400:, :]
@@ -99,6 +106,18 @@ class ObservationConverter():
         # convert an opencv image to a rgb, rightside-up image
         # obs_group.create_dataset('rgb', data = np.flip(cv2.cvtColor(demo_file['obs/rgb'][()], cv2.COLOR_BGR2RGB), axis=1))
         # obs_group.create_dataset('stereo', data = np.flip(demo_file['obs/stereo'][()], axis=1))
+
+    def trim_video(self, l_gripper, r_gripper):
+        # Trim the end of demo videos to be a second after the gripper is last used
+        num_images = l_gripper.shape[0] 
+        i = num_images - 1
+        while l_gripper[i] == 0 and r_gripper[i] == 0 and i > 0:
+            i -= 1
+        i += 20 # a second is 20 frames
+        self.converted_data['obs/rgb'] = self.converted_data['obs/rgb'][:i]
+        self.converted_data['obs/stereo_0'] = self.converted_data['obs/stereo_0'][:i]
+        self.converted_data['obs/stereo_1'] = self.converted_data['obs/stereo_1'][:i]
+        
 
     def get_joint_embedding(self, joint_pos, joint_vel):
         """
