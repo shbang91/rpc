@@ -46,11 +46,14 @@ import time
 import os
 import sys
 
+from scripts.nn_wrapper import NNWrapper
+
 cwd = os.getcwd()
 sys.path.append(cwd)
     
 from scripts.demo_collector import DemoCollector
-from scripts.input_data_manager import InputDataManager, SocketInputDataManager
+from scripts.input_data_manager import SocketInputDataManager
+from scripts.output_data_manager import OutputDataManager
 
 
 def main():
@@ -65,6 +68,7 @@ def main():
                         default="tcp://localhost:5558")
     parser.add_argument("--demonstrator", type=str, default="steve")
     parser.add_argument("--task", type=str, default="screwdriver")
+    parser.add_argument("--nn_path", type=str, default="models/nn_model.h5")
     args = parser.parse_args()
     save_data = args.save_data
 
@@ -73,11 +77,22 @@ def main():
     input_manager = SocketInputDataManager(
         context, args.control_ip, args.rgb_camera_ip, args.stereo_camera_ip)
 
-    # Saving data for training
-    demo_collector = DemoCollector(args.demonstrator, args.task) 
+    if save_data:
+        # Saving data for training
+        demo_collector = DemoCollector(args.demonstrator, args.task) 
+    else:
+        # Executing the policy
+        output_manager = OutputDataManager(context)
+        nn = NNWrapper(args.nn_path)
 
     prev_time = 0
     new_time = 1
+
+    if not save_data:
+        input("Press Enter to start executing policy")
+        # Initialize state
+        robot_data_pb = input_manager.get_robot_data()
+        
     while True:
         # Print fps for debugging
         new_time = time.time()
@@ -95,6 +110,8 @@ def main():
 
         if save_data:
             demo_collector.save_data(robot_data_pb, rgb_img, stereo_img)
+        else:
+
 
 
 if __name__ == "__main__":
