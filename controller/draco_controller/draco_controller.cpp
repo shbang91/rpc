@@ -252,8 +252,7 @@ void DracoController::_SaveData() {
   rot.bottomRightCorner<3, 3>() =
       tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
   dm->data_->lfoot_rf_cmd_ =
-      rot * tci_container_->force_task_map_["lf_force_task"]
-                ->CmdRf(); // global quantity
+      rot * wbic_data_->rf_cmd_.head<6>(); // global quantity
 
   // Eigen::Quaterniond rf_ori_quat(
   // dm->data_->rfoot_ori_[3], dm->data_->rfoot_ori_[0],
@@ -266,8 +265,7 @@ void DracoController::_SaveData() {
   rot.bottomRightCorner<3, 3>() =
       tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
   dm->data_->rfoot_rf_cmd_ =
-      rot * tci_container_->force_task_map_["rf_force_task"]
-                ->CmdRf(); // global quantity
+      rot * wbic_data_->rf_cmd_.tail<6>(); // global quantity
 
   // task kp, kd, ki for plotting
   dm->data_->com_xy_kp = tci_container_->task_map_["com_xy_task"]->Kp();

@@ -34,6 +34,28 @@ args = parser.parse_args()
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
 
+b_using_kf_estimator = False
+b_using_non_kf_estimator = False
+
+
+def check_if_kf_estimator(kf_pos, est_pos):
+    global b_using_kf_estimator, b_using_non_kf_estimator
+
+    # check if we have already set either the KF or non-KF flag to True
+    if b_using_kf_estimator or b_using_non_kf_estimator:
+        return
+
+    # if both kf_pos and est_pos data are zero's, we have not entered standup
+    if not (np.any(kf_pos) or np.any(est_pos)):
+        return
+
+    # otherwise, we can infer from the current kf_pos and est_pos data
+    if np.any(kf_pos):
+        b_using_kf_estimator = True
+    else:
+        b_using_non_kf_estimator = True
+
+
 ##YAML parse
 with open("config/draco/pnc.yaml", "r") as yaml_file:
     try:
@@ -57,7 +79,7 @@ data_saver = DataSaver()
 ##meshcat visualizer
 if args.b_visualize:
     model, collision_model, visual_model = pin.buildModelsFromUrdf(
-        "robot_model/draco/draco3_big_feet.urdf", "robot_model/draco",
+        "robot_model/draco/draco_modified.urdf", "robot_model/draco",
         pin.JointModelFreeFlyer())
     viz = MeshcatVisualizer(model, collision_model, visual_model)
     try:
@@ -146,32 +168,32 @@ while True:
     # data_saver.add('base_joint_lin_vel', list(msg.base_joint_lin_vel))
     # data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
 
-    data_saver.add('com_xy_weight', list(msg.com_xy_weight))
+    # data_saver.add('com_xy_weight', list(msg.com_xy_weight))
     data_saver.add('com_xy_kp', list(msg.com_xy_kp))
     data_saver.add('com_xy_kd', list(msg.com_xy_kd))
     data_saver.add('com_xy_ki', list(msg.com_xy_ki))
 
-    data_saver.add('com_z_weight', msg.com_z_weight)
+    # data_saver.add('com_z_weight', msg.com_z_weight)
     data_saver.add('com_z_kp', msg.com_z_kp)
     data_saver.add('com_z_kd', msg.com_z_kd)
 
-    data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
+    # data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
     data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
     data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
 
-    data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
+    # data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
     data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
     data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
 
-    data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
+    # data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
     data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
     data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
 
-    data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
+    # data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
     data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
     data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
 
-    data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
+    # data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
     data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
     data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
 
@@ -182,8 +204,13 @@ while True:
         pj_socket.send_string(json.dumps(data_saver.history))
 
     if args.b_visualize:
-        vis_q[0:3] = np.array(msg.kf_base_joint_pos)
-        vis_q[3:7] = np.array(msg.kf_base_joint_ori)  # quaternion [x,y,z,w]
+        check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
+
+        base_pos = msg.kf_base_joint_pos if b_using_kf_estimator else msg.est_base_joint_pos
+        base_ori = msg.kf_base_joint_ori if b_using_kf_estimator else msg.est_base_joint_ori
+
+        vis_q[0:3] = np.array(base_pos)
+        vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
         vis_q[7:] = np.array(msg.joint_positions)
 
         com_des_viz_q[0] = msg.des_com_pos[0]
