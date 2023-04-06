@@ -32,7 +32,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 
   try {
-    cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc_wbic.yaml");
+    cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

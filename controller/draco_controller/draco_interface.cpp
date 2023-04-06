@@ -28,7 +28,7 @@ DracoInterface::DracoInterface()
   sp_ = DracoStateProvider::GetStateProvider();
   try {
     YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/pnc_wbic.yaml"); // get yaml node
+        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
 
     sp_->servo_dt_ =
         util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency

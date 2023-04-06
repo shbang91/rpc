@@ -76,7 +76,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
   // read yaml & set params
   try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc_wbic.yaml");
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
 
     // initialize draco controller params
     b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");

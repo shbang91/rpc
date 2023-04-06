@@ -41,7 +41,7 @@ state_estimator:
   exp_num_data_base_accel: [10, 10, 10]
   exp_num_data_ang_vel: [5, 5, 5]
 
-  ## for simulation please use 000000000
+  ## for simulation please use 0
   com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
@@ -69,13 +69,11 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [1000., 1000.]
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      sim_icp_kp : [0., 0.]
-      sim_icp_kd : [0., 0.,] # x, y will be ignored
-      sim_icp_ki : [10., 10.] 
+      sim_icp_kp : [5., 5.]
+      sim_icp_kd : [0., 0.] # x, y will be ignored
+      sim_icp_ki : [0., 0.] 
 
       ## IF icp_integrator_type == 0:
       sim_time_constant : 0.001
@@ -88,10 +86,8 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
       exp_icp_kp : [0., 0.]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0.5, 0.5] 
@@ -109,22 +105,18 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_com_weight : [1000.]
       sim_com_kp : [100.]
       sim_com_kd : [5.]
 
-      sim_base_weight : [1000.] # only used when target source : 1
-      sim_base_kp : [100.]
-      sim_base_kd : [5.] # x, y will be ignored
+      sim_base_kp : [500.]
+      sim_base_kd : [50.] # x, y will be ignored
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_com_weight : [1000.]
       exp_com_kp : [100.]
       exp_com_kd : [5.]
 
-      exp_base_weight : [1000.] # only used when target source : 1
       exp_base_kp : [50.]
       exp_base_kd : [1.5] # x, y will be ignored
 
@@ -132,25 +124,21 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [100., 100., 100.]
       sim_kd : [5., 5., 5.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      sim_weight : [0., 0., 0.]
-      sim_kd : [1., 1., 1.]
+      exp_kd : [1., 1., 1.]
 
     torso_ori_task:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [100., 100., 10.]
       sim_kp : [200., 200., 100.]
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [100., 100., 10.]
       exp_kp : [30., 30., 20.]
       exp_kd : [0.2, 0.2, 0.1]
 
@@ -161,14 +149,12 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      sim_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
       sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
       sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
       exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
       exp_kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
 
@@ -176,16 +162,12 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [10000., 10000., 10000.]
-      sim_weight_at_swing : [500., 500., 500.]
       sim_kp : [300., 300., 300.]
       sim_kd : [30., 30., 30.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10000., 10000., 10000.]
-      exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [100., 100., 150.]
       exp_kd : [0.1, 0.1, 1.]
 
@@ -193,16 +175,12 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [10000., 10000., 10000.]
-      sim_weight_at_swing : [500., 500., 500.]
       sim_kp : [300., 300., 300.]
       sim_kd : [30., 30., 30.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10000., 10000., 10000.]
-      exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [20., 20., 20.]
       exp_kd : [0.1, 0.1, 0.1]
 
@@ -216,7 +194,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 0., 0., 5e-5]
+      exp_weight : [0., 0., 0., 0., 0., 0.]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
@@ -226,10 +204,10 @@ wbc:
     sim_max_rf_z: 400.
 
     sim_mu: 0.3
-    #sim_foot_half_length: 0.08
-    #sim_foot_half_width: 0.03 ## 0.04
-    sim_foot_half_length: 0.125
-    sim_foot_half_width: 0.075
+    sim_foot_half_length: 0.08
+    sim_foot_half_width: 0.04 ## 0.04
+    #sim_foot_half_length: 0.125
+    #sim_foot_half_width: 0.075
 
     ########################################################################
     ## exp params
@@ -237,35 +215,24 @@ wbc:
     exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    #exp_foot_half_length: 0.08
-    #exp_foot_half_width: 0.04
-    exp_foot_half_length: 0.125
-    exp_foot_half_width: 0.075
+    exp_foot_half_length: 0.08
+    exp_foot_half_width: 0.04
+    #exp_foot_half_length: 0.125
+    #exp_foot_half_width: 0.075
 
-  qp:
-    b_save_costs: true
-    lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
-    #lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0., 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
-    #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
-    b_trq_limit: false
-
-  joint_integrator:
-    pos_cutoff_freq: 0.5 #hz
-    vel_cutoff_freq: 2. #hz
-    max_pos_err: 0.2 #rad
-
-
+  #qp:
+    #lambda_qddot: 1e-7 ##regularization
+    #lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
 
 state_machine:
     initialize:
       init_duration: 5.
       target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
-      wait_time: 10.
+      wait_time: 15.
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 5.
       target_com_height: 0.658
       target_base_height: 0.90
 
