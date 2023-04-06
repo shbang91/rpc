@@ -68,7 +68,7 @@ void DoubleSupportStandUp::FirstVisit() {
   // QP params
   // TODO: make this as yaml
   ctrl_arch_->tci_container_->qp_params_->W_delta_qddot_ =
-      Eigen::VectorXd::Constant(6, 1e4);
+      Eigen::VectorXd::Constant(6, 1e5);
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_ =
       Eigen::VectorXd::Constant(12, 1);
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_.head<3>() =
