@@ -6,6 +6,47 @@ import h5py
 import time
 from datetime import datetime
 
+def convert_protobuf_and_image(msg, rgb, stereo):
+    output = {}
+    output['obs/joint_pos'] = np.array(msg.joint_positions)
+    output['obs/joint_vel'] = np.array(msg.joint_velocities)
+    # hand and feet poses
+    output['obs/act_global_lh_pos'] = np.array(msg.act_global_lh_pos)
+    output['obs/act_global_rh_pos'] = np.array(msg.act_global_rh_pos)
+    output['obs/act_global_lf_pos'] = np.array(msg.act_global_lf_pos)
+    output['obs/act_global_rf_pos'] = np.array(msg.act_global_rf_pos)
+    output['obs/act_global_lh_ori'] = np.array(msg.act_global_lh_ori)
+    output['obs/act_global_rh_ori'] = np.array(msg.act_global_rh_ori)
+    output['obs/act_global_lf_ori'] = np.array(msg.act_global_lf_ori)
+    output['obs/act_global_rf_ori'] = np.array(msg.act_global_rf_ori)
+    output['obs/des_global_lh_pos'] = np.array(msg.des_global_lh_pos)
+    output['obs/des_global_rh_pos'] = np.array(msg.des_global_rh_pos)
+    output['obs/des_global_lf_pos'] = np.array(msg.des_global_lf_pos)
+    output['obs/des_global_rf_pos'] = np.array(msg.des_global_rf_pos)
+    output['obs/des_global_lh_ori'] = np.array(msg.des_global_lh_ori)
+    output['obs/des_global_rh_ori'] = np.array(msg.des_global_rh_ori)
+    output['obs/des_global_lf_ori'] = np.array(msg.des_global_lf_ori)
+    output['obs/des_global_rf_ori'] = np.array(msg.des_global_rf_ori)
+    # other metadata
+    output['obs/state'] = msg.state
+    output['est_base_joint_pos'] = np.array(msg.est_base_joint_pos)
+    output['est_base_joint_ori'] = np.array(msg.est_base_joint_ori)
+    output['kf_base_joint_pos'] = np.array(msg.kf_base_joint_pos)
+    output['kf_base_joint_ori'] = np.array(msg.kf_base_joint_ori)
+    output['global_base_pos'] = np.array(msg.global_base_pos)
+    output['global_base_ori'] = np.array(msg.global_base_ori)
+    output['timestamp'] = msg.timestamp
+    # actions
+    output['action/l_gripper'] = msg.l_gripper
+    output['action/r_gripper'] = msg.r_gripper
+    output['action/local_lh_pos'] = np.array(msg.action_local_lh_pos)
+    output['action/local_lh_ori'] = np.array(msg.action_local_lh_ori)
+    output['action/local_rh_pos'] = np.array(msg.action_local_rh_pos)
+    output['action/local_rh_ori'] = np.array(msg.action_local_rh_ori)
+    # images
+    output['obs/rgb'] = rgb
+    output['obs/stereo'] = stereo
+    return output
 
 class DemoCollector:
     def __init__(self, demonstrator, task):
@@ -16,79 +57,10 @@ class DemoCollector:
         self.clear_buffer()
 
     def save_data(self, msg, rgb_img, stereo_img):
-        print(msg.vr_ready)
-        print(msg.act_global_lh_pos)
         if msg.vr_ready:
-            # control pc data
-            self.data_buffer['obs/joint_pos'].append(list(msg.joint_positions))
-            self.data_buffer['obs/joint_vel'].append(
-                list(msg.joint_velocities))
-
-            # hand and feet poses
-            self.data_buffer['obs/act_global_lh_pos'].append(
-                list(msg.act_global_lh_pos))
-            self.data_buffer['obs/act_global_rh_pos'].append(
-                list(msg.act_global_rh_pos))
-            self.data_buffer['obs/act_global_lf_pos'].append(
-                list(msg.act_global_lf_pos))
-            self.data_buffer['obs/act_global_rf_pos'].append(
-                list(msg.act_global_rf_pos))
-            self.data_buffer['obs/act_global_lh_ori'].append(
-                list(msg.act_global_lh_ori))
-            self.data_buffer['obs/act_global_rh_ori'].append(
-                list(msg.act_global_rh_ori))
-            self.data_buffer['obs/act_global_lf_ori'].append(
-                list(msg.act_global_lf_ori))
-            self.data_buffer['obs/act_global_rf_ori'].append(
-                list(msg.act_global_rf_ori))
-
-            self.data_buffer['obs/des_global_lh_pos'].append(
-                list(msg.des_global_lh_pos))
-            self.data_buffer['obs/des_global_rh_pos'].append(
-                list(msg.des_global_rh_pos))
-            self.data_buffer['obs/des_global_lf_pos'].append(
-                list(msg.des_global_lf_pos))
-            self.data_buffer['obs/des_global_rf_pos'].append(
-                list(msg.des_global_rf_pos))
-            self.data_buffer['obs/des_global_lh_ori'].append(
-                list(msg.des_global_lh_ori))
-            self.data_buffer['obs/des_global_rh_ori'].append(
-                list(msg.des_global_rh_ori))
-            self.data_buffer['obs/des_global_lf_ori'].append(
-                list(msg.des_global_lf_ori))
-            self.data_buffer['obs/des_global_rf_ori'].append(
-                list(msg.des_global_rf_ori))
-
-            self.data_buffer['obs/state'].append(msg.state)
-            self.data_buffer['action/l_gripper'].append(msg.l_gripper)
-            self.data_buffer['action/r_gripper'].append(msg.r_gripper)
-            self.data_buffer['action/local_lh_pos'].append(
-                list(msg.action_local_lh_pos))
-            self.data_buffer['action/local_lh_ori'].append(
-                list(msg.action_local_lh_ori))
-            self.data_buffer['action/local_rh_pos'].append(
-                list(msg.action_local_rh_pos))
-            self.data_buffer['action/local_rh_ori'].append(
-                list(msg.action_local_rh_ori))
-            self.data_buffer['est_base_joint_pos'].append(
-                list(msg.est_base_joint_pos))
-            self.data_buffer['est_base_joint_ori'].append(
-                list(msg.est_base_joint_ori))
-            self.data_buffer['kf_base_joint_pos'].append(
-                list(msg.kf_base_joint_pos))
-            self.data_buffer['kf_base_joint_ori'].append(
-                list(msg.kf_base_joint_ori))
-            self.data_buffer['global_base_pos'].append(
-                list(msg.global_base_pos))
-            self.data_buffer['global_base_ori'].append(
-                list(msg.global_base_ori))
-            self.data_buffer['timestamp'].append(msg.timestamp)
-
-            # camera data
-            self.data_buffer['obs/rgb'].append(np.frombuffer(rgb_img,
-                                                             dtype=np.uint8).reshape(200, 400, 3))
-            self.data_buffer['obs/stereo'].append(np.frombuffer(
-                stereo_img, dtype=np.uint8).reshape(200, 800))
+            converted_data = convert_protobuf_and_image(msg, rgb_img, stereo_img)
+            for key in converted_data.keys():
+                self.data_buffer[key].append(converted_data)
         elif self.vr_ready_prev:
             # if we go from controlling the robot to not controlling the robot, save it
             print("Saving data...")

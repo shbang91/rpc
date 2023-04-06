@@ -20,10 +20,13 @@ class ObservationConverter():
     will be vectors. The code can deal with both vectors and single messages.
     """
 
-    def __init__(self, include_actions=False, include_desired=False, trim_demo_video=False):
+    def __init__(self, include_images=True, normalize_images=False, crop_images=False, include_actions=False, include_desired=False, trim_demo_video=False):
         self.include_actions = include_actions
         self.include_desired = include_desired
         self.trim_demo_video = trim_demo_video 
+        self.include_images = include_images
+        self.normalize_images = normalize_images
+        self.crop_images = crop_images
         self.converted_data = {}
 
     def convert(self, raw_data):
@@ -37,7 +40,8 @@ class ObservationConverter():
         self.get_joint_embedding(
             raw_data['obs/joint_pos'], raw_data['obs/joint_vel'])
         self.get_local_trajectories(raw_data)
-        self.get_images(raw_data['obs/rgb'], raw_data['obs/stereo'])
+        if self.include_images:
+            self.get_images(raw_data['obs/rgb'], raw_data['obs/stereo'])
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
         if self.trim_demo_video:
@@ -87,18 +91,25 @@ class ObservationConverter():
             stereo: the stereo image from the robot
         """
         # flatten the images TODO: remove this so it's always flattened
-        stereo = stereo[()].reshape((stereo.shape[0], -1))
-        rgb = rgb[()].reshape((rgb.shape[0], -1))
+        # stereo = stereo[()].reshape((stereo.shape[0], -1))
+        # rgb = rgb[()].reshape((rgb.shape[0], -1))
         # the usage of ... and this reshape trip allows us to process both vector and single images
         # for more information about the reshape call, see
         # https://stackoverflow.com/questions/46183967/how-to-reshape-only-last-dimensions-in-numpy
         stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
         rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
+        if (self.crop_images):
+            rgb = rgb[..., 70:200, :, :]
+            stereo = stereo[..., 70:200, :, :]
 
-        self.converted_data['obs/rgb'] = rgb[..., 70:200, :, :]
-        self.converted_data['obs/stereo_0'] = stereo[..., 70:200, :400, :]
-        self.converted_data['obs/stereo_1'] = stereo[..., 70:200, 400:, :]
+        self.converted_data['obs/rgb'] = rgb[..., :, :]
+        self.converted_data['obs/stereo_0'] = stereo[..., :400, :]
+        self.converted_data['obs/stereo_1'] = stereo[..., 400:, :]
 
+        if self.normalize_images:
+            self.converted_data['obs/rgb'] = self.converted_data['obs/rgb'].transpose([2, 0, 1])/255.0
+            self.converted_data['obs/stereo_0'] = self.converted_data['obs/stereo_0'].transpose([2, 0, 1])/255.0
+            self.converted_data['obs/stereo_1'] = self.converted_data['obs/stereo_1'].transpose([2, 0, 1])/255.0
         # uncompress image. Not doing compression right now
         # demo_file['obs/rgb'] = cv2.imdecode(demo_file['obs/rgb'], cv2.IMREAD_COLOR)
         # demo_file['obs/stereo'] = cv2.imdecode(demo_file['obs/stereo'], 0)
@@ -114,17 +125,15 @@ class ObservationConverter():
         while l_gripper[i] == 0 and r_gripper[i] == 0 and i > 0:
             i -= 1
         i += 40 # a second is 20 frames
-        self.converted_data['obs/rgb'] = self.converted_data['obs/rgb'][:i]
-        self.converted_data['obs/stereo_0'] = self.converted_data['obs/stereo_0'][:i]
-        self.converted_data['obs/stereo_1'] = self.converted_data['obs/stereo_1'][:i]
-        
+        for key in self.converted_data.keys():
+            self.converted_data[key] = self.converted_data[key][:i]
 
     def get_joint_embedding(self, joint_pos, joint_vel):
         """
         cos/sin encoding of joint pos concat with joint vel
         """
         self.converted_data['obs/joint'] = np.concatenate(
-            (np.cos(joint_pos), np.sin(joint_pos), joint_vel), axis=1)
+            (np.cos(joint_pos), np.sin(joint_pos), joint_vel), axis=len(joint_pos.shape) - 1)
 
     def get_flattened_action_delta(self, raw_data):
         """

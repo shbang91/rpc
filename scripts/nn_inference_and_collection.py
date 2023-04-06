@@ -46,19 +46,18 @@ import time
 import os
 import sys
 
-from scripts.nn_wrapper import NNWrapper
-
 cwd = os.getcwd()
 sys.path.append(cwd)
     
-from scripts.demo_collector import DemoCollector
+from scripts.nn_wrapper import NNWrapper
+from scripts.demo_collector import DemoCollector, convert_protobuf_and_image
 from scripts.input_data_manager import SocketInputDataManager
 from scripts.output_data_manager import OutputDataManager
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_data", type=bool, default=True,
+    parser.add_argument("--save_data", type=int, default=0,
                         help="True if we are collect data for training. False if we are executing the policy.")
     parser.add_argument("--control_ip", type=str,
                         default="tcp://192.168.1.184:5557")
@@ -67,10 +66,10 @@ def main():
     parser.add_argument("--stereo_camera_ip", type=str,
                         default="tcp://localhost:5558")
     parser.add_argument("--demonstrator", type=str, default="steve")
-    parser.add_argument("--task", type=str, default="screwdriver")
+    parser.add_argument("--task", type=str, default="box")
     parser.add_argument("--nn_path", type=str, default="models/nn_model.h5")
     args = parser.parse_args()
-    save_data = args.save_data
+    save_data = args.save_data == 1
 
     # Socket initialize
     context = zmq.Context()
@@ -92,6 +91,9 @@ def main():
         input("Press Enter to start executing policy")
         # Initialize state
         robot_data_pb = input_manager.get_robot_data()
+        rgb_img = input_manager.get_rgb_img()
+        stereo_img = input_manager.get_stereo_img()
+        nn.reset(convert_protobuf_and_image(robot_data_pb, rgb_img, stereo_img))
         
     while True:
         # Print fps for debugging
@@ -100,6 +102,7 @@ def main():
         print("fps: ", fps)
         prev_time = new_time
 
+        zmq_start = time.perf_counter()
         # Wait for control PC to send data (20hz)
         robot_data_pb = input_manager.get_robot_data()
 
@@ -107,11 +110,18 @@ def main():
         # Note that since we have conflate=True, we will only get the latest image
         rgb_img = input_manager.get_rgb_img()
         stereo_img = input_manager.get_stereo_img()
+        zmq_end = time.perf_counter()
+        print("zmq time: ", zmq_end-zmq_start)
 
         if save_data:
             demo_collector.save_data(robot_data_pb, rgb_img, stereo_img)
         else:
-
+            # time this line
+            nn_start = time.perf_counter()
+            actions = nn.forward(convert_protobuf_and_image(robot_data_pb, rgb_img, stereo_img))
+            nn_end = time.perf_counter()
+            print("nn time: ", nn_end-nn_start)
+            output_manager.send(actions)
 
 
 if __name__ == "__main__":
