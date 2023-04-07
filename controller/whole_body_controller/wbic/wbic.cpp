@@ -53,10 +53,14 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
   Eigen::MatrixXd JcNi = Jc * Ni; // contact jac projected on internal
                                   // constraints
   Eigen::MatrixXd JcNi_dyn = Jc * Ni_dyn_;
+
   Eigen::MatrixXd N_pre;
   _BuildProjectionMatrix(JcNi, N_pre);
+  N_pre = Ni * N_pre; // null space of internal constraint + contact constraint
   Eigen::MatrixXd N_pre_dyn;
   _BuildProjectionMatrix(JcNi_dyn, N_pre_dyn, &Minv_);
+  N_pre_dyn = Ni_dyn_ * N_pre_dyn; // null space of internal + contact
+                                   // constraint
   Eigen::MatrixXd JcNi_bar;
   _WeightedPseudoInverse(JcNi_dyn, Minv_, JcNi_bar);
 
@@ -112,12 +116,19 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       jpos_cmd = curr_jpos + delta_q_cmd.tail(num_qdot_ - num_floating_);
       jvel_cmd = qdot_cmd.tail(num_qdot_ - num_floating_);
       wbc_qddot_cmd = qddot_cmd;
+
+      // Eigen::VectorXd x_int_dot = Ji_ * qdot_cmd;
+      // util::PrettyPrint(x_int_dot, std::cout, "x_int_dot");
+      // Eigen::VectorXd x_c_dot = Jc * qdot_cmd;
+      // util::PrettyPrint(x_c_dot, std::cout, "x_c_dot");
+
+      // Eigen::VectorXd x_int_ddot = Ji_ * wbc_qddot_cmd;
+      // util::PrettyPrint(x_int_ddot, std::cout, "x_int_ddot");
+      // Eigen::VectorXd x_c_ddot = Jc * wbc_qddot_cmd + JcDotQdot;
+      // util::PrettyPrint(x_c_ddot, std::cout, "x_c_ddot");
     }
 
-    // std::cout << "= == == == == == == == == == == == == == == == == == == ==
-    // "
-    //"== ==== =="
-    //<< std::endl;
+    // std::cout << "========================================" << std::endl;
     // std::cout << "Desired Pos: " << (*it)->DesiredPos().transpose()
     //<< std::endl;
     // std::cout << "Current Pos: " << (*it)->CurrentPos().transpose()
