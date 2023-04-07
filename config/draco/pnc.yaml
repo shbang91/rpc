@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -95,13 +95,13 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
       exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
-      exp_icp_kp : [0., 0.]
+      exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.5, 0.5] 
+      exp_icp_ki : [0.2, 0.4] 
 
       ## IF icp_integrator_type == 0:
-      exp_time_constant : 0.2
-      exp_avg_icp_error_limit: [0.04, 0.04]
+      exp_time_constant : 0.05
+      exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
       exp_leaky_rate: 0.5
@@ -153,7 +153,7 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [100., 100., 10.]
+      exp_weight : [500., 500., 50.]
       exp_kp : [30., 30., 20.]
       exp_kd : [0.2, 0.2, 0.1]
 
@@ -220,7 +220,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 0., 0., 5e-5]
+      exp_weight : [0., 0., 0., 0., 0., 0.]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
