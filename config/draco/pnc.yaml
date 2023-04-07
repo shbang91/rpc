@@ -1,8 +1,8 @@
 servo_dt: 0.00125
 
 ip_address: "tcp://*:5557"
-#vr_ip_address: "tcp://192.168.50.50:5555"
-vr_ip_address: "tcp://192.168.1.217:5555"
+vr_ip_address: "tcp://192.168.50.50:5555"
+#vr_ip_address: "tcp://192.168.1.217:5555"
 
 #data_save_freq: 1
 data_save_freq: 40

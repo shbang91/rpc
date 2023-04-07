@@ -246,9 +246,11 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     dm->data_->action_local_rh_ori_ = target_rh_quat.coeffs();
     dm->data_->global_base_pos = base_pos;
     dm->data_->global_base_ori = base_quat.coeffs();
-    dm->data_->l_gripper = cmd.l_bump;
-    dm->data_->r_gripper = cmd.r_bump;
     dm->data_->vr_ready = vr_ready;
+    if (vr_ready) {
+      dm->data_->l_gripper = cmd.l_bump;
+      dm->data_->r_gripper = cmd.r_bump;
+    }
 #endif
     dm->SendData();
   }

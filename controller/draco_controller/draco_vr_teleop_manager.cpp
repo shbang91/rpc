@@ -23,6 +23,7 @@ void DracoVRTeleopManager::InitializeTeleopSocket(
     const std::string &ip_address) {
   std::cout << "ip address " + ip_address << std::endl;
   teleop_socket_->connect(ip_address);
+  teleop_socket_->set(zmq::sockopt::rcvtimeo, 20);
 }
 
 bool DracoVRTeleopManager::isReady() { return ready_; }
@@ -30,11 +31,19 @@ bool DracoVRTeleopManager::isReady() { return ready_; }
 DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   zmq::message_t commands;
   // auto start = std::chrono::high_resolution_clock::now();
-  teleop_socket_->recv(&commands);
+  bool success = teleop_socket_->recv(&commands);
   // auto stop = std::chrono::high_resolution_clock::now();
   // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop
   // - start); std::cout << "Time taken by ZMQ PULL: " << duration.count() <<
   // std::endl;
+  DracoVRCommands result;
+  if (!success) {
+    std::cout << "No commands received" << std::endl;
+    ready_ = false;
+    return result;
+  }
+
+  std::cout << "command received" << std::endl;
 
   draco::vr_teleop_msg m;
   m.ParseFromArray(commands.data(), commands.size());
@@ -44,8 +53,6 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   google::protobuf::TextFormat::PrintToString(m, &s);
   std::cout << s << std::endl;
   */
-
-  DracoVRCommands result;
 
   result.l_bump = m.l_bump();
   result.l_trigger = m.l_trigger();
@@ -67,6 +74,7 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   }
 
   if (result.l_pad) {
+    std::cout << "l pad held" << std::endl;
     if (!l_pad_held_) {
       ready_ = !ready_;
     }
