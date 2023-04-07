@@ -43,7 +43,7 @@ lfoot_contact_pos, lfoot_contact_ori = [], []
 
 # Create Robot for Meshcat Visualization
 model, collision_model, visual_model = pin.buildModelsFromUrdf(
-    cwd + "/robot_model/draco/draco3_big_feet.urdf",
+    cwd + "/robot_model/draco/draco_modified.urdf",
     cwd + "/robot_model/draco", pin.JointModelFreeFlyer())
 viz = MeshcatVisualizer(model, collision_model, visual_model)
 try:
@@ -94,12 +94,6 @@ arrow_viz = meshcat.Visualizer(window=viz.viewer.window)
 vis_tools.add_arrow(arrow_viz, "grf_lf", color=[1, 0, 0])
 vis_tools.add_arrow(arrow_viz, "grf_rf", color=[0, 0, 1])
 
-# add planned footsteps
-footsteps_viz = meshcat.Visualizer(window=viz.viewer.window)
-vis_tools.add_footstep(footsteps_viz, "lf_footstep", color=[1, 0, 0])
-vis_tools.add_footstep(footsteps_viz, "rf_footstep", color=[0, 0, 1])
-b_footsteps_visible_on_viewer = False
-
 # load all YAML data from dcm trajectory manager to plot planned footsteps
 footstep_plans = 0
 b_footsteps_available = False
@@ -131,6 +125,16 @@ while file_exists:
     footstep_plans += 1
     path = 'experiment_data/' + str(footstep_plans) + '.yaml'
     file_exists = os.path.isfile(path)
+
+pnc_path = 'config/draco/pnc.yaml'
+with open(pnc_path, 'r') as pnc_stream:
+    try:
+        pnc_cfg = yaml.load(pnc_stream, Loader=yaml.FullLoader)
+        foot_half_length = pnc_cfg["wbc"]["contact"]["sim_foot_half_length"]
+        foot_half_width = pnc_cfg["wbc"]["contact"]["sim_foot_half_width"]
+        steps_per_plan = pnc_cfg["dcm_walking"]["n_steps"]
+    except yaml.YAMLError as exc:
+        print(exc)
 
 # load pkl data
 with open('experiment_data/pnc.pkl', 'rb') as file:
@@ -166,6 +170,16 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
             break
 
 time.sleep(3)
+
+# add planned footsteps
+footsteps_viz = meshcat.Visualizer(window=viz.viewer.window)
+vis_tools.add_footsteps(footsteps_viz, "lf_footsteps", len(lfoot_contact_pos[0]),
+                        color=[1, 0, 0], foot_width=2.*foot_half_width,
+                        foot_length=2.*foot_half_length)
+vis_tools.add_footsteps(footsteps_viz, "rf_footsteps", len(rfoot_contact_pos[0]),
+                        color=[0, 0, 1], foot_width=2.*foot_half_width,
+                        foot_length=2.*foot_half_length)
+b_footsteps_visible_on_viewer = False
 
 # replay data and create animation
 curr_step_plan = 0
@@ -238,22 +252,22 @@ for ti in range(len(exp_time)):
         if b_show_footsteps and b_footsteps_available:
             if t_ini_footsteps_planned[curr_step_plan] < exp_time[
                     ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
-                footsteps_viz["lf_footstep"].set_property("visible", True)
-                footsteps_viz["rf_footstep"].set_property("visible", True)
-                vis_tools.update_footstep(footsteps_viz["lf_footstep"],
+                footsteps_viz["lf_footsteps"].set_property("visible", True)
+                footsteps_viz["rf_footsteps"].set_property("visible", True)
+                vis_tools.update_footstep(footsteps_viz["lf_footsteps"],
                                           lfoot_contact_pos[curr_step_plan],
                                           lfoot_contact_ori[curr_step_plan])
-                vis_tools.update_footstep(footsteps_viz["rf_footstep"],
+                vis_tools.update_footstep(footsteps_viz["rf_footsteps"],
                                           rfoot_contact_pos[curr_step_plan],
                                           rfoot_contact_ori[curr_step_plan])
             else:
-                footsteps_viz["lf_footstep"].set_property("visible", False)
-                footsteps_viz["rf_footstep"].set_property("visible", False)
+                footsteps_viz["lf_footsteps"].set_property("visible", False)
+                footsteps_viz["rf_footsteps"].set_property("visible", False)
 
-            vis_tools.update_footstep(frame["lf_footstep"],
+            vis_tools.update_footstep(frame["lf_footsteps"],
                                       lfoot_contact_pos[curr_step_plan],
                                       lfoot_contact_ori[curr_step_plan])
-            vis_tools.update_footstep(frame["rf_footstep"],
+            vis_tools.update_footstep(frame["rf_footsteps"],
                                       rfoot_contact_pos[curr_step_plan],
                                       rfoot_contact_ori[curr_step_plan])
 
@@ -264,8 +278,8 @@ for ti in range(len(exp_time)):
 
     frame_index = frame_index + 1
 
-footsteps_viz["lf_footstep"].set_property("visible", True)
-footsteps_viz["rf_footstep"].set_property("visible", True)
+footsteps_viz["lf_footsteps"].set_property("visible", True)
+footsteps_viz["rf_footsteps"].set_property("visible", True)
 
 print("Experiment initial time: ", exp_time[0])
 print("Experiment final time: ", exp_time[-1])

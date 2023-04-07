@@ -20,14 +20,18 @@ def add_arrow(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
     meshcat_visualizer[obj_name]["head"].set_object(arrow_head, material)
 
 
-def add_footstep(meshcat_visualizer, obj_name, color=[1, 0, 0], foot_length=0.25, foot_width=0.15):
+def add_footsteps(meshcat_visualizer, obj_name, footsteps_to_add,
+                  color=[1, 0, 0], foot_length=0.25, foot_width=0.15):
+    # create footstep
     footstep = g.Box([foot_length, foot_width, 0.01])
     material = g.MeshPhongMaterial()
     material.color = int(color[0] * 255) * 256**2 + int(
         color[1] * 255) * 256 + int(color[2] * 255)
     material.opacity = 0.4
 
-    meshcat_visualizer[obj_name].set_object(footstep, material)
+    # add all footsteps to visualizer
+    for step in range(footsteps_to_add):
+        meshcat_visualizer[obj_name]["step" + str(step)].set_object(footstep, material)
 
 def add_sphere(parent_visualizer,
                node_name="sphere",
@@ -88,11 +92,13 @@ def grf_display(meshcat_visualizer, foot_pos, foot_ori, foot_grf):
 
 
 def update_footstep(meshcat_visualizer, footstep_pos, footstep_ori):
-    T_rot = tf.quaternion_matrix(footstep_ori[0])
-    T_trans = tf.translation_matrix(footstep_pos)
+    num_steps, _ = np.shape(footstep_pos)
+    for step in range(num_steps):
+        T_rot = tf.quaternion_matrix(footstep_ori[step])
+        T_trans = tf.translation_matrix(footstep_pos[step])
 
-    T = tf.concatenate_matrices(T_trans, T_rot)
-    meshcat_visualizer.set_transform(T)
+        T = tf.concatenate_matrices(T_trans, T_rot)
+        meshcat_visualizer["step" + str(step)].set_transform(T)
 
 
 def display_visualizer_frames(meshcat_visualizer, frame):
