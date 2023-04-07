@@ -26,7 +26,7 @@ class OutputDataManager:
         """
         msg = vr_teleop_msg()
         if self.first:
-            msg.l_bump = True
+            msg.l_pad = True
             self.first = False
         msg.lh_pos[:] = action['lh_pos']
         msg.rh_pos[:] = action['rh_pos']
