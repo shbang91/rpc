@@ -112,17 +112,13 @@ def main():
             if name.endswith(".hdf5"):
                 with h5py.File(os.path.join(root, name)) as demo_file:
 
-                    # dummy data since we aren't using RL?
-                    done = np.zeros(
-                        demo_file['obs/joint_pos'].shape[0], dtype='uint64')
-
                     # all data for this episode goes in this group
                     ep_group = output_data.create_group(f"demo_{demo_count}")
 
                     # obs_group = ep_group.create_group("obs")
 
                     obs_converter = ObservationConverter(
-                        include_actions=True, include_desired=True, trim_demo_video=True)
+                        include_images=True, include_actions=True, include_desired=True, trim_demo_video=True)
 
                     data = obs_converter.convert(demo_file)
 
@@ -138,6 +134,9 @@ def main():
                             demo_file.copy(
                                 demo_file[f"obs/{key}"], obs_group, key)
                     """
+
+                    done = np.zeros(
+                        data['obs/rgb'].shape[0], dtype='uint64')
 
                     ep_group.create_dataset("dones", data=done, dtype='uint64')
                     ep_group.create_dataset("rewards", data=done)

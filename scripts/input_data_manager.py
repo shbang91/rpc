@@ -74,13 +74,13 @@ class SocketInputDataManager(InputDataManager):
         self.control_socket.connect(control_ip)
         self.control_socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
-        self.rgb_streaming_socket = context.socket(zmq.PULL)
-        self.rgb_streaming_socket.set(zmq.CONFLATE, 1)
-        self.rgb_streaming_socket.connect(rgb_camera_ip)
+        #self.rgb_streaming_socket = context.socket(zmq.PULL)
+        #self.rgb_streaming_socket.set(zmq.CONFLATE, 1)
+        #self.rgb_streaming_socket.connect(rgb_camera_ip)
 
-        self.stereo_streaming_socket = context.socket(zmq.PULL)
-        self.stereo_streaming_socket.set(zmq.CONFLATE, 1)
-        self.stereo_streaming_socket.connect(stereo_camera_ip)
+        #self.stereo_streaming_socket = context.socket(zmq.PULL)
+        #self.stereo_streaming_socket.set(zmq.CONFLATE, 1)
+        #self.stereo_streaming_socket.connect(stereo_camera_ip)
 
     def get_robot_data(self):
         msg = pnc_msg()
@@ -88,7 +88,11 @@ class SocketInputDataManager(InputDataManager):
         return msg
 
     def get_rgb_img(self):
-        return self.rgb_streaming_socket.recv()
+        return np.zeros(200 * 400 * 3)
+        #return self.rgb_streaming_socket.recv()
 
     def get_stereo_img(self):
-        return self.stereo_streaming_socket.recv()
+        return np.zeros(200 * 800)
+        #return self.stereo_streaming_socket.recv()
+
+# class ReplayInputDataManager(InputDataManager)

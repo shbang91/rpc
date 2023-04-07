@@ -15,15 +15,19 @@ class OutputDataManager:
     """
 
     def __init__(self, context, output_port=5555):
-        self.socket = context.socket(zmq.PUSH)
+        self.socket = context.socket(zmq.PUB)
         self.socket.set(zmq.CONFLATE, 1)
         self.socket.bind("tcp://*:" + str(output_port))
+        self.first = True
 
     def send(self, action):
         """
         Sends the action to the rpc
         """
         msg = vr_teleop_msg()
+        if self.first:
+            msg.l_bump = True
+            self.first = False
         msg.lh_pos[:] = action['lh_pos']
         msg.rh_pos[:] = action['rh_pos']
         msg.lh_ori[:] = action['lh_ori']
