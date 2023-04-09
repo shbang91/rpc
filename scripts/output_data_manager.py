@@ -13,7 +13,6 @@ class OutputDataManager:
     """
     Converts the output of the neural network to protobuf and sends to rpc 
     """
-
     def __init__(self, context, output_port=5555):
         self.socket = context.socket(zmq.PUB)
         self.socket.set(zmq.CONFLATE, 1)

@@ -23,7 +23,7 @@ void DracoVRTeleopManager::InitializeTeleopSocket(
     const std::string &ip_address) {
   std::cout << "ip address " + ip_address << std::endl;
   teleop_socket_->connect(ip_address);
-  teleop_socket_->set(zmq::sockopt::rcvtimeo, 20);
+  teleop_socket_->setsockopt(ZMQ_RCVTIMEO, 20);
 }
 
 bool DracoVRTeleopManager::isReady() { return ready_; }
@@ -42,8 +42,6 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
     ready_ = false;
     return result;
   }
-
-  std::cout << "command received" << std::endl;
 
   draco::vr_teleop_msg m;
   m.ParseFromArray(commands.data(), commands.size());
@@ -72,6 +70,9 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
       result.rh_ori(i, j) = m.rh_ori(i * 3 + j);
     }
   }
+
+  std::cout << "lh pos: " << result.lh_pos << std::endl;
+  std::cout << "lh ori: " << result.lh_ori << std::endl;
 
   if (result.l_pad) {
     std::cout << "l pad held" << std::endl;
