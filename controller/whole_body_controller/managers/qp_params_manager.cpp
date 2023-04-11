@@ -8,6 +8,8 @@ QPParamsManager::QPParamsManager(QPParams *qp_params)
 
   init_W_delta_rf_ = qp_params_->W_delta_rf_;
   fin_W_delta_rf_ = Eigen::VectorXd::Zero(init_W_delta_rf_.size());
+  init_W_xc_ddot_ = qp_params_->W_xc_ddot_;
+  fin_W_xc_ddot_ = Eigen::VectorXd::Zero(init_W_xc_ddot_.size());
 }
 
 void QPParamsManager::InitializeWDeltaRfInterpolation(
@@ -25,4 +27,20 @@ void QPParamsManager::UpdateWDeltaRfInterpolation(double query_time) {
       (fin_W_delta_rf_ - init_W_delta_rf_) / duration_ * query_time;
 
   qp_params_->W_delta_rf_ = W_delta_rf;
+}
+
+void QPParamsManager::InitializeWContactInterpolation(
+    const Eigen::VectorXd &target_W_xc_ddot, double duration) {
+  init_W_xc_ddot_ = qp_params_->W_xc_ddot_;
+  fin_W_xc_ddot_ = target_W_xc_ddot;
+  duration_ = duration;
+}
+void QPParamsManager::UpdateWContactInterpolation(double query_time) {
+  query_time = util::Clamp(query_time, 0., duration_);
+
+  Eigen::VectorXd W_xc_ddot =
+      init_W_xc_ddot_ +
+      (fin_W_xc_ddot_ - init_W_xc_ddot_) / duration_ * query_time;
+
+  qp_params_->W_xc_ddot_ = W_xc_ddot;
 }

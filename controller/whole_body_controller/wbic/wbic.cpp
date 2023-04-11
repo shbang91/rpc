@@ -124,6 +124,8 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
 
       // Eigen::VectorXd x_int_ddot = Ji_ * wbc_qddot_cmd;
       // util::PrettyPrint(x_int_ddot, std::cout, "x_int_ddot");
+      // std::cout << "=================================================="
+      //<< std::endl;
       // Eigen::VectorXd x_c_ddot = Jc * wbc_qddot_cmd + JcDotQdot;
       // util::PrettyPrint(x_c_ddot, std::cout, "x_c_ddot");
     }
@@ -158,7 +160,7 @@ bool WBIC::MakeTorque(const Eigen::VectorXd &wbc_qddot_cmd,
   _GetDesiredReactionForce(force_task_vector);
 
   // setup for QP
-  _SetQPCost();
+  _SetQPCost(wbc_qddot_cmd);
   _SetQPEqualityConstraint(wbc_qddot_cmd);
   _SetQPInEqualityConstraint();
 
@@ -218,13 +220,23 @@ void WBIC::_GetDesiredReactionForce(
   }
 }
 
-void WBIC::_SetQPCost() {
+void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
   H_ = Eigen::MatrixXd::Zero(num_floating_ + dim_contact_,
                              num_floating_ + dim_contact_);
-  H_.topLeftCorner(num_floating_, num_floating_) =
+  Eigen::MatrixXd delta_qddot_cost =
       (wbic_data_->qp_params_->W_delta_qddot_).asDiagonal();
+  Eigen::MatrixXd xc_ddot_cost =
+      (Jc_.transpose() * (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() *
+       Jc_)
+          .topLeftCorner(num_floating_, num_floating_);
+  H_.topLeftCorner(num_floating_, num_floating_) =
+      delta_qddot_cost + xc_ddot_cost;
   H_.bottomRightCorner(dim_contact_, dim_contact_) =
       (wbic_data_->qp_params_->W_delta_rf_).asDiagonal();
+  g_ = Eigen::VectorXd::Zero(num_floating_);
+  g_ = (wbc_qddot_cmd.transpose() * Jc_.transpose() *
+        (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_)
+           .head(num_floating_);
 }
 
 void WBIC::_SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd) {
@@ -248,7 +260,7 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
   // ProxQP
   //========================================================================
   // define the problem
-  // double eps_abs = 1e-9; // absolute stopping criterion of the solver
+  // double eps_abs = 1e-5; // absolute stopping criterion of the solver
   // dense::isize dim = num_floating_ + dim_contact_;
   // dense::isize n_eq = num_floating_;
   // dense::isize n_ineq = C_.rows();
@@ -258,17 +270,15 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
   // qp.settings.eps_abs = eps_abs;
   // qp.settings.initial_guess =
   // InitialGuessStatus::WARM_START_WITH_PREVIOUS_RESULT;
-  // qp.settings.verbose = true;
+  // qp.settings.verbose = false;
 
-  // initialize qp with matrices describing the problem
-  // note: it is also possible to use update here
+  // initialize qp with matrices describing the problem note: it is also
+  // possible to use update here
   // qp.init(H_, nullopt, A_, b_, C_, l_, nullopt);
   // qp.solve();
 
-  // Eigen::VectorXd opt_sol = qp.results.x; // primal results
-  // wbic_data_->delta_qddot_ = opt_sol.head(num_floating_);
-  // wbic_data_->delta_rf_ = opt_sol.tail(dim_contact_);
-  //
+  // Eigen::VectorXd qp_sol = qp.results.x; // primal results
+
   // std::cout << "primal residual: " << qp.results.info.pri_res << std::endl;
   // std::cout << "dual residual: " << qp.results.info.dua_res << std::endl;
   // std::cout << "total number of iteration: " << qp.results.info.iter
@@ -297,7 +307,7 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
     for (int j(0); j < dim; ++j) {
       G_[j][i] = H_(i, j);
     }
-    g0_[i] = 0.;
+    g0_[i] = g_[i];
   }
 
   for (int i(0); i < n_eq; ++i) {
@@ -364,11 +374,8 @@ void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
   // std::cout << "jtrq_cmd " << jtrq_cmd.transpose() << std::endl;
 
   // contact constraint check
-  // Eigen::VectorXd Xc_ddot_bf_correct =
-  // Jc_ * Ni_dyn_ * wbc_qddot_cmd + JcDotQdot_;
-  // Eigen::VectorXd Xc_ddot = Jc_ * Ni_dyn_ * corrected_qddot_cmd + JcDotQdot_;
+  // Eigen::VectorXd Xc_ddot =
+  // Jc_ * wbic_data_->corrected_wbc_qddot_cmd_ + JcDotQdot_;
   // std::cout << "==================================" << std::endl;
-  // util::PrettyPrint(Xc_ddot_bf_correct, std::cout, "Xc_ddot before
-  // correction"); util::PrettyPrint(Xc_ddot, std::cout, "Xc_ddot after
-  // correction");
+  // util::PrettyPrint(Xc_ddot, std::cout, "Xc_ddot after correction");
 }

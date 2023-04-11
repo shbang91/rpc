@@ -75,6 +75,10 @@ void DoubleSupportStandUp::FirstVisit() {
       Eigen::Vector3d::Constant(100);
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_.segment<3>(6) =
       Eigen::Vector3d::Constant(100);
+  ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_ =
+      Eigen::VectorXd::Constant(12, 1e7);
+  // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[5] = 1e8;
+  // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[11] = 1e8;
 
   // initialize reaction force tasks
   // smoothly increase the fz in world frame

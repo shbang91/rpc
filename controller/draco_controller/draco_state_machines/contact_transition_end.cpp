@@ -40,6 +40,9 @@ void ContactTransitionEnd::FirstVisit() {
     target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(10);
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
                                                         end_time_);
+    // change right foot contact acc QP params
+    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
+    target_W_xc_ddot.tail<6>() = Eigen::VectorXd::Constant(6, 0.1);
 
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     std::cout << "draco_states::kRFContactTransitionEnd" << std::endl;
@@ -54,6 +57,9 @@ void ContactTransitionEnd::FirstVisit() {
     target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(10);
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
                                                         end_time_);
+    // change left foot contact acc QP params
+    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
+    target_W_xc_ddot.head<6>() = Eigen::VectorXd::Constant(6, 0.1);
   }
 }
 
@@ -76,6 +82,7 @@ void ContactTransitionEnd::OneStep() {
 
   // update qp params
   ctrl_arch_->qp_pm_->UpdateWDeltaRfInterpolation(state_machine_time_);
+  ctrl_arch_->qp_pm_->UpdateWContactInterpolation(state_machine_time_);
 }
 
 bool ContactTransitionEnd::EndOfState() {

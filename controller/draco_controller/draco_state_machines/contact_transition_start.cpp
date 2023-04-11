@@ -58,6 +58,9 @@ void ContactTransitionStart::FirstVisit() {
         target_W_delta_rf,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
+    // change right foot contact acc QP params
+    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
+
     sp_->b_rf_contact_ = true;
 
   } else {
@@ -76,6 +79,9 @@ void ContactTransitionStart::FirstVisit() {
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(
         target_W_delta_rf,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
+
+    // change left foot contact acc QP params
+    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
 
     sp_->b_lf_contact_ = true;
   }
@@ -182,6 +188,7 @@ void ContactTransitionStart::OneStep() {
 
   // update qp params
   ctrl_arch_->qp_pm_->UpdateWDeltaRfInterpolation(state_machine_time_);
+  ctrl_arch_->qp_pm_->UpdateWContactInterpolation(state_machine_time_);
 }
 
 bool ContactTransitionStart::EndOfState() {

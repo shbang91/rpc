@@ -17,11 +17,13 @@ struct QPParams {
   QPParams(int num_float, int dim_contact) {
     W_delta_qddot_ = Eigen::VectorXd::Zero(num_float);
     W_delta_rf_ = Eigen::VectorXd::Zero(dim_contact);
+    W_xc_ddot_ = Eigen::VectorXd::Zero(dim_contact);
   }
   ~QPParams() = default;
 
   Eigen::VectorXd W_delta_qddot_;
   Eigen::VectorXd W_delta_rf_;
+  Eigen::VectorXd W_xc_ddot_;
 };
 
 struct WBICData {
@@ -78,7 +80,7 @@ private:
   _BuildContactMtxVect(const std::map<std::string, Contact *> &contact_map);
   void
   _GetDesiredReactionForce(const std::vector<ForceTask *> &force_task_vector);
-  void _SetQPCost();
+  void _SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd);
   void _SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd);
   void _SetQPInEqualityConstraint();
   void _SolveQP(const Eigen::VectorXd &wbc_qddot_cmd);
@@ -113,7 +115,7 @@ private:
   */
   // cost
   Eigen::MatrixXd H_;
-  // Eigen::VectorXd g_;
+  Eigen::VectorXd g_;
   // equality
   Eigen::MatrixXd A_;
   Eigen::VectorXd b_;
