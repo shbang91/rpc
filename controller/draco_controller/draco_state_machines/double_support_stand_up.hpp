@@ -31,4 +31,10 @@ private:
   bool b_use_base_height_;
 
   double rf_z_max_interp_duration_;
+
+  // QP params yaml
+  double W_delta_qddot_;
+  double W_xc_ddot_in_contact_;
+  Eigen::VectorXd W_delta_rf_left_foot_in_contact_;
+  Eigen::VectorXd W_delta_rf_right_foot_in_contact_;
 };

@@ -17,7 +17,10 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
-      rf_z_max_interp_duration_(0.) {
+      rf_z_max_interp_duration_(0.), W_delta_qddot_(0.),
+      W_xc_ddot_in_contact_(0.),
+      W_delta_rf_left_foot_in_contact_(Eigen::VectorXd::Zero(6)),
+      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6)) {
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -66,17 +69,14 @@ void DoubleSupportStandUp::FirstVisit() {
       rf_z_max_interp_duration_);
 
   // QP params
-  // TODO: make this as yaml
   ctrl_arch_->tci_container_->qp_params_->W_delta_qddot_ =
-      Eigen::VectorXd::Constant(6, 1e5);
-  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_ =
-      Eigen::VectorXd::Constant(12, 1);
-  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_.head<3>() =
-      Eigen::Vector3d::Constant(100);
-  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_.segment<3>(6) =
-      Eigen::Vector3d::Constant(100);
+      Eigen::VectorXd::Constant(6, W_delta_qddot_);
+  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_
+      << W_delta_rf_left_foot_in_contact_,
+      W_delta_rf_right_foot_in_contact_;
   ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_ =
-      Eigen::VectorXd::Constant(12, 1e7);
+      Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+
   // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[5] = 1e8;
   // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[11] = 1e8;
 
@@ -129,6 +129,17 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
     sp_->des_com_height_ = target_height_;
     util::ReadParameter(node, "rf_z_max_interp_duration",
                         rf_z_max_interp_duration_);
+
+    // qp params yaml
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_qddot", W_delta_qddot_);
+    util::ReadParameter(cfg["wbc"]["qp"], "W_xc_ddot_in_contact",
+                        W_xc_ddot_in_contact_);
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_left_foot_in_contact",
+                        W_delta_rf_left_foot_in_contact_);
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
+                        W_delta_rf_right_foot_in_contact_);
+
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

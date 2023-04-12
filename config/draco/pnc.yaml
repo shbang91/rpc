@@ -71,7 +71,8 @@ wbc:
       ########################################################################
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_kp : [5., 5.]
+
+      sim_icp_kp : [1., 1.]
       sim_icp_kd : [0., 0.] # x, y will be ignored
       sim_icp_ki : [0., 0.] 
 
@@ -88,9 +89,10 @@ wbc:
       ########################################################################
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_kp : [0., 0.]
+
+      exp_icp_kp : [1., 1.]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.5, 0.5] 
+      exp_icp_ki : [0., 0.] 
 
       ## IF icp_integrator_type == 0:
       exp_time_constant : 0.2
@@ -108,8 +110,8 @@ wbc:
       sim_com_kp : [100.]
       sim_com_kd : [5.]
 
-      sim_base_kp : [500.]
-      sim_base_kd : [50.] # x, y will be ignored
+      sim_base_kp : [200.]
+      sim_base_kd : [20.] # x, y will be ignored
 
       ########################################################################
       ## exp params
@@ -117,8 +119,8 @@ wbc:
       exp_com_kp : [100.]
       exp_com_kd : [5.]
 
-      exp_base_kp : [50.]
-      exp_base_kd : [1.5] # x, y will be ignored
+      exp_base_kp : [10.]
+      exp_base_kd : [1] # x, y will be ignored
 
     cam_task:
       ########################################################################
@@ -129,14 +131,14 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kd : [1., 1., 1.]
+      exp_kd : [0., 0., 0.]
 
     torso_ori_task:
       ########################################################################
       ## sim params
       ########################################################################
       sim_kp : [200., 200., 100.]
-      sim_kd : [14., 14., 10.]
+      sim_kd : [20., 20., 10.]
 
       ## exp params
       exp_kp : [30., 30., 20.]
@@ -162,8 +164,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [300., 300., 300.]
-      sim_kd : [30., 30., 30.]
+      sim_kp : [200., 200., 300.]
+      sim_kd : [20., 20., 30.]
 
       ########################################################################
       ## exp params
@@ -220,9 +222,15 @@ wbc:
     #exp_foot_half_length: 0.125
     #exp_foot_half_width: 0.075
 
-  #qp:
-    #lambda_qddot: 1e-7 ##regularization
-    #lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
+  qp:
+    W_delta_qddot: 1e5 #1e5
+
+    #W_delta_rf_left_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
+    #W_delta_rf_right_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
+    W_delta_rf_left_foot_in_contact: [100., 100., 100., 1., 1., 1.] 
+    W_delta_rf_right_foot_in_contact: [100., 100., 100., 1., 1., 1.] 
+
+    W_xc_ddot_in_contact: 1e7
 
 state_machine:
     initialize:
