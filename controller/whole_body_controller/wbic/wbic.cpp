@@ -7,13 +7,13 @@
 #include "controller/whole_body_controller/internal_constraint.hpp"
 
 // for ProxQP
-//#include <Eigen/Core>
-//#include <iostream>
-//#include <proxsuite/helpers/optional.hpp> // for c++14
-//#include <proxsuite/proxqp/dense/dense.hpp>
+#include <Eigen/Core>
+#include <iostream>
+#include <proxsuite/helpers/optional.hpp> // for c++14
+#include <proxsuite/proxqp/dense/dense.hpp>
 
-// using namespace proxsuite::proxqp;
-// using proxsuite::nullopt; // c++17 simply use std::nullopt
+using namespace proxsuite::proxqp;
+using proxsuite::nullopt; // c++17 simply use std::nullopt
 
 WBIC::WBIC(const std::vector<bool> &act_qdot_list, const Eigen::MatrixXd *Ji)
     : WBC(act_qdot_list, Ji), threshold_(0.0001), dim_contact_(0) {
@@ -236,7 +236,9 @@ void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
   g_ = Eigen::VectorXd::Zero(num_floating_ + dim_contact_);
   g_.head(num_floating_) =
       (wbc_qddot_cmd.transpose() * Jc_.transpose() *
-       (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_)
+           (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_ +
+       JcDotQdot_.transpose() *
+           (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_)
           .head(num_floating_);
 }
 
