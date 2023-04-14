@@ -85,11 +85,11 @@ void PinocchioRobotSystem::_Initialize() {
         model_.effortLimit.segment(n_float_, n_adof_);
   }
 
-  q_.resize(n_q_);
-  qdot_.resize(n_qdot_);
+  q_ = Eigen::VectorXd::Zero(n_q_);
+  qdot_ = Eigen::VectorXd::Zero(n_qdot_);
   Ig_.setZero();
   Hg_.setZero();
-  Ag_.resize(6, n_qdot_);
+  Ag_ = Eigen::MatrixXd::Zero(6, n_qdot_);
 }
 
 void PinocchioRobotSystem::UpdateRobotModel(
@@ -100,7 +100,7 @@ void PinocchioRobotSystem::UpdateRobotModel(
     const Eigen::VectorXd &joint_vel, bool b_update_centroid) {
   if (!b_fixed_base_) {
     q_.segment<3>(0) = base_joint_pos;
-    q_.segment<3>(3) << base_joint_quat.normalized().coeffs();
+    q_.segment<4>(3) << base_joint_quat.normalized().coeffs();
     q_.tail(n_q_ - 7) = joint_pos;
 
     Eigen::Matrix3d rot_w_basejoint =
