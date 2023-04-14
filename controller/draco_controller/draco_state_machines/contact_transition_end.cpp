@@ -1,11 +1,13 @@
 #include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/qp_params_manager.hpp"
+#include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
@@ -35,14 +37,18 @@ void ContactTransitionEnd::FirstVisit() {
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
 
     // change left foot rf QP params
-    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
-    target_W_delta_rf.head<3>() = Eigen::Vector3d::Constant(1e3);
-    target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(10);
+    Eigen::VectorXd target_W_delta_rf =
+        ctrl_arch_->tci_container_->qp_params_->W_delta_rf_;
+    target_W_delta_rf.head<6>() = W_delta_rf_left_foot_in_swing_;
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
                                                         end_time_);
-    // change right foot contact acc QP params
-    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
-    target_W_xc_ddot.tail<6>() = Eigen::VectorXd::Constant(6, 0.1);
+    // change left foot contact acc QP params
+    Eigen::VectorXd target_W_xc_ddot =
+        ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_;
+    target_W_xc_ddot.head<6>() =
+        Eigen::VectorXd::Constant(6, W_xc_ddot_in_swing_);
+    ctrl_arch_->qp_pm_->InitializeWContactInterpolation(target_W_xc_ddot,
+                                                        end_time_);
 
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     std::cout << "draco_states::kRFContactTransitionEnd" << std::endl;
@@ -52,14 +58,19 @@ void ContactTransitionEnd::FirstVisit() {
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
 
     // change right foot rf QP params
-    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
-    target_W_delta_rf.segment<3>(6) = Eigen::Vector3d::Constant(1e3);
-    target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(10);
+    Eigen::VectorXd target_W_delta_rf =
+        ctrl_arch_->tci_container_->qp_params_->W_delta_rf_;
+    target_W_delta_rf.tail<6>() = W_delta_rf_right_foot_in_swing_;
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(target_W_delta_rf,
                                                         end_time_);
+
     // change left foot contact acc QP params
-    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
-    target_W_xc_ddot.head<6>() = Eigen::VectorXd::Constant(6, 0.1);
+    Eigen::VectorXd target_W_xc_ddot =
+        ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_;
+    target_W_xc_ddot.tail<6>() =
+        Eigen::VectorXd::Constant(6, W_xc_ddot_in_swing_);
+    ctrl_arch_->qp_pm_->InitializeWContactInterpolation(target_W_xc_ddot,
+                                                        end_time_);
   }
 }
 
@@ -98,4 +109,20 @@ StateId ContactTransitionEnd::GetNextState() {
     return draco_states::kRFSingleSupportSwing;
 }
 
-void ContactTransitionEnd::SetParameters(const YAML::Node &node) {}
+void ContactTransitionEnd::SetParameters(const YAML::Node &node) {
+  try {
+    // qp params yaml
+    util::ReadParameter(node["wbc"]["qp"], "W_xc_ddot_in_swing",
+                        W_xc_ddot_in_swing_);
+    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_left_foot_in_swing",
+                        W_delta_rf_left_foot_in_swing_);
+    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_right_foot_in_swing",
+                        W_delta_rf_right_foot_in_swing_);
+
+  } catch (std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+}

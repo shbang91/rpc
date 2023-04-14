@@ -14,7 +14,7 @@ SingleSupportSwing::SingleSupportSwing(StateId state_id,
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), swing_height_(0.) {
 
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
-    util::PrettyConstructor(2, "kLFSingleSupportSwing");
+    util::PrettyConstructor(2, "LFSingleSupportSwing");
     // contact_vector_.clear();
     // contact_vector_.push_back(
     // ctrl_arch_->tci_container_->contact_map_["rf_contact"]);
@@ -33,7 +33,7 @@ SingleSupportSwing::SingleSupportSwing(StateId state_id,
     // ctrl_arch_->tci_container_->task_map_["upper_body_task"]);
 
   } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
-    util::PrettyConstructor(2, "kRFSingleSupportSwing");
+    util::PrettyConstructor(2, "RFSingleSupportSwing");
     // contact_vector_.clear();
     // contact_vector_.push_back(
     // ctrl_arch_->tci_container_->contact_map_["lf_contact"]);
@@ -65,7 +65,7 @@ void SingleSupportSwing::FirstVisit() {
   // ctrl_arch_->tci_container_->task_vector_ = task_vector_;
 
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
-    std::cout << "draco_states::kLFSingleSupportSwing" << std::endl;
+    std::cout << "draco_states::LFSingleSupportSwing" << std::endl;
 
     // build tasks & contacts
     auto &contact_vector = ctrl_arch_->tci_container_->contact_vector_;
@@ -78,9 +78,9 @@ void SingleSupportSwing::FirstVisit() {
     task_vector.clear();
     task_vector.push_back(task_map["lf_pos_task"]);
     task_vector.push_back(task_map["lf_ori_task"]);
-    task_vector.push_back(task_map["com_xy_task"]);
     task_vector.push_back(task_map["com_z_task"]);
     task_vector.push_back(task_map["torso_ori_task"]);
+    task_vector.push_back(task_map["com_xy_task"]);
     task_vector.push_back(task_map["upper_body_task"]);
 
     Eigen::Isometry3d curr_lfoot_iso =
@@ -99,7 +99,7 @@ void SingleSupportSwing::FirstVisit() {
     sp_->b_lf_contact_ = false;
 
   } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
-    std::cout << "draco_states::kRFSingleSupportSwing" << std::endl;
+    std::cout << "draco_states::RFSingleSupportSwing" << std::endl;
 
     // build tasks & contacts
     auto &contact_vector = ctrl_arch_->tci_container_->contact_vector_;
@@ -112,9 +112,9 @@ void SingleSupportSwing::FirstVisit() {
     task_vector.clear();
     task_vector.push_back(task_map["rf_pos_task"]);
     task_vector.push_back(task_map["rf_ori_task"]);
-    task_vector.push_back(task_map["com_xy_task"]);
     task_vector.push_back(task_map["com_z_task"]);
     task_vector.push_back(task_map["torso_ori_task"]);
+    task_vector.push_back(task_map["com_xy_task"]);
     task_vector.push_back(task_map["upper_body_task"]);
 
     Eigen::Isometry3d curr_rfoot_iso =

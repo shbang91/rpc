@@ -9,6 +9,7 @@
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/qp_params_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
+#include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 ContactTransitionStart::ContactTransitionStart(
@@ -51,15 +52,19 @@ void ContactTransitionStart::FirstVisit() {
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     // change right foot rf QP params
-    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
-    target_W_delta_rf.segment<3>(6) = Eigen::Vector3d::Constant(100);
-    target_W_delta_rf.segment<3>(9) = Eigen::Vector3d::Constant(1);
+    Eigen::VectorXd target_W_delta_rf =
+        ctrl_arch_->tci_container_->qp_params_->W_delta_rf_;
+    target_W_delta_rf.tail<6>() = W_delta_rf_right_foot_in_contact_;
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(
         target_W_delta_rf,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     // change right foot contact acc QP params
-    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
+    Eigen::VectorXd target_W_xc_ddot =
+        Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+    ctrl_arch_->qp_pm_->InitializeWContactInterpolation(
+        target_W_xc_ddot,
+        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     sp_->b_rf_contact_ = true;
 
@@ -73,15 +78,19 @@ void ContactTransitionStart::FirstVisit() {
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     // change left foot rf QP params
-    Eigen::VectorXd target_W_delta_rf = Eigen::VectorXd::Constant(12, 1);
-    target_W_delta_rf.head<3>() = Eigen::Vector3d::Constant(100);
-    target_W_delta_rf.segment<3>(3) = Eigen::Vector3d::Constant(1);
+    Eigen::VectorXd target_W_delta_rf =
+        ctrl_arch_->tci_container_->qp_params_->W_delta_rf_;
+    target_W_delta_rf.head<6>() = W_delta_rf_left_foot_in_contact_;
     ctrl_arch_->qp_pm_->InitializeWDeltaRfInterpolation(
         target_W_delta_rf,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     // change left foot contact acc QP params
-    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Constant(12, 1e7);
+    Eigen::VectorXd target_W_xc_ddot =
+        Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+    ctrl_arch_->qp_pm_->InitializeWContactInterpolation(
+        target_W_xc_ddot,
+        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     sp_->b_lf_contact_ = true;
   }
@@ -96,9 +105,9 @@ void ContactTransitionStart::FirstVisit() {
   auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
   task_vector.clear();
-  task_vector.push_back(task_map["com_xy_task"]);
   task_vector.push_back(task_map["com_z_task"]);
   task_vector.push_back(task_map["torso_ori_task"]);
+  task_vector.push_back(task_map["com_xy_task"]);
   task_vector.push_back(task_map["upper_body_task"]);
   // ctrl_arch_->tci_container_->contact_vector_ = contact_vector_;
   // ctrl_arch_->tci_container_->task_vector_ = task_vector_;
@@ -212,4 +221,20 @@ StateId ContactTransitionStart::GetNextState() {
   }
 }
 
-void ContactTransitionStart::SetParameters(const YAML::Node &node) {}
+void ContactTransitionStart::SetParameters(const YAML::Node &node) {
+  try {
+    // qp params yaml
+    util::ReadParameter(node["wbc"]["qp"], "W_xc_ddot_in_contact",
+                        W_xc_ddot_in_contact_);
+    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_left_foot_in_contact",
+                        W_delta_rf_left_foot_in_contact_);
+    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
+                        W_delta_rf_right_foot_in_contact_);
+
+  } catch (std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl
+              << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+}
