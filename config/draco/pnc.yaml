@@ -227,10 +227,17 @@ wbc:
 
     #W_delta_rf_left_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
     #W_delta_rf_right_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
-    W_delta_rf_left_foot_in_contact: [100., 100., 100., 1., 1., 1.] 
-    W_delta_rf_right_foot_in_contact: [100., 100., 100., 1., 1., 1.] 
+    W_delta_rf_left_foot_in_contact: [1., 1., 1., 1., 1., 1.] 
+    W_delta_rf_right_foot_in_contact: [1., 1., 1., 1., 1., 1.] 
 
-    W_xc_ddot_in_contact: 1e7
+    W_delta_rf_left_foot_in_swing: [1e4, 1e4, 1e4, 1e3, 1e3, 1e3]
+    W_delta_rf_right_foot_in_swing: [1e4, 1e4, 1e4, 1e3, 1e3, 1e3]
+
+    #W_xc_ddot_in_contact: 1e7
+    #W_xc_ddot_in_swing: 1e-3
+    W_xc_ddot_in_contact: 0
+    W_xc_ddot_in_swing: 0
+
 
 state_machine:
     initialize:
