@@ -163,8 +163,7 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     Eigen::VectorXd output = com_vel_exp_filter_->Output();
     sp_->com_vel_est_ << output[0], output[1], output[2];
   } else if (com_vel_filter_type_ == com_vel_filter::kLowPassFilter) {
-    Eigen::VectorXd com_pos(3);
-    com_pos << robot_->GetRobotComPos();
+    Eigen::Vector3d com_pos = robot_->GetRobotComPos();
 
     if (b_lp_first_visit_) {
       com_vel_lp_filter_->Reset(com_pos);
@@ -188,7 +187,7 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     DracoDataManager *dm = DracoDataManager::GetDataManager();
     dm->data_->est_base_joint_pos_ = base_joint_pos;
     Eigen::Quaterniond base_joint_quat(base_joint_ori_rot);
-    dm->data_->est_base_joint_ori_ << base_joint_quat.normalized().coeffs();
+    dm->data_->est_base_joint_ori_ = base_joint_quat.normalized().coeffs();
 
     // Save joint pos data
     dm->data_->joint_positions_ = sensor_data->joint_pos_;
