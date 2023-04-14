@@ -17,10 +17,10 @@ public:
     cori_ = Eigen::VectorXd::Zero(num_qdot_);
     grav_ = Eigen::VectorXd::Zero(num_qdot_);
 
-    for (auto e : act_qdot_list) {
-      if (e)
+    for (int i(0); i < act_qdot_list.size(); ++i) {
+      if (act_qdot_list[i])
         ++num_active_;
-      else
+      if (!act_qdot_list[i] && i > num_floating_ - 1)
         ++num_passive_;
     }
 
@@ -42,12 +42,11 @@ public:
         }
       }
     }
-
     assert(num_qdot_ - num_active_ - num_passive_ - num_floating_ == 0);
 
     // internal constraint check
     if (Ji) {
-      assert(*Ji.cols() == num_qdot);
+      assert(Ji->cols() == num_qdot_);
       Ji_ = *Ji;
       b_internal_constraint_ = true;
     }

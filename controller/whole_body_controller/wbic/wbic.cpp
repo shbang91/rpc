@@ -233,10 +233,11 @@ void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
       delta_qddot_cost + xc_ddot_cost;
   H_.bottomRightCorner(dim_contact_, dim_contact_) =
       (wbic_data_->qp_params_->W_delta_rf_).asDiagonal();
-  g_ = Eigen::VectorXd::Zero(num_floating_);
-  g_ = (wbc_qddot_cmd.transpose() * Jc_.transpose() *
-        (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_)
-           .head(num_floating_);
+  g_ = Eigen::VectorXd::Zero(num_floating_ + dim_contact_);
+  g_.head(num_floating_) =
+      (wbc_qddot_cmd.transpose() * Jc_.transpose() *
+       (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_)
+          .head(num_floating_);
 }
 
 void WBIC::_SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd) {
