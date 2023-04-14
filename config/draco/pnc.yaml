@@ -10,7 +10,7 @@ b_sim: true ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
-  kf: false
+  kf: true
   ########################################################################
   ## sim params
   ########################################################################
@@ -225,10 +225,10 @@ wbc:
   qp:
     W_delta_qddot: 1e5 #1e5
 
-    #W_delta_rf_left_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
-    #W_delta_rf_right_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
-    W_delta_rf_left_foot_in_contact: [1., 1., 1., 1., 1., 1.] 
-    W_delta_rf_right_foot_in_contact: [1., 1., 1., 1., 1., 1.] 
+    W_delta_rf_left_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
+    W_delta_rf_right_foot_in_contact: [100., 100., 100., 10., 10., 10.] 
+    #W_delta_rf_left_foot_in_contact: [1., 1., 1., 1., 1., 1.] 
+    #W_delta_rf_right_foot_in_contact: [1., 1., 1., 1., 1., 1.] 
 
     W_delta_rf_left_foot_in_swing: [1e4, 1e4, 1e4, 1e3, 1e3, 1e3]
     W_delta_rf_right_foot_in_swing: [1e4, 1e4, 1e4, 1e3, 1e3, 1e3]
@@ -247,7 +247,7 @@ state_machine:
       wait_time: 15.
 
     stand_up:
-      standup_duration: 5.
+      standup_duration: 1.
       target_com_height: 0.658
       target_base_height: 0.90
 
