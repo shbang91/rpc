@@ -33,8 +33,8 @@
       <!--<material name="white"/>-->
     </visual>
     <inertial>
-      <origin rpy="0 0 0" xyz="-31.658e-03 -0.03865e-03 125.19e-03"/>
-      <!--<origin rpy="0 0 0" xyz="-31.658e-03 -0.08 125.19e-03"/>-->
+      <!--<origin rpy="0 0 0" xyz="-31.658e-03 -0.03865e-03 125.19e-03"/>-->
+      <origin rpy="0 0 0" xyz="-31.658e-03 -0.08 125.19e-03"/>
       <mass value="7.856"/>
       <inertia ixx="178517.35e-06" ixy="-18.968e-06" ixz="28376.527e-06" iyy="181767.801e-06" iyz="-50.398e-06" izz="37147.31e-06"/>
     </inertial>
@@ -672,12 +672,13 @@
     <collision>
       <origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>
       <geometry>
-        <box size="0.2 0.1 0.0591"/>
+        <!--<box size="0.2 0.1 0.0591"/>-->
+        <box size="0.2 0.1 0.0664"/>
       </geometry>
     </collision>
     <inertial>
-      <!--<origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0440152"/>-->
-      <origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0513152"/>
+      <origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0440152"/>
+      <!--<origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0513152"/>-->
       <!--original mass = 0.478--> 
       <!--F/T sensor mass = 0.0917--> 
       <!--F/T interface mass = 0.078--> 
@@ -690,7 +691,8 @@
 
   <!--=============================== l_foot_contact_frame (l_foot_contact) ===========================-->
   <joint name="l_foot_contact_frame" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 -0.076"/>
+      <!--<origin rpy="0 0 0" xyz="0 0 -0.076"/> -->
+      <origin rpy="0 0 0" xyz="0 0 -0.0833"/> 
     <parent link="l_ankle_ie_link"/>
     <child link="l_foot_contact"/>
   </joint>
@@ -893,11 +895,12 @@
     <collision>
       <origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>
       <geometry>
-        <box size="0.2 0.1 0.0591"/>
+        <!--<box size="0.2 0.1 0.0591"/>-->
+        <box size="0.2 0.1 0.0664"/>
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.00321562 0.00678152 -0.0513152"/>
+      <origin rpy="0 0 0" xyz="-0.00321562 0.00678152 -0.0440164"/>
       <!--original mass = 0.478--> 
       <!--F/T sensor mass = 0.0917--> 
       <!--F/T interface mass = 0.078--> 
@@ -910,7 +913,7 @@
 
   <!--=============================== r_foot_contact_frame (r_foot_contact) ===========================-->
   <joint name="r_foot_contact_frame" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 -0.076"/>
+    <origin rpy="0 0 0" xyz="0 0 -0.0833"/>
     <parent link="r_ankle_ie_link"/>
     <child link="r_foot_contact"/>
   </joint>
