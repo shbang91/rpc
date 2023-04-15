@@ -100,7 +100,7 @@ void PinocchioRobotSystem::UpdateRobotModel(
     const Eigen::VectorXd &joint_vel, bool b_update_centroid) {
   if (!b_fixed_base_) {
     q_.segment<3>(0) = base_joint_pos;
-    q_.segment<3>(3) << base_joint_quat.normalized().coeffs();
+    q_.segment<4>(3) << base_joint_quat.normalized().coeffs();
     q_.tail(n_q_ - 7) = joint_pos;
 
     Eigen::Matrix3d rot_w_basejoint =

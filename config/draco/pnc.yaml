@@ -98,7 +98,7 @@ wbc:
       exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
       exp_icp_kp : [0., 0.]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [1., 1.] 
+      exp_icp_ki : [1.2, 1.] 
 
       ## IF icp_integrator_type == 0:
       exp_time_constant : 0.2
@@ -142,8 +142,8 @@ wbc:
 
       ## exp params
       exp_weight : [100., 100., 10.]
-      exp_kp : [30., 30., 20.]
-      exp_kd : [0.2, 0.2, 0.1]
+      exp_kp : [20., 20., 20.]
+      exp_kd : [0.1, 0.1, 0.1]
 
     upper_body_task:
       ########################################################################
@@ -268,10 +268,10 @@ wbc:
     exp_max_rf_z: 400.
 
     exp_mu: 0.3
-    #exp_foot_half_length: 0.08
-    #exp_foot_half_width: 0.03
-    exp_foot_half_length: 0.125
-    exp_foot_half_width: 0.075
+    exp_foot_half_length: 0.08
+    exp_foot_half_width: 0.04
+    #exp_foot_half_length: 0.125
+    #exp_foot_half_width: 0.075
 
   qp:
     lambda_qddot: 1e-7 ##regularization
@@ -294,9 +294,10 @@ state_machine:
       wait_time: 10.
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 5.
       target_com_height: 0.658
-      target_base_height: 0.90
+      #target_base_height: 0.90
+      target_base_height: 0.86
 
       rf_z_max_interp_duration: 0.1
 

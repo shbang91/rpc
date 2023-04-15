@@ -8,7 +8,7 @@ addpath("plot")
 
 exp_data_location = 'experiment_data';
 base_estimator_type = {'est', 'kf'};    % 'est' = kinematics-only
-est_or_kf = 2;                        % 1: est, 2: kf
+est_or_kf = 1;                        % 1: est, 2: kf
 
 d = dir(sprintf("%s/draco_icp_data*.mat", exp_data_location));
 dd = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));

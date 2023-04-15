@@ -32,7 +32,7 @@ Manipulation::Manipulation(StateId state_id, PinocchioRobotSystem *robot,
   moving_duration_ = 0.05;
 
   initialized_ = 0;
-  initialization_duration_ = 0.2;
+  initialization_duration_ = 5.0;
 
   transitted_ = 0;
   transition_duration_ = 0.3;

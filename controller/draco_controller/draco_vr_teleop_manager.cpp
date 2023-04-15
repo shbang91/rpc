@@ -23,7 +23,7 @@ void DracoVRTeleopManager::InitializeTeleopSocket(
     const std::string &ip_address) {
   std::cout << "ip address " + ip_address << std::endl;
   teleop_socket_->connect(ip_address);
-  teleop_socket_->setsockopt(ZMQ_RCVTIMEO, 20);
+  teleop_socket_->setsockopt(ZMQ_RCVTIMEO, 2);
 }
 
 bool DracoVRTeleopManager::isReady() { return ready_; }
@@ -38,9 +38,8 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   // std::endl;
   DracoVRCommands result;
   if (!success) {
-    std::cout << "No commands received" << std::endl;
-    ready_ = false;
-    return result;
+    // std::cout << "No commands received" << std::endl;
+    return prev_commands;
   }
 
   draco::vr_teleop_msg m;
@@ -71,13 +70,11 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
     }
   }
 
-  std::cout << "lh pos: " << result.lh_pos << std::endl;
-  std::cout << "lh ori: " << result.lh_ori << std::endl;
-
   if (result.l_pad) {
-    std::cout << "l pad held" << std::endl;
+    std::cout << "l pad pressed" << result.l_pad << std::endl;
     if (!l_pad_held_) {
       ready_ = !ready_;
+      std::cout << "VR toggled" << std::endl;
     }
     l_pad_held_ = true;
   } else {
@@ -85,6 +82,10 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   }
 
   prev_commands = result;
+  // If the next command doesn't get received,
+  // we want to replay the previous command.
+  // However, we don't want to toggle vr ready again
+  prev_commands.l_pad = false;
 
   return result;
 }

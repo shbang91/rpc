@@ -137,8 +137,8 @@ wbc_time = len(ctrl_data['des_lh_pos'])
 print(wbc_time)
 print(len(ctrl_data['time']))
 print(ctrl_data['timestamp'])
-# time = ctrl_data['time'][len(ctrl_data['time']) - wbc_time:]
-time = ctrl_data['time']
+time = ctrl_data['time'][len(ctrl_data['time']) - wbc_time:]
+#time = ctrl_data['time']
 print(len(time))
 
 for topic, value_prefix in value_prefixes.items():
@@ -157,11 +157,13 @@ for topic, value_prefix in value_prefixes.items():
         for subidx, coord in enumerate(label[idx]):
             axes[idx][subidx].plot(
                 time,
-                ctrl_data[f'{sensor_prefix}_{value_prefix[idx]}'][:9683, subidx],
+                ctrl_data[f'{sensor_prefix}_{value_prefix[idx]}'][:9683,
+                                                                  subidx],
                 color='b')
             axes[idx][subidx].plot(
                 time,
-                ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:9683, subidx],
+                ctrl_data[f'{target_prefix}_{value_prefix[idx]}'][:9683,
+                                                                  subidx],
                 color='r')
             # axes[idx][subidx].axvspan(0,
             #                          ctrl_data['time'][initialized_idx],
