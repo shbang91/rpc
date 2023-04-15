@@ -670,10 +670,10 @@
       <material name="white"/>
     </visual>
     <collision>
-      <origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>
+      <!--<origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>-->
+      <origin rpy="0 -0 0" xyz="0 -0.005 -0.0533"/>
       <geometry>
-        <!--<box size="0.2 0.1 0.0591"/>-->
-        <box size="0.2 0.1 0.0664"/>
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
     </collision>
     <inertial>
@@ -893,10 +893,10 @@
       <material name="white"/>
     </visual>
     <collision>
-      <origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>
+      <!--<origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>-->
+      <origin rpy="0 -0 0" xyz="0 0.005 -0.0533"/>
       <geometry>
-        <!--<box size="0.2 0.1 0.0591"/>-->
-        <box size="0.2 0.1 0.0664"/>
+        <box size="0.2 0.1 0.0591"/>
       </geometry>
     </collision>
     <inertial>
