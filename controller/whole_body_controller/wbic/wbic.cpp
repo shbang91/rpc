@@ -7,13 +7,13 @@
 #include "controller/whole_body_controller/internal_constraint.hpp"
 
 // for ProxQP
-#include <Eigen/Core>
-#include <iostream>
-#include <proxsuite/helpers/optional.hpp> // for c++14
-#include <proxsuite/proxqp/dense/dense.hpp>
+//#include <Eigen/Core>
+//#include <iostream>
+//#include <proxsuite/helpers/optional.hpp> // for c++14
+//#include <proxsuite/proxqp/dense/dense.hpp>
 
-using namespace proxsuite::proxqp;
-using proxsuite::nullopt; // c++17 simply use std::nullopt
+// using namespace proxsuite::proxqp;
+// using proxsuite::nullopt; // c++17 simply use std::nullopt
 
 WBIC::WBIC(const std::vector<bool> &act_qdot_list, const Eigen::MatrixXd *Ji)
     : WBC(act_qdot_list, Ji), threshold_(0.0001), dim_contact_(0) {
