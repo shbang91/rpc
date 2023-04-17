@@ -7,10 +7,10 @@
 #include "controller/whole_body_controller/internal_constraint.hpp"
 
 // for ProxQP
-//#include <Eigen/Core>
-//#include <iostream>
-//#include <proxsuite/helpers/optional.hpp> // for c++14
-//#include <proxsuite/proxqp/dense/dense.hpp>
+// #include <Eigen/Core>
+// #include <iostream>
+// #include <proxsuite/helpers/optional.hpp> // for c++14
+// #include <proxsuite/proxqp/dense/dense.hpp>
 
 // using namespace proxsuite::proxqp;
 // using proxsuite::nullopt; // c++17 simply use std::nullopt
@@ -117,15 +117,19 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       jvel_cmd = qdot_cmd.tail(num_qdot_ - num_floating_);
       wbc_qddot_cmd = qddot_cmd;
 
+      // Eigen::VectorXd x_int_delta = Ji_ * delta_q_cmd;
+      // util::PrettyPrint(x_int_delta, std::cout, "x_int_delta");
+      // Eigen::VectorXd x_c_delta = Jc * delta_q_cmd;
+      // util::PrettyPrint(x_c_delta, std::cout, "x_c_delta");
       // Eigen::VectorXd x_int_dot = Ji_ * qdot_cmd;
       // util::PrettyPrint(x_int_dot, std::cout, "x_int_dot");
       // Eigen::VectorXd x_c_dot = Jc * qdot_cmd;
       // util::PrettyPrint(x_c_dot, std::cout, "x_c_dot");
 
-      // Eigen::VectorXd x_int_ddot = Ji_ * wbc_qddot_cmd;
-      // util::PrettyPrint(x_int_ddot, std::cout, "x_int_ddot");
       // std::cout << "=================================================="
       //<< std::endl;
+      // Eigen::VectorXd x_int_ddot = Ji_ * wbc_qddot_cmd;
+      // util::PrettyPrint(x_int_ddot, std::cout, "x_int_ddot");
       // Eigen::VectorXd x_c_ddot = Jc * wbc_qddot_cmd + JcDotQdot;
       // util::PrettyPrint(x_c_ddot, std::cout, "x_c_ddot");
     }

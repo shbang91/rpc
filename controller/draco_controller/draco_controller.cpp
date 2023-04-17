@@ -81,7 +81,6 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
     // initialize draco controller params
     b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
     if (!b_sim_) {
-      b_smoothing_command_ = true;
       util::ReadParameter(cfg["controller"], "exp_smoothing_command_duration",
                           smoothing_command_duration_);
     }
@@ -107,6 +106,7 @@ void DracoController::GetCommand(void *command) {
       // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
       smoothing_command_start_time_ = sp_->current_time_;
+      b_smoothing_command_ = true;
       // change flag
       b_first_visit_pos_ctrl_ = false;
     }
@@ -130,11 +130,6 @@ void DracoController::GetCommand(void *command) {
     }
     // whole body controller (feedforward torque computation) with contact
     // task, contact, internal constraints update
-    // for (const auto task : tci_container_->task_vector_) {
-    // task->UpdateJacobian();
-    // task->UpdateJacobianDotQdot();
-    // task->UpdateOpCommand();
-    //}
     for (const auto &[task_name, task_ptr] : tci_container_->task_map_) {
       task_ptr->UpdateJacobian();
       task_ptr->UpdateJacobianDotQdot();
@@ -156,13 +151,11 @@ void DracoController::GetCommand(void *command) {
           sp_->floating_base_jidx_);
     }
 
-    int rf_dim(0);
     for (const auto &[contact_str, contact_ptr] :
          tci_container_->contact_map_) {
       contact_ptr->UpdateJacobian();
       contact_ptr->UpdateJacobianDotQdot();
       contact_ptr->UpdateConeConstraint();
-      rf_dim += contact_ptr->Dim();
     }
 
     // force task not iterated b/c not depending on q or qdot

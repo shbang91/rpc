@@ -61,7 +61,7 @@ class DracoLinkIdx(object):
     torso_imu = 38
 
 
-class DracoJointIdx(object):
+class PybulletDracoJointIdx(object):
     neck_pitch = 1
     l_shoulder_fe = 2
     l_shoulder_aa = 3

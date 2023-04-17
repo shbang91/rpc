@@ -6,13 +6,19 @@ addpath("/tmp")
 addpath("experiment_data")
 addpath("plot")
 
-exp_data_location = 'experiment_data';
+exp_data_location = '/tmp';
 base_estimator_type = {'est', 'kf'};    % 'est' = kinematics-only
-est_or_kf = 2;                        % 1: est, 2: kf
+est_or_kf = 1;                        % 1: est, 2: kf
 
 d = dir(sprintf("%s/draco_icp_data*.mat", exp_data_location));
 dd = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
-ddd = dir(sprintf("%s/draco_state_estimator_kf_*.mat", exp_data_location));
+if (est_or_kf == 1)
+    ddd = dir(sprintf("%s/draco_state_estimator_*.mat", exp_data_location));
+elseif (est_or_kf ==2)
+    ddd = dir(sprintf("%s/draco_state_estimator_kf_*.mat", exp_data_location));
+else
+    error("no matching estimator!")
+end
 
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
