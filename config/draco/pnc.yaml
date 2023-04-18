@@ -264,8 +264,8 @@ state_machine:
     initialize:
       init_duration: 5.
       target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      b_only_joint_pos_control: false
-      wait_time: 10.
+      b_only_joint_pos_control: true
+      wait_time: 15.
 
     stand_up:
       standup_duration: 5.
