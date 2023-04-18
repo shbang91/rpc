@@ -1,5 +1,7 @@
+#include "util/util.hpp"
 #include <Eigen/Dense>
 #include <cassert>
+#include <iostream>
 #include <vector>
 
 // assume first 6 joints are for floating base.

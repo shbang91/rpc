@@ -3,12 +3,12 @@ clear;
 clc;
 
 addpath("/tmp")
-% addpath("experiment_data")
+addpath("experiment_data")
 % addpath("plot")
 addpath("plot/draco")
 
-% exp_data_location = 'experiment_data';
-exp_data_location = '/tmp';
+exp_data_location = 'experiment_data';
+% exp_data_location = '/tmp';
 
 b_include_lhand_task = false;
 
@@ -994,7 +994,7 @@ num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:12
-    subplot(6,2,i);
+    ax(i) = subplot(6,2,i);
     if mod(i,2) == 1
         j = j + 1;
         plot(wbc_time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
@@ -1032,13 +1032,14 @@ for i = 1:12
     end
     legend('cmd','des')
 end
+linkaxes(ax,'x')
 
 figure(num_fig)
 num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:12
-    subplot(6,2,i);
+    ax(i)=subplot(6,2,i);
     if mod(i,2) == 1
         j = j + 1;
         plot(wbc_time, lf_rf_cmd_global(j, :), 'r', 'LineWidth', 2);
@@ -1074,6 +1075,8 @@ for i = 1:12
     end
     legend('cmd')
 end
+linkaxes(ax,'x')
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % floating base qddot cmd
@@ -1233,7 +1236,7 @@ for i = 1:14
         end
     end
 end
-% linkaxes(ax, 'x')
+linkaxes(ax, 'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1279,5 +1282,5 @@ for i = 1:14
         end
     end
 end
-% linkaxes(ax,'x')
+linkaxes(ax,'x')
 

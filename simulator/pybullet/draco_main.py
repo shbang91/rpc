@@ -725,13 +725,13 @@ if __name__ == "__main__":
         rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
 
         #apply command to pybullet robot
-        apply_torque_control_to_pybullet(draco_humanoid, rpc_trq_command)
-        # joint_kp = [100] * 27
-        # joint_kd = [0] * 27
-        # apply_position_control_to_pybullet(draco_humanoid,
-        # rpc_joint_pos_command,
-        # rpc_joint_vel_command, joint_kp,
-        # joint_kd)
+        # apply_torque_control_to_pybullet(draco_humanoid, rpc_trq_command)
+        joint_kp = [0.1] * 27
+        joint_kd = [1] * 27
+        apply_position_control_to_pybullet(draco_humanoid,
+                                           rpc_joint_pos_command,
+                                           rpc_joint_vel_command, joint_kp,
+                                           joint_kd)
 
         # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
         # save current torso velocity for next iteration

@@ -16,7 +16,7 @@
 // using proxsuite::nullopt; // c++17 simply use std::nullopt
 
 WBIC::WBIC(const std::vector<bool> &act_qdot_list, const Eigen::MatrixXd *Ji)
-    : WBC(act_qdot_list, Ji), threshold_(0.0001), dim_contact_(0) {
+    : WBC(act_qdot_list, Ji), threshold_(0.001), dim_contact_(0) {
   util::PrettyConstructor(3, "WBIC");
 }
 
@@ -56,11 +56,12 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
 
   Eigen::MatrixXd N_pre;
   _BuildProjectionMatrix(JcNi, N_pre);
-  N_pre = Ni * N_pre; // null space of internal constraint + contact constraint
+  N_pre = Ni * N_pre; // null space of internal constraint + contact
+  // constraint
   Eigen::MatrixXd N_pre_dyn;
   _BuildProjectionMatrix(JcNi_dyn, N_pre_dyn, &Minv_);
   N_pre_dyn = Ni_dyn_ * N_pre_dyn; // null space of internal + contact
-                                   // constraint
+  //  constraint
   Eigen::MatrixXd JcNi_bar;
   _WeightedPseudoInverse(JcNi_dyn, Minv_, JcNi_bar);
 
@@ -71,7 +72,12 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
   // qddot_0_cmd for contact constraints
   qddot_cmd = JcNi_bar * (-JcDotQdot);
 
-  // iterate through task_list
+  // std::cout << "======================================================="
+  //<< std::endl;
+  // Eigen::JacobiSVD<Eigen::MatrixXd> svd(JcNi, Eigen::ComputeThinU |
+  // Eigen::ComputeThinV);
+  // util::PrettyPrint(svd.singularValues(), std::cout, "singular values");
+  //  iterate through task_list
   for (auto it = task_vector.begin(); it != task_vector.end(); ++it) {
     if (it == task_vector.begin()) {
       const auto &first_task = *it;
@@ -87,6 +93,9 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       qdot_cmd = JtPre_pinv * first_task->DesiredVel();
       qddot_cmd = qddot_cmd + JtPre_bar * (first_task->OpCommand() - JtDotQdot -
                                            Jt * qddot_cmd);
+      // Eigen::JacobiSVD<Eigen::MatrixXd> svd(JtPre, Eigen::ComputeThinU |
+      // Eigen::ComputeThinV);
+      // util::PrettyPrint(svd.singularValues(), std::cout, "singular values");
     } else {
       Jt = (*it)->Jacobian();
       JtDotQdot = (*it)->JacobianDotQdot();
@@ -100,6 +109,9 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
                  JtPre_pinv * ((*it)->DesiredVel() - Jt * prev_qdot_cmd);
       qddot_cmd = prev_qddot_cmd + JtPre_bar * ((*it)->OpCommand() - JtDotQdot -
                                                 Jt * prev_qddot_cmd);
+      // Eigen::JacobiSVD<Eigen::MatrixXd> svd(JtPre, Eigen::ComputeThinU |
+      // Eigen::ComputeThinV);
+      // util::PrettyPrint(svd.singularValues(), std::cout, "singular values");
     }
 
     if (std::next(it) != task_vector.end()) {
@@ -117,6 +129,8 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       jvel_cmd = qdot_cmd.tail(num_qdot_ - num_floating_);
       wbc_qddot_cmd = qddot_cmd;
 
+      // std::cout << "=================================================="
+      //<< std::endl;
       // Eigen::VectorXd x_int_delta = Ji_ * delta_q_cmd;
       // util::PrettyPrint(x_int_delta, std::cout, "x_int_delta");
       // Eigen::VectorXd x_c_delta = Jc * delta_q_cmd;
