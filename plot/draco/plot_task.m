@@ -7,8 +7,8 @@ addpath("experiment_data")
 % addpath("plot")
 addpath("plot/draco")
 
-exp_data_location = 'experiment_data';
-% exp_data_location = '/tmp';
+% exp_data_location = 'experiment_data';
+exp_data_location = '/tmp';
 
 b_include_lhand_task = false;
 

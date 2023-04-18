@@ -80,7 +80,7 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
   //  iterate through task_list
   for (auto it = task_vector.begin(); it != task_vector.end(); ++it) {
     if (it == task_vector.begin()) {
-      const auto &first_task = *it;
+      const auto first_task = *it;
       Jt = first_task->Jacobian();
       JtDotQdot = first_task->JacobianDotQdot();
       JtPre = Jt * N_pre;
@@ -89,7 +89,8 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       _WeightedPseudoInverse(JtPre_dyn, Minv_, JtPre_bar);
 
       // calculate delta_q_1_cmd, qdot_1_cmd, qddot_1_cmd
-      delta_q_cmd = JtPre_pinv * first_task->PosError(); // global err
+      delta_q_cmd = JtPre_pinv * first_task->KpIK().cwiseProduct(
+                                     first_task->PosError()); // global err
       qdot_cmd = JtPre_pinv * first_task->DesiredVel();
       qddot_cmd = qddot_cmd + JtPre_bar * (first_task->OpCommand() - JtDotQdot -
                                            Jt * qddot_cmd);
@@ -97,17 +98,19 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       // Eigen::ComputeThinV);
       // util::PrettyPrint(svd.singularValues(), std::cout, "singular values");
     } else {
-      Jt = (*it)->Jacobian();
-      JtDotQdot = (*it)->JacobianDotQdot();
+      const auto task = *it;
+      Jt = task->Jacobian();
+      JtDotQdot = task->JacobianDotQdot();
       JtPre = Jt * N_pre;
       _PseudoInverse(JtPre, JtPre_pinv);
       JtPre_dyn = Jt * N_pre_dyn;
       _WeightedPseudoInverse(JtPre_dyn, Minv_, JtPre_bar);
       delta_q_cmd = prev_delta_q_cmd +
-                    JtPre_pinv * ((*it)->PosError() - Jt * prev_delta_q_cmd);
+                    JtPre_pinv * (task->KpIK().cwiseProduct(task->PosError()) -
+                                  Jt * prev_delta_q_cmd);
       qdot_cmd = prev_qdot_cmd +
-                 JtPre_pinv * ((*it)->DesiredVel() - Jt * prev_qdot_cmd);
-      qddot_cmd = prev_qddot_cmd + JtPre_bar * ((*it)->OpCommand() - JtDotQdot -
+                 JtPre_pinv * (task->DesiredVel() - Jt * prev_qdot_cmd);
+      qddot_cmd = prev_qddot_cmd + JtPre_bar * (task->OpCommand() - JtDotQdot -
                                                 Jt * prev_qddot_cmd);
       // Eigen::JacobiSVD<Eigen::MatrixXd> svd(JtPre, Eigen::ComputeThinU |
       // Eigen::ComputeThinV);
@@ -149,11 +152,11 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
     }
 
     // std::cout << "========================================" << std::endl;
-    // std::cout << "Desired Pos: " << (*it)->DesiredPos().transpose()
+    // std::cout << "Desired Pos: " << task->DesiredPos().transpose()
     //<< std::endl;
-    // std::cout << "Current Pos: " << (*it)->CurrentPos().transpose()
+    // std::cout << "Current Pos: " << task->CurrentPos().transpose()
     //<< std::endl;
-    // std::cout << "Op Command: " << (*it)->OpCommand().transpose() <<
+    // std::cout << "Op Command: " << task->OpCommand().transpose() <<
     // std::endl; std::cout << "qddot cmd: " << qddot_cmd.transpose() <<
     // std::endl;
   }

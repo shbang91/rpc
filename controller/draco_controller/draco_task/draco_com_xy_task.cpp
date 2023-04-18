@@ -169,6 +169,7 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     util::ReadParameter(node, "com_feedback_source", feedback_source_);
 
     std::string prefix = b_sim ? "sim" : "exp";
+    util::ReadParameter(node, prefix + "_kp_ik", kp_ik_);
     if (feedback_source_ == feedback_source::kCoMFeedback) {
       util::ReadParameter(node, prefix + "_kp", kp_);
       util::ReadParameter(node, prefix + "_kd", kd_);

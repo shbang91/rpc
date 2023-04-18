@@ -35,6 +35,8 @@ public:
     kd_ = Eigen::VectorXd::Zero(dim_);
     ki_ = Eigen::VectorXd::Zero(dim_);
 
+    kp_ik_ = Eigen::VectorXd::Zero(dim_);
+
     op_cmd_ = Eigen::VectorXd::Zero(dim_);
 
     jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->NumQdot());
@@ -63,6 +65,7 @@ public:
       std::string prefix = b_sim ? "sim" : "exp";
       util::ReadParameter(node, prefix + "_kp", kp_);
       util::ReadParameter(node, prefix + "_kd", kd_);
+      util::ReadParameter(node, prefix + "_kp_ik", kp_ik_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
                 << __FILE__ << "]" << std::endl;
@@ -95,6 +98,7 @@ public:
   Eigen::VectorXd Kp() const { return kp_; }
   Eigen::VectorXd Kd() const { return kd_; }
   Eigen::VectorXd Ki() const { return ki_; }
+  Eigen::VectorXd KpIK() const { return kp_ik_; }
   Eigen::VectorXd OpCommand() const { return op_cmd_; }
   int Dim() const { return dim_; }
 
@@ -141,9 +145,13 @@ protected:
   Eigen::VectorXd local_pos_err_;
   Eigen::VectorXd local_vel_err_;
 
+  // task space gains
   Eigen::VectorXd kp_;
   Eigen::VectorXd kd_;
   Eigen::VectorXd ki_;
+
+  // ik gains
+  Eigen::VectorXd kp_ik_;
 
   //  desired quantities
   Eigen::VectorXd des_pos_;

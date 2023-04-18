@@ -74,6 +74,7 @@ void DracoCoMZTask::SetParameters(const YAML::Node &node, const bool b_sim) {
     sp_->b_use_base_height_ = com_height_ == com_height::kBase ? true : false;
 
     std::string prefix = b_sim ? "sim" : "exp";
+    util::ReadParameter(node, prefix + "_kp_ik", kp_ik_);
     if (com_height_ == com_height::kCoM) {
       util::ReadParameter(node, prefix + "_com_kp", kp_);
       util::ReadParameter(node, prefix + "_com_kd", kd_);
