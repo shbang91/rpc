@@ -12,6 +12,7 @@ DracoDataManager::DracoDataManager() {
   // zmq stuff initialize
   context_ = std::make_unique<zmq::context_t>(1);
   socket_ = std::make_unique<zmq::socket_t>(*context_, ZMQ_PUB);
+  socket_->setsockopt(ZMQ_CONFLATE, 1);
 
   // boolean initialize
   b_initialize_socket_ = false;
