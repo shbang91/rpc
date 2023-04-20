@@ -125,8 +125,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
       local_rh_quat = cmd.rh_ori;
       local_lh_quat = cmd.lh_ori;
     } else {
-      local_rh_pos << 0.35, -0.25, 0.0;
-      local_lh_pos << 0.35, 0.25, 0.0;
+      local_rh_pos << 0.25, -0.25, 0.05;
+      local_lh_pos << 0.25, 0.25, 0.05;
       local_rh_quat = Eigen::AngleAxisd(
           0.0,
           Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
@@ -153,11 +153,11 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // std::cout << "clamped right\n " << clamped_rh_pos << std::endl;
 
     // restrict workspace for safety
-    clamped_lh_pos[0] = std::min(std::max(local_lh_pos[0], 0.25), 0.50);
+    clamped_lh_pos[0] = std::min(std::max(local_lh_pos[0], 0.25), 0.45);
     clamped_lh_pos[1] = std::min(std::max(local_lh_pos[1], -0.10), 0.45);
     clamped_lh_pos[2] = std::min(std::max(local_lh_pos[2], -0.2), 0.4);
 
-    clamped_rh_pos[0] = std::min(std::max(local_rh_pos[0], 0.25), 0.50);
+    clamped_rh_pos[0] = std::min(std::max(local_rh_pos[0], 0.25), 0.45);
     clamped_rh_pos[1] = std::min(std::max(local_rh_pos[1], -0.45), 0.10);
     clamped_rh_pos[2] = std::min(std::max(local_rh_pos[2], -0.2), 0.4);
 
