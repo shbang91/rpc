@@ -61,6 +61,8 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   result.r_button = m.r_button();
   result.r_pad = m.r_pad();
 
+  result.vr_timestamp = m.vr_timestamp();
+
   for (int i = 0; i < 3; ++i) {
     result.lh_pos[i] = m.lh_pos(i);
     result.rh_pos[i] = m.rh_pos(i);

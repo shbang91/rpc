@@ -254,6 +254,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // std::cout << "base ori: " << base_quat.coeffs() << std::endl;
     // std::cout << "action/global_lh_pos" << target_lh_pos << std::endl;
     dm->data_->vr_ready = vr_ready;
+    dm->data_->vr_timestamp = cmd.vr_timestamp;
     if (vr_ready) {
       dm->data_->l_gripper = cmd.l_bump;
       dm->data_->r_gripper = cmd.r_bump;
