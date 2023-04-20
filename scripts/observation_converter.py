@@ -45,7 +45,7 @@ class ObservationConverter():
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
         if self.trim_demo_video:
-            self.trim_video(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
+            self.trim_video_pick(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
         return self.converted_data
 
     def get_local_trajectories(self, raw_data):
@@ -62,11 +62,10 @@ class ObservationConverter():
             a dictionary with the converted data
         """
 
-        # convert the quaternion from wxyz to xyzw
         # the [()] is to get the numpy array from the h5py dataset. It returns a view of the np array.
         # https://stackoverflow.com/questions/14689270/in-numpy-what-does-indexing-an-array-with-the-empty-tuple-vs-ellipsis-do
         global_base_ori = R.from_quat(
-            raw_data['global_base_ori'][()][..., [3, 0, 1, 2]])
+            raw_data['global_base_ori'][()])
         global_base_pos = raw_data['global_base_pos'][()]
 
         global_params = global_act_trajectory_keys.copy()
@@ -81,7 +80,7 @@ class ObservationConverter():
                     global_base_pos, global_base_ori, raw_data[param][()])
             else:
                 self.converted_data[param.replace("global", "local")] = ori_global_to_local(
-                    global_base_ori, R.from_quat(raw_data[param][()][..., [3, 0, 1, 2]]))
+                    global_base_ori, R.from_quat(raw_data[param][()]))
 
     def get_images(self, rgb, stereo):
         """
@@ -91,11 +90,13 @@ class ObservationConverter():
             stereo: the stereo image from the robot
         """
         # flatten the images TODO: remove this so it's always flattened
-        # stereo = stereo[()].reshape((stereo.shape[0], -1))
-        # rgb = rgb[()].reshape((rgb.shape[0], -1))
+        stereo = stereo[()].reshape((stereo.shape[0], -1))
+        rgb = rgb[()].reshape((rgb.shape[0], -1))
         # the usage of ... and this reshape trip allows us to process both vector and single images
         # for more information about the reshape call, see
         # https://stackoverflow.com/questions/46183967/how-to-reshape-only-last-dimensions-in-numpy
+        #stereo=np.frombuffer(stereo, dtype=np.uint8)
+        #rgb=np.frombuffer(rgb, dtype=np.uint8)
         stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
         rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
         if (self.crop_images):
@@ -125,6 +126,17 @@ class ObservationConverter():
         while l_gripper[i] == 0 and r_gripper[i] == 0 and i > 0:
             i -= 1
         i += 40 # a second is 20 frames
+        for key in self.converted_data.keys():
+            self.converted_data[key] = self.converted_data[key][:i]
+
+    def trim_video_pick(self, l_gripper, r_gripper):
+        # Trim the end of demo videos to be a second after the gripper is last used
+        num_images = l_gripper.shape[0] 
+        print(l_gripper.shape, r_gripper.shape)
+        i = 0 
+        while i < num_images and l_gripper[i] == 0 and r_gripper[i] == 0:
+            i += 1
+        i += 15 # a second is 20 frames
         for key in self.converted_data.keys():
             self.converted_data[key] = self.converted_data[key][:i]
 

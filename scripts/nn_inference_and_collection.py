@@ -49,9 +49,9 @@ import sys
 cwd = os.getcwd()
 sys.path.append(cwd)
     
-from scripts.nn_wrapper import NNWrapper
+from scripts.nn_wrapper import NNWrapper, ReplayAction
 from scripts.demo_collector import DemoCollector, convert_protobuf_and_image
-from scripts.input_data_manager import SocketInputDataManager
+from scripts.input_data_manager import ReplayInputDataManager, SocketInputDataManager
 from scripts.output_data_manager import OutputDataManager
 
 
@@ -68,12 +68,17 @@ def main():
     parser.add_argument("--demonstrator", type=str, default="steve")
     parser.add_argument("--task", type=str, default="box")
     parser.add_argument("--nn_path", type=str, default="models/nn_model.h5")
+    parser.add_argument("--obs_replay_path", type=str, default="", help="if specified, will use the replay file instead of the zmq socket")
+    parser.add_argument("--actions_replay_path", type=str, default="", help="if specified, will use the replay file instead of the NN")
     args = parser.parse_args()
     save_data = args.save_data == 1
 
     # Socket initialize
     context = zmq.Context()
-    input_manager = SocketInputDataManager(
+    if (args.obs_replay_path != ""):
+        input_manager = ReplayInputDataManager(args.obs_replay_path)
+    else:
+        input_manager = SocketInputDataManager(
         context, args.control_ip, args.rgb_camera_ip, args.stereo_camera_ip)
 
     if save_data:
@@ -82,7 +87,10 @@ def main():
     else:
         # Executing the policy
         output_manager = OutputDataManager(context)
-        nn = NNWrapper(args.nn_path)
+        if args.actions_replay_path != "":
+            nn = ReplayAction(args.actions_replay_path)
+        else:
+            nn = NNWrapper(args.nn_path)
 
     prev_time = 0
     new_time = 1
@@ -105,23 +113,33 @@ def main():
         zmq_start = time.perf_counter()
         # Wait for control PC to send data (20hz)
         robot_data_pb = input_manager.get_robot_data()
+        robot_end = time.perf_counter()
 
         # Wait for c++ camera script to send data (20hz)
         # Note that since we have conflate=True, we will only get the latest image
         rgb_img = input_manager.get_rgb_img()
+        rgb_end = time.perf_counter()
         stereo_img = input_manager.get_stereo_img()
+        stereo_end = time.perf_counter()
         zmq_end = time.perf_counter()
-        print("zmq time: ", zmq_end-zmq_start)
+        #print("robot time: ", robot_end-zmq_start)
+        #print("rgb time: ", rgb_end-robot_end)
+        #print("stereo time: ", stereo_end-rgb_end)
+        #print("zmq total time: ", zmq_end-zmq_start)
 
+        print(str(robot_end-zmq_start) + ", " + str(rgb_end-robot_end) + ", " + str(stereo_end-rgb_end))
         if save_data:
-            demo_collector.save_data(robot_data_pb, rgb_img, stereo_img)
+            demo_collector.save_data(robot_data_pb, rgb_img, stereo_img, robot_end-zmq_start, rgb_end - robot_end, stereo_end - rgb_end)
         else:
             # time this line
             nn_start = time.perf_counter()
             actions = nn.forward(convert_protobuf_and_image(robot_data_pb, rgb_img, stereo_img))
             nn_end = time.perf_counter()
-            print("nn time: ", nn_end-nn_start)
+            #print("nn time: ", nn_end-nn_start)
             output_manager.send(actions)
+            send_end = time.perf_counter()
+            #print("send time: ", send_end-nn_end)
+            print(str(robot_end-zmq_start) + ", " + str(rgb_end-robot_end) + ", " + str(stereo_end-rgb_end) + ", " + str(nn_end-nn_start) + ", " + str(send_end - nn_end))
 
 
 if __name__ == "__main__":

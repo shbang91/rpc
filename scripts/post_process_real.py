@@ -111,6 +111,7 @@ def main():
                 continue
             if name.endswith(".hdf5"):
                 with h5py.File(os.path.join(root, name)) as demo_file:
+                    print("Processing", name)
 
                     # all data for this episode goes in this group
                     ep_group = output_data.create_group(f"demo_{demo_count}")

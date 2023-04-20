@@ -11,15 +11,10 @@ args = parser.parse_args()
 
 
 f = h5py.File(args.file_path, "r")
-i = len(f['obs/rgb']) - 1
-while f['action/l_gripper'][i] == 0 and f['action/r_gripper'][i] == 0 and i > 0:
-    i -= 1
-i += 20
-print(i)
-for j in range(0, i):
+for j in range(0, f['obs/rgb'].shape[0]):
     img = f['obs/stereo'][j]
-    img_ra = np.array(img, dtype=np.uint8)
-    cv2.imshow('test', img.reshape((200, 800, 1))[70:200, 0:400, :])
+    img_ra = np.frombuffer(img, dtype=np.uint8)
+    cv2.imshow('test', img_ra.reshape((200, 800, 1))[70:200, 0:400, :])
     cv2.waitKey(20)
 print('action/local_lh_pos', f['action/local_lh_pos'][40])
 print('obs/act_global_lh_pos', f['obs/act_global_lh_pos'][40])
@@ -36,9 +31,6 @@ print('obs/act_global_rh_ori', f['obs/act_global_rh_ori'][40])
 
 print('global_base_pos', f['global_base_pos'][40])
 print('global_base_ori', f['global_base_ori'][40])
-
-print('local_rh_ori', (R.from_quat(f['global_base_ori'][30][[3, 0, 1, 2]]).inv(
-) * R.from_quat(f['obs/act_global_rh_ori'][30][[3, 0, 1, 2]])).as_quat())
 
 
 f = f['data/demo_0']
