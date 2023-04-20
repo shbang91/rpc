@@ -33,10 +33,9 @@
       <!--<material name="white"/>-->
     </visual>
     <inertial>
-      <origin rpy="0 0 0" xyz="-31.658e-03 -0.08 125.19e-03"/>
-      <mass value="7.856"/>
       <!--<origin rpy="0 0 0" xyz="-31.658e-03 -0.03865e-03 125.19e-03"/>-->
-      <!--<mass value="6.456"/>-->
+      <origin rpy="0 0 0" xyz="-31.658e-03 -0.14 125.19e-03"/>
+      <mass value="7.856"/>
       <inertia ixx="178517.35e-06" ixy="-18.968e-06" ixz="28376.527e-06" iyy="181767.801e-06" iyz="-50.398e-06" izz="37147.31e-06"/>
     </inertial>
   </link>
@@ -671,21 +670,28 @@
       <material name="white"/>
     </visual>
     <collision>
-      <origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>
+      <!--<origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>-->
+      <origin rpy="0 -0 0" xyz="0 -0.005 -0.0533"/>
       <geometry>
         <box size="0.2 0.1 0.0591"/>
       </geometry>
     </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0440152"/>
-      <mass value="0.478"/>
+      <!--original mass = 0.478--> 
+      <!--F/T sensor mass = 0.0917--> 
+      <!--F/T interface mass = 0.078--> 
+      <!--old beam mass = 0.056--> 
+      <mass value="0.5917"/>
       <inertia ixx="1064.65492e-06" ixy="-25.85803e-06" ixz="148.2107e-06" iyy="1820.44891e-06" iyz="145.81372e-06" izz="1268.38379e-06"/>
+      <!--TODO: inertia needs to be updated--> 
     </inertial>
   </link>
 
   <!--=============================== l_foot_contact_frame (l_foot_contact) ===========================-->
   <joint name="l_foot_contact_frame" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 -0.076"/>
+    <!--<origin rpy="0 0 0" xyz="0 0 -0.076"/>-->
+    <origin rpy="0 0 0" xyz="0 0 -0.0833"/>
     <parent link="l_ankle_ie_link"/>
     <child link="l_foot_contact"/>
   </joint>
@@ -886,21 +892,28 @@
       <material name="white"/>
     </visual>
     <collision>
-      <origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>
+      <!--<origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>-->
+      <origin rpy="0 -0 0" xyz="0 0.005 -0.0533"/>
       <geometry>
         <box size="0.2 0.1 0.0591"/>
       </geometry>
     </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00321562 0.00678152 -0.0440164"/>
-      <mass value="0.478"/>
+      <!--original mass = 0.478--> 
+      <!--F/T sensor mass = 0.0917--> 
+      <!--F/T interface mass = 0.078--> 
+      <!--old beam mass = 0.056--> 
+      <mass value="0.5917"/>
       <inertia ixx="1064.65492e-06" ixy="25.85803e-06" ixz="148.2107e-06" iyy="1820.44891e-06" iyz="-145.81372e-06" izz="1268.38379e-06"/>
+      <!--TODO: inertia needs to be updated--> 
     </inertial>
   </link>
 
   <!--=============================== r_foot_contact_frame (r_foot_contact) ===========================-->
   <joint name="r_foot_contact_frame" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 -0.076"/>
+    <!--<origin rpy="0 0 0" xyz="0 0 -0.076"/>-->
+    <origin rpy="0 0 0" xyz="0 0 -0.0833"/>
     <parent link="r_ankle_ie_link"/>
     <child link="r_foot_contact"/>
   </joint>

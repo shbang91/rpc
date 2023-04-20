@@ -167,6 +167,8 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Matrix3d rot_world_to_base = torso_iso.linear();
     base_quat = rot_world_to_base;
 
+    // std::cout << "clamped pos: " << clamped_lh_pos << std::endl;
+
     target_rh_pos = rot_world_to_base * clamped_rh_pos + base_pos;
     target_lh_pos = rot_world_to_base * clamped_lh_pos + base_pos;
     target_rh_quat = base_quat * local_rh_quat;
@@ -242,13 +244,21 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     // save VR commands
     dm->data_->action_local_lh_pos_ = target_lh_pos;
     dm->data_->action_local_rh_pos_ = target_rh_pos;
+    // Calling coeffs converts it to XYZW!!!! I wasted so much time because of
+    // this
     dm->data_->action_local_lh_ori_ = target_lh_quat.coeffs();
     dm->data_->action_local_rh_ori_ = target_rh_quat.coeffs();
     dm->data_->global_base_pos = base_pos;
     dm->data_->global_base_ori = base_quat.coeffs();
-    dm->data_->l_gripper = cmd.l_bump;
-    dm->data_->r_gripper = cmd.r_bump;
+    // std::cout << "base pos: " << base_pos << std::endl;
+    // std::cout << "base ori: " << base_quat.coeffs() << std::endl;
+    // std::cout << "action/global_lh_pos" << target_lh_pos << std::endl;
     dm->data_->vr_ready = vr_ready;
+    dm->data_->vr_timestamp = cmd.vr_timestamp;
+    if (vr_ready) {
+      dm->data_->l_gripper = cmd.l_bump;
+      dm->data_->r_gripper = cmd.r_bump;
+    }
 #endif
     dm->SendData();
   }

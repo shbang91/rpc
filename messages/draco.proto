@@ -56,7 +56,7 @@ message pnc_msg {
   repeated float rf_ori_weight = 36;
   repeated float rf_ori_kp = 37;
   repeated float rf_ori_kd = 38;
-  
+
   repeated float kf_base_joint_pos = 39;
   repeated float kf_base_joint_ori = 40;
 
@@ -95,8 +95,9 @@ message pnc_msg {
   bool r_gripper = 65;
   bool vr_ready = 66;
 
-  float timestamp = 67;
+  int64 rpc_timestamp = 67;
   uint32 state = 68;
+  int64 vr_timestamp = 69;
 }
 
 message vr_teleop_msg {
@@ -114,6 +115,8 @@ message vr_teleop_msg {
   bool r_bump = 10;
   bool r_button = 11;
   bool r_pad = 12;
+
+  int64 vr_timestamp = 13;
 }
 
 // TODO:

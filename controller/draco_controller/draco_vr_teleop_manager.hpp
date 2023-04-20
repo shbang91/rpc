@@ -27,6 +27,8 @@ public:
   bool r_bump = 0;
   bool r_button = 0;
   bool r_pad = 0;
+
+  long long vr_timestamp = 0;
 };
 
 // Singleton

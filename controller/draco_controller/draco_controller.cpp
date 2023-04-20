@@ -383,7 +383,7 @@ void DracoController::_SaveData() {
   dm->data_->des_global_rh_pos_ =
       tci_container_->task_map_["rh_pos_task"]->DesiredPos();
 
-  dm->data_->timestamp =
+  dm->data_->rpc_timestamp =
       std::chrono::duration_cast<std::chrono::milliseconds>(
           std::chrono::system_clock::now().time_since_epoch())
           .count();

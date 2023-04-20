@@ -12,6 +12,7 @@ DracoDataManager::DracoDataManager() {
   // zmq stuff initialize
   context_ = std::make_unique<zmq::context_t>(1);
   socket_ = std::make_unique<zmq::socket_t>(*context_, ZMQ_PUB);
+  socket_->setsockopt(ZMQ_CONFLATE, 1);
 
   // boolean initialize
   b_initialize_socket_ = false;
@@ -128,7 +129,8 @@ void DracoDataManager::SendData() {
     msg.add_global_base_ori(data_->global_base_ori[i]);
   }
 
-  msg.set_timestamp(data_->timestamp);
+  msg.set_rpc_timestamp(data_->rpc_timestamp);
+  msg.set_vr_timestamp(data_->vr_timestamp);
   msg.set_state(data_->state);
   msg.set_l_gripper(data_->l_gripper);
   msg.set_r_gripper(data_->r_gripper);

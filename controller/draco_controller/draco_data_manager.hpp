@@ -13,7 +13,8 @@ public:
   ~DracoData() = default;
 
   double time_ = 0;
-  double timestamp = 0;
+  long long rpc_timestamp = -1;
+  long long vr_timestamp = -1;
   int phase_ = 1;
 
   // Eigen::Vector3d base_joint_pos_;
