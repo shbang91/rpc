@@ -35,7 +35,9 @@ def convert_protobuf_and_image(msg, rgb, stereo):
     output['kf_base_joint_ori'] = np.array(msg.kf_base_joint_ori)
     output['global_base_pos'] = np.array(msg.global_base_pos)
     output['global_base_ori'] = np.array(msg.global_base_ori)
-    output['timestamp'] = msg.timestamp
+    output['rpc_timestamp'] = msg.rpc_timestamp
+    output['collection_timestamp'] = round(time.time() * 1000)
+    output['vr_timestamp'] = msg.vr_timestamp
     # actions
     output['action/l_gripper'] = msg.l_gripper
     output['action/r_gripper'] = msg.r_gripper
@@ -56,11 +58,14 @@ class DemoCollector:
         self.vr_ready_prev = False
         self.clear_buffer()
 
-    def save_data(self, msg, rgb_img, stereo_img):
+    def save_data(self, msg, rgb_img, stereo_img, rpc_time, rgb_time, stereo_time):
         if msg.vr_ready:
             converted_data = convert_protobuf_and_image(msg, rgb_img, stereo_img)
             for key in converted_data.keys():
-                self.data_buffer[key].append(converted_data)
+                self.data_buffer[key].append(converted_data[key])
+            self.data_buffer['rpc_time'].append(rpc_time)
+            self.data_buffer['rgb_time'].append(rgb_time)
+            self.data_buffer['stereo_time'].append(stereo_time)
         elif self.vr_ready_prev:
             # if we go from controlling the robot to not controlling the robot, save it
             print("Saving data...")
@@ -112,5 +117,10 @@ class DemoCollector:
                             'kf_base_joint_ori': collections.deque(),
                             'global_base_pos': collections.deque(),
                             'global_base_ori': collections.deque(),
-                            'timestamp': collections.deque(),
+                            'rpc_timestamp': collections.deque(),
+                            'collection_timestamp': collections.deque(),
+                            'vr_timestamp': collections.deque(),
+                            'rpc_time': collections.deque(),
+                            'rgb_time': collections.deque(),
+                            'stereo_time': collections.deque()
                             }

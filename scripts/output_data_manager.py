@@ -17,16 +17,18 @@ class OutputDataManager:
         self.socket = context.socket(zmq.PUB)
         self.socket.set(zmq.CONFLATE, 1)
         self.socket.bind("tcp://*:" + str(output_port))
-        self.first = True
+        self.cnt = 0
 
     def send(self, action):
         """
         Sends the action to the rpc
         """
         msg = vr_teleop_msg()
-        if self.first:
-            msg.l_bump = True
-            self.first = False
+        if self.cnt < 5:
+            msg.l_pad = True
+            self.cnt += 1
+        if 'l_pad' in action:
+            msg.l_pad = action['l_pad']
         msg.lh_pos[:] = action['lh_pos']
         msg.rh_pos[:] = action['rh_pos']
         msg.lh_ori[:] = action['lh_ori']
@@ -36,3 +38,6 @@ class OutputDataManager:
         msg.r_bump = action['r_gripper']
 
         self.socket.send(msg.SerializeToString())
+
+    def toggle_vr_ready(self):
+        self.send({"l_gripper": 0, "r_gripper": 0, "l_pad": True, "lh_pos": np.zeros(3), "rh_pos": np.zeros(3), "lh_ori": np.zeros(9), "rh_ori": np.zeros(9)})

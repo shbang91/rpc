@@ -1,0 +1,12 @@
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['act_local_rh_ori', 'joint', 'act_local_rf_ori', 'act_local_lh_pos', 'act_local_lf_pos', 'act_local_lf_ori', 'act_local_rf_pos', 'act_local_lh_ori', 'act_local_rh_pos']
+using obs modality: rgb with keys: ['rgb']
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+using obs modality: gray with keys: []
+Discrete class:  [2, 2]
+Discrete indices:  [0, 1]
+Trajectory indices:  [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+Press Enter to start executing policy
