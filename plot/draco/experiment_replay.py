@@ -43,8 +43,8 @@ lfoot_contact_pos, lfoot_contact_ori = [], []
 
 # Create Robot for Meshcat Visualization
 model, collision_model, visual_model = pin.buildModelsFromUrdf(
-    cwd + "/robot_model/draco/draco3_big_feet.urdf",
-    cwd + "/robot_model/draco", pin.JointModelFreeFlyer())
+    cwd + "/robot_model/draco/draco_modified.urdf", cwd + "/robot_model/draco",
+    pin.JointModelFreeFlyer())
 viz = MeshcatVisualizer(model, collision_model, visual_model)
 try:
     viz.initViewer(open=True)
@@ -139,8 +139,8 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
             d = pickle.load(file)
             exp_time.append(d['time'])
             phase.append(d['phase'])
-            joint_positions.append(d['kf_base_joint_pos'] +
-                                   d['kf_base_joint_ori'] +
+            joint_positions.append(d['est_base_joint_pos'] +
+                                   d['est_base_joint_ori'] +
                                    d['joint_positions'])
 
             com_position_des.append(d['des_com_pos'])
