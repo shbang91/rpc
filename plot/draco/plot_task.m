@@ -1101,7 +1101,22 @@ for i = 1:6
     legend('before correction', 'after correction')
 end
 
-
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:6
+    subplot(6,1,i);
+    plot(wbc_time, fb_qddot_cmd(i, :) - corrected_fb_qddot_cmd(i, :), 'b', 'LineWidth', 2);
+    grid on
+    min_val = min(fb_qddot_cmd(i, :) - corrected_fb_qddot_cmd(i, :));
+    max_val = max(fb_qddot_cmd(i, :) - corrected_fb_qddot_cmd(i, :));
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+%   set_fig_opt()
+%     plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(fb_qddot_label(i))
+    sgtitle('floating base qddot error', 'FontSize', 30)
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % foot qddot cmd
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
