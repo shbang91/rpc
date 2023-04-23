@@ -92,7 +92,7 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
 
-      exp_icp_kp : [0.05, 0.05]
+      exp_icp_kp : [0., 0.]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0., 0.] 
 
@@ -124,8 +124,8 @@ wbc:
       exp_com_kp : [100.]
       exp_com_kd : [5.]
 
-      exp_base_kp : [1.]
-      exp_base_kd : [0.05] # x, y will be ignored
+      exp_base_kp : [0.]
+      exp_base_kd : [0.] # x, y will be ignored
 
       exp_kp_ik : [1.]
     cam_task:
@@ -148,8 +148,8 @@ wbc:
       sim_kp_ik : [1., 1., 0.01]
 
       ## exp params
-      exp_kp : [2., 2., 1.]
-      exp_kd : [0.01, 0.01, 0.05]
+      exp_kp : [0., 0., 0.]
+      exp_kd : [0., 0., 0.]
       exp_kp_ik : [1., 1., 0.01]
 
     upper_body_task:
@@ -167,7 +167,8 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
+      #exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
+      exp_kp : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
       exp_kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
       exp_kp_ik : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
@@ -238,10 +239,12 @@ wbc:
     #exp_foot_half_width: 0.075
 
   qp:
-    W_delta_qddot: 1e5 #1e5
+    W_delta_qddot: 1e6 #1e5
 
-    W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1e1, 1e1, 1e1, 1e1]
-    W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1e1, 1e1, 1e1, 1e1]
+    W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001]
+    W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001]
+    #W_delta_rf_left_foot_in_contact: [1e2, 1e2, 1e1, 1e1, 1e1, 1e1]
+    #W_delta_rf_right_foot_in_contact: [1e2, 1e2, 1e1, 1e1, 1e1, 1e1]
     #W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1e3, 1e2, 1e2, 1e2]
     #W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1e3, 1e2, 1e2, 1e2]
     #W_delta_rf_left_foot_in_contact: [1e1, 1e1, 1e1, 1, 1, 1]
@@ -252,10 +255,10 @@ wbc:
     #W_delta_rf_left_foot_in_swing: [1e5, 1e5, 1e5, 1e4, 1e4, 1e4]
     #W_delta_rf_right_foot_in_swing: [1e5, 1e5, 1e5, 1e4, 1e4, 1e4]
 
-    W_xc_ddot_in_contact: 1e6
-    W_xc_ddot_in_swing: 1e-3
-    #W_xc_ddot_in_contact: 0
-    #W_xc_ddot_in_swing: 0
+    #W_xc_ddot_in_contact: 1e6
+    #W_xc_ddot_in_swing: 1e-3
+    W_xc_ddot_in_contact: 0
+    W_xc_ddot_in_swing: 0
 
 
 state_machine:
