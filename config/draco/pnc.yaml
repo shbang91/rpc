@@ -240,25 +240,30 @@ wbc:
     #exp_foot_half_width: 0.075
 
   qp:
-    W_delta_qddot: 1e5 #1e5
+    W_delta_qddot: 1e3 #1e5
 
-    #W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
-    #W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
-    W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
-    W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
-    #W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1e3, 1e2, 1e2, 1e2]
-    #W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1e3, 1e2, 1e2, 1e2]
+    W_delta_rf_left_foot_in_contact: [10, 10, 1e-2, 1, 1, 1e-2]
+    W_delta_rf_right_foot_in_contact: [10, 10, 1e-2, 1, 1, 1e-2]
 
-    W_delta_rf_left_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
-    W_delta_rf_right_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
-    #W_delta_rf_left_foot_in_swing: [1e5, 1e5, 1e5, 1e4, 1e4, 1e4]
-    #W_delta_rf_right_foot_in_swing: [1e5, 1e5, 1e5, 1e4, 1e4, 1e4]
+    W_delta_rf_left_foot_in_swing: [50, 50, 5e-2, 5, 5, 5e-2]
+    W_delta_rf_right_foot_in_swing: [50, 50, 5e-2, 5, 5, 5e-2]
 
-    W_xc_ddot_in_contact: 1e7
+    W_xc_ddot_in_contact: 1e5
     W_xc_ddot_in_swing: 1e-3
     #W_xc_ddot_in_contact: 0
     #W_xc_ddot_in_swing: 0
 
+
+    #W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
+    #W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
+
+    #W_delta_qddot: 1e5
+    #W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
+    #W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
+    #W_delta_rf_left_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
+    #W_delta_rf_right_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
+    #W_xc_ddot_in_contact: 1e7
+    #W_xc_ddot_in_swing: 1e-3
 
 state_machine:
     initialize:
