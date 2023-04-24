@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Config(object):
     CONTROLLER_DT = 0.00125
     N_SUBSTEP = 1
@@ -89,3 +92,17 @@ class PybulletDracoJointIdx(object):
     r_knee_fe_jd = 34
     r_ankle_fe = 35
     r_ankle_ie = 36
+
+
+class JointGains(object):
+    # kp = 5. * np.ones(27)
+    # kd = 0. * np.ones(27)
+    kp = np.array([
+        10, 10, 10, 10, 10, 10, 10, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10,
+        10, 10, 5, 5, 5, 5, 5, 5
+    ])
+    kd = np.array([
+        0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.001, 0.001, 0.001, 0.001,
+        0.001, 0.001, 0.01, 0.01, 0.001, 0.01, 0.01, 0.01, 0.01, 0.01, 0.001,
+        0.001, 0.001, 0.001, 0.001, 0.001
+    ])

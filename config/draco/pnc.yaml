@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -69,12 +69,12 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [200., 200.]
-      sim_kd : [10., 10.]
+      sim_kp : [1., 1.]
+      sim_kd : [0.1, 0.1]
 
-      sim_icp_kp : [0., 0.]
+      sim_icp_kp : [2, 2]
       sim_icp_kd : [0., 0.] # x, y will be ignored
-      sim_icp_ki : [1., 1.] 
+      sim_icp_ki : [0., 0.] 
 
       sim_kp_ik : [1., 1.]
 
@@ -112,10 +112,10 @@ wbc:
       ## sim params
       ########################################################################
       sim_com_kp : [100.]
-      sim_com_kd : [5.]
+      sim_com_kd : [10.]
 
-      sim_base_kp : [200.]
-      sim_base_kd : [20.] # x, y will be ignored
+      sim_base_kp : [10.]
+      sim_base_kd : [2] # x, y will be ignored
 
       sim_kp_ik : [1.]
       ########################################################################
@@ -132,7 +132,7 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kd : [5., 5., 5.]
+      sim_kd : [0., 0., 0.]
 
       ########################################################################
       ## exp params
@@ -143,9 +143,9 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [200., 200., 100.]
-      sim_kd : [20., 20., 10.]
-      sim_kp_ik : [1., 1., 0.01]
+      sim_kp : [50., 50., 50.]
+      sim_kd : [5., 5., 5.]
+      sim_kp_ik : [1., 1., 1.]
 
       ## exp params
       exp_kp : [0., 0., 0.]
@@ -159,8 +159,9 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
-      sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+      #sim_kp : [20., 20., 20., 14., 10., 10., 10., 20., 20., 20., 14., 10., 10.]
+      sim_kp : [100., 100., 100., 70., 50., 50., 50., 100., 100., 100., 70., 50., 50.]
+      sim_kd : [20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20., 20.]
 
       sim_kp_ik : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
@@ -176,29 +177,29 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [200., 200., 300.]
-      sim_kd : [20., 20., 30.]
+      sim_kp : [40., 40., 50.]
+      sim_kd : [12, 12, 12]
       sim_kp_ik : [1., 1., 1.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [10., 10., 15.]
-      exp_kd : [0.1, 0.1, 1.]
+      exp_kp : [2., 2., 3.]
+      exp_kd : [0.2, 0.2, 0.3]
       exp_kp_ik : [1., 1., 1.]
 
     foot_ori_task:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [300., 300., 300.]
-      sim_kd : [30., 30., 30.]
+      sim_kp : [40., 40., 40.]
+      sim_kd : [10, 10, 10]
       sim_kp_ik : [1., 1., 1.]
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [10., 10., 10.]
+      exp_kp : [1., 1., 1.]
       exp_kd : [0.1, 0.1, 0.1]
       exp_kp_ik : [1., 1., 1.]
 
@@ -239,26 +240,24 @@ wbc:
     #exp_foot_half_width: 0.075
 
   qp:
-    W_delta_qddot: 1e6 #1e5
+    W_delta_qddot: 1e5 #1e5
 
-    W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001]
-    W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001]
-    #W_delta_rf_left_foot_in_contact: [1e2, 1e2, 1e1, 1e1, 1e1, 1e1]
-    #W_delta_rf_right_foot_in_contact: [1e2, 1e2, 1e1, 1e1, 1e1, 1e1]
+    #W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
+    #W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
+    W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
+    W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
     #W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1e3, 1e2, 1e2, 1e2]
     #W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1e3, 1e2, 1e2, 1e2]
-    #W_delta_rf_left_foot_in_contact: [1e1, 1e1, 1e1, 1, 1, 1]
-    #W_delta_rf_right_foot_in_contact: [1e1, 1e1, 1e1, 1, 1, 1]
 
-    W_delta_rf_left_foot_in_swing: [1e4, 1e4, 1e4, 1e3, 1e3, 1e3]
-    W_delta_rf_right_foot_in_swing: [1e4, 1e4, 1e4, 1e3, 1e3, 1e3]
+    W_delta_rf_left_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
+    W_delta_rf_right_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
     #W_delta_rf_left_foot_in_swing: [1e5, 1e5, 1e5, 1e4, 1e4, 1e4]
     #W_delta_rf_right_foot_in_swing: [1e5, 1e5, 1e5, 1e4, 1e4, 1e4]
 
-    #W_xc_ddot_in_contact: 1e6
-    #W_xc_ddot_in_swing: 1e-3
-    W_xc_ddot_in_contact: 0
-    W_xc_ddot_in_swing: 0
+    W_xc_ddot_in_contact: 1e7
+    W_xc_ddot_in_swing: 1e-3
+    #W_xc_ddot_in_contact: 0
+    #W_xc_ddot_in_swing: 0
 
 
 state_machine:
