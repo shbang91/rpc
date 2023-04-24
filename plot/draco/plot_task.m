@@ -1017,7 +1017,7 @@ for i = 1:12
         plot(wbc_time, rf_rf_cmd(k, :), 'r', 'LineWidth', 2);
         grid on
         hold on
-        plot(wbc_time, des_rf_rfoot(j, :), 'k', 'LineWidth', 2);
+        plot(wbc_time, des_rf_rfoot(k, :), 'k', 'LineWidth', 2);
         min_val = min([rf_rf_cmd(k, :)]);
         max_val = max([rf_rf_cmd(k, :)]);
         min_val = min_val - 0.1 * (max_val - min_val);
@@ -1074,6 +1074,51 @@ for i = 1:12
         end
     end
     legend('cmd')
+end
+linkaxes(ax,'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% contact constraint
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:12
+    ax(i) = subplot(6,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(wbc_time, xc_ddot(j, :), 'r', 'LineWidth', 2);
+        grid on
+        hold on
+        min_val = min([xc_ddot(j, :)]);
+        max_val = max([xc_ddot(j, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(contact_acc_label(j))
+        if j == 1
+            title('left foot contact constraint in LOCAL', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(wbc_time, xc_ddot(6+k, :), 'r', 'LineWidth', 2);
+        grid on
+        hold on
+        min_val = min([xc_ddot(6+k, :)]);
+        max_val = max([xc_ddot(6+k, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(contact_acc_label(k))
+         if j == 1
+            title('right foot contact constraint in LOCAL', 'FontSize', 30)
+        end
+    end
 end
 linkaxes(ax,'x')
 

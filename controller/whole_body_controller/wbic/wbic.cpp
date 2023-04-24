@@ -397,9 +397,9 @@ void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
   // joint torque command computation
   // std::cout << "jtrq_cmd " << jtrq_cmd.transpose() << std::endl;
 
-  // contact constraint check
-  // Eigen::VectorXd Xc_ddot =
-  // Jc_ * wbic_data_->corrected_wbc_qddot_cmd_ + JcDotQdot_;
+  // contact constraint check (this should be almost zero)
+  wbic_data_->Xc_ddot_ =
+      Jc_ * wbic_data_->corrected_wbc_qddot_cmd_ + JcDotQdot_;
   // std::cout << "==================================" << std::endl;
   // util::PrettyPrint(Xc_ddot, std::cout, "Xc_ddot after correction");
 }

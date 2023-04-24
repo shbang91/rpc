@@ -329,6 +329,8 @@ void DracoController::_SaveData() {
 
     logger_->add("joint_trq_cmd", joint_trq_cmd_);
 
+    logger_->add("xc_ddot", wbic_data_->Xc_ddot_);
+
     // motion task plot
     // ========================================================================
     // task data in world frame

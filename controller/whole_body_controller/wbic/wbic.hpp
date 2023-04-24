@@ -33,6 +33,7 @@ struct WBICData {
     delta_rf_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
     corrected_wbc_qddot_cmd_ = Eigen::VectorXd::Zero(num_qdot);
     rf_cmd_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
+    Xc_ddot_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
   };
   ~WBICData() = default;
 
@@ -46,6 +47,7 @@ struct WBICData {
   // WBIC result
   Eigen::VectorXd corrected_wbc_qddot_cmd_;
   Eigen::VectorXd rf_cmd_;
+  Eigen::VectorXd Xc_ddot_;
 };
 
 class WBIC : public WBC {
