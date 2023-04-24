@@ -34,15 +34,23 @@ struct WBICData {
     corrected_wbc_qddot_cmd_ = Eigen::VectorXd::Zero(num_qdot);
     rf_cmd_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
     Xc_ddot_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
+    delta_qddot_cost_ = 0;
+    delta_rf_cost_ = 0;
+    Xc_ddot_cost_ = 0;
   };
   ~WBICData() = default;
 
   // QP input
   QPParams *qp_params_;
 
-  // QP result
+  // QP Decision Variables
   Eigen::VectorXd delta_qddot_;
   Eigen::VectorXd delta_rf_;
+
+  // QP optimal cost
+  double delta_qddot_cost_;
+  double delta_rf_cost_;
+  double Xc_ddot_cost_;
 
   // WBIC result
   Eigen::VectorXd corrected_wbc_qddot_cmd_;

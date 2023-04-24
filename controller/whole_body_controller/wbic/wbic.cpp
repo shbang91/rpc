@@ -362,6 +362,21 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
   wbic_data_->corrected_wbc_qddot_cmd_.head(num_floating_) +=
       wbic_data_->delta_qddot_;
   wbic_data_->rf_cmd_ = des_rf_ + wbic_data_->delta_rf_;
+  wbic_data_->Xc_ddot_ =
+      Jc_ * wbic_data_->corrected_wbc_qddot_cmd_ +
+      JcDotQdot_; // contact constraint check (this should be almost zero)
+
+  wbic_data_->delta_qddot_cost_ =
+      wbic_data_->delta_qddot_.transpose() *
+      (wbic_data_->qp_params_->W_delta_qddot_).asDiagonal() *
+      wbic_data_->delta_qddot_;
+  wbic_data_->delta_rf_cost_ =
+      wbic_data_->delta_rf_.transpose() *
+      (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
+      wbic_data_->delta_rf_;
+  wbic_data_->Xc_ddot_cost_ =
+      wbic_data_->Xc_ddot_.transpose() *
+      (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * wbic_data_->Xc_ddot_;
 
   // TEST
   // std::cout << "========================================================"
@@ -396,10 +411,4 @@ void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
   // TEST
   // joint torque command computation
   // std::cout << "jtrq_cmd " << jtrq_cmd.transpose() << std::endl;
-
-  // contact constraint check (this should be almost zero)
-  wbic_data_->Xc_ddot_ =
-      Jc_ * wbic_data_->corrected_wbc_qddot_cmd_ + JcDotQdot_;
-  // std::cout << "==================================" << std::endl;
-  // util::PrettyPrint(Xc_ddot, std::cout, "Xc_ddot after correction");
 }

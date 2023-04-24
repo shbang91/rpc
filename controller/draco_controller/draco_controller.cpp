@@ -329,7 +329,11 @@ void DracoController::_SaveData() {
 
     logger_->add("joint_trq_cmd", joint_trq_cmd_);
 
-    logger_->add("xc_ddot", wbic_data_->Xc_ddot_);
+    logger_->add("xc_ddot", wbic_data_->Xc_ddot_); // contact acceleration
+
+    logger_->add("delta_qddot_cost", wbic_data_->delta_qddot_cost_);
+    logger_->add("delta_rf_cost", wbic_data_->delta_rf_cost_);
+    logger_->add("xc_ddot_cost", wbic_data_->Xc_ddot_cost_);
 
     // motion task plot
     // ========================================================================

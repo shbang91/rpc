@@ -1077,51 +1077,6 @@ for i = 1:12
 end
 linkaxes(ax,'x')
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% contact constraint
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-k = 0;
-for i = 1:12
-    ax(i) = subplot(6,2,i);
-    if mod(i,2) == 1
-        j = j + 1;
-        plot(wbc_time, xc_ddot(j, :), 'r', 'LineWidth', 2);
-        grid on
-        hold on
-        min_val = min([xc_ddot(j, :)]);
-        max_val = max([xc_ddot(j, :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-%       set_fig_opt()
-        plot_phase(time, state, min_val, max_val, phase_color)
-        xlabel('time')
-        ylabel(contact_acc_label(j))
-        if j == 1
-            title('left foot contact constraint in LOCAL', 'FontSize',30)
-        end
-    else
-        k = k + 1;
-        plot(wbc_time, xc_ddot(6+k, :), 'r', 'LineWidth', 2);
-        grid on
-        hold on
-        min_val = min([xc_ddot(6+k, :)]);
-        max_val = max([xc_ddot(6+k, :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-%       set_fig_opt()
-        plot_phase(time, state, min_val, max_val, phase_color)
-        xlabel('time')
-        ylabel(contact_acc_label(k))
-         if j == 1
-            title('right foot contact constraint in LOCAL', 'FontSize', 30)
-        end
-    end
-end
-linkaxes(ax,'x')
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % floating base qddot cmd
@@ -1344,3 +1299,86 @@ for i = 1:14
 end
 linkaxes(ax,'x')
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% contact constraint
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:12
+    ax(i) = subplot(6,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(wbc_time, xc_ddot(j, :), 'r', 'LineWidth', 2);
+        grid on
+        hold on
+        min_val = min([xc_ddot(j, :)]);
+        max_val = max([xc_ddot(j, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(contact_acc_label(j))
+        if j == 1
+            title('left foot contact constraint in LOCAL', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(wbc_time, xc_ddot(6+k, :), 'r', 'LineWidth', 2);
+        grid on
+        hold on
+        min_val = min([xc_ddot(6+k, :)]);
+        max_val = max([xc_ddot(6+k, :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+%       set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(contact_acc_label(k))
+         if j == 1
+            title('right foot contact constraint in LOCAL', 'FontSize', 30)
+        end
+    end
+end
+linkaxes(ax,'x')
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QP cost
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(1,3,i);
+    if i == 1
+        plot(wbc_time, delta_qddot_cost, 'b', 'LineWidth', 3);
+        grid on
+        hold on
+        min_val = min(delta_qddot_cost);
+        max_val = max(delta_qddot_cost);
+        plot_phase(time, state, min_val, max_val, phase_color);
+        xlabel('time')
+        title('delta_qddot_cost', 'FontSize', 30)
+    elseif i == 2
+        plot(wbc_time, delta_rf_cost, 'b', 'LineWidth', 3);
+        grid on
+        hold on
+        min_val = min(delta_rf_cost);
+        max_val = max(delta_rf_cost);
+        plot_phase(time, state, min_val, max_val, phase_color);
+        xlabel('time')
+        title('delta_rf_cost', 'FontSize', 30)
+    elseif i ==3
+        plot(wbc_time, xc_ddot_cost, 'b', 'LineWidth', 3);
+        grid on
+        hold on
+        min_val = min(xc_ddot_cost);
+        max_val = max(xc_ddot_cost);
+        plot_phase(time, state, min_val, max_val, phase_color);
+        xlabel('time')
+        title('xc_ddot_cost', 'FontSize', 30) 
+    end
+end
+linkaxes(ax,'x')
