@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -92,7 +92,7 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
 
-      exp_icp_kp : [0., 0.]
+      exp_icp_kp : [0.1, 0.1]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0., 0.] 
 
@@ -124,7 +124,7 @@ wbc:
       exp_com_kp : [100.]
       exp_com_kd : [5.]
 
-      exp_base_kp : [0.]
+      exp_base_kp : [1.]
       exp_base_kd : [0.] # x, y will be ignored
 
       exp_kp_ik : [1.]
@@ -148,7 +148,7 @@ wbc:
       sim_kp_ik : [1., 1., 1.]
 
       ## exp params
-      exp_kp : [0., 0., 0.]
+      exp_kp : [1., 1., 1.]
       exp_kd : [0., 0., 0.]
       exp_kp_ik : [1., 1., 0.01]
 
@@ -169,7 +169,7 @@ wbc:
       ## exp params
       ########################################################################
       #exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
-      exp_kp : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+      exp_kp : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
       exp_kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
       exp_kp_ik : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
@@ -248,7 +248,7 @@ wbc:
     W_delta_rf_left_foot_in_swing: [50, 50, 5e-2, 5, 5, 5e-2]
     W_delta_rf_right_foot_in_swing: [50, 50, 5e-2, 5, 5, 5e-2]
 
-    W_xc_ddot_in_contact: 1e5
+    W_xc_ddot_in_contact: 1e6
     W_xc_ddot_in_swing: 1e-3
     #W_xc_ddot_in_contact: 0
     #W_xc_ddot_in_swing: 0
