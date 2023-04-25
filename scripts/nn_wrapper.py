@@ -22,7 +22,7 @@ class ReplayAction():
     """
     Instead of generating the actions from the neural network, replay it from a file 
     """
-    def __init__(self, path, demo_num = 50):
+    def __init__(self, path, demo_num = 54):
         self.data = h5py.File(path, "r")["data/demo_" + str(demo_num)]
         self.idx = 0
         self.action_handler = ActionHandler()
@@ -53,8 +53,8 @@ class ReplayAction():
         action['rh_pos'] = self.data["action/local_rh_pos"][self.idx] - zero_pos
         action['lh_ori'] = (R.from_quat(self.data["action/local_lh_ori"][self.idx]) * R.from_quat(zero_quat).inv()).as_matrix().flatten()
         action['rh_ori'] = (R.from_quat(self.data["action/local_rh_ori"][self.idx]) * R.from_quat(zero_quat).inv()).as_matrix().flatten()
-        action['l_gripper'] = False
-        action['r_gripper'] = False
+        action['l_gripper'] = self.data["action/l_gripper"][self.idx]
+        action['r_gripper'] = self.data["action/r_gripper"][self.idx]
         self.idx += 1
         return action
 

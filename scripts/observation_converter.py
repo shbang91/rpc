@@ -45,7 +45,7 @@ class ObservationConverter():
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
         if self.trim_demo_video:
-            self.trim_video(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
+            self.trim_video_pick(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
         return self.converted_data
 
     def get_local_trajectories(self, raw_data):
@@ -135,7 +135,7 @@ class ObservationConverter():
         i = 0 
         while i < num_images and l_gripper[i] == 0 and r_gripper[i] == 0:
             i += 1
-        i += 40 # a second is 20 frames
+        i += 60 # a second is 20 frames
         for key in self.converted_data.keys():
             self.converted_data[key] = self.converted_data[key][:i]
 
@@ -197,8 +197,8 @@ class ObservationConverter():
 
         act_concat_delay = np.copy(act_concat)
         act_concat_delay[:-1] = act_concat[1:]
-        self.converted_data['actions'] = act_concat
-        #self.converted_data['actions'] = act_concat_delay
+        #self.converted_data['actions'] = act_concat
+        self.converted_data['actions'] = act_concat_delay
 
 def pos_global_to_local(global_base_pos, global_base_ori, pos):
     return global_base_ori.apply(pos - global_base_pos, inverse=True)
