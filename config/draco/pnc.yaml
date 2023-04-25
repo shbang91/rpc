@@ -8,8 +8,8 @@ vr_ip_address: "tcp://192.168.1.217:5555"
 data_save_freq: 40
 vr_teleop_freq: 40
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -179,7 +179,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [150., 150., 150.]
+      exp_weight : [180., 180., 180.]
       exp_weight_at_walking : [1., 1., 1.]
       exp_kp : [50., 50., 50.]
       exp_kd : [5., 5., 5.]
@@ -289,12 +289,12 @@ state_machine:
     initialize:
       init_duration: 5.
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      target_joint_pos: [0., 0.052, -0.785, 0.785, 0.785, -0.785, -0.052, 0., 0.523, 0., -1.57, 0., 0., 0.5, 0., -0.052, -0.785, 0.785, 0.785, -0.785, 0.052, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [0., 0.052, -0.785, 0.785, 0.785, -0.785, -0.052, 0., 0.523, 0., -1.57, 0., 0., 0.65, 0., -0.052, -0.785, 0.785, 0.785, -0.785, 0.052, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
       wait_time: 10.
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 15.
       target_com_height: 0.658
       #target_base_height: 0.90
       target_base_height: 0.86
