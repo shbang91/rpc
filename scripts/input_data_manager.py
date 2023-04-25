@@ -129,7 +129,7 @@ class ReplayInputDataManager(InputDataManager):
         return msg
 
     def get_rgb_img(self):
-        return self.file['obs/rgb'][self.replay_index].flatten()
+        return self.file['obs/rgb'][self.replay_index]
 
     def get_stereo_img(self):
-        return self.file['obs/stereo'][self.replay_index].flatten()
+        return self.file['obs/stereo'][self.replay_index]

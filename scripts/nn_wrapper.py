@@ -63,7 +63,7 @@ class NNWrapper():
     def __init__(self, path):
         self.eval_policy = policy_from_checkpoint(ckpt_path=path)[0]
         self.action_handler = ActionHandler()
-        self.obs_converter = ObservationConverter(normalize_images=True, crop_images=True)
+        self.obs_converter = ObservationConverter(normalize_images=True)
 
     def reset(self, obs):
         """
@@ -90,7 +90,7 @@ class NNWrapper():
         flat_obs = {}
         for key in obs.keys():
             flat_obs[key.split("/")[1]] = obs[key]
-        #print(flat_obs)
+        #print(flat_obs['rgb'].shape)
         raw_action = np.array(self.eval_policy(
 flat_obs))
         self.action_handler.update(raw_action)

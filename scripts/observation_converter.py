@@ -45,7 +45,7 @@ class ObservationConverter():
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
         if self.trim_demo_video:
-            self.trim_video_pick(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
+            self.trim_video(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
         return self.converted_data
 
     def get_local_trajectories(self, raw_data):
@@ -90,15 +90,15 @@ class ObservationConverter():
             stereo: the stereo image from the robot
         """
         # flatten the images TODO: remove this so it's always flattened
-        stereo = stereo[()].reshape((stereo.shape[0], -1))
-        rgb = rgb[()].reshape((rgb.shape[0], -1))
+        #stereo = stereo[()].reshape((stereo.shape[0], -1))
+        #rgb = rgb[()].reshape((rgb.shape[0], -1))
         # the usage of ... and this reshape trip allows us to process both vector and single images
         # for more information about the reshape call, see
         # https://stackoverflow.com/questions/46183967/how-to-reshape-only-last-dimensions-in-numpy
         #stereo=np.frombuffer(stereo, dtype=np.uint8)
         #rgb=np.frombuffer(rgb, dtype=np.uint8)
-        stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
-        rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
+        #stereo = stereo.reshape(stereo.shape[:-1] + (200, 800, 1))
+        #rgb = rgb.reshape(rgb.shape[:-1] + (200, 400, 3))
         if (self.crop_images):
             rgb = rgb[..., 70:200, :, :]
             stereo = stereo[..., 70:200, :, :]
@@ -132,11 +132,10 @@ class ObservationConverter():
     def trim_video_pick(self, l_gripper, r_gripper):
         # Trim the end of demo videos to be a second after the gripper is last used
         num_images = l_gripper.shape[0] 
-        print(l_gripper.shape, r_gripper.shape)
         i = 0 
         while i < num_images and l_gripper[i] == 0 and r_gripper[i] == 0:
             i += 1
-        i += 15 # a second is 20 frames
+        i += 40 # a second is 20 frames
         for key in self.converted_data.keys():
             self.converted_data[key] = self.converted_data[key][:i]
 
@@ -196,8 +195,10 @@ class ObservationConverter():
 
         act_concat = np.column_stack([act_discrete, act_trajecory])
 
+        act_concat_delay = np.copy(act_concat)
+        act_concat_delay[:-1] = act_concat[1:]
         self.converted_data['actions'] = act_concat
-
+        #self.converted_data['actions'] = act_concat_delay
 
 def pos_global_to_local(global_base_pos, global_base_ori, pos):
     return global_base_ori.apply(pos - global_base_pos, inverse=True)

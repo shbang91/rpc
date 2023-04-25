@@ -12,9 +12,8 @@ args = parser.parse_args()
 
 f = h5py.File(args.file_path, "r")
 for j in range(0, f['obs/rgb'].shape[0]):
-    img = f['obs/stereo'][j]
-    img_ra = np.frombuffer(img, dtype=np.uint8)
-    cv2.imshow('test', img_ra.reshape((200, 800, 1))[70:200, 0:400, :])
+    img = f['obs/rgb'][j]
+    cv2.imshow('test', img)
     cv2.waitKey(20)
 print('action/local_lh_pos', f['action/local_lh_pos'][40])
 print('obs/act_global_lh_pos', f['obs/act_global_lh_pos'][40])

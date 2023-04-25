@@ -37,6 +37,8 @@ class OutputDataManager:
         msg.l_bump = action['l_gripper']
         msg.r_bump = action['r_gripper']
 
+        print(action['r_gripper'])
+
         self.socket.send(msg.SerializeToString())
 
     def toggle_vr_ready(self):

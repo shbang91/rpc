@@ -101,6 +101,7 @@ def main():
         robot_data_pb = input_manager.get_robot_data()
         rgb_img = input_manager.get_rgb_img()
         stereo_img = input_manager.get_stereo_img()
+        print(rgb_img.shape)
         nn.reset(convert_protobuf_and_image(robot_data_pb, rgb_img, stereo_img))
         
     while True:
@@ -134,6 +135,7 @@ def main():
             # time this line
             nn_start = time.perf_counter()
             actions = nn.forward(convert_protobuf_and_image(robot_data_pb, rgb_img, stereo_img))
+            #actions = nn.forward(0)
             nn_end = time.perf_counter()
             #print("nn time: ", nn_end-nn_start)
             output_manager.send(actions)
