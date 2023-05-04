@@ -81,6 +81,11 @@ protected:
   std::vector<SimpleMovingAverage> imu_ang_vel_filter_;
   ExponentialMovingAverageFilter *base_accel_filt_;
 
+  // contact sensing
+  Eigen::Vector2d contact_forces_filt_;   // lfoot_contact, rfoot_contact
+  ExponentialMovingAverageFilter *contact_sensor_filt_;
+//  std::vector<SimpleMovingAverage> contact_sensor_filt_;
+
   bool b_first_visit_;
   bool b_skip_prediction;
   bool b_use_marg_filter;

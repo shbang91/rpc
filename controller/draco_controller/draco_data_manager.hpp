@@ -39,6 +39,11 @@ public:
   Eigen::VectorXd lfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd rfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
 
+  double lfoot_rf_normal_ = 0.;
+  double rfoot_rf_normal_ = 0.;
+  double lfoot_rf_normal_filt_ = 0.;
+  double rfoot_rf_normal_filt_ = 0.;
+
   Eigen::Vector2d est_icp = Eigen::Vector2d::Zero();
   Eigen::Vector2d des_icp = Eigen::Vector2d::Zero();
 

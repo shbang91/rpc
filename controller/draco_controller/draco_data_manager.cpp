@@ -57,6 +57,11 @@ void DracoDataManager::SendData() {
   for (int i(0); i < data_->rfoot_rf_cmd_.size(); i++)
     msg.add_rfoot_rf_cmd(data_->rfoot_rf_cmd_[i]);
 
+  msg.set_lfoot_rf_normal(data_->lfoot_rf_normal_);
+  msg.set_rfoot_rf_normal(data_->rfoot_rf_normal_);
+  msg.set_lfoot_rf_normal_filt(data_->lfoot_rf_normal_filt_);
+  msg.set_rfoot_rf_normal_filt(data_->rfoot_rf_normal_filt_);
+
   for (int i(0); i < 2; i++) {
     msg.add_est_icp(data_->est_icp[i]);
     msg.add_des_icp(data_->des_icp[i]);
