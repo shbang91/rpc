@@ -126,6 +126,8 @@ if args.b_visualize:
     arrow_viz = meshcat.Visualizer(window=viz.viewer.window)
     vis_tools.add_arrow(arrow_viz, "grf_lf", color=[0, 0, 1])
     vis_tools.add_arrow(arrow_viz, "grf_rf", color=[1, 0, 0])
+    vis_tools.add_arrow(arrow_viz, "grf_lf_normal", color=[0.2, 0.2, 0.2, 0.2])
+    vis_tools.add_arrow(arrow_viz, "grf_rf_normal", color=[0.2, 0.2, 0.2, 0.2])
 
 while True:
     ##receive msg trough socket
@@ -157,6 +159,11 @@ while True:
 
     data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
     data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
+
+    data_saver.add('lfoot_rf_normal', msg.lfoot_rf_normal)
+    data_saver.add('rfoot_rf_normal', msg.rfoot_rf_normal)
+    data_saver.add('lfoot_rf_normal_filt', msg.lfoot_rf_normal_filt)
+    data_saver.add('rfoot_rf_normal_filt', msg.rfoot_rf_normal_filt)
 
     data_saver.add('est_icp', list(msg.est_icp))
     data_saver.add('des_icp', list(msg.des_icp))
@@ -254,3 +261,11 @@ while True:
                                   msg.lfoot_ori, msg.lfoot_rf_cmd)
             vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
                                   msg.rfoot_ori, msg.rfoot_rf_cmd)
+
+            # add sensed normal force
+            lfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.lfoot_rf_normal])
+            rfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.rfoot_rf_normal])
+            vis_tools.grf_display(arrow_viz["grf_lf_normal"], msg.lfoot_pos,
+                                  msg.lfoot_ori, lfoot_rf_normal)
+            vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
+                                  msg.rfoot_ori, rfoot_rf_normal)

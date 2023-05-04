@@ -111,11 +111,25 @@ def get_sensor_data_from_pybullet(robot):
     joint_vel[25] = pb.getJointState(robot, DracoJointIdx.r_wrist_ps)[1]
     joint_vel[26] = pb.getJointState(robot, DracoJointIdx.r_wrist_pitch)[1]
 
+    # normal force measured on each foot
+    _l_normal_force = 0
+    contacts = pb.getContactPoints(bodyA=robot, linkIndexA=DracoLinkIdx.l_ankle_ie_link)
+    for contact in contacts:
+        # add z-component on all points of contact
+        _l_normal_force += contact[9]
+
+    _r_normal_force = 0
+    contacts = pb.getContactPoints(bodyA=robot, linkIndexA=DracoLinkIdx.r_ankle_ie_link)
+    for contact in contacts:
+        # add z-component on all points of contact
+        _r_normal_force += contact[9]
+
     b_lf_contact = True if pb.getLinkState(robot, DracoLinkIdx.l_foot_contact,
                                            1, 1)[0][2] <= 0.05 else False
     b_rf_contact = True if pb.getLinkState(robot, DracoLinkIdx.r_foot_contact,
                                            1, 1)[0][2] <= 0.05 else False
-    return imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact
+    return imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, \
+        b_rf_contact, _l_normal_force, _r_normal_force
 
 
 #TODO:try to modify with setjointmotorcontrol "array" API
@@ -456,7 +470,8 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressNine()
 
         #get sensor data
-        imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
+        imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact, \
+            l_normal_force, r_normal_force = get_sensor_data_from_pybullet(
             draco_humanoid)
         pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
 
@@ -468,6 +483,8 @@ if __name__ == "__main__":
         rpc_draco_sensor_data.joint_vel_ = joint_vel
         rpc_draco_sensor_data.b_lf_contact_ = b_lf_contact
         rpc_draco_sensor_data.b_rf_contact_ = b_rf_contact
+        rpc_draco_sensor_data.lf_contact_normal_ = l_normal_force
+        rpc_draco_sensor_data.rf_contact_normal_ = r_normal_force
 
         ##Debugging
 
