@@ -340,7 +340,7 @@ def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
 
 
 def add_sensor_noise(measurement, noise):
-    measurement += noise
+    return measurement + noise
 
 
 def make_video(video_dir, delete_jpgs=True):

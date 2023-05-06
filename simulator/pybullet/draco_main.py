@@ -473,7 +473,7 @@ if __name__ == "__main__":
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact, \
             l_normal_force, r_normal_force = get_sensor_data_from_pybullet(
             draco_humanoid)
-        pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
+        imu_dvel = pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
 
         #copy sensor data to rpc sensor data class
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
