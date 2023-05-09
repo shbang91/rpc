@@ -92,7 +92,7 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
 
-      exp_icp_kp : [0.1, 0.1]
+      exp_icp_kp : [0.01, 0.01]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0., 0.] 
 
@@ -124,7 +124,7 @@ wbc:
       exp_com_kp : [100.]
       exp_com_kd : [5.]
 
-      exp_base_kp : [1.]
+      exp_base_kp : [0.01]
       exp_base_kd : [0.] # x, y will be ignored
 
       exp_kp_ik : [1.]
@@ -147,8 +147,10 @@ wbc:
       sim_kd : [5., 5., 5.]
       sim_kp_ik : [1., 1., 1.]
 
+      ########################################################################
       ## exp params
-      exp_kp : [1., 1., 1.]
+      ########################################################################
+      exp_kp : [0.01, 0.01, 0.01]
       exp_kd : [0., 0., 0.]
       exp_kp_ik : [1., 1., 0.01]
 
@@ -169,7 +171,7 @@ wbc:
       ## exp params
       ########################################################################
       #exp_kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
-      exp_kp : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
+      exp_kp : [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
       exp_kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
       exp_kp_ik : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
@@ -177,8 +179,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [40., 40., 50.]
-      sim_kd : [12, 12, 12]
+      sim_kp : [120., 120., 150.]
+      sim_kd : [20, 20, 30]
       sim_kp_ik : [1., 1., 1.]
 
       ########################################################################
@@ -240,19 +242,21 @@ wbc:
     #exp_foot_half_width: 0.075
 
   qp:
-    W_delta_qddot: 1e5 #1e5
+    W_delta_qddot: 1e3 #1e5
 
-    W_delta_rf_left_foot_in_contact: [100, 100, 1e-2, 1e-1, 1e-1, 1e-2]
-    W_delta_rf_right_foot_in_contact: [100, 100, 1e-2, 1e-1, 1e-1, 1e-2]
+    W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    #W_delta_rf_left_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
+    #W_delta_rf_right_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
 
-    W_delta_rf_left_foot_in_swing: [500, 500, 5e-2, 5e-1, 5e-1, 5e-2]
-    W_delta_rf_right_foot_in_swing: [500, 500, 5e-2, 5e-1, 5e-1, 5e-2]
+    W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
+    W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
 
-    W_xc_ddot_in_contact: 1e7
+    W_xc_ddot_in_contact: 1e5
     W_xc_ddot_in_swing: 1e-3
     #W_xc_ddot_in_contact: 0
     #W_xc_ddot_in_swing: 0
@@ -279,7 +283,7 @@ state_machine:
     stand_up:
       standup_duration: 5.
       target_com_height: 0.658
-      target_base_height: 0.90
+      target_base_height: 0.88
 
       rf_z_max_interp_duration: 0.1
 
