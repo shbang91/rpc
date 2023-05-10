@@ -91,7 +91,16 @@ void SingleSupportSwing::LastVisit() {
 }
 
 bool SingleSupportSwing::EndOfState() {
-  return state_machine_time_ > end_time_ ? true : false;
+  bool b_early_contact = false;
+  if ((state_id_ == draco_states::kLFSingleSupportSwing) && (sp_->b_lf_contact_)) {
+    b_early_contact = true;
+    std::cout << "Early Touchdown [LFoot]" << std::endl;
+  } else if ((state_id_ == draco_states::kRFSingleSupportSwing) && (sp_->b_rf_contact_)) {
+    b_early_contact = true;
+    std::cout << "Early Touchdown [RFoot]" << std::endl;
+  }
+
+  return (state_machine_time_ > end_time_) || b_early_contact ? true : false;
 }
 
 StateId SingleSupportSwing::GetNextState() {
