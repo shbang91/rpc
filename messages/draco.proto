@@ -64,6 +64,10 @@ message pnc_msg {
   float rfoot_rf_normal = 42;
   float lfoot_rf_normal_filt = 43;
   float rfoot_rf_normal_filt = 44;
+  float lfoot_volt_normal_raw = 45;
+  float rfoot_volt_normal_raw = 46;
+  bool b_lfoot = 47;
+  bool b_rfoot = 48;
 }
 
 // TODO:

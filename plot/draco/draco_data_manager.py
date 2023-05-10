@@ -160,6 +160,10 @@ while True:
     data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
     data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
 
+    data_saver.add('b_lfoot', msg.b_lfoot)
+    data_saver.add('b_rfoot', msg.b_rfoot)
+    data_saver.add('lfoot_volt_normal_raw', msg.lfoot_volt_normal_raw)
+    data_saver.add('rfoot_volt_normal_raw', msg.rfoot_volt_normal_raw)
     data_saver.add('lfoot_rf_normal', msg.lfoot_rf_normal)
     data_saver.add('rfoot_rf_normal', msg.rfoot_rf_normal)
     data_saver.add('lfoot_rf_normal_filt', msg.lfoot_rf_normal_filt)
@@ -263,8 +267,8 @@ while True:
                                   msg.rfoot_ori, msg.rfoot_rf_cmd)
 
             # add sensed normal force
-            lfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.lfoot_rf_normal])
-            rfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.rfoot_rf_normal])
+            lfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.lfoot_rf_normal_filt])
+            rfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.rfoot_rf_normal_filt])
             vis_tools.grf_display(arrow_viz["grf_lf_normal"], msg.lfoot_pos,
                                   msg.lfoot_ori, lfoot_rf_normal)
             vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,

@@ -45,12 +45,6 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_base_accel_time_constant");
     Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
             cfg["state_estimator"], prefix + "_base_accel_limits");
-    double time_constant_contact = util::ReadParameter<double>(
-            cfg["state_estimator"], prefix + "_contact_time_constant");
-    double contact_limits = util::ReadParameter<double>(
-            cfg["wbc"]["contact"], prefix + "_max_rf_z");
-    Eigen::VectorXd n_data_contact = util::ReadParameter<Eigen::VectorXd>(
-            cfg["state_estimator"], prefix + "_num_data_contact");
     int foot_frame = util::ReadParameter<int>(
             cfg["state_estimator"], "foot_reference_frame");
 
@@ -74,14 +68,6 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             sp_->servo_dt_, time_constant_base_accel, Eigen::VectorXd::Zero(3),
             -base_accel_limits, base_accel_limits);
 
-//  for (unsigned int i = 0; i < 2; ++i) {
-//    contact_sensor_filt_.push_back(SimpleMovingAverage(n_data_contact[i]));
-//  }
-  Eigen::Vector2d contact_limits_vec;
-  contact_limits_vec << contact_limits, contact_limits;
-  contact_sensor_filt_ = new ExponentialMovingAverageFilter(
-          sp_->servo_dt_, time_constant_contact, Eigen::VectorXd::Zero(2),
-          -contact_limits_vec, contact_limits_vec);
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
@@ -91,6 +77,7 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
               << __FILE__ << "]" << std::endl;
   }
 
+  contact_manager_ = std::make_unique<ContactDetectionManager>(robot_);
 
   base_acceleration_.setZero();
   x_hat_.setZero();
@@ -101,8 +88,6 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   prev_support_state_ = DOUBLE;
   foot_pos_from_base_pre_transition.setZero();
   foot_pos_from_base_post_transition(0) = NAN;
-
-  contact_forces_filt_.setZero();
 
   // TODO move settings to config/draco/pnc.yaml
   b_first_visit_ = true;
@@ -117,7 +102,6 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
 
 DracoKFStateEstimator::~DracoKFStateEstimator() {
   delete base_accel_filt_;
-  delete contact_sensor_filt_;
 }
 
 void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
@@ -149,12 +133,7 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
   // update contact filter data
   Eigen::Vector2d contact_normal = Eigen::Vector2d::Zero();
   contact_normal << sensor_data->lf_contact_normal_, sensor_data->rf_contact_normal_;
-//  for (int i = 0; i < contact_normal.size(); ++i) {
-//    contact_sensor_filt_[i].Input(contact_normal[i]);
-//    contact_forces_filt_[i] = contact_sensor_filt_[i].Output();
-//  }
-  contact_sensor_filt_->Input(contact_normal);
-  contact_forces_filt_ = contact_sensor_filt_->Output();
+  contact_manager_->UpdateForceMeasurements(contact_normal);
 
   // update system without base linear states
   robot_->UpdateRobotModel(
@@ -207,12 +186,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   // update contact filter data
   Eigen::Vector2d contact_normal = Eigen::Vector2d::Zero();
   contact_normal << sensor_data->lf_contact_normal_, sensor_data->rf_contact_normal_;
-//  for (int i = 0; i < contact_normal.size(); ++i) {
-//    contact_sensor_filt_[i].Input(contact_normal[i]);
-//    contact_forces_filt_[i] = contact_sensor_filt_[i].Output();
-//  }
-  contact_sensor_filt_->Input(contact_normal);
-  contact_forces_filt_ = contact_sensor_filt_->Output();
+  contact_manager_->UpdateForceMeasurements(contact_normal);
 
   // update system without base linear states
   robot_->UpdateRobotModel(Eigen::Vector3d::Zero(),
@@ -239,6 +213,10 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
         x_hat_.base_pos_z();
   }
 
+  // pass expected floor height to contact manager
+  // TODO: pass height from vision
+  Eigen::Vector2d expected_contact_height = Eigen::Vector2d::Zero();
+
   // update contact
   //  if (sensor_data->b_rf_contact) {
   //    sp_->b_rf_contact = true;
@@ -251,6 +229,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   //  } else {
   //    sp_->b_lf_contact = false;
   //  }
+  contact_manager_->UpdateContactStates(sp_, expected_contact_height);
   updateSupportState(sp_, current_support_state_);
 
   // at support state change, update global offset and covariance gains
@@ -392,10 +371,14 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
     dm->data_->est_icp = sp_->dcm_.head<2>();
 
-    dm->data_->lfoot_rf_normal_ = sensor_data->lf_contact_normal_;
-    dm->data_->rfoot_rf_normal_ = sensor_data->rf_contact_normal_;
-    dm->data_->lfoot_rf_normal_filt_ = contact_forces_filt_(0);
-    dm->data_->rfoot_rf_normal_filt_ = contact_forces_filt_(1);
+    dm->data_->b_lfoot_ = sp_->b_lf_contact_;
+    dm->data_->b_rfoot_ = sp_->b_rf_contact_;
+    dm->data_->lfoot_volt_normal_raw_ = sensor_data->lf_contact_normal_;
+    dm->data_->rfoot_volt_normal_raw_ = sensor_data->rf_contact_normal_;
+    dm->data_->lfoot_rf_normal_ = contact_manager_->GetLFootNormalForceRaw();
+    dm->data_->rfoot_rf_normal_ = contact_manager_->GetRFootNormalForceRaw();
+    dm->data_->lfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::LFoot);
+    dm->data_->rfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::RFoot);
 
     //    dm->data_->kf_base_joint_lin_vel_ = base_velocity_estimate;
     //    dm->data_->base_quat_kf =
@@ -437,6 +420,14 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
     // save feet contact information (leave for when we integrate contact
     // sensor)
+    logger_->add("b_lf_contact_touchdown", contact_manager_->HasContactSensorTouchdown(end_effector::LFoot));
+    logger_->add("b_rf_contact_touchdown", contact_manager_->HasContactSensorTouchdown(end_effector::RFoot));
+    logger_->add("b_lf_heel_toe_touchdown", contact_manager_->HasHeelToeTouchdown(end_effector::LFoot));
+    logger_->add("b_rf_heel_toe_touchdown", contact_manager_->HasHeelToeTouchdown(end_effector::RFoot));
+    logger_->add("b_rf_contact", sp_->b_rf_contact_);
+    logger_->add("b_lf_contact", sp_->b_lf_contact_);
+    logger_->add("act_rf_z_lfoot", contact_manager_->GetFootNormalForceFilt(end_effector::LFoot));
+    logger_->add("act_rf_z_rfoot", contact_manager_->GetFootNormalForceFilt(end_effector::RFoot));
 //    dm->data_->lfoot_contact_ = sp_->stance_foot_ == "l_foot_contact";
 //    dm->data_->rfoot_contact_ = sp_->stance_foot_ == "r_foot_contact";
 //    dm->data_->lf_contact_ = sp_->b_lf_contact_;

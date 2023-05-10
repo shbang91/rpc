@@ -312,6 +312,20 @@ def simulate_dVel_data(robot, link_id, previous_link_velocity):
 
     return torso_dvel
 
+
+def simulate_contact_sensor(force_sensor_measurement):
+    """
+    Convert PyBullet's sensed force measurements to estimated voltage measurements to
+    simulate robot readings.
+    :param force_sensor_measurement: Sensed local z-forces from PyBullet
+    :return: voltage measurment
+    """
+
+    voltage_bias = 25000
+    voltage_to_force_map = -10000
+
+    return (force_sensor_measurement - voltage_bias) / voltage_to_force_map
+
 def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
                                nearval, farval):
     aspect = pic_width / pic_height

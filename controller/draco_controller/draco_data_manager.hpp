@@ -39,6 +39,10 @@ public:
   Eigen::VectorXd lfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd rfoot_rf_cmd_ = Eigen::VectorXd::Zero(6);
 
+  bool b_lfoot_ = false;
+  bool b_rfoot_ = false;
+  double lfoot_volt_normal_raw_ = 0.;
+  double rfoot_volt_normal_raw_ = 0.;
   double lfoot_rf_normal_ = 0.;
   double rfoot_rf_normal_ = 0.;
   double lfoot_rf_normal_filt_ = 0.;

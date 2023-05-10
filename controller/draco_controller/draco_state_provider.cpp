@@ -26,6 +26,8 @@ DracoStateProvider::DracoStateProvider() {
 
   b_lf_contact_ = true;
   b_rf_contact_ = true;
+  b_request_change_swing_leg_ = false;
+  b_swing_leg_ = end_effector::LFoot;
 
   com_vel_est_.setZero();
 

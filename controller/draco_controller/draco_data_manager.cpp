@@ -57,6 +57,11 @@ void DracoDataManager::SendData() {
   for (int i(0); i < data_->rfoot_rf_cmd_.size(); i++)
     msg.add_rfoot_rf_cmd(data_->rfoot_rf_cmd_[i]);
 
+  // contact sensing measurements
+  msg.set_b_lfoot(data_->b_lfoot_);
+  msg.set_b_rfoot(data_->b_rfoot_);
+  msg.set_lfoot_volt_normal_raw(data_->lfoot_volt_normal_raw_);
+  msg.set_rfoot_volt_normal_raw(data_->rfoot_volt_normal_raw_);
   msg.set_lfoot_rf_normal(data_->lfoot_rf_normal_);
   msg.set_rfoot_rf_normal(data_->rfoot_rf_normal_);
   msg.set_lfoot_rf_normal_filt(data_->lfoot_rf_normal_filt_);

@@ -26,6 +26,7 @@
 #include "controller/state_estimator/FloatingBaseSystemModel.hpp"
 #include "controller/state_estimator/PoseMeasurementModel.hpp"
 #include "third_party/kalman_filters/ExtendedKalmanFilter.hpp"
+#include "controller/whole_body_controller/managers/contact_detection_manager.hpp"
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
@@ -82,9 +83,7 @@ protected:
   ExponentialMovingAverageFilter *base_accel_filt_;
 
   // contact sensing
-  Eigen::Vector2d contact_forces_filt_;   // lfoot_contact, rfoot_contact
-  ExponentialMovingAverageFilter *contact_sensor_filt_;
-//  std::vector<SimpleMovingAverage> contact_sensor_filt_;
+  std::unique_ptr<ContactDetectionManager> contact_manager_;
 
   bool b_first_visit_;
   bool b_skip_prediction;

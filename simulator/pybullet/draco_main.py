@@ -31,6 +31,10 @@ import draco_interface_py
 if Config.MEASURE_COMPUTATION_TIME:
     from pytictoc import TicToc
 
+# Simulated noise characteristics
+imu_dvel_bias = np.array([0.0, 0.0, 0.0])
+l_contact_volt_noise = 0.001
+r_contact_volt_noise = 0.001
 
 def get_sensor_data_from_pybullet(robot):
 
@@ -403,9 +407,10 @@ if __name__ == "__main__":
         os.makedirs(video_dir)
 
     previous_torso_velocity = np.array([0., 0., 0.])
-    imu_dvel_bias = np.array([0.0, 0.0, 0.0])
     rate = RateLimiter(frequency=1. / dt)
     while (True):
+        l_normal_volt_noise = np.random.normal(0, l_contact_volt_noise)
+        r_normal_volt_noise = np.random.normal(0, r_contact_volt_noise)
 
         ###############################################################################
         #Debugging Purpose
@@ -473,7 +478,11 @@ if __name__ == "__main__":
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact, \
             l_normal_force, r_normal_force = get_sensor_data_from_pybullet(
             draco_humanoid)
+        l_normal_force = pybullet_util.simulate_contact_sensor(l_normal_force)
+        r_normal_force = pybullet_util.simulate_contact_sensor(r_normal_force)
         imu_dvel = pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
+        l_normal_force = pybullet_util.add_sensor_noise(l_normal_force, l_normal_volt_noise)
+        r_normal_force = pybullet_util.add_sensor_noise(r_normal_force, r_normal_volt_noise)
 
         #copy sensor data to rpc sensor data class
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat

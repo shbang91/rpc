@@ -27,6 +27,8 @@ public:
 
   bool b_lf_contact_;
   bool b_rf_contact_;
+  bool b_request_change_swing_leg_;
+  int b_swing_leg_;
 
   Eigen::Vector3d com_vel_est_;
 

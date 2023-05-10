@@ -6,6 +6,7 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
+#include "configuration.hpp"
 
 SingleSupportSwing::SingleSupportSwing(StateId state_id,
                                        PinocchioRobotSystem *robot,
@@ -43,6 +44,8 @@ void SingleSupportSwing::FirstVisit() {
         curr_lfoot_iso, target_lfoot_iso, swing_height_, end_time_);
 
     sp_->b_lf_contact_ = false;
+    sp_->b_request_change_swing_leg_ = true;
+    sp_->b_swing_leg_ = end_effector::LFoot;
 
   } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
     std::cout << "draco_states::kRFSingleSupportSwing" << std::endl;
@@ -61,6 +64,8 @@ void SingleSupportSwing::FirstVisit() {
         curr_rfoot_iso, target_rfoot_iso, swing_height_, end_time_);
 
     sp_->b_rf_contact_ = false;
+    sp_->b_request_change_swing_leg_ = true;
+    sp_->b_swing_leg_ = end_effector::RFoot;
   }
 }
 
