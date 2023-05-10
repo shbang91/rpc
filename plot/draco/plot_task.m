@@ -1387,11 +1387,11 @@ plot_phase(time, state, min_val, max_val, phase_color)
 ylabel('Reaction force (z-local)')
 
 ax(3) = subplot(5,1,5);
-plot(time, b_lf_contact_touchdown(:), 'r', 'LineWidth', 2);
+plot(wbc_time, b_lf_contact_touchdown(:), 'r', 'LineWidth', 2);
 grid on
 hold on
-plot(time, b_lf_heel_toe_touchdown(:), 'b', 'LineWidth', 2);
-plot(time, b_lf_contact(:), 'k', 'LineWidth', 2);
+plot(wbc_time, b_lf_heel_toe_touchdown(:), 'b', 'LineWidth', 2);
+plot(wbc_time, b_lf_contact(:), 'k', 'LineWidth', 2);
 min_val = 0;
 max_val = 1;
 min_val = min_val - 0.1;
@@ -1432,11 +1432,11 @@ plot_phase(time, state, min_val, max_val, phase_color)
 ylabel('Reaction force (z-local)')
 
 ax(3) = subplot(5,1,5);
-plot(time, b_rf_contact_touchdown(:), 'r', 'LineWidth', 2);
+plot(wbc_time, b_rf_contact_touchdown(:), 'r', 'LineWidth', 2);
 grid on
 hold on
-plot(time, b_rf_heel_toe_touchdown(:), 'b', 'LineWidth', 2);
-plot(time, b_rf_contact(:), 'k', 'LineWidth', 2);
+plot(wbc_time, b_rf_heel_toe_touchdown(:), 'b', 'LineWidth', 2);
+plot(wbc_time, b_rf_contact(:), 'k', 'LineWidth', 2);
 min_val = 0;
 max_val = 1;
 min_val = min_val - 0.1;
