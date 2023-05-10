@@ -17,13 +17,20 @@ d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
-dd = dir("/tmp/draco_state_estimator_data*.mat");
-% dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
+% dd = dir("/tmp/draco_state_estimator_data*.mat");
+dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
-load(dd(i).name, 'icp_est')
+load(dd(i).name, 'b_lf_contact_touchdown')
+load(dd(i).name, 'b_rf_contact_touchdown')
+load(dd(i).name, 'b_lf_heel_toe_touchdown')
+load(dd(i).name, 'b_rf_heel_toe_touchdown')
+load(dd(i).name, 'b_lf_contact')
+load(dd(i).name, 'b_rf_contact')
+load(dd(i).name, 'act_rf_z_lfoot')
+load(dd(i).name, 'act_rf_z_rfoot')
 
 ddd = dir(sprintf("%s/draco_icp_data*.mat", exp_data_location));
 [tmp, i] = max([ddd.datenum]);
@@ -1349,3 +1356,93 @@ for i = 1:num_of_tasks
     end
 end
 linkaxes(ax,'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% early contact detection (Left foot)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+
+ax(1) = subplot(5,1,1:2);
+plot(wbc_time, des_lf_pos(3,:), 'r', 'LineWidth', 2);
+hold on
+plot(wbc_time, act_lf_pos(3,:), 'b', 'LineWidth', 2);        
+min_val = min([des_lf_pos(3,:), act_lf_pos(3,:)]);
+max_val = max([des_lf_pos(3,:), act_lf_pos(3,:)]);
+min_val = min_val - 0.1 * (max_val - min_val);
+max_val = max_val + 0.1 *(max_val - min_val);
+plot_phase(time, state, min_val, max_val, phase_color)
+ylabel('Foot pos (z)')
+title('left foot', 'FontSize',30)
+
+ax(2) = subplot(5,1,3:4);
+plot(wbc_time, des_rf_lfoot(6, :), 'r', 'LineWidth', 2);
+hold on
+plot(wbc_time, act_rf_z_lfoot, 'b', 'LineWidth', 2);
+min_val = min([lf_rf_cmd(6, :)]);
+max_val = max([lf_rf_cmd(6, :)]);
+min_val = min_val - 0.1 * (max_val - min_val);
+max_val = max_val + 0.1 *(max_val - min_val);
+plot_phase(time, state, min_val, max_val, phase_color)
+ylabel('Reaction force (z-local)')
+
+ax(3) = subplot(5,1,5);
+plot(time, b_lf_contact_touchdown(:), 'r', 'LineWidth', 2);
+grid on
+hold on
+plot(time, b_lf_heel_toe_touchdown(:), 'b', 'LineWidth', 2);
+plot(time, b_lf_contact(:), 'k', 'LineWidth', 2);
+min_val = 0;
+max_val = 1;
+min_val = min_val - 0.1;
+max_val = max_val + 0.1;
+plot_phase(time, state, min_val, max_val, phase_color)
+legend('FT sensor', 'foot height', 'controller')
+xlabel('time')
+ylabel('Contact Sensor')
+linkaxes(ax, 'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% early contact detection (Right foot)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+
+ax(1) = subplot(5,1,1:2);
+plot(wbc_time, des_rf_pos(3,:), 'r', 'LineWidth', 2);
+hold on
+plot(wbc_time, act_rf_pos(3,:), 'b', 'LineWidth', 2);        
+min_val = min([des_rf_pos(3,:), act_lf_pos(3,:)]);
+max_val = max([des_rf_pos(3,:), act_lf_pos(3,:)]);
+min_val = min_val - 0.1 * (max_val - min_val);
+max_val = max_val + 0.1 *(max_val - min_val);
+plot_phase(time, state, min_val, max_val, phase_color)
+ylabel('Foot pos (z)')
+title('right foot', 'FontSize', 30)
+
+ax(2) = subplot(5,1,3:4);
+plot(wbc_time, des_rf_rfoot(6, :), 'r', 'LineWidth', 2);
+hold on
+plot(wbc_time, act_rf_z_rfoot, 'b', 'LineWidth', 2);
+min_val = min([rf_rf_cmd(6, :)]);
+max_val = max([rf_rf_cmd(6, :)]);
+min_val = min_val - 0.1 * (max_val - min_val);
+max_val = max_val + 0.1 *(max_val - min_val);
+plot_phase(time, state, min_val, max_val, phase_color)
+ylabel('Reaction force (z-local)')
+
+ax(3) = subplot(5,1,5);
+plot(time, b_rf_contact_touchdown(:), 'r', 'LineWidth', 2);
+grid on
+hold on
+plot(time, b_rf_heel_toe_touchdown(:), 'b', 'LineWidth', 2);
+plot(time, b_rf_contact(:), 'k', 'LineWidth', 2);
+min_val = 0;
+max_val = 1;
+min_val = min_val - 0.1;
+max_val = max_val + 0.1;
+%   set_fig_opt()
+plot_phase(time, state, min_val, max_val, phase_color)
+xlabel('time')
+ylabel('RF')
+linkaxes(ax, 'x')
