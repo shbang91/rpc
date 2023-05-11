@@ -19,8 +19,7 @@ public:
         joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
         joint_vel_(Eigen::VectorXd::Zero(draco::n_adof)), b_lf_contact_(false),
         b_rf_contact_(false), lf_contact_normal_(0.), rf_contact_normal_(0.),
-        base_joint_pos_(Eigen::Vector3d::Zero()),
-        base_joint_quat_(0, 0, 0, 1),
+        base_joint_pos_(Eigen::Vector3d::Zero()), base_joint_quat_(0, 0, 0, 1),
         base_joint_lin_vel_(Eigen::Vector3d::Zero()),
         base_joint_ang_vel_(Eigen::Vector3d::Zero()){};
   virtual ~DracoSensorData() = default;
@@ -32,8 +31,8 @@ public:
   Eigen::VectorXd joint_vel_;
   bool b_lf_contact_;
   bool b_rf_contact_;
-  double lf_contact_normal_;
-  double rf_contact_normal_;
+  float lf_contact_normal_;
+  float rf_contact_normal_;
 
   // Debug or using ground truth state estimator
   Eigen::Vector3d base_joint_pos_;
