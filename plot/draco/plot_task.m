@@ -1360,7 +1360,7 @@ for i = 1:3
         max_val = max(delta_qddot_cost);
         plot_phase(time, state, min_val, max_val, phase_color);
         xlabel('time')
-        title('delta_qddot_cost', 'FontSize', 30)
+        title('delta qddot cost', 'FontSize', 30)
     elseif i == 2
         plot(wbc_time, delta_rf_cost, 'b', 'LineWidth', 3);
         grid on
@@ -1369,7 +1369,7 @@ for i = 1:3
         max_val = max(delta_rf_cost);
         plot_phase(time, state, min_val, max_val, phase_color);
         xlabel('time')
-        title('delta_rf_cost', 'FontSize', 30)
+        title('delta rf cost', 'FontSize', 30)
     elseif i ==3
         plot(wbc_time, xc_ddot_cost, 'b', 'LineWidth', 3);
         grid on
@@ -1378,7 +1378,7 @@ for i = 1:3
         max_val = max(xc_ddot_cost);
         plot_phase(time, state, min_val, max_val, phase_color);
         xlabel('time')
-        title('xc_ddot_cost', 'FontSize', 30) 
+        title('xc ddot cost', 'FontSize', 30) 
     end
 end
 linkaxes(ax,'x')
