@@ -20,13 +20,14 @@ class ObservationConverter():
     will be vectors. The code can deal with both vectors and single messages.
     """
 
-    def __init__(self, include_images=True, normalize_images=False, crop_images=False, include_actions=False, include_desired=False, trim_demo_video=False):
+    def __init__(self, include_images=True, normalize_images=False, crop_images=False, include_actions=False, include_desired=False, trim_demo_video=False, correct_latency=True):
         self.include_actions = include_actions
         self.include_desired = include_desired
-        self.trim_demo_video = trim_demo_video 
+        self.trim_demo_video = trim_demo_video
         self.include_images = include_images
         self.normalize_images = normalize_images
         self.crop_images = crop_images
+        self.correct_latency = correct_latency
         self.converted_data = {}
 
     def convert(self, raw_data):
@@ -45,7 +46,9 @@ class ObservationConverter():
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
         if self.trim_demo_video:
-            self.trim_video(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
+            self.trim_video_pick(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
+        if self.correct_latency:
+            self.correct_video_latency(raw_data['collection_timestamp'], raw_data['vr_timestamp'])
         return self.converted_data
 
     def get_local_trajectories(self, raw_data):
@@ -129,15 +132,37 @@ class ObservationConverter():
         for key in self.converted_data.keys():
             self.converted_data[key] = self.converted_data[key][:i]
 
+
     def trim_video_pick(self, l_gripper, r_gripper):
         # Trim the end of demo videos to be a second after the gripper is first used
         num_images = l_gripper.shape[0] 
         i = 0 
+        # flag_grasp = False
+        # while i < num_images:
+        #     if l_gripper[i] != 0 and r_gripper[i] != 0:
+        #         flag_grasp = True
+        #     if flag_grasp and l_gripper[i] == 0 and r_gripper[i] == 0:
+        #         i += 10
+        #         i = min(i, num_images - 1)
+        #         break
+        #     i += 1
         while i < num_images and l_gripper[i] == 0 and r_gripper[i] == 0:
             i += 1
-        i += 60 # a second is 20 frames
+        i += 20 # a second is 20 frames
         for key in self.converted_data.keys():
             self.converted_data[key] = self.converted_data[key][:i]
+
+
+    def correct_video_latency(self, collection_timestamp, vr_timestamp):
+        # print(np.array(collection_timestamp)- np.array(vr_timestamp)).mean()/50
+        step = int((np.array(collection_timestamp)- np.array(vr_timestamp)).mean()/50) #20FPS
+        if step > 1:
+            print("{} STEPS delay!".format(step))
+            for key in self.converted_data.keys():
+                if key in ['obs/rgb', 'obs/stereo_0', 'obs/stereo_1']:
+                    self.converted_data[key] = self.converted_data[key][:-step]
+                else:
+                    self.converted_data[key] = self.converted_data[key][step:]
 
     def get_joint_embedding(self, joint_pos, joint_vel):
         """
@@ -197,6 +222,15 @@ class ObservationConverter():
 
         act_concat_delay = np.copy(act_concat)
         act_concat_delay[:-1] = act_concat[1:]
+
+        # apply random latency
+        # prob_delay = 0.05
+        # for _ in range(3):
+        #     for i in range(act_concat_delay.shape[0]):
+        #         if np.random.rand() > prob_delay:
+        #             continue
+        #         act_concat_delay[i] = act_concat_delay[i-1]
+
         #self.converted_data['actions'] = act_concat
         self.converted_data['actions'] = act_concat_delay
 
