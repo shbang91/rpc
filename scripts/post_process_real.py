@@ -119,7 +119,7 @@ def main():
                     # obs_group = ep_group.create_group("obs")
 
                     obs_converter = ObservationConverter(
-                        include_images=True, include_actions=True, include_desired=True, trim_demo_video=True)
+                        include_images=True, include_actions=True, include_desired=True, trim_demo_video=False)
 
                     data = obs_converter.convert(demo_file)
 

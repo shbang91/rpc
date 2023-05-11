@@ -3,6 +3,13 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from observation_converter import ObservationConverter
 import h5py
+# import os
+# import json
+#from easydict import EasyDict
+#from algos import SingleTask
+#from datasets import get_dataset
+#from utils import safe_device, torch_load_model
+
 
 class ReplayRawAction():
     """
@@ -22,7 +29,7 @@ class ReplayAction():
     """
     Instead of generating the actions from the neural network, replay it from a file 
     """
-    def __init__(self, path, demo_num = 54):
+    def __init__(self, path, demo_num = 264):
         self.data = h5py.File(path, "r")["data/demo_" + str(demo_num)]
         self.idx = 0
         self.action_handler = ActionHandler()
@@ -57,6 +64,68 @@ class ReplayAction():
         action['r_gripper'] = self.data["action/r_gripper"][self.idx]
         self.idx += 1
         return action
+
+# class TransformerWrapper():
+#     def __init__(self, path):
+#         self.config_path = os.path.join(path, "config.json")
+#         self.model_path = os.path.join(path, "model.pth")
+#         self.action_handler = ActionHandler()
+#         self.obs_converter = ObservationConverter(normalize_images=True)
+
+#         with open(self.config_path) as f:
+#             cfg = json.load(f)
+
+#         cfg = EasyDict(cfg)
+#         cfg.dataset_path = './dummy.hdf5'
+
+
+#         shape_meta = None
+#         _, shape_meta = get_dataset(
+#                 dataset_path=cfg.dataset_path,
+#                 obs_modality=cfg.data.obs.modality,
+#                 initialize_obs_utils=True,
+#                 seq_len=cfg.data.seq_len,
+#                 frame_stack=cfg.data.frame_stack)
+
+#         np.random.seed(0) # not sure why we need it? 
+
+#         cfg.shape_meta = shape_meta
+#         self.algo = safe_device(eval(cfg.algo.algo)(1, cfg, logger=None), cfg.device)
+#         self.algo.policy.load_state_dict(torch_load_model(cfg.pretrain_model_path, device=cfg.device)[0], strict=True)
+#         self.algo.eval()
+
+
+#     def reset(self, obs):
+#         """
+#         Set the initial values of the hand poses based on observation.
+#         Since the rpc code multiplies the output of the neural network 
+#         by the zero position and orientation, we need to subtract the zero 
+#         positions and orientations before sending. We can do this by changing
+#         the initial pose. 
+#         """
+#         converter = ObservationConverter()
+#         obs = converter.convert(obs)
+#         zero_pos = np.array([0.0, 0.0, 0.1])
+#         zero_quat = np.array([0.0, -.707, 0.0, .707])
+#         self.action_handler.reset({
+#             'lh_pos': obs['obs/act_local_lh_pos'] - zero_pos,
+#             'rh_pos': obs['obs/act_local_rh_pos'] - zero_pos,
+#             'lh_ori': (R.from_quat(obs['obs/act_local_lh_ori']) * R.from_quat(zero_quat).inv()).as_quat(),
+#             'rh_ori': (R.from_quat(obs['obs/act_local_rh_ori']) * R.from_quat(zero_quat).inv()).as_quat(),
+#         })
+
+#     def forward(self, obs):
+#         obs = self.obs_converter.convert(obs)
+#         # change the keys to remove the "obs/"
+#         flat_obs = {}
+#         for key in obs.keys():
+#             flat_obs[key.split("/")[1]] = obs[key]
+#         #print(flat_obs['rgb'].shape)
+#         raw_action = np.array(self.algo.policy.get_action(
+# flat_obs))
+#         self.action_handler.update(raw_action)
+#         #print(self.action_handler.get_action())
+#         return self.action_handler.get_action()
 
 
 class NNWrapper():

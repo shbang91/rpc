@@ -72,9 +72,9 @@ class SocketInputDataManager(InputDataManager):
         """
         self.control_socket = context.socket(zmq.SUB)
 
-        self.control_socket.connect(control_ip)
         self.control_socket.setsockopt_string(zmq.SUBSCRIBE, "")
         self.control_socket.set(zmq.CONFLATE, 1)
+        self.control_socket.connect(control_ip)
 
         self.rgb_streaming_socket = context.socket(zmq.PULL)
         self.rgb_streaming_socket.set(zmq.CONFLATE, 1)

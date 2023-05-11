@@ -45,7 +45,7 @@ class ObservationConverter():
         if self.include_actions:
             self.get_flattened_action_delta(raw_data)
         if self.trim_demo_video:
-            self.trim_video_pick(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
+            self.trim_video(raw_data['action/l_gripper'], raw_data['action/r_gripper'])
         return self.converted_data
 
     def get_local_trajectories(self, raw_data):
@@ -125,12 +125,12 @@ class ObservationConverter():
         i = num_images - 1
         while l_gripper[i] == 0 and r_gripper[i] == 0 and i > 0:
             i -= 1
-        i += 40 # a second is 20 frames
+        i += 20 # a second is 20 frames
         for key in self.converted_data.keys():
             self.converted_data[key] = self.converted_data[key][:i]
 
     def trim_video_pick(self, l_gripper, r_gripper):
-        # Trim the end of demo videos to be a second after the gripper is last used
+        # Trim the end of demo videos to be a second after the gripper is first used
         num_images = l_gripper.shape[0] 
         i = 0 
         while i < num_images and l_gripper[i] == 0 and r_gripper[i] == 0:
