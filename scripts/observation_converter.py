@@ -20,7 +20,7 @@ class ObservationConverter():
     will be vectors. The code can deal with both vectors and single messages.
     """
 
-    def __init__(self, include_images=True, normalize_images=False, crop_images=False, include_actions=False, include_desired=False, trim_demo_video=False, correct_latency=True):
+    def __init__(self, include_images=True, normalize_images=False, crop_images=False, include_actions=False, include_desired=False, trim_demo_video=False, correct_latency=False):
         self.include_actions = include_actions
         self.include_desired = include_desired
         self.trim_demo_video = trim_demo_video

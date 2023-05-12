@@ -146,6 +146,8 @@ class NNWrapper():
         obs = converter.convert(obs)
         zero_pos = np.array([0.0, 0.0, 0.1])
         zero_quat = np.array([0.0, -.707, 0.0, .707])
+
+        print(obs['obs/act_local_rh_pos'])
         self.action_handler.reset({
             'lh_pos': obs['obs/act_local_lh_pos'] - zero_pos,
             'rh_pos': obs['obs/act_local_rh_pos'] - zero_pos,
