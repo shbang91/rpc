@@ -21,6 +21,7 @@ load(d(i).name)
 dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
+load(dd(i).name, 'icp_est')
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
 load(dd(i).name, 'b_lf_contact_touchdown')
