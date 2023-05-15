@@ -53,7 +53,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_vector_.clear();
   task_vector_.push_back(com_z_task_);
   task_vector_.push_back(com_xy_task_);
-  // task_vector_.push_back(torso_ori_task_);
+  task_vector_.push_back(torso_ori_task_);
   task_vector_.push_back(upper_body_task_);
   // task_vector_.push_back(cam_task_);
   //  task_vector_.push_back(lf_pos_task_);
