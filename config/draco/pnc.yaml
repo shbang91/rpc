@@ -245,8 +245,10 @@ wbc:
   qp:
     W_delta_qddot: 1e5 #1e5
 
-    W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_left_foot_in_contact: [1, 1, 1e-3, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_right_foot_in_contact: [1, 1, 1e-3, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_left_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
     #W_delta_rf_right_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
