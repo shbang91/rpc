@@ -92,7 +92,7 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
 
-      exp_icp_kp : [0.001, 0.001]
+      exp_icp_kp : [0.5, 0.5]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0., 0.] 
 
@@ -247,8 +247,8 @@ wbc:
 
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    W_delta_rf_left_foot_in_contact: [1, 1, 1e-3, 1e-3, 1e-3, 1e-4]
-    W_delta_rf_right_foot_in_contact: [1, 1, 1e-3, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_left_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_right_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_left_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
     #W_delta_rf_right_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
@@ -259,7 +259,7 @@ wbc:
     #W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
 
-    #W_xc_ddot_in_contact: 1e5
+    #W_xc_ddot_in_contact: 1e7
     #W_xc_ddot_in_swing: 1e-3
     W_xc_ddot_in_contact: 0
     W_xc_ddot_in_swing: 0
