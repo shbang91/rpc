@@ -281,7 +281,7 @@ state_machine:
     initialize:
       init_duration: 5.
       target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      b_only_joint_pos_control: true
+      b_only_joint_pos_control: false
       wait_time: 15.
 
     stand_up:
@@ -305,17 +305,17 @@ state_machine:
       frequency: [0., 0.7, 0.] # [hz]
 
 dcm_walking:
-  t_additional_init_trans: 0.
-  t_contact_trans: 0.45
-  t_swing: 0.55
-  percentage_settle: 0.9
-  alpha_ds: 0.5
-
   #t_additional_init_trans: 0.
-  #t_contact_trans: 1.8
-  #t_swing: 0.8
+  #t_contact_trans: 0.45
+  #t_swing: 0.55
   #percentage_settle: 0.9
   #alpha_ds: 0.5
+
+  t_additional_init_trans: 0.
+  t_contact_trans: 1.8
+  t_swing: 0.6
+  percentage_settle: 0.9
+  alpha_ds: 0.5
 
   #t_additional_init_trans: 0.4
   #t_contact_trans: 1.6
