@@ -156,10 +156,11 @@ def plot_vector_traj(time,
                      label,
                      color,
                      suptitle=None,
-                     axes=None):
+                     axes=None,
+                     share_ax=False):
     dim = vector.shape[1]
     if axes is None:
-        fig, axes = plt.subplots(dim, 1)
+        fig, axes = plt.subplots(dim, 1, sharex=share_ax)
     for i in range(dim):
         axes[i].plot(time, vector[:, i], color=color, linewidth=3)
         axes[i].grid(True)
