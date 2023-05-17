@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 contact_detection:
   b_debug_only_log: true
@@ -62,14 +62,14 @@ state_estimator:
   exp_contact_time_constant: 0.01
 
   ## for simulation please use 000000000
-  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
   exp_num_data_com_vel: [200, 200, 200] 
 
   ## IF 1: exponential smoother filter parameter
-  com_vel_time_constant: 0.2 
+  com_vel_time_constant: 0.05 
   com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
@@ -92,7 +92,7 @@ wbc:
       sim_weight : [1000., 1000.]
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_weight : [1000., 1000.] # only used when feedback source : 1
+      sim_icp_weight : [100000., 100000.] # only used when feedback source : 1
       sim_icp_kp : [0., 0.]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
       sim_icp_ki : [10., 10.] 
@@ -111,10 +111,10 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [1000., 1000.] # only used when feedback source : 1
+      exp_icp_weight : [5000., 5000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.2, 0.4] 
+      exp_icp_ki : [0.6, 0.8] 
 
       ## IF icp_integrator_type == 0:
       exp_time_constant : 0.05
@@ -231,13 +231,13 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 1e-5] ## trq, force order
       #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 0., 0., 0.]
+      exp_weight : [0., 0., 0., 0., 0., 9e-5]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
@@ -259,14 +259,14 @@ wbc:
 
     exp_mu: 0.3
     exp_foot_half_length: 0.08
-    exp_foot_half_width: 0.04
+    exp_foot_half_width: 0.03
 #    exp_foot_half_length: 0.125
 #    exp_foot_half_width: 0.075
 
   qp:
     b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [5e-3, 1e-4, 1e-4, 1e-6, 1e-6, 0., 5e-3, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
@@ -298,7 +298,7 @@ state_machine:
       #amplitude: [0., 0.05, 0.] # [m]
       #frequency: [0., 0.1, 0.] # [hz]
       amplitude: [0., 0., 0.05] # [m]
-      frequency: [0., 0., 0.05] # [hz]
+      frequency: [0., 0., 0.1] # [hz]
 
     lmpc_com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
