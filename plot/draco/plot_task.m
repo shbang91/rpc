@@ -261,45 +261,45 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %CAM task in GLOBAL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-for i = 1:3
-    subplot(3,1,i);
-    plot(wbc_time, des_cam(i, :), 'r', 'LineWidth', 3);
-    hold on
-    plot(wbc_time, act_cam(i, :), 'b', 'LineWidth', 2);
-    grid on
-    min_val = min([des_cam(i,:), act_cam(i,:)]);
-    max_val = max([des_cam(i,:), act_cam(i,:)]);
-    min_val = min_val - 0.1 * (max_val - min_val);
-    max_val = max_val + 0.1 *(max_val - min_val);
-    set_fig_opt()
-    plot_phase(time, state, min_val, max_val, phase_color)
-    xlabel('time')
-    ylabel(xyz_label(i))
-    sgtitle('Centroidal Angular Momentum', 'FontSize', 30)
-end
-
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-for i = 1:3
-    subplot(3,1,i);
-    plot(wbc_time, local_des_cam(i, :), 'r', 'LineWidth', 3);
-    hold on
-    plot(wbc_time, local_act_cam(i, :), 'b', 'LineWidth', 2);
-    grid on
-    min_val = min([local_des_cam(i,:), local_act_cam(i,:)]);
-    max_val = max([local_des_cam(i,:), local_act_cam(i,:)]);
-    min_val = min_val - 0.1 * (max_val - min_val);
-    max_val = max_val + 0.1 *(max_val - min_val);
-    set_fig_opt()
-    plot_phase(time, state, min_val, max_val, phase_color)
-    xlabel('time')
-    ylabel(xyz_label(i))
-    sgtitle('Centroidal Angular Momentum in LOCAL', 'FontSize', 30)
-end
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% j = 0;
+% for i = 1:3
+%     subplot(3,1,i);
+%     plot(wbc_time, des_cam(i, :), 'r', 'LineWidth', 3);
+%     hold on
+%     plot(wbc_time, act_cam(i, :), 'b', 'LineWidth', 2);
+%     grid on
+%     min_val = min([des_cam(i,:), act_cam(i,:)]);
+%     max_val = max([des_cam(i,:), act_cam(i,:)]);
+%     min_val = min_val - 0.1 * (max_val - min_val);
+%     max_val = max_val + 0.1 *(max_val - min_val);
+%     set_fig_opt()
+%     plot_phase(time, state, min_val, max_val, phase_color)
+%     xlabel('time')
+%     ylabel(xyz_label(i))
+%     sgtitle('Centroidal Angular Momentum', 'FontSize', 30)
+% end
+% 
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% j = 0;
+% for i = 1:3
+%     subplot(3,1,i);
+%     plot(wbc_time, local_des_cam(i, :), 'r', 'LineWidth', 3);
+%     hold on
+%     plot(wbc_time, local_act_cam(i, :), 'b', 'LineWidth', 2);
+%     grid on
+%     min_val = min([local_des_cam(i,:), local_act_cam(i,:)]);
+%     max_val = max([local_des_cam(i,:), local_act_cam(i,:)]);
+%     min_val = min_val - 0.1 * (max_val - min_val);
+%     max_val = max_val + 0.1 *(max_val - min_val);
+%     set_fig_opt()
+%     plot_phase(time, state, min_val, max_val, phase_color)
+%     xlabel('time')
+%     ylabel(xyz_label(i))
+%     sgtitle('Centroidal Angular Momentum in LOCAL', 'FontSize', 30)
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %torso ori task
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1360,7 +1360,7 @@ for i = 1:3
         max_val = max(delta_qddot_cost);
         plot_phase(time, state, min_val, max_val, phase_color);
         xlabel('time')
-        title('delta_qddot_cost', 'FontSize', 30)
+        title('delta qddot cost', 'FontSize', 30)
     elseif i == 2
         plot(wbc_time, delta_rf_cost, 'b', 'LineWidth', 3);
         grid on
@@ -1369,7 +1369,7 @@ for i = 1:3
         max_val = max(delta_rf_cost);
         plot_phase(time, state, min_val, max_val, phase_color);
         xlabel('time')
-        title('delta_rf_cost', 'FontSize', 30)
+        title('delta rf cost', 'FontSize', 30)
     elseif i ==3
         plot(wbc_time, xc_ddot_cost, 'b', 'LineWidth', 3);
         grid on
@@ -1378,7 +1378,7 @@ for i = 1:3
         max_val = max(xc_ddot_cost);
         plot_phase(time, state, min_val, max_val, phase_color);
         xlabel('time')
-        title('xc_ddot_cost', 'FontSize', 30) 
+        title('xc ddot cost', 'FontSize', 30) 
     end
 end
 linkaxes(ax,'x')
