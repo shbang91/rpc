@@ -34,6 +34,8 @@ private:
   Eigen::VectorXd joint_trq_cmd_;
   Eigen::VectorXd wbc_qddot_cmd_;
 
+  Eigen::VectorXd joint_trq_cmd_prev_;
+
   bool b_sim_;
   bool b_use_modified_swing_foot_jac_;
 
