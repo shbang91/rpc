@@ -53,12 +53,12 @@ void DoubleSupportSwaying::OneStep() {
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 
   // foot pose task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
 
   // update force traj manager
-  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
-  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
+  // ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 bool DoubleSupportSwaying::EndOfState() { return false; }
