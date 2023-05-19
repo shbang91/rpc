@@ -5,7 +5,8 @@
 
 #include <stdexcept>
 
-DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot) : Task(robot, 1) {
+DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot)
+    : Task(robot, 1), b_sim_(false) {
 
   util::PrettyConstructor(3, "DracoCoMZTask");
   sp_ = DracoStateProvider::GetStateProvider();
@@ -14,7 +15,10 @@ DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot) : Task(robot, 1) {
 void DracoCoMZTask::UpdateOpCommand() {
   if (com_height_ == com_height::kCoM) {
     pos_ << robot_->GetRobotComPos()[2];
-    vel_ << robot_->GetRobotComLinVel()[2];
+    if (b_sim_)
+      vel_ << robot_->GetRobotComLinVel()[2];
+    else
+      vel_ << sp_->com_vel_est_[2];
 
   } else if (com_height_ == com_height::kBase) {
     pos_
@@ -68,6 +72,7 @@ void DracoCoMZTask::UpdateJacobianDotQdot() {
 
 void DracoCoMZTask::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
+    b_sim_ = b_sim;
 
     util::ReadParameter(node, "com_height_target_source", com_height_);
 

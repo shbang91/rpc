@@ -25,4 +25,5 @@ public:
 private:
   DracoStateProvider *sp_;
   int com_height_;
+  bool b_sim_;
 };
