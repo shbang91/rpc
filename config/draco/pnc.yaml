@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -252,13 +252,13 @@ wbc:
     #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     W_delta_rf_left_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-4]
     W_delta_rf_right_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_left_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
-    #W_delta_rf_right_foot_in_contact: [100, 100, 1e-1, 1, 1, 1e-2]
+    #W_delta_rf_left_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
+    #W_delta_rf_right_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
 
-    W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
-    W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
+    W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
+    W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
 

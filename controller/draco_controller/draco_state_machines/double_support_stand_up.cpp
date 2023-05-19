@@ -82,14 +82,14 @@ void DoubleSupportStandUp::FirstVisit() {
 
   // initialize reaction force tasks
   // smoothly increase the fz in world frame
-  // Eigen::VectorXd init_reaction_force = Eigen::VectorXd::Zero(6);
-  // init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
-  // Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
-  // des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
-  // ctrl_arch_->lf_force_tm_->InitializeInterpolation(
-  // init_reaction_force, des_reaction_force, end_time_);
-  // ctrl_arch_->rf_force_tm_->InitializeInterpolation(
-  // init_reaction_force, des_reaction_force, end_time_);
+  Eigen::VectorXd init_reaction_force = Eigen::VectorXd::Zero(6);
+  init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
+  Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
+  des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
+  ctrl_arch_->lf_force_tm_->InitializeInterpolation(
+      init_reaction_force, des_reaction_force, end_time_);
+  ctrl_arch_->rf_force_tm_->InitializeInterpolation(
+      init_reaction_force, des_reaction_force, end_time_);
 }
 
 void DoubleSupportStandUp::OneStep() {
@@ -107,8 +107,8 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 
   // update force traj manager
-  // ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
-  // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}
