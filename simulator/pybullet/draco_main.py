@@ -1,9 +1,13 @@
+import base64
+
 import pybullet as pb
 import time
 import os
-
+from PIL import Image
 cwd = os.getcwd()
 import sys
+import io
+from PIL import Image
 
 sys.path.append(cwd)
 sys.path.append(cwd + "/build/lib")  #include pybind module
@@ -17,6 +21,12 @@ from config.draco.pybullet_simulation import *
 from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import liegroup
+
+# from util.python_utils.pybullet_camera_util import Camera
+sys.path.append(os.getcwd() + '/build')
+import base64
+import zmq
+from messages.multisense_pb2 import *
 
 import copy
 
@@ -35,6 +45,40 @@ if Config.MEASURE_COMPUTATION_TIME:
 imu_dvel_bias = np.array([0.0, 0.0, 0.0])
 l_contact_volt_noise = 0.001
 r_contact_volt_noise = 0.001
+
+import math
+
+# create publisher of camera data (from pybullet)
+context = zmq.Context()
+camera_socket = context.socket(zmq.PUB)
+camera_socket.bind(Config.IP_PUB_ADDRESS)
+camera_pb_msg = camera_msg()
+
+dcamera_socket = context.socket(zmq.PUB)
+dcamera_socket.bind("tcp://127.0.0.1:5559")
+# print(Config.IP_PUB_ADDRESS)
+
+def euler_from_quaternion(x, y, z, w):
+    """
+    Convert a quaternion into euler angles (roll, pitch, yaw)
+    roll is rotation around x in radians (counterclockwise)
+    pitch is rotation around y in radians (counterclockwise)
+    yaw is rotation around z in radians (counterclockwise)
+    """
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + y * y)
+    roll_x = math.atan2(t0, t1)
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    pitch_y = math.asin(t2)
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (y * y + z * z)
+    yaw_z = math.atan2(t3, t4)
+
+    return roll_x, pitch_y, yaw_z # in radians
 
 def get_sensor_data_from_pybullet(robot):
 
@@ -332,6 +376,12 @@ if __name__ == "__main__":
 
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
                          useFixedBase=1)
+    door = pb.loadURDF(cwd + "/robot_model/ground/navy_door.urdf",
+                         [1.5, 0., 0.02],
+                         # [0., 0., 0.0, 0.0],
+                         [0., 0., 0.7071068, 0.7071068],
+                         # [0., 0., 0.8660254, 0.5],
+                         useFixedBase=1)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     #TODO:modify this function without dictionary container
@@ -380,6 +430,7 @@ if __name__ == "__main__":
     #default robot kinematics information
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
+
     rot_world_basecom = util.quat_to_rot(np.array(base_com_quat))
     rot_world_basejoint = util.quat_to_rot(
         np.array(Config.INITIAL_BASE_JOINT_QUAT))
@@ -407,11 +458,245 @@ if __name__ == "__main__":
         os.makedirs(video_dir)
 
     previous_torso_velocity = np.array([0., 0., 0.])
-    rate = RateLimiter(frequency=1. / dt)
+    # rate = RateLimiter(frequency=1. / dt)
+    imu_dvel_bias = np.array([0.0, 0.0, 0.0])
+
+
+    # rgbim.save('test_img/rgbtest'+str(counter)+'.png')
+    # depim.save('test_img/depth'+str(counter)+'.tiff')
+    # rate = RateLimiter(frequency=1. / dt)
+    counter = 0
+
+    def get_point_cloud(width, height, view_matrix, proj_matrix):
+        # based on https://stackoverflow.com/questions/59128880/getting-world-coordinates-from-opengl-depth-buffer
+
+        # get a depth image
+        # "infinite" depths will have a value close to 1
+        image_arr = pb.getCameraImage(width=width, height=height, viewMatrix=view_matrix, projectionMatrix=proj_matrix)
+        depth = image_arr[3]
+        print('dbrpg')
+        print(image_arr[2].shape)
+        print(depth.shape)
+        imgs = image_arr[2][:, :, [2, 1, 0]]
+        print(imgs.shape)
+
+        # create a 4x4 transform matrix that goes from pixel coordinates (and depth values) to world coordinates
+        proj_matrix = np.asarray(proj_matrix).reshape([4, 4], order="F")
+        view_matrix = np.asarray(view_matrix).reshape([4, 4], order="F")
+        tran_pix_world = np.linalg.inv(np.matmul(proj_matrix, view_matrix))
+
+        # create a grid with pixel coordinates and depth values
+        y, x = np.mgrid[-1:1:2 / height, -1:1:2 / width]
+        y *= -1.
+        x, y, z = x.reshape(-1), y.reshape(-1), depth.reshape(-1)
+        h = np.ones_like(z)
+
+        pixels = np.stack([x, y, z, h], axis=1)
+        # filter out "infinite" depths
+        print("shape of pixels",pixels.shape)
+
+        print("where jey ha",(pixels[:,2] < 0.99).shape)
+        print("where jey ha",(pixels[:,2] < 0.99) + 0)
+        mask = (pixels[:,2] < 0.99) + 0
+        mask = mask.reshape(height,width)
+        print(mask.shape)
+
+        pixels = pixels[z < 0.99]
+        print("shape of pixels",pixels.shape)
+        pixels[:, 2] = 2 * pixels[:, 2] - 1
+
+        # turn pixels to world coordinates
+        points = np.matmul(tran_pix_world, pixels.T).T
+        points /= points[:, 3: 4]
+        points = points[:, :3]
+
+        rgb = 0
+
+        return points, rgb
+
     while (True):
         l_normal_volt_noise = np.random.normal(0, l_contact_volt_noise)
         r_normal_volt_noise = np.random.normal(0, r_contact_volt_noise)
 
+        counter+=1
+
+        if counter % 1000 ==0:
+            (x,y,z), (a,b,c,d),loc1,local2,world1,world2 = pb.getLinkState(draco_humanoid,DracoLinkIdx.l_multisense_camera)
+            # print("this is abcd", a,b,c,d)
+            # print("this is w2", world2)
+            (rol,pit,yaw) = euler_from_quaternion(a,b,c,d)
+
+            xA, yA, zA = x, y, z
+            zA = zA + 0.3 # make the camera a little higher than the robot
+            distance = 10
+            # compute focusing point of the camera
+            xB = xA + math.cos(yaw) * distance
+            yB = yA + math.sin(yaw) * distance
+            zB = zA
+
+            view_matrix = pb.computeViewMatrix(
+                cameraEyePosition=[xA, yA, zA],
+                cameraTargetPosition=[xB, yB, zB],
+                cameraUpVector=[0, 0, 1.0]
+            )
+
+            print(xA,yA,zA)
+            print(xB,yB,zB)
+
+
+            #
+            # view_matrix = pb.computeViewMatrixFromYawPitchRoll(
+            #     cameraTargetPosition=[xB,yB,zB],
+            #     distance=10,
+            #     yaw=yaw,
+            #     pitch=pit,
+            #     roll=rol,
+            #     upAxisIndex=2
+            #
+            # )
+            far = 250
+            near = 0.02
+            H = 1920
+            W = 1080
+            projection_matrix = pb.computeProjectionMatrixFOV(
+                fov=120, aspect=1.5, nearVal=near, farVal=far)
+
+            aimgs = pb.getCameraImage(H, W,
+                                      view_matrix,
+                                      projection_matrix, shadow=True,
+                                      renderer=pb.ER_BULLET_HARDWARE_OPENGL)
+            imgs = aimgs[2]
+
+            dimgs = aimgs[3]
+            depim = Image.fromarray(dimgs)
+
+            depth = far * near / (far - (far-near) * dimgs)
+            print('this is depth', sum(sum(depth)))
+            # print(depth.shape)
+            a, b = get_point_cloud(H,W,view_matrix,projection_matrix)
+
+            # offset point cloud
+            # lense_offset = np.array([0., 0., 0.])
+            # camera_base_offset = np.array([-0.0025, 0, 0.352]) + lense_offset
+            # base_est_pos = rpc_draco_sensor_data.base_joint_pos_
+            # camera_est_pos = base_est_pos + camera_base_offset
+            # # a -= camera_est_pos
+
+            print("pcd shape", a.shape)
+            # print(type(a))
+            # print(dimgs)
+            # print(depim.shape)
+            imgs = imgs[:, :, [2, 1, 0]]
+            print(imgs.shape)
+
+            # print(imgs.shape)
+
+            encoded, buffer = cv2.imencode('.jpg', imgs)
+            encoded2, buffer2 = cv2.imencode('.jpg', dimgs)
+            strencond = buffer.tobytes()
+            f4 = io.BytesIO(strencond)
+            f5 = io.BufferedReader(f4)
+            bytes_as_np_array = np.frombuffer(buffer, dtype=np.uint8)
+            # print(bytes_as_np_array.shape)
+
+            # camera_socket.send_string(base64.b64encode(buffer))
+            # camera_socket.send_string(str(base64.b64encode(buffer)))
+
+            # f = open("/Users/timsm1/Desktop/test_img/rgbtest10.jpg",'rb')
+            # print('check it f', type(f))
+            # print('check it', type(f5))
+            # print('length f', len(bytearray(f5.read())))
+            bytes = bytearray(f5.read())
+            # print('check it', type(bytes))
+            strng = base64.b64encode(bytes)
+            # print('length bytes',len(bytes))
+            # print(bytes)
+            # print(type(strng))
+            # print(type(a.tobytes()))
+            # print(type(np.frombuffer(a.tobytes())))
+            whack = np.frombuffer(a.tobytes())
+            whack = whack.reshape((int(len(whack)/3),3))
+            # print(len(whack))
+            # print(whack.shape)
+            # print(whack)
+            # print(a)
+            camera_socket.send(strng)
+
+            dstrencond = buffer2.tobytes()
+            df4 = io.BytesIO(dstrencond)
+            df5 = io.BufferedReader(df4)
+            dbytes = bytearray(df5.read())
+            # print('check it', type(bytes))
+            dstrng = base64.b64encode(dbytes)
+            # dcamera_socket.send(dstrng)
+            print('this a', a.shape)
+            dcamera_socket.send(a)
+
+            filename = "/Users/timsm1/Desktop/test_img/calo"+str(counter)+'.jpg'
+            f = open(filename, 'wb')
+
+            hoda = bytearray(base64.b64decode(strng))
+            f.write(hoda)
+            f.close()
+            # print('bada')
+
+
+        # print('bado',len(base64.b64encode(buffer)))
+        # print('as',type(base64.b64encode(buffer)))
+        #
+        # print('bada',len(str(base64.b64encode(buffer))))
+        # print('as',type(str(base64.b64encode(buffer))))
+        #
+        # print('as',(base64.b64encode(buffer)))
+        #
+        # print('as',len(bytes(str(base64.b64encode(buffer)), 'UTF-8')))
+        #
+        # base64.b64decode(bytes(str(base64.b64encode(buffer)), 'UTF-8'))
+
+
+    # print(type(base64.b64encode(buffer)))
+        # print('hodabada')
+        # print(np.fromstring(base64.b64decode(base64.b64encode(buffer)),dtype=np.uint8).shape)
+        # daba =np.fromstring(base64.b64decode(base64.b64encode(buffer)),dtype=np.uint8)
+        # print(cv2.imdecode(daba,cv2.IMREAD_COLOR).shape)
+
+        # if counter % 10 == 0:
+        #     filename = '/Users/timsm1/Desktop/test_img/rgbtest'+str(counter)+'.jpg'
+        #     cv2.imwrite(filename, imgs)
+
+        # (rol,pit,yaw) = euler_from_quaternion(a,b,c,d)
+        # print("rpy",rol,pit,yaw)
+        #
+        # frame = pybullet_util.get_camera_image([x, y, z], 0.15, 45,
+        #                                        0, 0, 60., 1920, 1080,
+        #                                        0.1, 100.)
+        # frame = frame[:, :, [2, 1, 0]]  # << RGB to BGR
+        # if counter % 10 == 0:
+        #     filename = '/Users/timsm1/Desktop/test_img/rgbtest'+str(counter)+'.jpg'
+        #     cv2.imwrite(filename, frame)
+        #     # rgbim.save('/Users/timsm1/Desktop/test_img/rgbtest'+str(counter)+'.png')
+
+
+        # filename = video_dir + '/step%06d.jpg' % jpg_count
+        # cv2.imwrite(filename, frame)
+
+        # rgb_img, depth_img, seg_img = cam.get_pybullet_image()
+        # pb.resetDebugVisualizerCamera(cameraDistance=0.5,
+        #                               cameraYaw=0,
+        #                               cameraPitch=0,
+        #
+        #                               cameraTargetPosition=[x, y, z])
+        # # print(x,y,z)
+        # counter += 1
+        # if counter % 100 == 0:
+        #     img = pb.getCameraImage(300, 300, renderer=pb.ER_BULLET_HARDWARE_OPENGL)
+        #     print('this is working')
+        #     rgbBuffer = img[2]
+        #     # depthBuffer = img[3] # .astype(np.uint8) ?
+        #     rgbim = Image.fromarray(rgbBuffer)
+        #     rgbim.save('/Users/timsm1/Desktop/test_img/rgbtest'+str(counter)+'.png')
+
+        # depim = Image.fromarray(depthBuffer)
         ###############################################################################
         #Debugging Purpose
         ##############################################################################
@@ -545,6 +830,6 @@ if __name__ == "__main__":
             jpg_count += 1
 
         pb.stepSimulation()  #step simulation
-        rate.sleep()  # while loop rate limiter
+        # rate.sleep()  # while loop rate limiter
 
         count += 1

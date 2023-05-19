@@ -8,6 +8,7 @@ class Config(object):
     # INITIAL_BASE_JOINT_QUAT = [0., 0., 0.7071, 0.7071]
 
     PRINT_ROBOT_INFO = False
+    IP_PUB_ADDRESS = "tcp://127.0.0.1:5558"
 
     MEASURE_COMPUTATION_TIME = False
 

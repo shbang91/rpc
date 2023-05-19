@@ -7,13 +7,16 @@ import time
 import ruamel.yaml as yaml
 import numpy as np
 
+# from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
+
 cwd = os.getcwd()
 sys.path.append(cwd + '/build')
 sys.path.append(cwd)
 
 from messages.draco_pb2 import *
 from plot.data_saver import *
-
+import cv2
+import base64
 import pinocchio as pin
 from pinocchio.visualize import MeshcatVisualizer
 
@@ -22,6 +25,20 @@ from plot import meshcat_utils as vis_tools
 
 import json
 import argparse
+
+from messages.multisense_pb2 import *
+
+from scipy.spatial.transform import Rotation as R
+
+
+import meshcat.geometry as g
+import meshcat.transformations as tf
+
+# import pybullet as pb
+# from util.python_utils import pybullet_util
+
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_visualize", type=bool, default=False)
@@ -65,7 +82,7 @@ with open("config/draco/pnc.yaml", "r") as yaml_file:
         print(exc)
 
 socket.connect(ip_address)
-socket.setsockopt_string(zmq.SUBSCRIBE, "")
+# socket.setsockopt_string(zmq.SUBSCRIBE, "")
 
 if args.b_use_plotjuggler:
     pj_context = zmq.Context()
@@ -92,6 +109,11 @@ if args.b_visualize:
         exit()
     viz.loadViewerModel(rootNodeName="draco3")
     vis_q = pin.neutral(model)
+
+    # robot_system = PinocchioRobotSystem(
+    #     cwd + '/robot_model/draco/draco_modified.urdf',
+    #     cwd + '/robot_model/draco', True, False)
+    # robot_system.get_link_iso(link_id['l_sole'])
 
     # add other visualizations to viewer
     com_des_viz, com_des_model = vis_tools.add_sphere(viz.viewer,
@@ -129,14 +151,84 @@ if args.b_visualize:
     vis_tools.add_arrow(arrow_viz, "grf_lf_normal", color=[0.2, 0.2, 0.2, 0.2])
     vis_tools.add_arrow(arrow_viz, "grf_rf_normal", color=[0.2, 0.2, 0.2, 0.2])
 
+    camera_context = zmq.Context()
+    camera_socket = camera_context.socket(zmq.SUB)
+    # camera_socket.bind("tcp://127.0.0.1:5558")
+    camera_socket.connect("tcp://127.0.0.1:5558")
+    # socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
+    camera_socket.setsockopt_string(zmq.SUBSCRIBE, str(""))
+
+    dcamera_context = zmq.Context()
+    dcamera_socket = dcamera_context.socket(zmq.SUB)
+    # camera_socket.bind("tcp://127.0.0.1:5558")
+    dcamera_socket.connect("tcp://127.0.0.1:5559")
+    # socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
+    dcamera_socket.setsockopt_string(zmq.SUBSCRIBE, str(""))
+
+
+    socket.setsockopt_string(zmq.SUBSCRIBE, "")
+
+    # add camera visualizers to viewer
+    camera_viz = meshcat.Visualizer(window=viz.viewer.window)
+
+coiteru = -1
 while True:
     ##receive msg trough socket
+    coiteru+=1
     encoded_msg = socket.recv()
+    # encoded_msg2 = camera_socket.recv_string()
+    encoded_msg2 = camera_socket.recv()
+
+    encoded_msg3 = dcamera_socket.recv()
+
+    # print(encoded_msg3)
+    # filename = "/Users/timsm1/Desktop/test_img/depth.jpg"
+    # f = open(filename, 'wb')
+    #
+    # dhoda = bytearray(base64.b64decode(encoded_msg3))
+    # maybethis = np.frombuffer(dhoda, dtype='uint8')
+    # print(maybethis.shape)
+    # # print(dhoda)
+    # f.write(dhoda)
+    # f.close()
+
+
+
+    if coiteru % 5000 == 0:
+        filename = "/Users/timsm1/Desktop/test_img/anotherone"+str(coiteru)+'.jpg'
+        f = open(filename, 'wb')
+
+        hoda = bytearray(base64.b64decode(encoded_msg2))
+        f.write(hoda)
+        f.close()
+        print('bada')
+
+
+
+
+    # print(len(encoded_msg2))
+    # img = base64.b64decode(encoded_msg2)
+    # # npimg = np.fromstring(img, dtype=np.uint8)
+    # npimg = np.frombuffer(img, dtype=np.uint8)
+    #
+    # print('shape', npimg.shape)
+    # source = cv2.imdecode(npimg, 1)
+    # if source is None:
+    #     print('hi')
+    # else:
+    #     print(source.shape)
+    # cv2.imwrite("/Users/timsm1/Desktop/hoda.jpg", source)
+    # print('hoda')
+
+
     msg.ParseFromString(encoded_msg)
+
 
     ##print pnc msg
     # print(msg)
-
+    # print('hoda')
     #save data in pkl file
     data_saver.add('time', msg.time)
     data_saver.add('phase', msg.phase)
@@ -208,6 +300,8 @@ while True:
     data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
     data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
 
+    # data_saver.add('camera', list(msg.camera))
+
     data_saver.advance()
 
     ## publish back to plot juggler
@@ -259,6 +353,7 @@ while True:
         icp_des_viz.display(icp_des_viz_q)
         cmp_des_viz.display(cmp_des_viz_q)
 
+
         # plot GRFs
         if msg.phase != 1:
             vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
@@ -273,3 +368,41 @@ while True:
                                   msg.lfoot_ori, lfoot_rf_normal)
             vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
                                   msg.rfoot_ori, rfoot_rf_normal)
+
+
+        print(msg.lfoot_ori,'bada',msg.lfoot_pos)
+        print('asd', R.from_quat(np.array(base_ori)).as_matrix())
+        rota = R.from_quat(base_ori).as_matrix()
+        #rota = R.from_quat(msg.lfoot_ori).as_matrix()
+        translation = msg.lfoot_pos
+        translation[2]  +=1.1
+        translation[1] -= 0.2
+        translation[0] -= 0.3
+        b_visualize_camera = True
+
+        if b_visualize_camera:
+            # # update points
+            # print(pos.shape[1])
+            # print(pos)
+            pos = np.frombuffer(encoded_msg3)
+            pos = pos.reshape(3,int(len(pos)/3))
+            print(pos.shape)
+            cloud_colors = np.random.rand(3,pos.shape[1])
+
+            # cloud_colors = np.random.rand(3,10000)* 0.5
+            # cloud_positions =  cloud_colors * .5
+            # cloud_positions = np.matmul(rota,cloud_positions)
+            # cloud_positions = np.matmul(rota,pos)
+            cloud_positions = pos
+            for i in range(3):
+                print(i)
+                # cloud_positions[i,:] = cloud_positions[i,:] + msg.lfoot_pos[i]
+
+            camera_viz['dcamera'].set_object(g.PointCloud(position=cloud_positions, color=cloud_colors))
+
+
+        print(cloud_positions.shape)
+        print(np.transpose(cloud_positions).shape)
+        print(cloud_colors.shape)
+
+
