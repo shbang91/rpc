@@ -938,4 +938,30 @@
       <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
     </inertial>
   </link>
+
+
+
+  <!--=============================== l_hand_contact_framebada (l_hand_contactbada) ===========================-->
+  <joint name="neck_to_multisense_camera" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="neck_pitch_link"/>
+    <child link="l_multisense_camera"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  <link name="l_multisense_camera">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+          <sphere radius="0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+
+
 </robot>
