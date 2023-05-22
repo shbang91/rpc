@@ -107,8 +107,8 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 
   // update force traj manager
-  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
-  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
+  // ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}
