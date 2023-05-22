@@ -81,7 +81,9 @@ void DracoCoMXYTask::UpdateOpCommand() {
 
   } else if (feedback_source_ == feedback_source::kIcpFeedback) {
 
-    double omega = sqrt(kGravAcc / sp_->des_com_height_);
+    double com_height = robot_->GetRobotComPos()[2];
+    double omega = sqrt(kGravAcc / com_height);
+    // double omega = sqrt(kGravAcc / sp_->des_com_height_);
 
     Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
     Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;
