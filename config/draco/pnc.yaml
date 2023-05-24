@@ -5,6 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
+stance_foot: 0 # 0: left_foot 1: right_foot
+
 #b_sim: true ## if false, all the "exp_" parameters are used
 b_sim: false ## if false, all the "exp_" parameters are used
 
@@ -99,7 +101,7 @@ wbc:
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0., 0.5] 
 
-      exp_kp_ik : [1.6, 1.6]
+      exp_kp_ik : [1.0, 1.0]
       #exp_kp_ik : [0.7, 0.7]
 
       ## IF icp_integrator_type == 0:
@@ -131,7 +133,7 @@ wbc:
       exp_base_kp : [0.1]
       exp_base_kd : [0.] # x, y will be ignored
 
-      exp_kp_ik : [1.7]
+      exp_kp_ik : [1.0]
     cam_task:
       ########################################################################
       ## sim params
@@ -156,7 +158,7 @@ wbc:
       ########################################################################
       exp_kp : [0.001, 0.001, 0.001]
       exp_kd : [0., 0., 0.]
-      exp_kp_ik : [1.2, 1.2, 0.05]
+      exp_kp_ik : [0.5, 0.5, 0.005]
 
     upper_body_task:
       ########################################################################
@@ -283,6 +285,7 @@ state_machine:
     initialize:
       init_duration: 5.
       target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.020, -0.7, 0.84, 0.84, -0.84, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.7, 0.84, 0.84, -0.84, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
       wait_time: 15.
 

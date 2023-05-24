@@ -386,14 +386,17 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
 }
 
 void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
-  Eigen::VectorXd trq_trc =
-      M_.bottomRows(num_qdot_ - num_floating_) *
-          wbic_data_->corrected_wbc_qddot_cmd_ +
-      Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
-          (cori_ + grav_) -
-      (Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
-          (wbic_data_->rf_cmd_);
+  // Eigen::VectorXd trq_trc =
+  // M_.bottomRows(num_qdot_ - num_floating_) *
+  // wbic_data_->corrected_wbc_qddot_cmd_ +
+  // Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
+  //(cori_ + grav_) -
+  //(Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
+  //(wbic_data_->rf_cmd_);
 
+  // gravity compensation only
+  Eigen::VectorXd trq_trc =
+      Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() * grav_;
   Eigen::MatrixXd UNi_trc =
       (sa_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_);
   Eigen::MatrixXd Minv_trc = Minv_.bottomRightCorner(num_qdot_ - num_floating_,

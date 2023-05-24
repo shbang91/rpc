@@ -204,6 +204,8 @@ void DracoController::GetCommand(void *command) {
   static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
   static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
   static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
+  // static_cast<DracoCommand *>(command)->joint_trq_cmd_ =
+  // Eigen::VectorXd::Zero(joint_pos_cmd_.size());
 
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
     this->_SaveData();

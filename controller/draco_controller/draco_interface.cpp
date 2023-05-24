@@ -37,6 +37,17 @@ DracoInterface::DracoInterface()
     b_use_kf_state_estimator_ =
         util::ReadParameter<bool>(cfg["state_estimator"], "kf");
 
+    int stance_foot = util::ReadParameter<int>(cfg, "stance_foot");
+    if (stance_foot == 0) {
+      sp_->stance_foot_ = draco_link::l_foot_contact;
+      sp_->prev_stance_foot_ = draco_link::l_foot_contact;
+    } else if (stance_foot == 1) {
+      sp_->stance_foot_ = draco_link::r_foot_contact;
+      sp_->prev_stance_foot_ = draco_link::r_foot_contact;
+    } else {
+      assert(false);
+    }
+
 #if B_USE_ZMQ
     if (!DracoDataManager::GetDataManager()->IsInitialized()) {
       std::string socket_address =
@@ -45,7 +56,6 @@ DracoInterface::DracoInterface()
           socket_address); // initalize data publisher
     }
 #endif
-
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -76,6 +86,7 @@ DracoInterface::~DracoInterface() {
   delete se_kf_;
   delete ctrl_arch_;
   delete interrupt_handler_;
+  delete task_gain_handler_;
 }
 
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
