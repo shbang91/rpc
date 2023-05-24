@@ -219,12 +219,14 @@ void WBIC::_BuildContactMtxVect(
       JcDotQdot_ = it->second->JacobianDotQdot();
       Uf_mat_ = it->second->UfMatrix();
       Uf_vec_ = it->second->UfVector();
+      contact_rot_ = it->second->R();
       dim_contact_ = it->second->Dim();
     } else {
       Jc_ = util::VStack(Jc_, it->second->Jacobian());
       JcDotQdot_ = util::VStack(JcDotQdot_, it->second->JacobianDotQdot());
       Uf_mat_ = util::BlockDiagonalMatrix(Uf_mat_, it->second->UfMatrix());
       Uf_vec_ = util::VStack(Uf_vec_, it->second->UfVector());
+      contact_rot_ = util::BlockDiagonalMatrix(contact_rot_, it->second->R());
       dim_contact_ += it->second->Dim();
     }
   }
@@ -253,7 +255,8 @@ void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
   H_.topLeftCorner(num_floating_, num_floating_) =
       delta_qddot_cost + xc_ddot_cost;
   H_.bottomRightCorner(dim_contact_, dim_contact_) =
-      (wbic_data_->qp_params_->W_delta_rf_).asDiagonal();
+      contact_rot_ * (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
+      contact_rot_.transpose();
   g_ = Eigen::VectorXd::Zero(num_floating_ + dim_contact_);
   g_.head(num_floating_) =
       (wbc_qddot_cmd.transpose() * Jc_.transpose() *
@@ -371,9 +374,9 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
       (wbic_data_->qp_params_->W_delta_qddot_).asDiagonal() *
       wbic_data_->delta_qddot_;
   wbic_data_->delta_rf_cost_ =
-      wbic_data_->delta_rf_.transpose() *
+      wbic_data_->delta_rf_.transpose() * contact_rot_ *
       (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
-      wbic_data_->delta_rf_;
+      contact_rot_.transpose() * wbic_data_->delta_rf_;
   wbic_data_->Xc_ddot_cost_ =
       wbic_data_->Xc_ddot_.transpose() *
       (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * wbic_data_->Xc_ddot_;
@@ -386,17 +389,17 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
 }
 
 void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
-  // Eigen::VectorXd trq_trc =
-  // M_.bottomRows(num_qdot_ - num_floating_) *
-  // wbic_data_->corrected_wbc_qddot_cmd_ +
-  // Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
-  //(cori_ + grav_) -
-  //(Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
-  //(wbic_data_->rf_cmd_);
+  Eigen::VectorXd trq_trc =
+      M_.bottomRows(num_qdot_ - num_floating_) *
+          wbic_data_->corrected_wbc_qddot_cmd_ +
+      Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
+          (cori_ + grav_) -
+      (Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
+          (wbic_data_->rf_cmd_);
 
   // gravity compensation only
-  Eigen::VectorXd trq_trc =
-      Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() * grav_;
+  // Eigen::VectorXd trq_trc =
+  // Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() * grav_;
   Eigen::MatrixXd UNi_trc =
       (sa_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_);
   Eigen::MatrixXd Minv_trc = Minv_.bottomRightCorner(num_qdot_ - num_floating_,

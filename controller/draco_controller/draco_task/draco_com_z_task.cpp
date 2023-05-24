@@ -46,10 +46,9 @@ void DracoCoMZTask::UpdateOpCommand() {
 
   local_des_acc_ = rot_link_w * des_acc_;
 
-  // op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) +
-  // kd_.cwiseProduct(vel_err_);
-  op_cmd_ = des_acc_ + rot_link_w * (kp_.cwiseProduct(local_pos_err_) +
-                                     kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  // op_cmd_ = des_acc_ + rot_link_w * (kp_.cwiseProduct(local_pos_err_) +
+  // kd_.cwiseProduct(local_vel_err_));
 }
 
 void DracoCoMZTask::UpdateJacobian() {

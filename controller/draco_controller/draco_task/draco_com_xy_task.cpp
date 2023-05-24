@@ -73,11 +73,11 @@ void DracoCoMXYTask::UpdateOpCommand() {
     //=============================================================
     // operational space command
     //=============================================================
-    // op_cmd_ =
-    // des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
     op_cmd_ =
-        des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
-                                             kd_.cwiseProduct(local_vel_err_));
+        des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+    // op_cmd_ =
+    // des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+    // kd_.cwiseProduct(local_vel_err_));
 
   } else if (feedback_source_ == feedback_source::kIcpFeedback) {
 
@@ -97,12 +97,12 @@ void DracoCoMXYTask::UpdateOpCommand() {
     Eigen::Vector2d local_icp = rot_link_w * icp;
     Eigen::Vector2d local_icp_err = rot_link_w * icp_err;
 
-    // Eigen::Vector2d des_cmp =
-    // icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
-
     Eigen::Vector2d des_cmp =
-        icp - des_icp_dot / omega -
-        rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err));
+        icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
+
+    // Eigen::Vector2d des_cmp =
+    // icp - des_icp_dot / omega -
+    // rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err));
 
     //=============================================================
     // calculate icp integral error
@@ -127,12 +127,12 @@ void DracoCoMXYTask::UpdateOpCommand() {
     //=============================================================
     // calculate operational space command
     //=============================================================
-    // op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
-    // omega * omega * ki_.cwiseProduct(icp_avg_err);
-
     op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
-              omega * omega * rot_link_w.transpose() *
-                  (ki_.cwiseProduct(local_icp_avg_err));
+              omega * omega * ki_.cwiseProduct(icp_avg_err);
+
+    // op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
+    // omega * omega * rot_link_w.transpose() *
+    //(ki_.cwiseProduct(local_icp_avg_err));
 
 #if B_USE_ZMQ
     if (sp_->count_ % sp_->data_save_freq_ == 0) {

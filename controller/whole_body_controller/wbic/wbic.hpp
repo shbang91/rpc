@@ -106,6 +106,7 @@ private:
   Eigen::VectorXd JcDotQdot_;
   Eigen::MatrixXd Uf_mat_;
   Eigen::MatrixXd Uf_vec_;
+  Eigen::MatrixXd contact_rot_;
   int dim_contact_;
 
   // reaction force

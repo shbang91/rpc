@@ -29,6 +29,7 @@ public:
   // getter
   double MaxFz() const { return rf_z_max_; }
   int Dim() const { return dim_; }
+  Eigen::MatrixXd R() const { return rot_w_l_; }
 
   Eigen::MatrixXd Jacobian() const { return jacobian_; }
   Eigen::VectorXd JacobianDotQdot() const { return jacobian_dot_q_dot_; }
@@ -49,4 +50,6 @@ protected:
   double rf_z_max_;
   Eigen::MatrixXd cone_constraint_matrix_;
   Eigen::VectorXd cone_constraint_vector_;
+
+  Eigen::MatrixXd rot_w_l_;
 };

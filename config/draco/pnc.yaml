@@ -7,8 +7,8 @@ data_save_freq: 50
 
 stance_foot: 0 # 0: left_foot 1: right_foot
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -252,8 +252,8 @@ wbc:
 
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    W_delta_rf_left_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-2]
-    W_delta_rf_right_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-2]
+    W_delta_rf_left_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_right_foot_in_contact: [1, 1, 1, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_left_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
     #W_delta_rf_right_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
     #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
