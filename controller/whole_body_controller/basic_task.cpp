@@ -89,9 +89,10 @@ void LinkPosTask::UpdateOpCommand() {
   local_des_acc_ = rot_link_w * des_acc_;
 
   // operational space command
-  op_cmd_ =
-      des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
-                                           kd_.cwiseProduct(local_vel_err_));
+  // op_cmd_ =
+  // des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+  // kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void LinkPosTask::UpdateJacobian() {
@@ -137,7 +138,9 @@ void LinkOriTask::UpdateOpCommand() {
 
   Eigen::Quaterniond quat_err = des_quat * quat.inverse();
 
-  Eigen::Vector3d so3 = util::QuatToExp(quat_err);
+  // Eigen::Vector3d so3 = util::QuatToExp(quat_err);
+  Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
+  so3 *= Eigen::AngleAxisd(quat_err).angle();
   for (int i = 0; i < 3; ++i) {
     pos_err_[i] = so3[i];
   }
@@ -155,9 +158,10 @@ void LinkOriTask::UpdateOpCommand() {
   local_des_acc_ = rot_link_w_ * des_acc_;
 
   // operational space command
-  op_cmd_ =
-      des_acc_ + rot_link_w_.transpose() * (kp_.cwiseProduct(local_pos_err_) +
-                                            kd_.cwiseProduct(local_vel_err_));
+  // op_cmd_ =
+  // des_acc_ + rot_link_w_.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+  // kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void LinkOriTask::UpdateJacobian() {

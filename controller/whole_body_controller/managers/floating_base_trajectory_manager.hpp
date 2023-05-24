@@ -38,7 +38,9 @@ private:
   Eigen::Vector3d target_com_pos_;
 
   Eigen::Quaterniond init_torso_quat_;
-  Eigen::VectorXd exp_err_;
+  Eigen::Vector3d exp_err_;
+  Eigen::Vector3d axis_;
+  double angle_;
 
   MinJerkCurveVec *min_jerk_curve_;
   MinJerkCurveVec *min_jerk_time_;
