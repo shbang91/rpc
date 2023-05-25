@@ -31,7 +31,7 @@ DracoCoMXYTask::~DracoCoMXYTask() {
     delete icp_integrator_;
 }
 
-void DracoCoMXYTask::UpdateOpCommand() {
+void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   Eigen::Vector2d com_xy_pos = robot_->GetRobotComPos().head<2>();
   Eigen::Vector2d com_xy_vel = b_sim_ ? robot_->GetRobotComLinVel().head<2>()
                                       : sp_->com_vel_est_.head<2>();
@@ -42,9 +42,8 @@ void DracoCoMXYTask::UpdateOpCommand() {
   pos_err_ = des_pos_ - pos_;
   vel_err_ = des_vel_ - vel_;
 
-  Eigen::Matrix3d rot_w_link =
-      robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
-  Eigen::Matrix2d rot_link_w = rot_w_link.transpose().topLeftCorner<2, 2>();
+  Eigen::Matrix2d rot_link_w =
+      rot_world_local.transpose().topLeftCorner<2, 2>();
   // std::cout <<
   // "============================================================="
   //<< std::endl;
@@ -81,7 +80,8 @@ void DracoCoMXYTask::UpdateOpCommand() {
 
   } else if (feedback_source_ == feedback_source::kIcpFeedback) {
 
-    double omega = sqrt(kGravAcc / sp_->des_com_height_);
+    double com_height = robot_->GetRobotComPos()[2];
+    double omega = sqrt(kGravAcc / com_height);
 
     Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
     Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;

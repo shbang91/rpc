@@ -8,19 +8,17 @@ DracoCAMTask::DracoCAMTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoCAMTask::UpdateOpCommand() {
+void DracoCAMTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   vel_ = sp_->cam_est_;
   // std::cout << "cam: " << vel_.transpose() << std::endl;
 
   vel_err_ = des_vel_ - vel_;
 
-  Eigen::Matrix3d rot_w_link =
-      robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
-  local_des_vel_ = rot_w_link.transpose() * des_vel_;
-  local_vel_ = rot_w_link.transpose() * vel_;
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
   local_vel_err_ = local_des_vel_ - local_vel_;
 
-  op_cmd_ = des_acc_ + rot_w_link * kd_.cwiseProduct(local_vel_err_);
+  op_cmd_ = des_acc_ + rot_world_local * kd_.cwiseProduct(local_vel_err_);
 }
 
 void DracoCAMTask::UpdateJacobian() {

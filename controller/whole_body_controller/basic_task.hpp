@@ -13,7 +13,7 @@ public:
   JointTask(PinocchioRobotSystem *robot);
   virtual ~JointTask() = default;
 
-  void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -25,7 +25,7 @@ public:
                     const std::vector<int> &joint_idx_container);
   virtual ~SelectedJointTask() = default;
 
-  void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -41,7 +41,7 @@ public:
   LinkPosTask(PinocchioRobotSystem *robot, int target_idx);
   virtual ~LinkPosTask() = default;
 
-  void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -55,7 +55,7 @@ public:
   LinkOriTask(PinocchioRobotSystem *robot, int target_idx);
   virtual ~LinkOriTask() = default;
 
-  void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -69,7 +69,7 @@ public:
   ComTask(PinocchioRobotSystem *robot);
   virtual ~ComTask() = default;
 
-  void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;

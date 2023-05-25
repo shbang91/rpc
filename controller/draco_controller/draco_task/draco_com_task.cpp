@@ -11,7 +11,7 @@ DracoComTask::DracoComTask(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoComTask::UpdateOpCommand() {
+void DracoComTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   if (com_feedback_source_ == com_feedback_source::kComFeedback) {
     Eigen::Vector3d com_pos = robot_->GetRobotComPos();
     Eigen::Vector3d com_vel =

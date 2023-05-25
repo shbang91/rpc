@@ -54,7 +54,7 @@ public:
     des_acc_ = des_acc;
   }
 
-  virtual void UpdateOpCommand() = 0;
+  virtual void UpdateOpCommand(const Eigen::Matrix3d &rot_world_loacl) = 0;
   virtual void UpdateJacobian() = 0;
   virtual void UpdateJacobianDotQdot() = 0;
 

@@ -11,7 +11,7 @@ DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot) : Task(robot, 1) {
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoCoMZTask::UpdateOpCommand() {
+void DracoCoMZTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   if (com_height_ == com_height::kCoM) {
     pos_ << robot_->GetRobotComPos()[2];
     vel_ << robot_->GetRobotComLinVel()[2];
@@ -28,24 +28,17 @@ void DracoCoMZTask::UpdateOpCommand() {
   //=============================================================
   // local com z task data
   //=============================================================
-  double rot_link_w = robot_->GetLinkIsometry(draco_link::torso_com_link)
-                          .linear()
-                          .transpose()(2, 2);
+  local_des_pos_ = des_pos_;
+  local_pos_ = pos_;
+  local_pos_err_ = pos_err_;
 
-  local_des_pos_ = rot_link_w * des_pos_;
-  local_pos_ = rot_link_w * pos_;
-  local_pos_err_ = rot_link_w * pos_err_;
+  local_des_vel_ = des_vel_;
+  local_vel_ = vel_;
+  local_vel_err_ = vel_err_;
 
-  local_des_vel_ = rot_link_w * des_vel_;
-  local_vel_ = rot_link_w * vel_;
-  local_vel_err_ = rot_link_w * vel_err_;
+  local_des_acc_ = des_acc_;
 
-  local_des_acc_ = rot_link_w * des_acc_;
-
-  // op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) +
-  // kd_.cwiseProduct(vel_err_);
-  op_cmd_ = des_acc_ + rot_link_w * (kp_.cwiseProduct(local_pos_err_) +
-                                     kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
 void DracoCoMZTask::UpdateJacobian() {

@@ -28,7 +28,7 @@ public:
   DracoCoMXYTask(PinocchioRobotSystem *robot);
   ~DracoCoMXYTask();
 
-  void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 

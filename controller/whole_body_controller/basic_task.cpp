@@ -6,7 +6,7 @@ JointTask::JointTask(PinocchioRobotSystem *robot)
 }
 
 // not being used
-void JointTask::UpdateOpCommand() {
+void JointTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   pos_ = robot_->GetJointPos();
   pos_err_ = des_pos_ - pos_;
 
@@ -33,7 +33,8 @@ SelectedJointTask::SelectedJointTask(
   joint_idx_container_ = joint_idx_container;
 }
 
-void SelectedJointTask::UpdateOpCommand() {
+void SelectedJointTask::UpdateOpCommand(
+    const Eigen::Matrix3d &rot_world_local) {
   for (int i = 0; i < dim_; ++i) {
     pos_[i] = robot_->GetQ()[robot_->GetQIdx(joint_idx_container_[i])];
     pos_err_[i] = des_pos_[i] - pos_[i];
@@ -68,7 +69,7 @@ LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_idx)
   target_idx_ = target_idx;
 }
 
-void LinkPosTask::UpdateOpCommand() {
+void LinkPosTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   pos_ = robot_->GetLinkIsometry(target_idx_).translation();
   pos_err_ = des_pos_ - pos_;
 
@@ -76,22 +77,19 @@ void LinkPosTask::UpdateOpCommand() {
   vel_err_ = des_vel_ - vel_;
 
   // local task data
-  Eigen::Matrix3d rot_link_w =
-      robot_->GetLinkIsometry(target_idx_).linear().transpose();
-  local_des_pos_ = rot_link_w * des_pos_;
-  local_pos_ = rot_link_w * pos_;
-  local_pos_err_ = rot_link_w * pos_err_;
+  local_des_pos_ = rot_world_local.transpose() * des_pos_;
+  local_pos_ = rot_world_local.transpose() * pos_;
+  local_pos_err_ = rot_world_local.transpose() * pos_err_;
 
-  local_des_vel_ = rot_link_w * des_vel_;
-  local_vel_ = rot_link_w * vel_;
-  local_vel_err_ = rot_link_w * vel_err_;
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
+  local_vel_err_ = rot_world_local.transpose() * vel_err_;
 
-  local_des_acc_ = rot_link_w * des_acc_;
+  local_des_acc_ = rot_world_local.transpose() * des_acc_;
 
   // operational space command
-  op_cmd_ =
-      des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
-                                           kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + rot_world_local * (kp_.cwiseProduct(local_pos_err_) +
+                                          kd_.cwiseProduct(local_vel_err_));
 }
 
 void LinkPosTask::UpdateJacobian() {
@@ -118,12 +116,12 @@ LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
   local_pos_.setZero();
 }
 
-void LinkOriTask::UpdateOpCommand() {
+void LinkOriTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
 
-  rot_link_w_ = robot_->GetLinkIsometry(target_idx_).linear().transpose();
-  Eigen::Quaterniond local_des_quat(rot_link_w_ * des_quat.toRotationMatrix());
+  Eigen::Quaterniond local_des_quat(rot_world_local.transpose() *
+                                    des_quat.toRotationMatrix());
   local_des_pos_ << local_des_quat.normalized().coeffs();
 
   Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
@@ -131,7 +129,8 @@ void LinkOriTask::UpdateOpCommand() {
 
   pos_ << quat.normalized().coeffs();
 
-  Eigen::Quaterniond local_quat(rot_link_w_ * quat.toRotationMatrix());
+  Eigen::Quaterniond local_quat(rot_world_local.transpose() *
+                                quat.toRotationMatrix());
 
   local_pos_ << local_quat.normalized().coeffs();
 
@@ -146,18 +145,17 @@ void LinkOriTask::UpdateOpCommand() {
   vel_err_ = des_vel_ - vel_;
 
   // local task data
-  local_pos_err_ = rot_link_w_ * pos_err_;
+  local_pos_err_ = rot_world_local.transpose() * pos_err_;
 
-  local_des_vel_ = rot_link_w_ * des_vel_;
-  local_vel_ = rot_link_w_ * vel_;
-  local_vel_err_ = rot_link_w_ * vel_err_;
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
+  local_vel_err_ = rot_world_local.transpose() * vel_err_;
 
-  local_des_acc_ = rot_link_w_ * des_acc_;
+  local_des_acc_ = rot_world_local.transpose() * des_acc_;
 
   // operational space command
-  op_cmd_ =
-      des_acc_ + rot_link_w_.transpose() * (kp_.cwiseProduct(local_pos_err_) +
-                                            kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + rot_world_local * (kp_.cwiseProduct(local_pos_err_) +
+                                          kd_.cwiseProduct(local_vel_err_));
 }
 
 void LinkOriTask::UpdateJacobian() {
@@ -175,7 +173,7 @@ ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
   // no target idx
 }
 
-void ComTask::UpdateOpCommand() {
+void ComTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();
   Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
 
