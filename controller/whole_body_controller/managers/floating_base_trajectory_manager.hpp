@@ -49,4 +49,5 @@ private:
   Eigen::Vector3d amp_;
   Eigen::Vector3d freq_;
   bool b_swaying_;
+  Eigen::Matrix3d rot_world_local_;
 };

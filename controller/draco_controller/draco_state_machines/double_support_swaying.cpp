@@ -34,7 +34,8 @@ void DoubleSupportSwaying::FirstVisit() {
       ctrl_arch_->tci_container_->task_map_["com_z_task"]->DesiredPos()[0];
   Eigen::Vector3d init_com_pos(des_com_xy[0], des_com_xy[1], des_com_z);
 
-  ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_);
+  ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_,
+                                                   sp_->rot_world_local_);
 
   // get desired final RF from each foot to use as starting desired reaction
   // force values
