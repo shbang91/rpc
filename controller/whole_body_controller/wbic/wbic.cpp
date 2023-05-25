@@ -90,7 +90,7 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
 
       // calculate delta_q_1_cmd, qdot_1_cmd, qddot_1_cmd
       delta_q_cmd = JtPre_pinv * first_task->KpIK().cwiseProduct(
-                                     first_task->PosError()); // global err
+                                     first_task->LocalPosError()); // global err
       qdot_cmd = JtPre_pinv * first_task->DesiredVel();
       qddot_cmd = qddot_cmd + JtPre_bar * (first_task->OpCommand() - JtDotQdot -
                                            Jt * qddot_cmd);
@@ -219,14 +219,15 @@ void WBIC::_BuildContactMtxVect(
       JcDotQdot_ = it->second->JacobianDotQdot();
       Uf_mat_ = it->second->UfMatrix();
       Uf_vec_ = it->second->UfVector();
-      contact_rot_ = it->second->R();
+      // contact_rot_ = it->second->R();
       dim_contact_ = it->second->Dim();
     } else {
       Jc_ = util::VStack(Jc_, it->second->Jacobian());
       JcDotQdot_ = util::VStack(JcDotQdot_, it->second->JacobianDotQdot());
       Uf_mat_ = util::BlockDiagonalMatrix(Uf_mat_, it->second->UfMatrix());
       Uf_vec_ = util::VStack(Uf_vec_, it->second->UfVector());
-      contact_rot_ = util::BlockDiagonalMatrix(contact_rot_, it->second->R());
+      // contact_rot_ = util::BlockDiagonalMatrix(contact_rot_,
+      // it->second->R());
       dim_contact_ += it->second->Dim();
     }
   }
@@ -255,8 +256,9 @@ void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
   H_.topLeftCorner(num_floating_, num_floating_) =
       delta_qddot_cost + xc_ddot_cost;
   H_.bottomRightCorner(dim_contact_, dim_contact_) =
-      contact_rot_ * (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
-      contact_rot_.transpose();
+      // contact_rot_ * (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
+      // contact_rot_.transpose();
+      (wbic_data_->qp_params_->W_delta_rf_).asDiagonal();
   g_ = Eigen::VectorXd::Zero(num_floating_ + dim_contact_);
   g_.head(num_floating_) =
       (wbc_qddot_cmd.transpose() * Jc_.transpose() *
@@ -374,9 +376,12 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
       (wbic_data_->qp_params_->W_delta_qddot_).asDiagonal() *
       wbic_data_->delta_qddot_;
   wbic_data_->delta_rf_cost_ =
-      wbic_data_->delta_rf_.transpose() * contact_rot_ *
+      // wbic_data_->delta_rf_.transpose() * contact_rot_ *
+      //(wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
+      // contact_rot_.transpose() * wbic_data_->delta_rf_;
+      wbic_data_->delta_rf_.transpose() *
       (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
-      contact_rot_.transpose() * wbic_data_->delta_rf_;
+      wbic_data_->delta_rf_;
   wbic_data_->Xc_ddot_cost_ =
       wbic_data_->Xc_ddot_.transpose() *
       (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * wbic_data_->Xc_ddot_;
