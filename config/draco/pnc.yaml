@@ -7,8 +7,8 @@ data_save_freq: 50
 
 stance_foot: 0 # 0: left_foot 1: right_foot
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -61,7 +61,7 @@ state_estimator:
 
 controller:
   #exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
-  exp_smoothing_command_duration: 2. ## this only used when b_sim: false
+  exp_smoothing_command_duration: 3. ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
 
 wbc:
@@ -94,14 +94,14 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [0.5, 0.5]
-      exp_kd : [0.01, 0.01]
+      exp_kp : [1.0, 1.0]
+      exp_kd : [0.1, 0.1]
 
-      exp_icp_kp : [0.5, 1.]
+      exp_icp_kp : [0.5, 0.5]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0., 0.5] 
+      exp_icp_ki : [0., 0.] 
 
-      exp_kp_ik : [1.0, 1.0]
+      exp_kp_ik : [1.2, 1.2]
       #exp_kp_ik : [0.7, 0.7]
 
       ## IF icp_integrator_type == 0:
@@ -127,13 +127,13 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_com_kp : [0.1]
-      exp_com_kd : [0.]
+      exp_com_kp : [1.0]
+      exp_com_kd : [0.1]
 
-      exp_base_kp : [0.1]
-      exp_base_kd : [0.] # x, y will be ignored
+      exp_base_kp : [1.0]
+      exp_base_kd : [0.1] # x, y will be ignored
 
-      exp_kp_ik : [1.0]
+      exp_kp_ik : [1.2]
     cam_task:
       ########################################################################
       ## sim params
@@ -156,9 +156,9 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [0.001, 0.001, 0.001]
-      exp_kd : [0., 0., 0.]
-      exp_kp_ik : [0.5, 0.5, 0.005]
+      exp_kp : [1., 1., 0.5]
+      exp_kd : [0.5, 0.5, 0.2]
+      exp_kp_ik : [1.0, 1.0, 0.1]
 
     upper_body_task:
       ########################################################################
@@ -300,8 +300,8 @@ state_machine:
       swing_height: 0.04
 
     com_swaying:
-      #amplitude: [0., 0.05, 0.] # [m]
-      #frequency: [0., 0.1, 0.] # [hz]
+      #amplitude: [0., 0.03, 0.] # [m]
+      #frequency: [0., 0.05, 0.] # [hz]
       amplitude: [0., 0., 0.03] # [m]
       frequency: [0., 0., 0.05] # [hz]
 
