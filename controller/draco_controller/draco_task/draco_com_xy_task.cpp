@@ -155,6 +155,126 @@ void DracoCoMXYTask::UpdateOpCommand() {
   }
 }
 
+void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  Eigen::Vector2d com_xy_pos = robot_->GetRobotComPos().head<2>();
+  Eigen::Vector2d com_xy_vel = b_sim_ ? robot_->GetRobotComLinVel().head<2>()
+                                      : sp_->com_vel_est_.head<2>();
+
+  pos_ << com_xy_pos[0], com_xy_pos[1];
+  vel_ << com_xy_vel[0], com_xy_vel[1];
+
+  pos_err_ = des_pos_ - pos_;
+  vel_err_ = des_vel_ - vel_;
+
+  Eigen::Matrix2d rot_link_w =
+      rot_world_local.transpose().topLeftCorner<2, 2>();
+  // std::cout <<
+  // "============================================================="
+  //<< std::endl;
+  // util::PrettyPrint(rot_link_w, std::cout, "com xy original local rot mat");
+  // rot_link_w.col(0).normalize();
+  // rot_link_w.col(1).normalize();
+  // util::PrettyPrint(rot_link_w, std::cout, "com xy normalized local rot
+  // mat"); std::cout << "cross product result: "
+  //<< rot_link_w.col(0).dot(rot_link_w.col(1)) << std::endl;
+
+  //=============================================================
+  // local com xy task data
+  //=============================================================
+  // TODO: notice that torso Rx, Ry need to be precisely controlled
+  local_des_pos_ = rot_link_w * des_pos_;
+  local_pos_ = rot_link_w * pos_;
+  local_pos_err_ = rot_link_w * pos_err_;
+
+  local_des_vel_ = rot_link_w * des_vel_;
+  local_vel_ = rot_link_w * vel_;
+  local_vel_err_ = rot_link_w * vel_err_;
+
+  local_des_acc_ = rot_link_w * des_acc_;
+
+  if (feedback_source_ == feedback_source::kCoMFeedback) {
+    //=============================================================
+    // operational space command
+    //=============================================================
+    op_cmd_ =
+        des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
+                                             kd_.cwiseProduct(local_vel_err_));
+
+  } else if (feedback_source_ == feedback_source::kIcpFeedback) {
+
+    double com_height = robot_->GetRobotComPos()[2];
+    double omega = sqrt(kGravAcc / com_height);
+    // double omega = sqrt(kGravAcc / sp_->des_com_height_);
+
+    Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
+    Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;
+
+    Eigen::Vector2d local_des_icp = rot_link_w * des_icp;
+    Eigen::Vector2d local_des_icp_dot = rot_link_w * des_icp_dot;
+
+    Eigen::Vector2d icp = sp_->dcm_.head<2>();
+    Eigen::Vector2d icp_err = des_icp - icp;
+
+    Eigen::Vector2d local_icp = rot_link_w * icp;
+    Eigen::Vector2d local_icp_err = rot_link_w * icp_err;
+
+    Eigen::Vector2d des_cmp =
+        icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
+
+    // Eigen::Vector2d des_cmp =
+    // icp - des_icp_dot / omega -
+    // rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err));
+
+    //=============================================================
+    // calculate icp integral error
+    //=============================================================
+    Eigen::Vector2d icp_avg_err = Eigen::Vector2d::Zero();
+    if (icp_integrator_type_ == icp_integrator::kExponentialSmoother) {
+      Eigen::VectorXd error = Eigen::VectorXd::Zero(2);
+      error << icp_err[0], icp_err[1];
+      icp_integrator_->Input(error);
+      Eigen::VectorXd avg_err = icp_integrator_->Output();
+      icp_avg_err << avg_err[0], avg_err[1];
+    } else if (icp_integrator_type_ == icp_integrator::kLeakyIntegrator) {
+      // TODO: clean up this
+      icp_avg_err = icp_err * sp_->servo_dt_ + leaky_rate_ * icp_integral_;
+      icp_integral_ = util::Clamp2DVector(icp_avg_err, -leaky_integrator_limit_,
+                                          leaky_integrator_limit_);
+      icp_avg_err = icp_integral_;
+    }
+
+    Eigen::Vector2d local_icp_avg_err = rot_link_w * icp_avg_err;
+
+    //=============================================================
+    // calculate operational space command
+    //=============================================================
+    // op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
+    // omega * omega * ki_.cwiseProduct(icp_avg_err);
+
+    op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
+              omega * omega * rot_link_w.transpose() *
+                  (ki_.cwiseProduct(local_icp_avg_err));
+
+#if B_USE_ZMQ
+    if (sp_->count_ % sp_->data_save_freq_ == 0) {
+      DracoDataManager *dm = DracoDataManager::GetDataManager();
+      dm->data_->des_icp = des_icp;
+      dm->data_->des_cmp = des_cmp;
+    }
+#endif
+
+#if B_USE_MATLOGGER
+    if (sp_->count_ % sp_->data_save_freq_ == 0) {
+      logger_->add("des_icp", des_icp);
+      // logger_->add("act_icp", icp); same as the "est_icp" in state estimator
+      logger_->add("local_des_icp", local_des_icp);
+      logger_->add("local_act_icp", local_icp);
+      logger_->add("icp_error_raw", icp_err);
+      logger_->add("icp_avg_err", icp_avg_err); // used for feedback control
+    }
+#endif
+  }
+}
 void DracoCoMXYTask::UpdateJacobian() {
   jacobian_ = robot_->GetComLinJacobian().topRows<2>();
 }

@@ -23,6 +23,19 @@ void DracoCAMTask::UpdateOpCommand() {
   op_cmd_ = des_acc_ + rot_w_link * kd_.cwiseProduct(local_vel_err_);
 }
 
+void DracoCAMTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  vel_ = sp_->cam_est_;
+  // std::cout << "cam: " << vel_.transpose() << std::endl;
+
+  vel_err_ = des_vel_ - vel_;
+
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
+  local_vel_err_ = local_des_vel_ - local_vel_;
+
+  op_cmd_ = des_acc_ + rot_world_local * kd_.cwiseProduct(local_vel_err_);
+}
+
 void DracoCAMTask::UpdateJacobian() {
   // jacobian_ = robot_->GetAg().topRows<3>();
   Eigen::MatrixXd J_cam =

@@ -134,7 +134,7 @@ void DracoController::GetCommand(void *command) {
     for (const auto &[task_name, task_ptr] : tci_container_->task_map_) {
       task_ptr->UpdateJacobian();
       task_ptr->UpdateJacobianDotQdot();
-      task_ptr->UpdateOpCommand();
+      task_ptr->UpdateOpCommand(sp_->rot_world_local_);
     }
 
     // modified jacobian for swing legs

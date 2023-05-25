@@ -21,6 +21,8 @@ public:
   int stance_foot_;
   int prev_stance_foot_;
 
+  Eigen::Matrix3d rot_world_local_;
+
   Eigen::Vector3d dcm_;
   Eigen::Vector3d prev_dcm_;
   Eigen::Vector3d dcm_vel_;

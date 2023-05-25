@@ -30,6 +30,12 @@ void DoubleSupportStandUp::FirstVisit() {
   std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
+  // set local frame for task gains
+  Eigen::Isometry3d stance_foot_iso =
+      robot_->GetLinkIsometry(sp_->stance_foot_);
+  FootStep::MakeHorizontal(stance_foot_iso);
+  sp_->rot_world_local_ = stance_foot_iso.linear();
+
   // initial com & torso ori setting
   Eigen::Vector3d init_com_pos = robot_->GetRobotComPos();
   if (sp_->b_use_base_height_)

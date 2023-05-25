@@ -55,6 +55,7 @@ public:
   }
 
   virtual void UpdateOpCommand() = 0;
+  virtual void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) = 0;
   virtual void UpdateJacobian() = 0;
   virtual void UpdateJacobianDotQdot() = 0;
 
@@ -103,6 +104,7 @@ public:
   int Dim() const { return dim_; }
 
   Eigen::VectorXd PosError() const { return pos_err_; }
+  Eigen::VectorXd LocalPosError() const { return local_pos_err_; }
 
   // TODO: virtual??
   int TargetIdx() const { return target_idx_; }

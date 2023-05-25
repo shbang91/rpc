@@ -1,5 +1,6 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
@@ -62,6 +63,11 @@ void DoubleSupportBalance::LastVisit() {
   std::cout << "-----------------------------------------" << std::endl;
   std::cout << "des com height: " << sp_->des_com_height_ << std::endl;
   std::cout << "-----------------------------------------" << std::endl;
+
+  Eigen::Isometry3d torso_iso =
+      robot_->GetLinkIsometry(draco_link::torso_com_link);
+  FootStep::MakeHorizontal(torso_iso);
+  sp_->rot_world_local_ = torso_iso.linear();
 }
 
 StateId DoubleSupportBalance::GetNextState() {

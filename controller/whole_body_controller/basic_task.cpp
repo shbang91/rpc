@@ -7,11 +7,37 @@ JointTask::JointTask(PinocchioRobotSystem *robot)
 
 // not being used
 void JointTask::UpdateOpCommand() {
+  local_des_pos_ = des_pos_;
   pos_ = robot_->GetJointPos();
+  local_pos_ = pos_;
   pos_err_ = des_pos_ - pos_;
+  local_pos_err_ = pos_err_;
 
+  local_des_vel_ = des_vel_;
   vel_ = robot_->GetJointVel();
+  local_vel_ = vel_;
   vel_err_ = des_vel_ - vel_;
+  local_vel_err_ = vel_err_;
+
+  local_des_acc_ = des_acc_;
+
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+}
+
+void JointTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  local_des_pos_ = des_pos_;
+  pos_ = robot_->GetJointPos();
+  local_pos_ = pos_;
+  pos_err_ = des_pos_ - pos_;
+  local_pos_err_ = pos_err_;
+
+  local_des_vel_ = des_vel_;
+  vel_ = robot_->GetJointVel();
+  local_vel_ = vel_;
+  vel_err_ = des_vel_ - vel_;
+  local_vel_err_ = vel_err_;
+
+  local_des_acc_ = des_acc_;
 
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
@@ -43,6 +69,37 @@ void SelectedJointTask::UpdateOpCommand() {
 
     op_cmd_[i] = des_acc_[i] + kp_[i] * pos_err_[i] + kd_[i] * vel_err_[i];
   }
+  local_des_pos_ = des_pos_;
+  local_des_vel_ = des_vel_;
+  local_des_acc_ = des_acc_;
+
+  local_pos_ = pos_;
+  local_vel_ = vel_;
+  local_pos_err_ = pos_err_;
+  local_vel_err_ = vel_err_;
+}
+
+void SelectedJointTask::UpdateOpCommand(
+    const Eigen::Matrix3d &rot_world_local) {
+
+  for (int i = 0; i < dim_; ++i) {
+    pos_[i] = robot_->GetQ()[robot_->GetQIdx(joint_idx_container_[i])];
+    pos_err_[i] = des_pos_[i] - pos_[i];
+
+    vel_[i] = robot_->GetQdot()[robot_->GetQdotIdx(joint_idx_container_[i])];
+    vel_err_[i] = des_vel_[i] - vel_[i];
+
+    op_cmd_[i] = des_acc_[i] + kp_[i] * pos_err_[i] + kd_[i] * vel_err_[i];
+  }
+
+  local_des_pos_ = des_pos_;
+  local_des_vel_ = des_vel_;
+  local_des_acc_ = des_acc_;
+
+  local_pos_ = pos_;
+  local_vel_ = vel_;
+  local_pos_err_ = pos_err_;
+  local_vel_err_ = vel_err_;
 }
 
 void SelectedJointTask::UpdateJacobian() {
@@ -93,6 +150,29 @@ void LinkPosTask::UpdateOpCommand() {
   // des_acc_ + rot_link_w.transpose() * (kp_.cwiseProduct(local_pos_err_) +
   // kd_.cwiseProduct(local_vel_err_));
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+}
+
+void LinkPosTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  pos_ = robot_->GetLinkIsometry(target_idx_).translation();
+  pos_err_ = des_pos_ - pos_;
+
+  vel_ = robot_->GetLinkSpatialVel(target_idx_).tail(dim_);
+  vel_err_ = des_vel_ - vel_;
+
+  // local task data
+  local_des_pos_ = rot_world_local.transpose() * des_pos_;
+  local_pos_ = rot_world_local.transpose() * pos_;
+  local_pos_err_ = rot_world_local.transpose() * pos_err_;
+
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
+  local_vel_err_ = rot_world_local.transpose() * vel_err_;
+
+  local_des_acc_ = rot_world_local.transpose() * des_acc_;
+
+  // operational space command
+  op_cmd_ = des_acc_ + rot_world_local * (kp_.cwiseProduct(local_pos_err_) +
+                                          kd_.cwiseProduct(local_vel_err_));
 }
 
 void LinkPosTask::UpdateJacobian() {
@@ -164,6 +244,50 @@ void LinkOriTask::UpdateOpCommand() {
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
+void LinkOriTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
+                              des_pos_[2]);
+
+  Eigen::Quaterniond local_des_quat(rot_world_local.transpose() *
+                                    des_quat.normalized().toRotationMatrix());
+  local_des_pos_ << local_des_quat.normalized().coeffs();
+
+  Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
+  util::AvoidQuatJump(des_quat, quat);
+
+  pos_ << quat.normalized().coeffs();
+
+  Eigen::Quaterniond local_quat(rot_world_local.transpose() *
+                                quat.toRotationMatrix());
+
+  local_pos_ << local_quat.normalized().coeffs();
+
+  Eigen::Quaterniond quat_err = des_quat * quat.inverse();
+
+  // Eigen::Vector3d so3 = util::QuatToExp(quat_err);
+  Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
+  so3 *= Eigen::AngleAxisd(quat_err).angle();
+  for (int i = 0; i < 3; ++i) {
+    pos_err_[i] = so3[i];
+  }
+
+  vel_ = robot_->GetLinkSpatialVel(target_idx_).head(dim_);
+  vel_err_ = des_vel_ - vel_;
+
+  // local task data
+  local_pos_err_ = rot_world_local.transpose() * pos_err_;
+
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
+  local_vel_err_ = rot_world_local.transpose() * vel_err_;
+
+  local_des_acc_ = rot_world_local.transpose() * des_acc_;
+
+  // operational space command
+  op_cmd_ = des_acc_ + rot_world_local * (kp_.cwiseProduct(local_pos_err_) +
+                                          kd_.cwiseProduct(local_vel_err_));
+}
+
 void LinkOriTask::UpdateJacobian() {
   jacobian_ =
       robot_->GetLinkJacobian(target_idx_).block(0, 0, dim_, robot_->NumQdot());
@@ -190,6 +314,28 @@ void ComTask::UpdateOpCommand() {
   vel_err_ = des_vel_ - vel_;
 
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+}
+
+void ComTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  Eigen::Vector3d com_pos = robot_->GetRobotComPos();
+  Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+
+  local_des_pos_ = rot_world_local.transpose() * des_pos_;
+  local_des_vel_ = rot_world_local.transpose() * des_vel_;
+  local_des_acc_ = rot_world_local.transpose() * des_acc_;
+
+  pos_ << com_pos[0], com_pos[1], com_pos[2];
+  pos_err_ = des_pos_ - pos_;
+  local_pos_ = rot_world_local.transpose() * pos_;
+  local_pos_err_ = rot_world_local.transpose() * pos_err_;
+
+  vel_ << com_vel[0], com_vel[1], com_vel[2];
+  vel_err_ = des_vel_ - vel_;
+  local_vel_ = rot_world_local.transpose() * vel_;
+  local_vel_err_ = rot_world_local.transpose() * vel_err_;
+
+  op_cmd_ = des_acc_ + rot_world_local * (kp_.cwiseProduct(local_pos_err_) +
+                                          kd_.cwiseProduct(local_vel_err_));
 }
 
 void ComTask::UpdateJacobian() { jacobian_ = robot_->GetComLinJacobian(); }

@@ -20,6 +20,8 @@ DracoStateProvider::DracoStateProvider() {
   stance_foot_ = draco_link::l_foot_contact;
   prev_stance_foot_ = draco_link::l_foot_contact;
 
+  rot_world_local_ = Eigen::Matrix3d::Identity();
+
   dcm_.setZero();
   prev_dcm_.setZero();
   dcm_vel_.setZero();

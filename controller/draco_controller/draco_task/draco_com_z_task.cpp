@@ -47,10 +47,43 @@ void DracoCoMZTask::UpdateOpCommand() {
   local_des_acc_ = rot_link_w * des_acc_;
 
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
-  // op_cmd_ = des_acc_ + rot_link_w * (kp_.cwiseProduct(local_pos_err_) +
-  // kd_.cwiseProduct(local_vel_err_));
+  op_cmd_ = des_acc_ + rot_link_w * (kp_.cwiseProduct(local_pos_err_) +
+                                     kd_.cwiseProduct(local_vel_err_));
 }
 
+void DracoCoMZTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  if (com_height_ == com_height::kCoM) {
+    pos_ << robot_->GetRobotComPos()[2];
+    if (b_sim_)
+      vel_ << robot_->GetRobotComLinVel()[2];
+    else
+      vel_ << sp_->com_vel_est_[2];
+
+  } else if (com_height_ == com_height::kBase) {
+    pos_
+        << robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
+    vel_ << robot_->GetLinkSpatialVel(draco_link::torso_com_link)[5];
+  }
+
+  pos_err_ = des_pos_ - pos_;
+  vel_err_ = des_vel_ - vel_;
+
+  //=============================================================
+  // local com z task data
+  //=============================================================
+
+  local_des_pos_ = des_pos_;
+  local_pos_ = pos_;
+  local_pos_err_ = pos_err_;
+
+  local_des_vel_ = des_vel_;
+  local_vel_ = vel_;
+  local_vel_err_ = vel_err_;
+
+  local_des_acc_ = des_acc_;
+
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+}
 void DracoCoMZTask::UpdateJacobian() {
   if (com_height_ == com_height::kCoM) {
     jacobian_ = robot_->GetComLinJacobian().bottomRows<1>();

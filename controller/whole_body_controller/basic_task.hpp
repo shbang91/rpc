@@ -14,6 +14,7 @@ public:
   virtual ~JointTask() = default;
 
   void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -26,6 +27,7 @@ public:
   virtual ~SelectedJointTask() = default;
 
   void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -42,6 +44,7 @@ public:
   virtual ~LinkPosTask() = default;
 
   void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -56,6 +59,7 @@ public:
   virtual ~LinkOriTask() = default;
 
   void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -70,6 +74,7 @@ public:
   virtual ~ComTask() = default;
 
   void UpdateOpCommand() override;
+  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
