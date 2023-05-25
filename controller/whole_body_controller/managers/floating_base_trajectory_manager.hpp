@@ -21,7 +21,8 @@ public:
 
   void InitializeSwaying(const Eigen::Vector3d &init_com_pos,
                          const Eigen::Vector3d &amp,
-                         const Eigen::Vector3d &freq);
+                         const Eigen::Vector3d &freq,
+                         const Eigen::Matrix3d &rot_world_local);
 
   void UpdateDesired(const double state_machine_time);
 
@@ -47,4 +48,5 @@ private:
   Eigen::Vector3d amp_;
   Eigen::Vector3d freq_;
   bool b_swaying_;
+  Eigen::Matrix3d rot_world_local_;
 };

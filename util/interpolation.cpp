@@ -49,7 +49,6 @@ double SmoothAcc(double ini, double end, double moving_duration,
   }
   return ret;
 }
-
 void SinusoidTrajectory(const Eigen::VectorXd &mid_point,
                         const Eigen::VectorXd &amp, const Eigen::VectorXd &freq,
                         double eval_time, Eigen::VectorXd &p,
@@ -68,6 +67,29 @@ void SinusoidTrajectory(const Eigen::VectorXd &mid_point,
     double s = SmoothPos(0., 1., smoothing_dur, eval_time);
     for (int i = 0; i < 3; ++i) {
       p[i] = (1 - s) * mid_point[i] + s * p[i];
+      v[i] *= s;
+      a[i] *= s;
+    }
+  }
+}
+
+void SinusoidTrajectory(const Eigen::VectorXd &amp, const Eigen::VectorXd &freq,
+                        double eval_time, Eigen::VectorXd &p,
+                        Eigen::VectorXd &v, Eigen::VectorXd &a,
+                        double smoothing_dur) {
+  p = Eigen::VectorXd::Zero(3);
+  v = Eigen::VectorXd::Zero(3);
+  a = Eigen::VectorXd::Zero(3);
+  for (int i = 0; i < 3; ++i) {
+    p[i] = amp[i] * sin(2 * M_PI * freq[i] * (eval_time));
+    v[i] = amp[i] * 2 * M_PI * freq[i] * cos(2 * M_PI * freq[i] * (eval_time));
+    a[i] = -amp[i] * 2 * M_PI * freq[i] * 2 * M_PI * freq[i] *
+           sin(2 * M_PI * freq[i] * (eval_time));
+  }
+  if (eval_time < smoothing_dur) {
+    double s = SmoothPos(0., 1., smoothing_dur, eval_time);
+    for (int i = 0; i < 3; ++i) {
+      p[i] *= s;
       v[i] *= s;
       a[i] *= s;
     }

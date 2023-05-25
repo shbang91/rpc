@@ -32,7 +32,8 @@ void DoubleSupportSwayingLmpc::FirstVisit() {
   if (b_use_base_height_)
     init_com_pos[2] =
         robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-  ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_);
+  ctrl_arch_->floating_base_tm_->InitializeSwaying(init_com_pos, amp_, freq_,
+                                                   sp_->rot_world_local_);
 
   // TODO: initialize lmpc
 }

@@ -55,24 +55,30 @@ void FloatingBaseTrajectoryManager::InitializeFloatingBaseInterpolation(
 
 void FloatingBaseTrajectoryManager::InitializeSwaying(
     const Eigen::Vector3d &init_com_pos, const Eigen::Vector3d &amp,
-    const Eigen::Vector3d &freq) {
+    const Eigen::Vector3d &freq, const Eigen::Matrix3d &rot_world_local) {
   init_com_pos_ = init_com_pos;
   amp_ = amp;
   freq_ = freq;
   b_swaying_ = true;
+  rot_world_local_ = rot_world_local;
 }
 
 void FloatingBaseTrajectoryManager::UpdateDesired(
     const double state_machine_time) {
   if (b_swaying_) {
-    Eigen::VectorXd des_com_pos = Eigen::VectorXd::Zero(3);
-    Eigen::VectorXd des_com_vel = Eigen::VectorXd::Zero(3);
-    Eigen::VectorXd des_com_acc = Eigen::VectorXd::Zero(3);
+
+    Eigen::VectorXd local_des_pos = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd local_des_vel = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd local_des_acc = Eigen::VectorXd::Zero(3);
 
     // com swaying
-    util::SinusoidTrajectory(init_com_pos_, amp_, freq_, state_machine_time,
-                             des_com_pos, des_com_vel, des_com_acc, 1.0);
+    util::SinusoidTrajectory(amp_, freq_, state_machine_time, local_des_pos,
+                             local_des_vel, local_des_acc, 1.0);
 
+    Eigen::VectorXd des_com_pos =
+        init_com_pos_ + rot_world_local_ * local_des_pos;
+    Eigen::VectorXd des_com_vel = rot_world_local_ * local_des_vel;
+    Eigen::VectorXd des_com_acc = rot_world_local_ * local_des_acc;
     // update desired com task
     com_xy_task_->UpdateDesired(des_com_pos.head<2>(), des_com_vel.head<2>(),
                                 des_com_acc.head<2>());
