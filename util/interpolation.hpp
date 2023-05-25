@@ -23,6 +23,10 @@ void SinusoidTrajectory(const Eigen::VectorXd &mid_point,
                         double eval_time, Eigen::VectorXd &p,
                         Eigen::VectorXd &v, Eigen::VectorXd &a,
                         double smoothing_dur = 1.0);
+void SinusoidTrajectory(const Eigen::VectorXd &amp, const Eigen::VectorXd &freq,
+                        double eval_time, Eigen::VectorXd &p,
+                        Eigen::VectorXd &v, Eigen::VectorXd &a,
+                        double smoothing_dur = 1.0);
 double Smooth(double ini, double fin, double rat);
 
 } // namespace util

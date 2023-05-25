@@ -74,8 +74,8 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
     Eigen::VectorXd local_des_vel = Eigen::VectorXd::Zero(3);
     Eigen::VectorXd local_des_acc = Eigen::VectorXd::Zero(3);
     // com swaying
-    util::SinusoidTrajectory(init_com_pos_, amp_, freq_, state_machine_time,
-                             local_des_pos, local_des_vel, local_des_acc, 1.0);
+    util::SinusoidTrajectory(amp_, freq_, state_machine_time, local_des_pos,
+                             local_des_vel, local_des_acc, 1.0);
 
     Eigen::VectorXd des_com_pos =
         init_com_pos_ + rot_world_local_ * local_des_pos;
