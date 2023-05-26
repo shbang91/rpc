@@ -24,6 +24,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
+      joint_trq_cmd_prev_(Eigen::VectorXd::Zero(draco::n_adof)),
       wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(false),
       b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
       b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
@@ -237,7 +238,9 @@ void DracoController::GetCommand(void *command) {
 
     joint_pos_cmd_ = (1 - s) * init_joint_pos_ + s * joint_pos_cmd_;
     joint_vel_cmd_ = s * joint_vel_cmd_;
-    joint_trq_cmd_ = s * joint_trq_cmd_;
+    joint_trq_cmd_ = (1 - s) * joint_trq_cmd_prev_ + s * joint_trq_cmd_;
+    joint_trq_cmd_prev_ = joint_trq_cmd_;
+    // joint_trq_cmd_ = s * joint_trq_cmd_;
 
     if (sp_->current_time_ >=
         smoothing_command_start_time_ + smoothing_command_duration_)

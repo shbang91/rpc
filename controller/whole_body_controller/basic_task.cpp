@@ -117,6 +117,7 @@ LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
 }
 
 void LinkOriTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  rot_link_w_ = robot_->GetLinkIsometry(target_idx_).linear().transpose();
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
 

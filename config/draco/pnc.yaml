@@ -77,7 +77,7 @@ state_estimator:
 
 
 controller:
-  exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
+  exp_smoothing_command_duration: 3 ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
 
 wbc:
