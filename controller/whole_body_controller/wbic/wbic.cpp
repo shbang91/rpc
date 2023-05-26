@@ -61,6 +61,8 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
   Eigen::MatrixXd N_pre_dyn;
   _BuildProjectionMatrix(JcNi_dyn, N_pre_dyn, &Minv_);
   N_pre_dyn = Ni_dyn_ * N_pre_dyn; // null space of internal + contact
+  // for gravity comp
+  Ni_Nci_dyn_ = N_pre_dyn;
   //  constraint
   Eigen::MatrixXd JcNi_bar;
   _WeightedPseudoInverse(JcNi_dyn, Minv_, JcNi_bar);
@@ -394,32 +396,53 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
 }
 
 void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
-  Eigen::VectorXd trq_trc =
-      M_.bottomRows(num_qdot_ - num_floating_) *
-          wbic_data_->corrected_wbc_qddot_cmd_ +
-      Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
-          (cori_ + grav_) -
-      (Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
-          (wbic_data_->rf_cmd_);
-
-  // gravity compensation only
   // Eigen::VectorXd trq_trc =
-  // Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() * grav_;
-  Eigen::MatrixXd UNi_trc =
-      (sa_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_);
-  Eigen::MatrixXd Minv_trc = Minv_.bottomRightCorner(num_qdot_ - num_floating_,
-                                                     num_qdot_ - num_floating_);
-  Eigen::MatrixXd UNi_trc_bar;
-  _WeightedPseudoInverse(UNi_trc, Minv_trc, UNi_trc_bar);
+  // M_.bottomRows(num_qdot_ - num_floating_) *
+  // wbic_data_->corrected_wbc_qddot_cmd_ +
+  // Ni_dyn_.rightCols(num_qdot_ - num_floating_).transpose() *
+  //(cori_ + grav_) -
+  //(Jc_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_).transpose() *
+  //(wbic_data_->rf_cmd_);
+  // Eigen::MatrixXd UNi_trc =
+  //(sa_ * Ni_dyn_).rightCols(num_qdot_ - num_floating_);
+  //
+  //===============================================================
+  // compute torque
+  //===============================================================
+  // Eigen::VectorXd trq = M_ * wbic_data_->corrected_wbc_qddot_cmd_ +
+  // Ni_dyn_.transpose() * (cori_ + grav_) -
+  //(Jc_ * Ni_dyn_).transpose() * wbic_data_->rf_cmd_;
+  // Eigen::MatrixXd UNi = sa_ * Ni_dyn_;
+  // Eigen::MatrixXd UNi_bar;
+  //_WeightedPseudoInverse(UNi, Minv_, UNi_bar);
+  // jtrq_cmd = UNi_bar.transpose() * trq; // dimension: num_active_
+  // jtrq_cmd = snf_ * sa_.transpose() * jtrq_cmd;
+
+  // =================================================
+  // gravity compensation only
+  // =================================================
+  Eigen::VectorXd trq = Ni_Nci_dyn_.transpose() * grav_;
+  Eigen::MatrixXd UNi_Nci = sa_ * Ni_Nci_dyn_;
+  Eigen::MatrixXd UNi_Nci_bar;
+  _WeightedPseudoInverse(UNi_Nci, Minv_, UNi_Nci_bar);
+  jtrq_cmd = UNi_Nci_bar.transpose() * trq; // dimension: num_active_
+  jtrq_cmd = snf_ * sa_.transpose() * jtrq_cmd;
+  // ================================================================
+
+  // Eigen::MatrixXd Minv_trc = Minv_.bottomRightCorner(num_qdot_ -
+  // num_floating_, num_qdot_ - num_floating_);
+  // Eigen::MatrixXd UNi_trc_bar;
+  //_WeightedPseudoInverse(UNi_trc, Minv_trc, UNi_trc_bar);
   //_WeightedPseudoInverse(UNi_trc,
   // Eigen::MatrixXd::Identity(num_qdot_ - num_floating_,
   // num_qdot_ - num_floating_),
   // UNi_trc_bar);
-  jtrq_cmd = UNi_trc_bar.transpose() * trq_trc; // dimension: num_active_
-  jtrq_cmd = sa_.rightCols(num_qdot_ - num_floating_).transpose() *
-             jtrq_cmd; // dimension: num_active_ + num_passive_
+  // jtrq_cmd = UNi_trc_bar.transpose() * trq_trc; // dimension: num_active_
+  // jtrq_cmd = sa_.rightCols(num_qdot_ - num_floating_).transpose() *
+  // jtrq_cmd; // dimension: num_active_ + num_passive_
 
   // TEST
   // joint torque command computation
+  // util::PrettyPrint(jtrq_cmd, std::cout, "jtrq_cmd");
   // std::cout << "jtrq_cmd " << jtrq_cmd.transpose() << std::endl;
 }

@@ -29,7 +29,8 @@ public:
     sa_.setZero(num_active_, num_qdot_);
     sf_.setZero(num_floating_, num_qdot_);
     sv_.setZero(num_passive_, num_qdot_);
-    int j(0), k(0), e(0);
+    snf_.setZero(num_active_ + num_passive_, num_qdot_);
+    int j(0), k(0), e(0), l(0);
     for (int i(0); i < act_qdot_list.size(); i++) {
       if (act_qdot_list[i]) {
         sa_(j, i) = 1.;
@@ -43,7 +44,12 @@ public:
           ++k;
         }
       }
+      if (i >= 6) {
+        snf_(l, i) = 1.;
+        ++l;
+      }
     }
+
     assert(num_qdot_ - num_active_ - num_passive_ - num_floating_ == 0);
 
     // internal constraint check
@@ -74,6 +80,7 @@ protected:
   Eigen::MatrixXd sf_;
   Eigen::MatrixXd sa_;
   Eigen::MatrixXd sv_;
+  Eigen::MatrixXd snf_;
 
   bool b_internal_constraint_;
   Eigen::MatrixXd Ji_;

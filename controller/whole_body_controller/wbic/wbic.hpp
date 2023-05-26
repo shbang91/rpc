@@ -100,6 +100,7 @@ private:
 
   // internal constraint nullspace
   Eigen::MatrixXd Ni_dyn_;
+  Eigen::MatrixXd Ni_Nci_dyn_;
 
   // contact
   Eigen::MatrixXd Jc_;
