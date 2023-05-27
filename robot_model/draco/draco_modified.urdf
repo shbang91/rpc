@@ -603,7 +603,8 @@
   <!--=============================== l_knee_fe_jd (l_knee_fe_ld) ===========================-->
   <!-- NOTE: If you're NOT using Apptronik's simulator, please uncomment line 716 and use that, instead of line 717 -->
   <joint name="l_knee_fe_jd" type="revolute">
-    <!-- <origin xyz="${0 + 0*l_knee_adj_param} ${0.00599 + 0.0537 * l_knee_adj_param} ${-0.1115386 + -0.9985 * l_knee_adj_param}" rpy="-1.90275e-16 1.31839e-16 2.80923e-17" /> -->
+     <origin xyz="0 0.00600074 -0.1117383" rpy="-1.90275e-16 1.31839e-16 2.80923e-17" /> 
+     <!--<origin xyz="${0 + 0*l_knee_adj_param} ${0.00599 + 0.0537 * l_knee_adj_param} ${-0.1115386 + -0.9985 * l_knee_adj_param}" rpy="-1.90275e-16 1.31839e-16 2.80923e-17" /> -->
     <origin rpy="0 0 0" xyz="0.0 0.0 -0.1117386"/>
     <parent link="l_knee_fe_lp"/>
     <child link="l_knee_fe_ld"/>
@@ -629,8 +630,8 @@
   <!--=============================== l_ankle_fe (l_ankle_fe_link) ===========================-->
   <!-- NOTE: If you're NOT using Apptronik's simulator, please uncomment line 753 and use that, instead of line 754 -->
   <joint name="l_ankle_fe" type="revolute">
-    <!-- <origin xyz="-6.26776e-17 -1.80411e-16 -0.248231" rpy="2.01226e-15 1.44763e-15 -7.77124e-18" /> -->
-    <origin rpy="0 0 0" xyz="0 0.00599 -0.248231"/>
+     <origin xyz="-6.26776e-17 -1.80411e-16 -0.248231" rpy="2.01226e-15 1.44763e-15 -7.77124e-18" /> 
+    <!--<origin rpy="0 0 0" xyz="0 0.00599 -0.248231"/>-->
     <parent link="l_knee_fe_ld"/>
     <child link="l_ankle_fe_link"/>
     <axis xyz="0 1 0"/>
@@ -825,6 +826,7 @@
   <!--=============================== r_knee_fe_jd (r_knee_fe_ld) ===========================-->
   <!-- NOTE: If you're NOT using Apptronik's simulator, please uncomment line 1019 and use that, instead of line 1020 -->
   <joint name="r_knee_fe_jd" type="revolute">
+     <origin xyz="0 -0.00600074 -0.1117383" rpy="1.06003e-30 6.64446e-33 -5.70613e-32" /> 
     <!-- <origin xyz="${0 + 0 * r_knee_adj_param} ${-0.006 + -0.0537 * r_knee_adj_param} ${-0.1115386 + -0.9985 * r_knee_adj_param}" rpy="1.06003e-30 6.64446e-33 -5.70613e-32" /> -->
     <origin rpy="0 0 0" xyz="0 0 -0.1117386"/>
     <parent link="r_knee_fe_lp"/>
@@ -852,8 +854,8 @@
   <!--=============================== r_ankle_fe (r_ankle_fe_link) ===========================-->
   <!-- NOTE: If you're NOT using Apptronik's simulator, please uncomment line 1057 and use that, instead of line 1058 -->
   <joint name="r_ankle_fe" type="revolute">
-    <!-- <origin xyz="-1.70255e-16 -9.71445e-17 -0.248231" rpy="-1.09947e-29 -6.39256e-14 1.4244e-16" /> -->
-    <origin rpy="0 0 0" xyz="0 -0.006 -0.248231"/>
+     <origin xyz="-1.70255e-16 -9.71445e-17 -0.248231" rpy="-1.09947e-29 -6.39256e-14 1.4244e-16" /> 
+    <!--<origin rpy="0 0 0" xyz="0 -0.006 -0.248231"/>-->
     <parent link="r_knee_fe_ld"/>
     <child link="r_ankle_fe_link"/>
     <axis xyz="0 1 0"/>
