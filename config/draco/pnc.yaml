@@ -7,8 +7,8 @@ data_save_freq: 50
 
 stance_foot: 0 # 0: left_foot 1: right_foot
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -73,15 +73,15 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [2., 2.]
-      sim_kd : [1, 1]
+      sim_kp : [10., 10.]
+      sim_kd : [6, 6]
 
       sim_icp_kp : [2, 2]
       sim_icp_kd : [0., 0.] # x, y will be ignored
       sim_icp_ki : [0., 0.] 
 
-      #sim_kp_ik : [1., 1.]
-      sim_kp_ik : [0.5, 0.5]
+      sim_kp_ik : [1., 1.]
+      #sim_kp_ik : [0.5, 0.5]
 
       ## IF icp_integrator_type == 0:
       sim_time_constant : 0.001
@@ -123,7 +123,7 @@ wbc:
       sim_base_kp : [5.]
       sim_base_kd : [1.] # x, y will be ignored
 
-      sim_kp_ik : [0.5]
+      sim_kp_ik : [1.0]
       ########################################################################
       ## exp params
       ########################################################################
@@ -271,6 +271,10 @@ wbc:
     W_xc_ddot_in_swing: 0
 
 
+    W_force_rate_of_change_left_foot: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+    W_force_rate_of_change_right_foot: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+
     #W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
     #W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
 
@@ -312,10 +316,16 @@ state_machine:
 
 dcm_walking:
   t_additional_init_trans: 0.
-  t_contact_trans: 0.45
-  t_swing: 0.55
+  t_contact_trans: 0.3
+  t_swing: 0.6
   percentage_settle: 0.9
   alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.
+  #t_contact_trans: 0.45
+  #t_swing: 0.55
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
 
   #t_additional_init_trans: 0.
   #t_contact_trans: 1.8

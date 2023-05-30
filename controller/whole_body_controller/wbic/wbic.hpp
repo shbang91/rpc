@@ -18,12 +18,14 @@ struct QPParams {
     W_delta_qddot_ = Eigen::VectorXd::Zero(num_float);
     W_delta_rf_ = Eigen::VectorXd::Zero(dim_contact);
     W_xc_ddot_ = Eigen::VectorXd::Zero(dim_contact);
+    W_force_rate_of_change_ = Eigen::VectorXd::Zero(dim_contact);
   }
   ~QPParams() = default;
 
   Eigen::VectorXd W_delta_qddot_;
   Eigen::VectorXd W_delta_rf_;
   Eigen::VectorXd W_xc_ddot_;
+  Eigen::VectorXd W_force_rate_of_change_;
 };
 
 struct WBICData {
@@ -33,6 +35,7 @@ struct WBICData {
     delta_rf_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
     corrected_wbc_qddot_cmd_ = Eigen::VectorXd::Zero(num_qdot);
     rf_cmd_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
+    rf_prev_cmd_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
     Xc_ddot_ = Eigen::VectorXd::Zero(qp_params_->W_delta_rf_.size());
     delta_qddot_cost_ = 0;
     delta_rf_cost_ = 0;
@@ -55,6 +58,7 @@ struct WBICData {
   // WBIC result
   Eigen::VectorXd corrected_wbc_qddot_cmd_;
   Eigen::VectorXd rf_cmd_;
+  Eigen::VectorXd rf_prev_cmd_;
   Eigen::VectorXd Xc_ddot_;
 };
 

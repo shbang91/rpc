@@ -260,7 +260,9 @@ void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
   H_.bottomRightCorner(dim_contact_, dim_contact_) =
       // contact_rot_ * (wbic_data_->qp_params_->W_delta_rf_).asDiagonal() *
       // contact_rot_.transpose();
-      (wbic_data_->qp_params_->W_delta_rf_).asDiagonal();
+      (wbic_data_->qp_params_->W_delta_rf_ +
+       wbic_data_->qp_params_->W_force_rate_of_change_)
+          .asDiagonal();
   g_ = Eigen::VectorXd::Zero(num_floating_ + dim_contact_);
   g_.head(num_floating_) =
       (wbc_qddot_cmd.transpose() * Jc_.transpose() *
@@ -268,6 +270,9 @@ void WBIC::_SetQPCost(const Eigen::VectorXd &wbc_qddot_cmd) {
        JcDotQdot_.transpose() *
            (wbic_data_->qp_params_->W_xc_ddot_).asDiagonal() * Jc_)
           .head(num_floating_);
+  g_.tail(dim_contact_) =
+      wbic_data_->rf_prev_cmd_.transpose() *
+      wbic_data_->qp_params_->W_force_rate_of_change_.asDiagonal();
 }
 
 void WBIC::_SetQPEqualityConstraint(const Eigen::VectorXd &wbc_qddot_cmd) {
@@ -369,6 +374,7 @@ void WBIC::_SolveQP(const Eigen::VectorXd &wbc_qddot_cmd) {
   wbic_data_->corrected_wbc_qddot_cmd_.head(num_floating_) +=
       wbic_data_->delta_qddot_;
   wbic_data_->rf_cmd_ = des_rf_ + wbic_data_->delta_rf_;
+  wbic_data_->rf_prev_cmd_ = wbic_data_->rf_cmd_;
   wbic_data_->Xc_ddot_ =
       Jc_ * wbic_data_->corrected_wbc_qddot_cmd_ +
       JcDotQdot_; // contact constraint check (this should be almost zero)
@@ -409,24 +415,24 @@ void WBIC::_GetSolution(Eigen::VectorXd &jtrq_cmd) {
   //===============================================================
   // compute torque
   //===============================================================
-  // Eigen::VectorXd trq = M_ * wbic_data_->corrected_wbc_qddot_cmd_ +
-  // Ni_dyn_.transpose() * (cori_ + grav_) -
-  //(Jc_ * Ni_dyn_).transpose() * wbic_data_->rf_cmd_;
-  // Eigen::MatrixXd UNi = sa_ * Ni_dyn_;
-  // Eigen::MatrixXd UNi_bar;
-  //_WeightedPseudoInverse(UNi, Minv_, UNi_bar);
-  // jtrq_cmd = UNi_bar.transpose() * trq; // dimension: num_active_
-  // jtrq_cmd = snf_ * sa_.transpose() * jtrq_cmd;
+  Eigen::VectorXd trq = M_ * wbic_data_->corrected_wbc_qddot_cmd_ +
+                        Ni_dyn_.transpose() * (cori_ + grav_) -
+                        (Jc_ * Ni_dyn_).transpose() * wbic_data_->rf_cmd_;
+  Eigen::MatrixXd UNi = sa_ * Ni_dyn_;
+  Eigen::MatrixXd UNi_bar;
+  _WeightedPseudoInverse(UNi, Minv_, UNi_bar);
+  jtrq_cmd = UNi_bar.transpose() * trq; // dimension: num_active_
+  jtrq_cmd = snf_ * sa_.transpose() * jtrq_cmd;
 
   // =================================================
   // gravity compensation only
   // =================================================
-  Eigen::VectorXd trq = Ni_Nci_dyn_.transpose() * grav_;
-  Eigen::MatrixXd UNi_Nci = sa_ * Ni_Nci_dyn_;
-  Eigen::MatrixXd UNi_Nci_bar;
-  _WeightedPseudoInverse(UNi_Nci, Minv_, UNi_Nci_bar);
-  jtrq_cmd = UNi_Nci_bar.transpose() * trq; // dimension: num_active_
-  jtrq_cmd = snf_ * sa_.transpose() * jtrq_cmd;
+  // Eigen::VectorXd trq = Ni_Nci_dyn_.transpose() * grav_;
+  // Eigen::MatrixXd UNi_Nci = sa_ * Ni_Nci_dyn_;
+  // Eigen::MatrixXd UNi_Nci_bar;
+  //_WeightedPseudoInverse(UNi_Nci, Minv_, UNi_Nci_bar);
+  // jtrq_cmd = UNi_Nci_bar.transpose() * trq; // dimension: num_active_
+  // jtrq_cmd = snf_ * sa_.transpose() * jtrq_cmd;
   // ================================================================
 
   // Eigen::MatrixXd Minv_trc = Minv_.bottomRightCorner(num_qdot_ -

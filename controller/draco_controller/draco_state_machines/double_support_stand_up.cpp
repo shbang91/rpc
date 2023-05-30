@@ -20,7 +20,9 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
       rf_z_max_interp_duration_(0.), W_delta_qddot_(0.),
       W_xc_ddot_in_contact_(0.),
       W_delta_rf_left_foot_in_contact_(Eigen::VectorXd::Zero(6)),
-      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6)) {
+      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6)),
+      W_force_rate_of_change_left_foot_(Eigen::VectorXd::Zero(6)),
+      W_force_rate_of_change_right_foot_(Eigen::VectorXd::Zero(6)) {
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -82,6 +84,9 @@ void DoubleSupportStandUp::FirstVisit() {
       W_delta_rf_right_foot_in_contact_;
   ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_ =
       Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+  ctrl_arch_->tci_container_->qp_params_->W_force_rate_of_change_
+      << W_force_rate_of_change_left_foot_,
+      W_force_rate_of_change_right_foot_;
 
   // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[5] = 1e8;
   // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[11] = 1e8;
@@ -145,6 +150,10 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
                         W_delta_rf_left_foot_in_contact_);
     util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
                         W_delta_rf_right_foot_in_contact_);
+    util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_left_foot",
+                        W_force_rate_of_change_left_foot_);
+    util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_right_foot",
+                        W_force_rate_of_change_right_foot_);
 
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
