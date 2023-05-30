@@ -8,6 +8,8 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "double_support_stand_up.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 
 ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
                                            PinocchioRobotSystem *robot,
@@ -52,6 +54,15 @@ void ContactTransitionEnd::FirstVisit() {
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
+
+    // =====================================================================
+    // set reference desired reaction force initialize
+    // =====================================================================
+    Eigen::VectorXd zero_force = Eigen::VectorXd::Zero(6);
+    Eigen::VectorXd max_force_z = Eigen::VectorXd::Zero(6);
+    ctrl_arch_->lf_force_tm_->InitializeInterpolation(zero_force, end_time_);
+    max_force_z[5] = kGravity * robot_->GetTotalMass();
+    ctrl_arch_->rf_force_tm_->InitializeInterpolation(max_force_z, end_time_);
   } else if (state_id_ == draco_states::kRFContactTransitionEnd) {
     std::cout << "draco_states::kRFContactTransitionEnd" << std::endl;
     // =====================================================================
@@ -64,6 +75,15 @@ void ContactTransitionEnd::FirstVisit() {
     // contact max normal force manager initialize
     // =====================================================================
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
+
+    // =====================================================================
+    // set reference desired reaction force initialize
+    // =====================================================================
+    Eigen::VectorXd zero_force = Eigen::VectorXd::Zero(6);
+    Eigen::VectorXd max_force_z = Eigen::VectorXd::Zero(6);
+    ctrl_arch_->rf_force_tm_->InitializeInterpolation(zero_force, end_time_);
+    max_force_z[5] = kGravity * robot_->GetTotalMass();
+    ctrl_arch_->lf_force_tm_->InitializeInterpolation(max_force_z, end_time_);
   }
 
   // set current foot position as nominal (desired) for rest of this state
@@ -96,6 +116,10 @@ void ContactTransitionEnd::OneStep() {
     ctrl_arch_->rf_pos_hm_->UpdateRampToMin(state_machine_time_);
     ctrl_arch_->rf_ori_hm_->UpdateRampToMin(state_machine_time_);
   }
+
+  // update force traj manager
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 bool ContactTransitionEnd::EndOfState() {

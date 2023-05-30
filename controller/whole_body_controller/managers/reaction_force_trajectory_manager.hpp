@@ -8,6 +8,7 @@ public:
   ForceTrajectoryManager(ForceTask *force_task, PinocchioRobotSystem *robot);
   ~ForceTrajectoryManager() = default;
 
+  void InitializeInterpolation(const Eigen::VectorXd &des_fin, double duration);
   void InitializeInterpolation(const Eigen::VectorXd &des_init,
                                const Eigen::VectorXd &des_fin, double duration);
   void InitializeSwaying(const Eigen::VectorXd &init_des_force,

@@ -8,7 +8,7 @@ class StateMachine {
 public:
   StateMachine(StateId state_id, PinocchioRobotSystem *robot)
       : state_id_(state_id), robot_(robot), state_machine_start_time_(0.),
-        state_machine_time_(0.), end_time_(0.) {}
+        state_machine_time_(0.), end_time_(0.), rf_end_time_(0.) {}
   virtual ~StateMachine() = default;
 
   virtual void FirstVisit() = 0;
@@ -28,4 +28,5 @@ protected:
   double state_machine_start_time_;
   double state_machine_time_;
   double end_time_;
+  double rf_end_time_;
 };

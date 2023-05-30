@@ -10,6 +10,8 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
+#include "double_support_stand_up.hpp"
 
 ContactTransitionStart::ContactTransitionStart(
     StateId state_id, PinocchioRobotSystem *robot,
@@ -80,9 +82,11 @@ void ContactTransitionStart::FirstVisit() {
   // =====================================================================
   // dcm planner initialize
   // =====================================================================
-  if (ctrl_arch_->dcm_tm_->NoRemainingSteps())
+  if (ctrl_arch_->dcm_tm_->NoRemainingSteps()){
     end_time_ =
-        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetFinalContactTransferTime();
+            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetFinalContactTransferTime();
+    rf_end_time_ = 0.5 * end_time_;
+  }
   else {
     // Eigen::Quaterniond init_torso_quat(
     // robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
@@ -140,7 +144,14 @@ void ContactTransitionStart::FirstVisit() {
       end_time_ =
           ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime();
     }
+    rf_end_time_ = end_time_;
   }
+
+  // set reference desired reaction force
+  Eigen::VectorXd mid_max_force_z = Eigen::VectorXd::Zero(6);
+  mid_max_force_z[5] = kGravity * robot_->GetTotalMass() / 2.;
+  ctrl_arch_->lf_force_tm_->InitializeInterpolation(mid_max_force_z, rf_end_time_);
+  ctrl_arch_->rf_force_tm_->InitializeInterpolation(mid_max_force_z, rf_end_time_);
 
   // set current foot position as nominal (desired) for rest of this state
   nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
@@ -172,6 +183,10 @@ void ContactTransitionStart::OneStep() {
     ctrl_arch_->lf_pos_hm_->UpdateRampToMax(state_machine_time_);
     ctrl_arch_->lf_ori_hm_->UpdateRampToMax(state_machine_time_);
   }
+
+  // update force traj manager
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 bool ContactTransitionStart::EndOfState() {

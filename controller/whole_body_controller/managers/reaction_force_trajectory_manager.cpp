@@ -27,6 +27,15 @@ void ForceTrajectoryManager::InitializeInterpolation(
   duration_ = duration;
 }
 
+void ForceTrajectoryManager::InitializeInterpolation(
+    const Eigen::VectorXd &des_fin,
+    double duration) {
+
+  assert(des_fin.size() == des_final_rf_.size());
+
+  InitializeInterpolation(des_final_rf_, des_fin, duration);
+}
+
 void ForceTrajectoryManager::InitializeSwaying(
         const Eigen::VectorXd &init_des_force,  const Eigen::Vector3d &amp,
         const Eigen::Vector3d &freq) {
