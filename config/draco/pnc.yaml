@@ -291,6 +291,8 @@ state_machine:
 
       rf_z_max_interp_duration: 0.1
 
+    b_use_const_desired_foot_pos: false
+
     single_support_swing:
       swing_height: 0.04
 

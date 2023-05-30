@@ -14,6 +14,8 @@ public:
 
   void UseCurrent();
 
+  void UseNominal(const Eigen::Isometry3d &nominal_iso);
+
   void InitializeSwingTrajectory(const Eigen::Isometry3d &ini_pose,
                                  const Eigen::Isometry3d &fin_pose,
                                  const double swing_height,

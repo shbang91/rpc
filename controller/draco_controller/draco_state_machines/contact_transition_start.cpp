@@ -21,6 +21,18 @@ ContactTransitionStart::ContactTransitionStart(
   else if (state_id_ == draco_states::kRFContactTransitionStart)
     util::PrettyConstructor(2, "RFContactTransitionStart");
 
+  try {
+    YAML::Node cfg =
+            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
+                                                "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
+  nominal_lfoot_iso_.setIdentity();
+  nominal_rfoot_iso_.setIdentity();
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
@@ -129,6 +141,10 @@ void ContactTransitionStart::FirstVisit() {
           ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime();
     }
   }
+
+  // set current foot position as nominal (desired) for rest of this state
+  nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
 }
 
 void ContactTransitionStart::OneStep() {
@@ -138,8 +154,13 @@ void ContactTransitionStart::OneStep() {
   ctrl_arch_->dcm_tm_->UpdateDesired(sp_->current_time_);
 
   // foot pose task update
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  if (b_use_fixed_foot_pos_) {
+    ctrl_arch_->lf_SE3_tm_->UseNominal(nominal_lfoot_iso_);
+    ctrl_arch_->rf_SE3_tm_->UseNominal(nominal_rfoot_iso_);
+  } else {
+    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  }
 
   // contact max normal force & foot task hierarchy update
   if (state_id_ == draco_states::kLFContactTransitionStart) {

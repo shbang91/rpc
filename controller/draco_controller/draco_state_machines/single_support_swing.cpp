@@ -18,6 +18,18 @@ SingleSupportSwing::SingleSupportSwing(StateId state_id,
   else if (state_id_ == draco_states::kRFSingleSupportSwing)
     util::PrettyConstructor(2, "kRFSingleSupportSwing");
 
+  try {
+    YAML::Node cfg =
+            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
+                                                      "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
+  nominal_lfoot_iso_.setIdentity();
+  nominal_rfoot_iso_.setIdentity();
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
@@ -42,6 +54,7 @@ void SingleSupportSwing::FirstVisit() {
     // foot traj initialize
     ctrl_arch_->lf_SE3_tm_->InitializeSwingTrajectory(
         curr_lfoot_iso, target_lfoot_iso, swing_height_, end_time_);
+    nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
 
     sp_->b_lf_contact_ = false;
     sp_->b_request_change_swing_leg_ = true;
@@ -62,6 +75,7 @@ void SingleSupportSwing::FirstVisit() {
     // foot traj initialize
     ctrl_arch_->rf_SE3_tm_->InitializeSwingTrajectory(
         curr_rfoot_iso, target_rfoot_iso, swing_height_, end_time_);
+    nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
 
     sp_->b_rf_contact_ = false;
     sp_->b_request_change_swing_leg_ = true;
@@ -78,10 +92,18 @@ void SingleSupportSwing::OneStep() {
   // foot task update
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
     ctrl_arch_->lf_SE3_tm_->UpdateDesired(state_machine_time_);
-    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    if (b_use_fixed_foot_pos_) {
+      ctrl_arch_->rf_SE3_tm_->UseNominal(nominal_rfoot_iso_);
+    } else {
+      ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    }
   } else if (state_id_ == draco_states::kRFSingleSupportSwing) {
     ctrl_arch_->rf_SE3_tm_->UpdateDesired(state_machine_time_);
-    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    if (b_use_fixed_foot_pos_) {
+      ctrl_arch_->lf_SE3_tm_->UseNominal(nominal_lfoot_iso_);
+    } else {
+      ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    }
   }
 }
 

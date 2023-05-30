@@ -7,6 +7,7 @@
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
+#include "controller/draco_controller/draco_definition.hpp"
 
 ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
                                            PinocchioRobotSystem *robot,
@@ -18,6 +19,18 @@ ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
   else if (state_id_ == draco_states::kRFContactTransitionEnd)
     util::PrettyConstructor(2, "RFContactTransitionEnd");
 
+  try {
+    YAML::Node cfg =
+            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
+                                                      "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
+  nominal_lfoot_iso_.setIdentity();
+  nominal_rfoot_iso_.setIdentity();
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
@@ -52,6 +65,10 @@ void ContactTransitionEnd::FirstVisit() {
     // =====================================================================
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
   }
+
+  // set current foot position as nominal (desired) for rest of this state
+  nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
 }
 
 void ContactTransitionEnd::OneStep() {
@@ -61,8 +78,13 @@ void ContactTransitionEnd::OneStep() {
   ctrl_arch_->dcm_tm_->UpdateDesired(sp_->current_time_);
 
   // foot pose task update
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  if (b_use_fixed_foot_pos_) {
+    ctrl_arch_->lf_SE3_tm_->UseNominal(nominal_lfoot_iso_);
+    ctrl_arch_->rf_SE3_tm_->UseNominal(nominal_rfoot_iso_);
+  } else {
+    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  }
 
   // contact task & force update
   if (state_id_ == draco_states::kLFContactTransitionEnd) {
