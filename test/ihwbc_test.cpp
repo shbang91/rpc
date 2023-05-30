@@ -284,7 +284,7 @@ protected:
       for (const auto &[task_str, task_ptr] : _tci->task_map_) {
         task_ptr->UpdateJacobian();
         task_ptr->UpdateJacobianDotQdot();
-        task_ptr->UpdateOpCommand();
+        task_ptr->UpdateOpCommand(init_torso_quat.toRotationMatrix());
       }
     }
 
