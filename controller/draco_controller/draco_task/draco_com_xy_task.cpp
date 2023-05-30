@@ -218,12 +218,12 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
     Eigen::Vector2d local_icp = rot_link_w * icp;
     Eigen::Vector2d local_icp_err = rot_link_w * icp_err;
 
-    Eigen::Vector2d des_cmp =
-        icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
-
     // Eigen::Vector2d des_cmp =
-    // icp - des_icp_dot / omega -
-    // rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err));
+    // icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
+
+    Eigen::Vector2d des_cmp =
+        icp - des_icp_dot / omega -
+        rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err));
 
     //=============================================================
     // calculate icp integral error
