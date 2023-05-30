@@ -231,7 +231,7 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 0., 0., 1e-5] ## trq, force order
+      sim_weight : [0., 0., 0., 1e-6, 1e-6, 1e-5] ## trq, force order
       #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
@@ -266,7 +266,7 @@ wbc:
   qp:
     b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [5e-3, 1e-4, 1e-4, 1e-6, 1e-6, 0., 5e-3, 1e-4, 1e-4, 1e-6, 1e-6, 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-4, 1e-4, 1e-4, 0., 0., 0., 1e-4, 1e-4, 1e-4, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
