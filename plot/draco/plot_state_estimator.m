@@ -6,7 +6,7 @@ addpath("/tmp")
 addpath("experiment_data")
 addpath("plot")
 
-exp_data_location = 'experiment_data';
+exp_data_location = '/tmp';
 base_estimator_type = {'est', 'kf'};    % 'est' = kinematics-only
 est_or_kf = 2;                        % 1: est, 2: kf
 
