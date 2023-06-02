@@ -69,7 +69,7 @@ state_estimator:
   exp_num_data_com_vel: [200, 200, 200] 
 
   ## IF 1: exponential smoother filter parameter
-  com_vel_time_constant: 0.01 
+  com_vel_time_constant: 0.02 
   com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
@@ -111,13 +111,13 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [5000., 5000.] # only used when feedback source : 1
+      exp_icp_weight : [3000., 3000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.1, 0.2] 
+      exp_icp_ki : [0.6, 0.8] 
 
       ## IF icp_integrator_type == 0:
-      exp_time_constant : 0.1
+      exp_time_constant : 0.05
       exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
@@ -146,7 +146,7 @@ wbc:
 
       exp_base_weight : [1000.] # only used when target source : 1
       exp_base_kp : [50.]
-      exp_base_kd : [4.0] # x, y will be ignored
+      exp_base_kd : [5.0] # x, y will be ignored
 
     cam_task:
       ########################################################################
@@ -170,9 +170,9 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [500., 500., 50.]
+      exp_weight : [300., 300., 50.]
       exp_kp : [30., 30., 20.]
-      exp_kd : [0.8, 0.8, 0.1]
+      exp_kd : [1.5, 1.5, 0.1]
 
     upper_body_task:
       ########################################################################
@@ -221,7 +221,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10000., 10000., 10000.]
+      exp_weight : [1000., 1000., 1000.]
       exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [20., 20., 20.]
       exp_kd : [0.3, 0.3, 0.1]
@@ -237,7 +237,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 5e-6, 5e-6, 1e-5]
+      exp_weight : [0., 0., 0., 1e-8, 1e-8, 1e-8]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
@@ -266,12 +266,12 @@ wbc:
   qp:
     b_save_costs: true
     lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [5e-4, 6e-6, 6e-6, 0., 0., 0., 5e-4, 6e-6, 5e-6, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-6, 6e-6, 6e-6, 0., 0., 0., 1e-6, 6e-6, 6e-6, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
   joint_integrator:
-    pos_cutoff_freq: 0.5 #hz
+    pos_cutoff_freq: 3.0 #hz
     vel_cutoff_freq: 2. #hz
     max_pos_err: 0.2 #rad
 
