@@ -111,13 +111,13 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [20000., 20000.] # only used when feedback source : 1
+      exp_icp_weight : [25000., 25000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.6, 0.8] 
+      exp_icp_ki : [0.6, 1.2] 
 
       ## IF icp_integrator_type == 0:
-      exp_time_constant : 0.3
+      exp_time_constant : 0.4
       exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
@@ -221,10 +221,10 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [3000., 3000., 3000.]
+      exp_weight : [5000., 5000., 5000.]
       exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [20., 20., 20.]
-      exp_kd : [0.3, 0.3, 0.1]
+      exp_kd : [1.5, 1.5, 0.2]
 
     foot_rf_task:
       ########################################################################
@@ -237,7 +237,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 1e-9, 1e-9, 1e-8]
+      exp_weight : [0., 0., 0., 3e-9, 3e-9, 1e-8]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
@@ -266,7 +266,7 @@ wbc:
   qp:
     b_save_costs: true
     lambda_qddot: 1e-6 ##regularization
-    lambda_rf: [5e-7, 6e-7, 6e-7, 0., 0., 0., 5e-7, 6e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [7e-7, 6e-7, 6e-7, 0., 0., 0., 7e-7, 6e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
@@ -297,10 +297,10 @@ state_machine:
       swing_height: 0.04
 
     com_swaying:
-      #amplitude: [0., 0.05, 0.] # [m]
-      #frequency: [0., 0.1, 0.] # [hz]
-      amplitude: [0., 0., 0.05] # [m]
-      frequency: [0., 0., 0.05] # [hz]
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.1, 0.] # [hz]
+      #amplitude: [0., 0., 0.05] # [m]
+      #frequency: [0., 0., 0.05] # [hz]
 
     lmpc_com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
