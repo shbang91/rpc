@@ -45,7 +45,7 @@ state_estimator:
   ########################################################################
   ## exp params
   ########################################################################
-  exp_sigma_base_vel: [0.001, 0.001, 0.001]   # leave these always as zero
+  exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
   exp_sigma_base_acc: [0.5, 0.5, 0.5]
   exp_sigma_pos_lfoot: [0.001, 0.001, 0.009]
   exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
@@ -111,7 +111,7 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [8000., 8000.] # only used when feedback source : 1
+      exp_icp_weight : [20000., 20000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0.6, 0.8] 
@@ -237,7 +237,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 3e-9, 3e-9, 3e-8]
+      exp_weight : [0., 0., 0., 1e-9, 1e-9, 1e-8]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
@@ -265,8 +265,8 @@ wbc:
 
   qp:
     b_save_costs: true
-    lambda_qddot: 1e-5 ##regularization
-    lambda_rf: [8e-6, 2e-6, 2e-6, 0., 0., 0., 8e-6, 2e-6, 2e-6, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_qddot: 1e-6 ##regularization
+    lambda_rf: [5e-7, 6e-7, 6e-7, 0., 0., 0., 5e-7, 6e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
