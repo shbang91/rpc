@@ -46,11 +46,11 @@ state_estimator:
   ## exp params
   ########################################################################
   exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
-  exp_sigma_base_acc: [0.18, 0.18, 0.085]
+  exp_sigma_base_acc: [0.17, 0.17, 0.072]
   exp_sigma_pos_lfoot: [0.001, 0.001, 0.005]
   exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
-  exp_sigma_vel_lfoot: [0.02, 0.02, 0.008]
-  exp_sigma_vel_rfoot: [0.02, 0.02, 0.008]
+  exp_sigma_vel_lfoot: [0.003, 0.003, 0.001]
+  exp_sigma_vel_rfoot: [0.003, 0.003, 0.001]
   exp_imu_accel_bias: [0.0, 0.0, 0.17]
   exp_base_accel_time_constant: 0.02
   exp_base_accel_limits: [1., 1., 1.]
@@ -246,7 +246,7 @@ wbc:
     ########################################################################
     sim_max_rf_z: 400.
 
-    sim_mu: 0.3
+    sim_mu: 0.4
     sim_foot_half_length: 0.08
     sim_foot_half_width: 0.04 ## 0.04
 #    sim_foot_half_length: 0.125
