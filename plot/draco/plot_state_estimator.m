@@ -6,7 +6,7 @@ addpath("/tmp")
 addpath("experiment_data")
 addpath("plot")
 
-exp_data_location = 'experiment_data';
+exp_data_location = '/tmp';
 base_estimator_type = {'est', 'kf'};    % 'est' = kinematics-only
 est_or_kf = 2;                        % 1: est, 2: kf
 
@@ -210,5 +210,27 @@ for i = 1:2
         xlabel('time')
         ylabel(xy_label(i))
     sgtitle('icp integrator', 'FontSize', 30)
+end
+linkaxes(ax,'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%imu accel plot
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(3,1,i);
+    plot(wbc_time, imu_accel_raw(i, :), 'k', 'LineWidth', 3);
+    hold on
+    plot(wbc_time, imu_accel_est(i, :), 'r', 'LineWidth', 2);
+    grid on
+    min_val = min([imu_accel_raw(i,:), imu_accel_est(i,:)]);
+    max_val = max([imu_accel_raw(i,:), imu_accel_est(i,:)]);
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
 end
 linkaxes(ax,'x')
