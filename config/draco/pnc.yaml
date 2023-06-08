@@ -46,13 +46,13 @@ state_estimator:
   ## exp params
   ########################################################################
   exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
-  exp_sigma_base_acc: [0.5, 0.5, 0.5]
-  exp_sigma_pos_lfoot: [0.001, 0.001, 0.009]
-  exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
-  exp_sigma_vel_lfoot: [0.002, 0.002, 0.002]
-  exp_sigma_vel_rfoot: [0.002, 0.002, 0.002]
-  exp_imu_accel_bias: [-0.108, -0.023, 0.196 ]
-  exp_base_accel_time_constant: 0.01
+  exp_sigma_base_acc: [0.18, 0.18, 0.085]
+  exp_sigma_pos_lfoot: [0.001, 0.001, 0.005]
+  exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
+  exp_sigma_vel_lfoot: [0.02, 0.02, 0.008]
+  exp_sigma_vel_rfoot: [0.02, 0.02, 0.008]
+  exp_imu_accel_bias: [0.0, 0.0, 0.17]
+  exp_base_accel_time_constant: 0.02
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 0.1
   exp_num_data_base_accel: [10, 10, 10]
@@ -69,7 +69,7 @@ state_estimator:
   exp_num_data_com_vel: [200, 200, 200] 
 
   ## IF 1: exponential smoother filter parameter
-  com_vel_time_constant: 0.02 
+  com_vel_time_constant: 0.01 
   com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
@@ -111,10 +111,10 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [25000., 25000.] # only used when feedback source : 1
+      exp_icp_weight : [25000., 35000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.6, 1.2] 
+      exp_icp_ki : [0.6, 1.4] 
 
       ## IF icp_integrator_type == 0:
       exp_time_constant : 0.4
@@ -170,8 +170,8 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [500., 500., 50.]
-      exp_kp : [50., 50., 20.]
+      exp_weight : [1000., 1000., 100.]
+      exp_kp : [80., 80., 20.]
       exp_kd : [7.0, 7.0, 0.2]
 
     upper_body_task:
@@ -237,7 +237,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 3e-9, 3e-9, 1e-8]
+      exp_weight : [0., 0., 0., 5e-9, 5e-9, 1e-8]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
