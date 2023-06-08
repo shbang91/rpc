@@ -46,20 +46,20 @@ state_estimator:
   ## exp params
   ########################################################################
   exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
-  exp_sigma_base_acc: [0.5, 0.5, 0.5]
-  exp_sigma_pos_lfoot: [0.001, 0.001, 0.009]
-  exp_sigma_pos_rfoot: [0.005, 0.005, 0.009]
-  exp_sigma_vel_lfoot: [0.002, 0.002, 0.002]
-  exp_sigma_vel_rfoot: [0.002, 0.002, 0.002]
-  exp_imu_accel_bias: [-0.108, -0.023, 0.196 ]
+  exp_sigma_base_acc: [0.18, 0.18, 0.085]
+  exp_sigma_pos_lfoot: [0.001, 0.001, 0.005]
+  exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
+  exp_sigma_vel_lfoot: [0.02, 0.02, 0.008]
+  exp_sigma_vel_rfoot: [0.02, 0.02, 0.008]
+  exp_imu_accel_bias: [0.0, 0.0, 0.17]
   exp_base_accel_time_constant: 0.02
   exp_base_accel_limits: [1., 1., 1.]
-  exp_base_com_vel_time_constant: 1.0
+  exp_base_com_vel_time_constant: 0.1
   exp_num_data_base_accel: [10, 10, 10]
   exp_num_data_ang_vel: [5, 5, 5]
 
   exp_num_data_contact: [20, 20]    # {left, right} foot contact sensor
-  exp_contact_time_constant: 0.01
+  exp_contact_time_constant: 0.025
 
   ## for simulation please use 000000000
   com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
@@ -69,7 +69,7 @@ state_estimator:
   exp_num_data_com_vel: [200, 200, 200] 
 
   ## IF 1: exponential smoother filter parameter
-  com_vel_time_constant: 0.05 
+  com_vel_time_constant: 0.01 
   com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
@@ -111,17 +111,17 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [5000., 5000.] # only used when feedback source : 1
+      exp_icp_weight : [25000., 35000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.6, 0.8] 
+      exp_icp_ki : [0.6, 1.4] 
 
       ## IF icp_integrator_type == 0:
-      exp_time_constant : 0.05
+      exp_time_constant : 0.4
       exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
-      exp_leaky_rate: 0.5
+      exp_leaky_rate: 0.1
       exp_leaky_integrator_limit: [0.03, 0.03]
 
     com_z_task:
@@ -146,7 +146,7 @@ wbc:
 
       exp_base_weight : [1000.] # only used when target source : 1
       exp_base_kp : [50.]
-      exp_base_kd : [1.5] # x, y will be ignored
+      exp_base_kd : [1.0] # x, y will be ignored
 
     cam_task:
       ########################################################################
@@ -170,9 +170,9 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [500., 500., 50.]
-      exp_kp : [30., 30., 20.]
-      exp_kd : [0.2, 0.2, 0.1]
+      exp_weight : [1000., 1000., 100.]
+      exp_kp : [80., 80., 20.]
+      exp_kd : [7.0, 7.0, 0.2]
 
     upper_body_task:
       ########################################################################
@@ -204,7 +204,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10000., 10000., 10000.]
+      exp_weight : [3000., 3000., 3000.]
       exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [100., 100., 150.]
       exp_kd : [0.1, 0.1, 1.]
@@ -221,10 +221,10 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [10000., 10000., 10000.]
+      exp_weight : [5000., 5000., 5000.]
       exp_weight_at_swing : [500., 500., 500.]
       exp_kp : [20., 20., 20.]
-      exp_kd : [0.1, 0.1, 0.1]
+      exp_kd : [1.5, 1.5, 0.2]
 
     foot_rf_task:
       ########################################################################
@@ -237,7 +237,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 0., 0., 9e-5]
+      exp_weight : [0., 0., 0., 5e-9, 5e-9, 1e-8]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
@@ -248,7 +248,7 @@ wbc:
 
     sim_mu: 0.3
     sim_foot_half_length: 0.08
-    sim_foot_half_width: 0.03 ## 0.04
+    sim_foot_half_width: 0.04 ## 0.04
 #    sim_foot_half_length: 0.125
 #    sim_foot_half_width: 0.075
 
@@ -257,21 +257,21 @@ wbc:
     ########################################################################
     exp_max_rf_z: 400.
 
-    exp_mu: 0.3
+    exp_mu: 0.4
     exp_foot_half_length: 0.08
-    exp_foot_half_width: 0.03
+    exp_foot_half_width: 0.04
 #    exp_foot_half_length: 0.125
 #    exp_foot_half_width: 0.075
 
   qp:
     b_save_costs: true
-    lambda_qddot: 1e-7 ##regularization
-    lambda_rf: [1e-4, 1e-4, 1e-4, 0., 0., 0., 1e-4, 1e-4, 1e-4, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_qddot: 1e-6 ##regularization
+    lambda_rf: [7e-7, 6e-7, 6e-7, 0., 0., 0., 7e-7, 6e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
   joint_integrator:
-    pos_cutoff_freq: 0.5 #hz
+    pos_cutoff_freq: 2.0 #hz
     vel_cutoff_freq: 2. #hz
     max_pos_err: 0.2 #rad
 
@@ -291,16 +291,16 @@ state_machine:
 
       rf_z_max_interp_duration: 0.1
 
-    b_use_const_desired_foot_pos: false
+    b_use_const_desired_foot_pos: true
 
     single_support_swing:
       swing_height: 0.04
 
     com_swaying:
-      #amplitude: [0., 0.05, 0.] # [m]
-      #frequency: [0., 0.1, 0.] # [hz]
-      amplitude: [0., 0., 0.05] # [m]
-      frequency: [0., 0., 0.1] # [hz]
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.1, 0.] # [hz]
+      #amplitude: [0., 0., 0.05] # [m]
+      #frequency: [0., 0., 0.05] # [hz]
 
     lmpc_com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
