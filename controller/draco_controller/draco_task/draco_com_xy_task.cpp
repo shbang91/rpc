@@ -98,10 +98,6 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
     // Eigen::Vector2d des_cmp =
     // icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
 
-    Eigen::Vector2d des_cmp =
-        icp - des_icp_dot / omega -
-        rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err));
-
     //=============================================================
     // calculate icp integral error
     //=============================================================
@@ -125,12 +121,18 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
     //=============================================================
     // calculate operational space command
     //=============================================================
+    Eigen::Vector2d des_cmp =
+            icp - des_icp_dot / omega -
+            rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err)) -
+            rot_link_w.transpose() * (ki_.cwiseProduct(local_icp_avg_err));
+
     // op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
     // omega * omega * ki_.cwiseProduct(icp_avg_err);
 
-    op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
-              omega * omega * rot_link_w.transpose() *
-                  (ki_.cwiseProduct(local_icp_avg_err));
+//    op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
+//              omega * omega * rot_link_w.transpose() *
+//                  (ki_.cwiseProduct(local_icp_avg_err));
+    op_cmd_ = omega * omega * (com_xy_pos - des_cmp);
 
 #if B_USE_ZMQ
     if (sp_->count_ % sp_->data_save_freq_ == 0) {
