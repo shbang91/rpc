@@ -51,7 +51,7 @@ state_estimator:
   exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
   exp_sigma_vel_lfoot: [0.003, 0.003, 0.001]
   exp_sigma_vel_rfoot: [0.003, 0.003, 0.001]
-  exp_imu_accel_bias: [0.0, 0.0, 0.17]
+  exp_imu_accel_bias: [0.0, 0.0, 0.15]
   exp_base_accel_time_constant: 0.02
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 0.1
@@ -114,10 +114,10 @@ wbc:
       exp_icp_weight : [25000., 35000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.6, 1.4] 
+      exp_icp_ki : [0.6, 1.6] 
 
       ## IF icp_integrator_type == 0:
-      exp_time_constant : 0.4
+      exp_time_constant : 0.5
       exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
@@ -146,7 +146,7 @@ wbc:
 
       exp_base_weight : [1000.] # only used when target source : 1
       exp_base_kp : [50.]
-      exp_base_kd : [1.0] # x, y will be ignored
+      exp_base_kd : [3.0] # x, y will be ignored
 
     cam_task:
       ########################################################################
@@ -170,9 +170,9 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [1000., 1000., 100.]
-      exp_kp : [80., 80., 20.]
-      exp_kd : [7.0, 7.0, 0.2]
+      exp_weight : [3000., 1000., 100.]
+      exp_kp : [100., 80., 20.]
+      exp_kd : [9.0, 7.0, 0.2]
 
     upper_body_task:
       ########################################################################
@@ -280,7 +280,7 @@ wbc:
 state_machine:
     initialize:
       init_duration: 5.
-      target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
       wait_time: 15.
 
