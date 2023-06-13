@@ -111,7 +111,7 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [25000., 35000.] # only used when feedback source : 1
+      exp_icp_weight : [30000., 35000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0.6, 1.6] 
@@ -206,8 +206,8 @@ wbc:
       ########################################################################
       exp_weight : [3000., 3000., 3000.]
       exp_weight_at_swing : [5000., 5000., 5000.]
-      exp_kp : [150., 150., 200.]
-      exp_kd : [2.0, 2.0, 2.]
+      exp_kp : [150., 150., 250.]
+      exp_kd : [2.0, 2.0, 7.0]
 
     foot_ori_task:
       ########################################################################
@@ -223,8 +223,8 @@ wbc:
       ########################################################################
       exp_weight : [5000., 5000., 5000.]
       exp_weight_at_swing : [5000., 5000., 5000.]
-      exp_kp : [20., 20., 20.]
-      exp_kd : [2.5, 2.5, 0.5]
+      exp_kp : [40., 40., 20.]
+      exp_kd : [6.0, 4.0, 1.0]
 
     foot_rf_task:
       ########################################################################
@@ -314,8 +314,8 @@ dcm_walking:
   #alpha_ds: 0.5
 
   t_additional_init_trans: 0.
-  t_contact_trans: 1.6
-  t_swing: 0.6
+  t_contact_trans: 1.2
+  t_swing: 0.8
   percentage_settle: 0.9
   alpha_ds: 0.5
 
