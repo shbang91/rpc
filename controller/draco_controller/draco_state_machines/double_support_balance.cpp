@@ -15,7 +15,19 @@ DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
       b_static_walking_(false) {
   util::PrettyConstructor(2, "DoubleSupportBalance");
 
+  try {
+    YAML::Node cfg =
+            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
+                                                      "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
   sp_ = DracoStateProvider::GetStateProvider();
+  nominal_lfoot_iso_.setIdentity();
+  nominal_rfoot_iso_.setIdentity();
 }
 
 void DoubleSupportBalance::FirstVisit() {
@@ -32,14 +44,23 @@ void DoubleSupportBalance::FirstVisit() {
   b_nmpc_walking_ = false;
 
   b_static_walking_ = false;
+
+  // set current foot position as nominal (desired) for rest of this state
+  nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
 }
 
 void DoubleSupportBalance::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
-  // update foot pose task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // update foot pose task update
+  if (b_use_fixed_foot_pos_) {
+    ctrl_arch_->lf_SE3_tm_->UseNominal(nominal_lfoot_iso_);
+    ctrl_arch_->rf_SE3_tm_->UseNominal(nominal_rfoot_iso_);
+  } else {
+    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  }
 }
 
 bool DoubleSupportBalance::EndOfState() {
