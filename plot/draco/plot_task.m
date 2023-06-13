@@ -77,7 +77,7 @@ figure(num_fig)
 num_fig = num_fig + 1;
 j = 0;
 for i = 1:2
-    subplot(2,1,i);
+    ax(i) = subplot(2,1,i);
         j = j + 1;
         plot(wbc_time, des_icp(j, :), 'r', 'LineWidth', 3);
         hold on
@@ -93,6 +93,7 @@ for i = 1:2
         ylabel(xy_label(j))
     sgtitle('ICP XY Task', 'FontSize', 30)
 end
+linkaxes(ax, 'x')
 
 figure(num_fig)
 num_fig = num_fig + 1;
@@ -1002,7 +1003,7 @@ num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:12
-    subplot(6,2,i);
+    ax(i) = subplot(6,2,i);
     if mod(i,2) == 1
         j = j + 1;
         plot(wbc_time, lf_rf_cmd(j, :), 'r', 'LineWidth', 2);
@@ -1040,6 +1041,7 @@ for i = 1:12
     end
     legend('cmd','des')
 end
+linkaxes(ax, 'x')
 
 figure(num_fig)
 num_fig = num_fig + 1;
@@ -1199,6 +1201,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
 num_fig = num_fig + 1;
+l_joint_lim_low = [-0.872665; -0.2618; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.7854]; 
+l_joint_lim_up = [0.872665; 0.7854; 0.5236; 1.52716; 1.52716; 1.0472; 0.2618]; 
+r_joint_lim_low = [-0.872665; -0.7854; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.2618]; 
+r_joint_lim_up = [0.872665; 0.2618; 0.5236; 1.52716; 1.52716; 1.0472; 0.7854]; 
 j = 0;
 k = 0;
 for i = 1:14
@@ -1209,10 +1215,10 @@ for i = 1:14
         grid on
         hold on
         plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-        min_val = min([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
-        max_val = max([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
+        plot(time, l_joint_lim_low(j)*ones(1, length(time)), '--k','LineWidth', 2);
+        plot(time, l_joint_lim_up(j)*ones(1, length(time)), '--k','LineWidth', 2);
+        min_val = l_joint_lim_low(j) - 0.1;
+        max_val = l_joint_lim_up(j) + 0.1;
     %   set_fig_opt()
         plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
@@ -1226,10 +1232,10 @@ for i = 1:14
         grid on
         hold on
         plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-        min_val = min([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
-        max_val = max([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
+        plot(time, r_joint_lim_low(k)*ones(1, length(time)), '--k','LineWidth', 2);
+        plot(time, r_joint_lim_up(k)*ones(1, length(time)), '--k','LineWidth', 2);
+        min_val = r_joint_lim_low(k) - 0.1;
+        max_val = r_joint_lim_up(k) + 0.1;
     %   set_fig_opt()
         plot_phase(time, state, min_val, max_val, phase_color)
         xlabel('time')
@@ -1240,6 +1246,7 @@ for i = 1:14
     end
 end
 linkaxes(ax, 'x')
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
