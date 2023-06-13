@@ -170,7 +170,7 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [3000., 1000., 100.]
+      exp_weight : [1000., 1000., 100.]
       exp_kp : [100., 80., 20.]
       exp_kd : [9.0, 7.0, 0.2]
 
@@ -205,9 +205,9 @@ wbc:
       ## exp params
       ########################################################################
       exp_weight : [3000., 3000., 3000.]
-      exp_weight_at_swing : [500., 500., 500.]
-      exp_kp : [100., 100., 150.]
-      exp_kd : [0.1, 0.1, 1.]
+      exp_weight_at_swing : [5000., 5000., 5000.]
+      exp_kp : [150., 150., 200.]
+      exp_kd : [2.0, 2.0, 2.]
 
     foot_ori_task:
       ########################################################################
@@ -222,9 +222,9 @@ wbc:
       ## exp params
       ########################################################################
       exp_weight : [5000., 5000., 5000.]
-      exp_weight_at_swing : [500., 500., 500.]
+      exp_weight_at_swing : [5000., 5000., 5000.]
       exp_kp : [20., 20., 20.]
-      exp_kd : [1.5, 1.5, 0.2]
+      exp_kd : [2.5, 2.5, 0.5]
 
     foot_rf_task:
       ########################################################################
@@ -294,7 +294,7 @@ state_machine:
     b_use_const_desired_foot_pos: true
 
     single_support_swing:
-      swing_height: 0.04
+      swing_height: 0.05
 
     com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
@@ -314,7 +314,7 @@ dcm_walking:
   #alpha_ds: 0.5
 
   t_additional_init_trans: 0.
-  t_contact_trans: 1.8
+  t_contact_trans: 1.6
   t_swing: 0.6
   percentage_settle: 0.9
   alpha_ds: 0.5
@@ -325,7 +325,7 @@ dcm_walking:
   #percentage_settle: 0.9
   #alpha_ds: 0.5
 
-  nominal_footwidth: 0.2025
+  nominal_footwidth: 0.2225
   nominal_forward_step: 0.1
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
