@@ -20,6 +20,7 @@ public:
 
 private:
   void _ConvertToLocalDesired(Eigen::VectorXd &des_rf);
+  void _ConvertToGlobalDesired(Eigen::VectorXd &des_traj_w);
 
   ForceTask *force_task_;
   PinocchioRobotSystem *robot_;

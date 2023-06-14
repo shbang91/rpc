@@ -61,6 +61,7 @@ void ForceTrajectoryManager::UpdateDesired(double query_time) {
     Eigen::VectorXd des_rf = Eigen::VectorXd::Zero(6);
     Eigen::VectorXd aug_ext_des_com_acc = Eigen::VectorXd::Zero(6);
     aug_ext_des_com_acc.tail(3) = des_com_acc;
+    _ConvertToGlobalDesired(aug_ext_des_com_acc);
     des_rf = robot_->GetTotalMass()/2.0 * (aug_ext_des_com_acc + grav_vec_);
     _ConvertToLocalDesired(des_rf);
     force_task_->UpdateDesired(des_rf);
@@ -96,4 +97,19 @@ void ForceTrajectoryManager::_ConvertToLocalDesired(Eigen::VectorXd &des_rf) {
             .transpose();
 
   des_rf = rot_l_w * des_rf;
+}
+
+void ForceTrajectoryManager::_ConvertToGlobalDesired(Eigen::VectorXd &des_traj_w) {
+  Eigen::MatrixXd rot_l_w = Eigen::MatrixXd::Zero(des_traj_w.size(), des_traj_w.size());
+  rot_l_w.block<3, 3>(0, 0) =
+          robot_->GetLinkIsometry(force_task_->contact()->TargetLinkIdx())
+                  .linear();
+
+  // consider surface contact
+  if (des_traj_w.size() == 6)
+    rot_l_w.block<3, 3>(3, 3) =
+            robot_->GetLinkIsometry(force_task_->contact()->TargetLinkIdx())
+                    .linear();
+
+  des_traj_w = rot_l_w * des_traj_w;
 }
