@@ -110,6 +110,12 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
       icp_avg_err << avg_err[0], avg_err[1];
     } else if (icp_integrator_type_ == icp_integrator::kLeakyIntegrator) {
       // TODO: clean up this
+
+      // filter local ICP error used with kp gain
+      icp_integrator_->Input(local_icp_err);
+      local_icp_err = icp_integrator_->Output();
+
+      // apply leaky integration
       icp_avg_err = icp_err * sp_->servo_dt_ + leaky_rate_ * icp_integral_;
       icp_integral_ = util::Clamp2DVector(icp_avg_err, -leaky_integrator_limit_,
                                           leaky_integrator_limit_);
@@ -181,18 +187,19 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
       util::ReadParameter(node, prefix + "_icp_ki", ki_);
       util::ReadParameter(node, prefix + "_icp_weight", weight_);
 
+      double time_constant =
+              util::ReadParameter<double>(node, prefix + "_time_constant");
+      Eigen::VectorXd average_icp_error_limit =
+              util::ReadParameter<Eigen::VectorXd>(
+                      node, prefix + "_avg_icp_error_limit");
+      icp_integrator_ = new ExponentialMovingAverageFilter(
+              sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(2),
+              -average_icp_error_limit, average_icp_error_limit);
+
       icp_integrator_type_ =
           util::ReadParameter<int>(node, "icp_integrator_type");
       if (icp_integrator_type_ == icp_integrator::kExponentialSmoother) {
-        double time_constant =
-            util::ReadParameter<double>(node, prefix + "_time_constant");
-        Eigen::VectorXd average_icp_error_limit =
-            util::ReadParameter<Eigen::VectorXd>(
-                node, prefix + "_avg_icp_error_limit");
 
-        icp_integrator_ = new ExponentialMovingAverageFilter(
-            sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(2),
-            -average_icp_error_limit, average_icp_error_limit);
       } else if (icp_integrator_type_ == icp_integrator::kLeakyIntegrator) {
         leaky_rate_ = util::ReadParameter<double>(node, prefix + "_leaky_rate");
         leaky_integrator_limit_ = util::ReadParameter<Eigen::Vector2d>(
