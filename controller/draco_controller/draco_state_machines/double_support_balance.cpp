@@ -17,9 +17,9 @@ DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
 
   try {
     YAML::Node cfg =
-            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
-                                                      "b_use_const_desired_foot_pos");
+        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
+        cfg["state_machine"], "b_use_const_desired_foot_pos");
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -48,6 +48,8 @@ void DoubleSupportBalance::FirstVisit() {
   // set current foot position as nominal (desired) for rest of this state
   nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
   nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  FootStep::MakeHorizontal(nominal_lfoot_iso_);
+  FootStep::MakeHorizontal(nominal_rfoot_iso_);
 }
 
 void DoubleSupportBalance::OneStep() {
