@@ -30,7 +30,7 @@ state_estimator:
   ## sim params
   ########################################################################
   sim_sigma_base_vel: [0.0, 0.0, 0.0]
-  sim_sigma_base_acc: [0.5, 0.5, 0.5]
+  sim_sigma_base_acc: [0.5, 0.2, 0.2]
   sim_sigma_pos_lfoot: [0.001, 0.001, 0.001]
   sim_sigma_pos_rfoot: [0.001, 0.001, 0.001]
   sim_sigma_vel_lfoot: [0.005, 0.005, 0.002]
@@ -69,7 +69,7 @@ state_estimator:
   exp_num_data_com_vel: [200, 200, 200] 
 
   ## IF 1: exponential smoother filter parameter
-  com_vel_time_constant: 0.01 
+  com_vel_time_constant: 0.1
   com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
@@ -84,7 +84,7 @@ wbc:
   task:
     com_xy_task:
       com_feedback_source: 1 # 0: com feedback / 1: icp feedback
-      icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
+      icp_integrator_type: 1 # 0: exponential smoother / 1: leaky integrator
 
       ########################################################################
       ## sim params
@@ -92,17 +92,17 @@ wbc:
       sim_weight : [1000., 1000.]
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_weight : [100000., 100000.] # only used when feedback source : 1
-      sim_icp_kp : [0., 0.]
+      sim_icp_weight : [30000., 35000.] # only used when feedback source : 1
+      sim_icp_kp : [0.4, 1.2]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
-      sim_icp_ki : [10., 10.] 
+      sim_icp_ki : [100., 500.]
 
       ## IF icp_integrator_type == 0:
-      sim_time_constant : 0.001
+      sim_time_constant : 0.2
       sim_avg_icp_error_limit: [0.04, 0.04]
 
       ## IF icp_integrator_type == 1:
-      sim_leaky_rate: 0.01
+      sim_leaky_rate: 0.2
       sim_leaky_integrator_limit: [0.03, 0.03]
 
       ########################################################################
@@ -181,7 +181,7 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      sim_weight : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
+      sim_weight : [40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40.]
       sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
       sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
 
@@ -196,8 +196,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [10000., 10000., 10000.]
-      sim_weight_at_swing : [500., 500., 500.]
+      sim_weight : [5000., 5000., 5000.]
+      sim_weight_at_swing : [8000., 8000., 8000.]
       sim_kp : [300., 300., 300.]
       sim_kd : [30., 30., 30.]
 
@@ -213,10 +213,10 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [10000., 10000., 10000.]
-      sim_weight_at_swing : [500., 500., 500.]
-      sim_kp : [300., 300., 300.]
-      sim_kd : [30., 30., 30.]
+      sim_weight : [5000., 5000., 5000.]
+      sim_weight_at_swing : [5000., 5000., 5000.]
+      sim_kp : [80., 80., 80.]
+      sim_kd : [4., 4., 4.]
 
       ########################################################################
       ## exp params
@@ -231,7 +231,7 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 1e-6, 1e-6, 1e-5] ## trq, force order
+      sim_weight : [0., 0., 0., 1e-8, 1e-8, 5e-10] ## trq, force order
       #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
