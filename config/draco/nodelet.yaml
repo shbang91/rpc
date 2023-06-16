@@ -20,8 +20,8 @@ service_call:
         weak_kd: 1.
         weak_current_limit: 0.1
     R_Hip_AA:
-        kp: 400.
-        kd: 3.
+        kp: 450.
+        kd: 5.
         current_limit: 0.6
         weak_kp: 400.
         weak_kd: 3.
