@@ -16,6 +16,7 @@ public:
   DracoSensorData()
       : imu_frame_quat_(0, 0, 0, 1), imu_ang_vel_(Eigen::Vector3d::Zero()),
         imu_dvel_(Eigen::Vector3d::Zero()),
+        imu_lin_acc_(Eigen::Vector3d::Zero()),
         joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)),
         joint_vel_(Eigen::VectorXd::Zero(draco::n_adof)), b_lf_contact_(false),
         b_rf_contact_(false), lf_contact_normal_(0.), rf_contact_normal_(0.),
@@ -27,6 +28,7 @@ public:
   Eigen::Vector4d imu_frame_quat_; // x, y, z, w order
   Eigen::Vector3d imu_ang_vel_;
   Eigen::Vector3d imu_dvel_;
+  Eigen::Vector3d imu_lin_acc_;
   Eigen::VectorXd joint_pos_;
   Eigen::VectorXd joint_vel_;
   bool b_lf_contact_;

@@ -121,7 +121,7 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
 
   // compute estimator (control) input, u_n
   //  for (int i = 0; i < 3; ++i) {
-  //    base_accel_filter_[i].Input(sensor_data->imu_dvel[i] / sp_->servo_dt);
+  //    base_accel_filter_[i].Input(sensor_data->imu_dvel[i] / sp_->servo_dt_);
   //    base_acceleration_[i] = base_accel_filter_[i].Output();
   //  }
   base_accel_filt_->Input(sensor_data->imu_dvel_ / sp_->servo_dt_);
@@ -174,7 +174,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
   // compute estimator (control) input, u_n
   //  for (int i = 0; i < 3; ++i) {
-  //    base_accel_filter_[i].Input(sensor_data->imu_dvel[i] / sp_->servo_dt);
+  //    base_accel_filter_[i].Input(sensor_data->imu_dvel[i] / sp_->servo_dt_);
   //    base_acceleration_[i] = base_accel_filter_[i].Output();
   //  }
   base_accel_filt_->Input(sensor_data->imu_dvel_ / sp_->servo_dt_);
@@ -416,6 +416,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
     // imu accel data
     logger_->add("imu_accel_raw", sensor_data->imu_dvel_ / sp_->servo_dt_);
+    logger_->add("world_LA_imu", sensor_data->imu_lin_acc_);
     logger_->add("imu_accel_est", base_acceleration_);
 
     // save feet contact information (leave for when we integrate contact
