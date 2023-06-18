@@ -80,7 +80,7 @@ protected:
   //  std::vector<SimpleMovingAverage> cam_filter_;
   std::vector<SimpleMovingAverage> base_accel_filter_;
   std::vector<SimpleMovingAverage> imu_ang_vel_filter_;
-  ExponentialMovingAverageFilter *base_accel_filt_;
+  FirstOrderLowPassFilter *base_accel_filt_;
 
   // contact sensing
   std::unique_ptr<ContactDetectionManager> contact_manager_;

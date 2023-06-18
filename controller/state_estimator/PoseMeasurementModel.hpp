@@ -52,12 +52,20 @@ public:
     accel_bias = _accel_bias;
   }
 
+  // void packAccelerationInput(const Eigen::Matrix3d &rot_world_to_base,
+  // const Eigen::Vector3d &accelerometer,
+  // Control &u_n) {
+  // u_n.accel_measurement_x = rot_world_to_base.row(0) * accelerometer -
+  // accel_bias(0); u_n.accel_measurement_y = rot_world_to_base.row(1) *
+  // accelerometer - accel_bias(1); u_n.accel_measurement_z =
+  // rot_world_to_base.row(2) * accelerometer - accel_bias(2);
+  //}
   void packAccelerationInput(const Eigen::Matrix3d &rot_world_to_base,
                              const Eigen::Vector3d &accelerometer,
                              Control &u_n) {
-    u_n.accel_measurement_x = rot_world_to_base.row(0) * accelerometer - accel_bias(0);
-    u_n.accel_measurement_y = rot_world_to_base.row(1) * accelerometer - accel_bias(1);
-    u_n.accel_measurement_z = rot_world_to_base.row(2) * accelerometer - accel_bias(2);
+    u_n.accel_measurement_x = accelerometer(0) - accel_bias(0);
+    u_n.accel_measurement_y = accelerometer(1) - accel_bias(1);
+    u_n.accel_measurement_z = accelerometer(2) - accel_bias(2);
   }
 
   void update_position_from_lfoot(const Eigen::Vector3d &lfoot_wrt_world,

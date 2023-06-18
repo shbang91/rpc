@@ -112,6 +112,25 @@ private:
   int dim_ = 3;
 };
 
+class FirstOrderLowPassFilter {
+public:
+  FirstOrderLowPassFilter(double dt, double period, int dim);
+
+  void Reset();
+
+  void Input(const Eigen::VectorXd &new_val);
+
+  Eigen::VectorXd Output();
+
+private:
+  void _CutOffPeriod(double period);
+
+  Eigen::VectorXd prev_val_;
+  double cut_off_period_ = 0.;
+  double dt_ = 0.005;
+  int dim_ = 3;
+};
+
 /// class ExponentialMovingAverageFilter
 // https://github.com/stephane-caron/lipm_walking_controller/blob/29b3583e3be91ed6336df25434b6baea1fc9f650/include/lipm_walking/utils/ExponentialMovingAverage.h
 class ExponentialMovingAverageFilter {

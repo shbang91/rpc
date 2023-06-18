@@ -43,10 +43,10 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_num_data_ang_vel");
     double time_constant_base_accel = util::ReadParameter<double>(
             cfg["state_estimator"], prefix + "_base_accel_time_constant");
-    Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
-            cfg["state_estimator"], prefix + "_base_accel_limits");
     int foot_frame = util::ReadParameter<int>(
             cfg["state_estimator"], "foot_reference_frame");
+    // Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
+    // cfg["state_estimator"], prefix + "_base_accel_limits");
 
     // set the foot that will be used to estimate base in first_visit
     if (foot_frame == 0) {
@@ -64,10 +64,11 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
       imu_ang_vel_filter_.push_back(SimpleMovingAverage(n_data_ang_vel[i]));
     }
     // Filtered base velocity
-    base_accel_filt_ = new ExponentialMovingAverageFilter(
-            sp_->servo_dt_, time_constant_base_accel, Eigen::VectorXd::Zero(3),
-            -base_accel_limits, base_accel_limits);
-
+    // base_accel_filt_ = new ExponentialMovingAverageFilter(
+    // sp_->servo_dt_, time_constant_base_accel, Eigen::VectorXd::Zero(3),
+    //-base_accel_limits, base_accel_limits);
+    base_accel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
+                                                   time_constant_base_accel, 3);
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
@@ -124,7 +125,8 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
   //    base_accel_filter_[i].Input(sensor_data->imu_dvel[i] / sp_->servo_dt_);
   //    base_acceleration_[i] = base_accel_filter_[i].Output();
   //  }
-  base_accel_filt_->Input(sensor_data->imu_dvel_ / sp_->servo_dt_);
+  // base_accel_filt_->Input(sensor_data->imu_dvel_ / sp_->servo_dt_);
+  base_accel_filt_->Input(sensor_data->imu_lin_acc_);
   base_acceleration_ = base_accel_filt_->Output();
 
   base_pose_model_.packAccelerationInput(rot_world_to_imu, base_acceleration_,

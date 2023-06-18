@@ -180,6 +180,25 @@ void LowPassVelocityFilter::Input(const Eigen::VectorXd &new_pos) {
 }
 Eigen::VectorXd LowPassVelocityFilter::Output() { return vel_; }
 
+FirstOrderLowPassFilter::FirstOrderLowPassFilter(double dt, double period,
+                                                 int dim)
+    : dt_(dt), dim_(dim) {
+  Reset();
+  _CutOffPeriod(period);
+}
+void FirstOrderLowPassFilter::_CutOffPeriod(double period) {
+  period = std::max(period, 2 * dt_); // Nyquist-Shannon sampling theorem
+  cut_off_period_ = period;
+}
+void FirstOrderLowPassFilter::Reset() {
+  prev_val_ = Eigen::VectorXd::Zero(dim_);
+}
+void FirstOrderLowPassFilter::Input(const Eigen::VectorXd &new_val) {
+  double x = (cut_off_period_ <= dt_) ? 1. : dt_ / cut_off_period_;
+  prev_val_ = x * new_val + (1. - x) * prev_val_;
+}
+Eigen::VectorXd FirstOrderLowPassFilter::Output() { return prev_val_; }
+
 ExponentialMovingAverageFilter::ExponentialMovingAverageFilter(
     double dt, double time_constant, Eigen::VectorXd init_value,
     Eigen::VectorXd min_crop, Eigen::VectorXd max_crop) {
