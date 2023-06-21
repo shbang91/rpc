@@ -12,6 +12,8 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   iso_imu_to_base_com_ =
           robot_->GetLinkIsometry(draco_link::torso_imu).inverse() *
           robot_->GetLinkIsometry(draco_link::torso_com_link);
+  Eigen::Vector3d rpy = util::RPYFromSO3(iso_imu_to_base_com_.linear().transpose());
+  quat_imu_to_base_com_ = util::EulerZYXtoQuat(rpy(0), rpy(1), rpy(2));
 
   try{
     YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
@@ -43,8 +45,12 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_num_data_ang_vel");
     double time_constant_base_accel = util::ReadParameter<double>(
             cfg["state_estimator"], prefix + "_base_accel_time_constant");
+    double time_constant_ang_vel = util::ReadParameter<double>(
+            cfg["state_estimator"], prefix + "_ang_vel_time_constant");
     int foot_frame = util::ReadParameter<int>(
             cfg["state_estimator"], "foot_reference_frame");
+    b_use_marg_filter = util::ReadParameter<bool>(cfg["state_estimator"],
+            "b_use_marg_filter");
     // Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
     // cfg["state_estimator"], prefix + "_base_accel_limits");
 
@@ -69,10 +75,17 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
     //-base_accel_limits, base_accel_limits);
     base_accel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
                                                    time_constant_base_accel, 3);
+    imu_ang_vel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
+                                                    time_constant_ang_vel, 3);
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
     base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot, imu_accel_bias);
+
+    // set-up MARG filter for robot orientation estimation
+    if (b_use_marg_filter) {
+      margFilter_ = MARGFilter();
+    }
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -89,11 +102,11 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   prev_support_state_ = DOUBLE;
   foot_pos_from_base_pre_transition.setZero();
   foot_pos_from_base_post_transition(0) = NAN;
+  grav_vec_3D_ << Eigen::Vector3d(0., 0., 9.81);
 
   // TODO move settings to config/draco/pnc.yaml
   b_first_visit_ = true;
   b_skip_prediction = false;
-  b_use_marg_filter = false;
   b_request_offset_reset = false;
 
 #if B_USE_MATLOGGER
@@ -103,6 +116,7 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
 
 DracoKFStateEstimator::~DracoKFStateEstimator() {
   delete base_accel_filt_;
+  delete imu_ang_vel_filt_;
 }
 
 void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
@@ -111,12 +125,21 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
     imu_ang_vel_filter_[i].Input(sensor_data->imu_ang_vel_[i]);
     //    sp_->imu_ang_vel_est_[i] = imu_ang_vel_filter_[i].Output();
   }
+  imu_ang_vel_filt_->Input(sensor_data->imu_ang_vel_);
 
   // estimate 0_R_b
   Eigen::Quaterniond imu_quat(
       sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
       sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
   Eigen::Matrix3d rot_world_to_imu = imu_quat.normalized().toRotationMatrix();
+
+  if (b_use_marg_filter){
+    // orientation estimation
+    Eigen::Quaterniond torso_quat;
+    torso_quat = rot_world_to_imu * quat_imu_to_base_com_;
+    margFilter_.initialize(torso_quat.w(), torso_quat.x(),
+                           torso_quat.y(), torso_quat.z());
+  }
   rot_world_to_base = compute_world_to_base_rot(sensor_data, rot_world_to_imu,
                                                 b_use_marg_filter);
 
@@ -165,12 +188,20 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     imu_ang_vel_filter_[i].Input(sensor_data->imu_ang_vel_[i]);
     //    sp_->imu_ang_vel_est_[i] = imu_ang_vel_filter_[i].Output();
   }
+  imu_ang_vel_filt_->Input(sensor_data->imu_ang_vel_);
 
   // estimate 0_R_b
   Eigen::Quaterniond imu_quat(
       sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
       sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
   Eigen::Matrix3d rot_world_to_imu = imu_quat.normalized().toRotationMatrix();
+  if ((b_first_visit_) && (b_use_marg_filter)) {
+    // orientation estimation
+    Eigen::Quaterniond torso_quat;
+    torso_quat = rot_world_to_imu * quat_imu_to_base_com_;
+    margFilter_.initialize(torso_quat.w(), torso_quat.x(),
+                           torso_quat.y(), torso_quat.z());
+  }
   rot_world_to_base = compute_world_to_base_rot(sensor_data, rot_world_to_imu,
                                                 b_use_marg_filter);
 
@@ -179,7 +210,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   //    base_accel_filter_[i].Input(sensor_data->imu_dvel[i] / sp_->servo_dt_);
   //    base_acceleration_[i] = base_accel_filter_[i].Output();
   //  }
-  base_accel_filt_->Input(sensor_data->imu_dvel_ / sp_->servo_dt_);
+  base_accel_filt_->Input(sensor_data->imu_lin_acc_);
   base_acceleration_ = base_accel_filt_->Output();
 
   base_pose_model_.packAccelerationInput(rot_world_to_imu, base_acceleration_,
@@ -337,7 +368,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   // Update robot model with full estimate
   robot_->UpdateRobotModel(base_position_estimate,
                            Eigen::Quaterniond(rot_world_to_base).normalized(),
-                           base_velocity_estimate, sensor_data->imu_ang_vel_,
+                           base_velocity_estimate, imu_ang_vel_filt_->Output(),
                            sensor_data->joint_pos_, sensor_data->joint_vel_,
                            true);
 
@@ -404,8 +435,14 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     // floating base estimate data
     logger_->add("base_joint_pos_kf", base_position_estimate);
     logger_->add("base_joint_rpy_kf", util::RPYFromSO3(rot_world_to_base));
+    Eigen::Quaterniond base_quat = Eigen::Quaterniond(
+            sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
+            sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
+//    logger_->add("base_joint_rpy_raw", base_quat.toRotationMatrix().eulerAngles(2, 1, 0));
+    logger_->add("base_joint_ypr_raw", util::QuatToEulerZYX(base_quat));
+    logger_->add("base_joint_rpy_error", margFilter_.getGyroscopeError());
     logger_->add("base_joint_lin_vel_kf", base_velocity_estimate);
-    logger_->add("base_joint_ang_vel_kf", sensor_data->imu_ang_vel_);
+    logger_->add("base_joint_ang_vel_kf", imu_ang_vel_filt_->Output());
     //    logger_->add("base_joint_ang_vel_kf", imu_ang_vel_filter_.Output());
 
     // com velocities
@@ -456,15 +493,17 @@ void DracoKFStateEstimator::updateSupportState(DracoStateProvider *sp,
 }
 
 Eigen::Matrix3d DracoKFStateEstimator::compute_world_to_base_rot(
-    DracoSensorData *data, Eigen::Matrix3d rot_world_to_imu,
+    DracoSensorData *data, Eigen::Matrix3d& rot_world_to_imu,
     bool use_marg_filter) {
   if (use_marg_filter) {
-    //    margFilter_.filterUpdate(data->imu_frame_vel[0],
-    //    data->imu_frame_vel[1], data->imu_frame_vel[2],
-    //                              data->imu_accel[0], data->imu_accel[1],
-    //                              data->imu_accel[2]);
-    //    return margFilter_.getBaseRotation();
-    return rot_world_to_imu * iso_imu_to_base_com_.linear();
+    Eigen::Vector3d se_ang_vel, se_lin_acc;
+    se_ang_vel = margFilter_.getBaseRotation().transpose() * imu_ang_vel_filt_->Output();
+    se_lin_acc = margFilter_.getBaseRotation().transpose() * (base_acceleration_ + grav_vec_3D_);
+
+    margFilter_.filterUpdate(se_ang_vel[0], se_ang_vel[1],
+                             se_ang_vel[2], se_lin_acc[0], se_lin_acc[1],
+                             se_lin_acc[2]);
+    return margFilter_.getBaseRotation();
   } else {
     return rot_world_to_imu * iso_imu_to_base_com_.linear();
   }

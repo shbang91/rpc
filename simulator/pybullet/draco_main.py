@@ -488,6 +488,7 @@ if __name__ == "__main__":
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
         rpc_draco_sensor_data.imu_ang_vel_ = imu_ang_vel
         rpc_draco_sensor_data.imu_dvel_ = imu_dvel
+        rpc_draco_sensor_data.imu_lin_acc_ = imu_dvel / dt
         rpc_draco_sensor_data.joint_pos_ = joint_pos
         rpc_draco_sensor_data.joint_vel_ = joint_vel
         rpc_draco_sensor_data.b_lf_contact_ = b_lf_contact

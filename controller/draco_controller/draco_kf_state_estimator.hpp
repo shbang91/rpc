@@ -49,7 +49,7 @@ public:
 private:
   void updateSupportState(DracoStateProvider *sp, SupportState &support_state);
   Eigen::Matrix3d compute_world_to_base_rot(DracoSensorData *data,
-                                            Eigen::Matrix3d rot_world_to_imu,
+                                            Eigen::Matrix3d& rot_world_to_imu,
                                             bool use_marg_filter);
 
 protected:
@@ -62,6 +62,7 @@ protected:
   Eigen::Vector3d foot_pos_from_base_post_transition;
 
   Eigen::Isometry3d iso_imu_to_base_com_;
+  Eigen::Quaterniond quat_imu_to_base_com_;
   Eigen::Vector3d global_linear_offset_;
 
   // stuff needed for the kalman filter
@@ -73,6 +74,7 @@ protected:
   Kalman::ExtendedKalmanFilter<State> kalman_filter_;
   MARGFilter margFilter_;
   Eigen::Vector3d base_acceleration_;
+  Eigen::Vector3d grav_vec_3D_;
 
   Eigen::Matrix3d rot_world_to_base;
 
@@ -81,6 +83,7 @@ protected:
   std::vector<SimpleMovingAverage> base_accel_filter_;
   std::vector<SimpleMovingAverage> imu_ang_vel_filter_;
   FirstOrderLowPassFilter *base_accel_filt_;
+  FirstOrderLowPassFilter *imu_ang_vel_filt_;
 
   // contact sensing
   std::unique_ptr<ContactDetectionManager> contact_manager_;

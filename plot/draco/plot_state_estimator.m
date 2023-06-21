@@ -87,6 +87,45 @@ end
 
 figure(num_fig)
 num_fig = num_fig + 1;
+j=0;
+for i = 3:-1:1
+    j = j+1;
+    subplot(3, 1, j);
+    plot(wbc_time, base_joint_ypr_raw(i, :), 'b', 'LineWidth',2);
+    grid on
+    hold on
+    min_val = min(base_joint_ypr_raw(i,:));
+    max_val = max(base_joint_ypr_raw(i,:));
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(rpy_label(j))
+    sgtitle('base joint rpy Raw (IMU Frame Quat)', 'FontSize', 30)
+end
+
+
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    subplot(3, 1, i);
+    plot(wbc_time, base_joint_rpy_error(i, :), 'b', 'LineWidth',2);
+    grid on
+    hold on
+    min_val = min(base_joint_rpy_error(i,:));
+    max_val = max(base_joint_rpy_error(i,:));
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(rpy_label(i))
+    sgtitle('base joint rpy Error', 'FontSize', 30)
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
 for i = 1:3
     ax(i) = subplot(3, 1, i);
     lin_vel_est = eval(sprintf('base_joint_lin_vel_%s', base_estimator_type{est_or_kf}));
@@ -105,23 +144,24 @@ for i = 1:3
 end 
 linkaxes(ax, 'x')
 
-% figure(num_fig)
-% num_fig = num_fig + 1;
-% for i = 1:3
-%     subplot(3, 1, i);
-%     plot(wbc_time, base_joint_ang_vel_est(i, :), 'b', 'LineWidth',2);
-%     grid on
-%     hold on
-%     min_val = min(base_joint_ang_vel_est(i,:));
-%     max_val = max(base_joint_ang_vel_est(i,:));
-%     min_val = min_val - 0.1 * (max_val - min_val);
-%     max_val = max_val + 0.1 *(max_val - min_val);
-%     set_fig_opt()
-%     plot_phase(time, state, min_val, max_val, phase_color)
-%     xlabel('time')
-%     ylabel(ang_vel_label(i))
-%     sgtitle('base joint ang vel est', 'FontSize', 30)
-% end 
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    subplot(3, 1, i);
+    ang_vel_est = eval(sprintf('base_joint_ang_vel_%s', base_estimator_type{est_or_kf}));
+    plot(wbc_time, ang_vel_est(i, :), 'b', 'LineWidth',2);
+    grid on
+    hold on
+    min_val = min(ang_vel_est(i,:));
+    max_val = max(ang_vel_est(i,:));
+    min_val = min_val - 0.1 * (max_val - min_val);
+    max_val = max_val + 0.1 *(max_val - min_val);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(ang_vel_label(i))
+    sgtitle('base joint ang vel est', 'FontSize', 30)
+end 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % com vel est

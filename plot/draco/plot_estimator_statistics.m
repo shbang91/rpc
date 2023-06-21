@@ -134,6 +134,25 @@ for i = 1:6
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%IMU gyroscope
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(3,1,i);
+    plot(wbc_time, base_joint_ang_vel_kf(i,:), 'r', 'LineWidth', 3)
+    hold on
+    plot(wbc_time, base_joint_ang_vel_kf(i,:), 'b', 'LineWidth', 2)
+    grid on
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
+end
+sgtitle('IMU accel in Balance State', 'FontSize', 30)
+linkaxes(ax)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %IMU accelerometer (using dVel/dt)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
@@ -234,8 +253,26 @@ for i = 1:6
     sgtitle('Right Foot in Balance State', 'FontSize', 30)
 end
 
+% Angular velocity
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:3
+    subplot(3,1,i);
+    histfit(base_joint_ang_vel_kf(i, discount_init:end-discount_end))
+    pd = fitdist(base_joint_ang_vel_kf(i, discount_init:end-discount_end)', 'Normal');
+    mu_fit_str = sprintf('mu = %.4f', pd.mu);
+    sigma_fit_str = sprintf('sigma = %.4f', pd.sigma);
+    annotation('textbox', [0.35, 0.8-0.3*(i-1), 0.1, 0.1], 'String', mu_fit_str)
+    annotation('textbox', [0.35, 0.76-0.3*(i-1), 0.1, 0.1], 'String', sigma_fit_str)
+    xlabel('ang. vel. (m)')
+    ylabel(xyz_label(i))
+    sgtitle('Angular Velocity in Balance State', 'FontSize', 30)
+end
+
 % compute imu accel errors
-bal_accel = imu_accel_est(:, wbc_state == balance_state);
+bal_accel = imu_accel_raw(:, wbc_state == balance_state);
 bal_accel_mu = mean(bal_accel, 2);
 bal_accel_errors = bal_accel - bal_accel_mu;
 

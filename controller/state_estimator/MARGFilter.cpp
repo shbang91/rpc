@@ -1,4 +1,5 @@
 #include "MARGFilter.hpp"
+#include <util/util.hpp>
 
 MARGFilter::MARGFilter() {
 
@@ -10,15 +11,20 @@ MARGFilter::MARGFilter() {
   w_by = 0;
   w_bz = 0;
   quat.setIdentity();
+  SEqHatDot_1 = 0.;
+  SEqHatDot_2 = 0.;
+  SEqHatDot_3 = 0.;
+  SEqHatDot_4 = 0.;
 }
 
 MARGFilter::~MARGFilter() {}
 
-void MARGFilter::initialize(float q1, float q2, float q3, float q4) {
-  SEq_1 = q1;
-  SEq_2 = q2;
-  SEq_3 = q3;
-  SEq_4 = q4;
+void MARGFilter::initialize(float q_w, float q_x, float q_y, float q_z) {
+  SEq_1 = q_w;
+  SEq_2 = q_x;
+  SEq_3 = q_y;
+  SEq_4 = q_z;
+  quat = Eigen::Quaterniond(q_w, q_x, q_y, q_z);
 }
 
 void MARGFilter::filterUpdate(float w_x, float w_y, float w_z, float a_x,
@@ -31,8 +37,8 @@ void MARGFilter::filterUpdate(float w_x, float w_y, float w_z, float a_x,
   float f_1, f_2, f_3; // objective function elements
   float J_11or24, J_12or23, J_13or22, J_14or21, J_32,
       J_33; // objective function Jacobian elements
-  float SEqHatDot_1, SEqHatDot_2, SEqHatDot_3,
-      SEqHatDot_4; // estimated direction of the gyroscope error
+//  float SEqHatDot_1, SEqHatDot_2, SEqHatDot_3,
+//      SEqHatDot_4; // estimated direction of the gyroscope error
 
   // Auxiliary variables to avoid repeated calculations
   float halfSEq_1 = 0.5f * SEq_1;
@@ -278,3 +284,8 @@ Eigen::Matrix3d MARGFilter::getBaseRotation() {
 }
 
 Eigen::Quaterniond MARGFilter::getQuaternion() { return quat; }
+
+const Eigen::Vector3d MARGFilter::getGyroscopeError() {
+  Eigen::Quaterniond quat_hat_dot = Eigen::Quaterniond(SEqHatDot_1, SEqHatDot_2, SEqHatDot_3, SEqHatDot_4);
+  return util::QuatToEulerZYX(quat_hat_dot);
+}
