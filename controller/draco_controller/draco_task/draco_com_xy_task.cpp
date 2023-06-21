@@ -29,6 +29,8 @@ DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
 DracoCoMXYTask::~DracoCoMXYTask() {
   if (icp_integrator_ != nullptr)
     delete icp_integrator_;
+  if (icp_lpf_ != nullptr)
+    delete icp_lpf_;
 }
 
 void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
@@ -112,8 +114,10 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
       // TODO: clean up this
 
       // filter local ICP error used with kp gain
-      icp_integrator_->Input(local_icp_err);
-      local_icp_err = icp_integrator_->Output();
+//      icp_integrator_->Input(local_icp_err);
+//      local_icp_err = icp_integrator_->Output();
+      icp_lpf_->Input(local_icp_err);
+      local_icp_err = icp_lpf_->Output();
 
       // apply leaky integration
       icp_avg_err = icp_err * sp_->servo_dt_ + leaky_rate_ * icp_integral_;
@@ -204,6 +208,11 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
         leaky_rate_ = util::ReadParameter<double>(node, prefix + "_leaky_rate");
         leaky_integrator_limit_ = util::ReadParameter<Eigen::Vector2d>(
             node, prefix + "_leaky_integrator_limit");
+
+        double lpf_time_constant = util::ReadParameter<double>(
+            node, prefix + "_lpf_time_constant");
+        icp_lpf_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
+            lpf_time_constant, 2);
       }
     } else
       throw std::invalid_argument("No Matching CoM Feedback Source");

@@ -2,6 +2,7 @@
 
 #include "controller/whole_body_controller/task.hpp"
 #include "util/util.hpp"
+#include "controller/filter/digital_filters.hpp"
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
@@ -43,6 +44,7 @@ private:
   // Icp ExponentialSmoother
   int icp_integrator_type_ = icp_integrator::kExponentialSmoother;
   ExponentialMovingAverageFilter *icp_integrator_;
+  FirstOrderLowPassFilter *icp_lpf_;
 
   // Icp leaky integrator
   double leaky_rate_;
