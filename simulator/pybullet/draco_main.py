@@ -35,6 +35,7 @@ if Config.MEASURE_COMPUTATION_TIME:
 imu_dvel_bias = np.array([0.0, 0.0, 0.0])
 l_contact_volt_noise = 0.001
 r_contact_volt_noise = 0.001
+imu_ang_vel_noise_std_dev = 0.      # based on real IMU: 0.0052
 
 def get_sensor_data_from_pybullet(robot):
 
@@ -411,6 +412,7 @@ if __name__ == "__main__":
     while (True):
         l_normal_volt_noise = np.random.normal(0, l_contact_volt_noise)
         r_normal_volt_noise = np.random.normal(0, r_contact_volt_noise)
+        imu_ang_vel_noise = np.random.normal(0, imu_ang_vel_noise_std_dev)
 
         ###############################################################################
         #Debugging Purpose
@@ -481,6 +483,7 @@ if __name__ == "__main__":
         l_normal_force = pybullet_util.simulate_contact_sensor(l_normal_force)
         r_normal_force = pybullet_util.simulate_contact_sensor(r_normal_force)
         imu_dvel = pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
+        imu_ang_vel = pybullet_util.add_sensor_noise(imu_ang_vel, imu_ang_vel_noise)
         l_normal_force = pybullet_util.add_sensor_noise(l_normal_force, l_normal_volt_noise)
         r_normal_force = pybullet_util.add_sensor_noise(r_normal_force, r_normal_volt_noise)
 
