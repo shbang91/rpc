@@ -31,4 +31,6 @@ private:
   bool b_use_base_height_;
 
   double rf_z_max_interp_duration_;
+  Eigen::Matrix<double, 6, 1> init_reaction_force_;
+  Eigen::Matrix<double, 6, 1> des_reaction_force_;
 };
