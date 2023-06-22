@@ -273,4 +273,5 @@ for i = 1:3
     xlabel('time')
     ylabel(xyz_label(i))
 end
+sgtitle('IMU Lin Accel', 'FontSize', 30)
 linkaxes(ax,'x')

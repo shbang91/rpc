@@ -48,13 +48,13 @@ state_estimator:
   ## exp params
   ########################################################################
   exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
-  exp_sigma_base_acc: [0.17, 0.17, 0.072]
+  exp_sigma_base_acc: [0.05, 0.05, 0.12]
   exp_sigma_pos_lfoot: [0.001, 0.001, 0.005]
   exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
   exp_sigma_vel_lfoot: [0.003, 0.003, 0.001]
   exp_sigma_vel_rfoot: [0.003, 0.003, 0.001]
-  exp_imu_accel_bias: [0.0, 0.0, 0.15]
-  exp_base_accel_time_constant: 0.02
+  exp_imu_accel_bias: [0.0, 0.0, 0.11]
+  exp_base_accel_time_constant: 0.05
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 0.1
   exp_num_data_base_accel: [10, 10, 10]
