@@ -78,12 +78,12 @@ protected:
 
   Eigen::Matrix3d rot_world_to_base;
 
-  std::vector<SimpleMovingAverage> com_vel_filter_;
   //  std::vector<SimpleMovingAverage> cam_filter_;
   std::vector<SimpleMovingAverage> base_accel_filter_;
   std::vector<SimpleMovingAverage> imu_ang_vel_filter_;
   FirstOrderLowPassFilter *base_accel_filt_;
   FirstOrderLowPassFilter *imu_ang_vel_filt_;
+  FirstOrderLowPassFilter *com_vel_filt_;
 
   // contact sensing
   std::unique_ptr<ContactDetectionManager> contact_manager_;
