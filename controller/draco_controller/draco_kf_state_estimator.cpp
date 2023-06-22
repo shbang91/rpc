@@ -47,8 +47,8 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
             cfg["state_estimator"], prefix + "_base_accel_time_constant");
     double time_constant_ang_vel = util::ReadParameter<double>(
             cfg["state_estimator"], prefix + "_ang_vel_time_constant");
-    double time_constant_com_vel = util::ReadParameter<double>(
-            cfg["state_estimator"], "com_vel_time_constant");
+    double cut_off_period = util::ReadParameter<double>(
+            cfg["state_estimator"], "cut_off_period");
     int foot_frame = util::ReadParameter<int>(
             cfg["state_estimator"], "foot_reference_frame");
     b_use_marg_filter = util::ReadParameter<bool>(cfg["state_estimator"],
@@ -78,8 +78,7 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
                                                    time_constant_base_accel, 3);
     imu_ang_vel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
                                                     time_constant_ang_vel, 3);
-    com_vel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
-                                                    time_constant_com_vel, 3);
+    com_vel_filt_ = new LowPassVelocityFilter(sp_->servo_dt_, cut_off_period, 3);
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
@@ -107,7 +106,6 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
   foot_pos_from_base_post_transition(0) = NAN;
   grav_vec_3D_ << Eigen::Vector3d(0., 0., 9.81);
 
-  // TODO move settings to config/draco/pnc.yaml
   b_first_visit_ = true;
   b_skip_prediction = false;
   b_request_offset_reset = false;
@@ -240,7 +238,6 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
                       robot_->GetLinkIsometry(est_ref_foot_frame_),
                       robot_->GetLinkIsometry(est_non_ref_foot_frame_));
     kalman_filter_.init(x_hat_);
-    b_first_visit_ = false;
   } else {
     world_to_base << x_hat_.base_pos_x(), x_hat_.base_pos_y(),
         x_hat_.base_pos_z();
@@ -363,7 +360,13 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
                            true);
 
   // filter com velocity, cam
-  com_vel_filt_->Input(robot_->GetRobotComLinVel());
+  Eigen::Vector3d com_pos;
+  com_pos << robot_->GetRobotComPos();
+  if(b_first_visit_) {
+    com_vel_filt_->Reset(com_pos);
+    b_first_visit_ = false;
+  }
+  com_vel_filt_->Input(com_pos);
   sp_->com_vel_est_ = com_vel_filt_->Output();
 
   this->ComputeDCM();
@@ -388,18 +391,6 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     dm->data_->rfoot_rf_normal_ = contact_manager_->GetRFootNormalForceRaw();
     dm->data_->lfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::LFoot);
     dm->data_->rfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::RFoot);
-
-    //    dm->data_->kf_base_joint_lin_vel_ = base_velocity_estimate;
-    //    dm->data_->base_quat_kf =
-    //        Eigen::Matrix<double, 4, 1>(quat.w(), quat.x(), quat.y(),
-    //        quat.z());
-    //    dm->sensor_data->base_quat_kf =
-    //    Eigen::Vector4d(margFilter_.getQuaternion().w(),
-    //                                             margFilter_.getQuaternion().x(),
-    //                                             margFilter_.getQuaternion().y(),
-    //                                             margFilter_.getQuaternion().z())
-    //                                             ;
-
 #endif
 
 #if B_USE_MATLOGGER
@@ -488,7 +479,7 @@ Eigen::Matrix3d DracoKFStateEstimator::compute_world_to_base_rot(
 void DracoKFStateEstimator::ComputeDCM() {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();
   Eigen::Vector3d com_vel = sp_->com_vel_est_;
-  double dcm_omega = sqrt(9.81 / com_pos[2]);
+  double dcm_omega = sqrt(grav_vec_3D_.z() / com_pos[2]);
 
   sp_->prev_dcm_ = sp_->dcm_;
   sp_->dcm_ = com_pos + com_vel / dcm_omega;

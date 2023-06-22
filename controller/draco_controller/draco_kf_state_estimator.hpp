@@ -83,7 +83,7 @@ protected:
   std::vector<SimpleMovingAverage> imu_ang_vel_filter_;
   FirstOrderLowPassFilter *base_accel_filt_;
   FirstOrderLowPassFilter *imu_ang_vel_filt_;
-  FirstOrderLowPassFilter *com_vel_filt_;
+  LowPassVelocityFilter *com_vel_filt_;
 
   // contact sensing
   std::unique_ptr<ContactDetectionManager> contact_manager_;
