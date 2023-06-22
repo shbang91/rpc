@@ -107,6 +107,7 @@ wbc:
       ## IF icp_integrator_type == 1:
       sim_leaky_rate: 0.0
       sim_leaky_integrator_limit: [0.03, 0.03]
+      sim_lpf_time_constant: 0.03
 
       ########################################################################
       ## exp params
@@ -126,6 +127,7 @@ wbc:
       ## IF icp_integrator_type == 1:
       exp_leaky_rate: 0.0
       exp_leaky_integrator_limit: [0.03, 0.03]
+      exp_lpf_time_constant: 0.03
 
     com_z_task:
       com_height_target_source: 1 # 0: com height / 1: base height
