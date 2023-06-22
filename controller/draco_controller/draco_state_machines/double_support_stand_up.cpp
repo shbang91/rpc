@@ -19,6 +19,11 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
+  init_reaction_force_.setZero();
+  des_reaction_force_.setZero();
+  double half_mass = robot_->GetTotalMass() / 2.;
+  init_reaction_force_(5) = half_mass * kGravity;
+  des_reaction_force_(5) = half_mass * kGravity;
 }
 
 void DoubleSupportStandUp::FirstVisit() {
@@ -70,14 +75,10 @@ void DoubleSupportStandUp::FirstVisit() {
 
   // initialize reaction force tasks
   // smoothly increase the fz in world frame
-  Eigen::VectorXd init_reaction_force = Eigen::VectorXd::Zero(6);
-  init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
-  Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
-  des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   ctrl_arch_->lf_force_tm_->InitializeInterpolation(
-      init_reaction_force, des_reaction_force, end_time_);
+      init_reaction_force_, des_reaction_force_, end_time_);
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
-      init_reaction_force, des_reaction_force, end_time_);
+      init_reaction_force_, des_reaction_force_, end_time_);
 }
 
 void DoubleSupportStandUp::OneStep() {
