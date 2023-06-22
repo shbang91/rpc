@@ -114,10 +114,10 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
       // TODO: clean up this
 
       // filter local ICP error used with kp gain
-//      icp_integrator_->Input(local_icp_err);
-//      local_icp_err = icp_integrator_->Output();
-      icp_lpf_->Input(local_icp_err);
-      local_icp_err = icp_lpf_->Output();
+      icp_integrator_->Input(local_icp_err);
+      local_icp_err = icp_integrator_->Output();
+      // icp_lpf_->Input(local_icp_err);
+      // local_icp_err = icp_lpf_->Output();
 
       // apply leaky integration
       icp_avg_err = icp_err * sp_->servo_dt_ + leaky_rate_ * icp_integral_;
