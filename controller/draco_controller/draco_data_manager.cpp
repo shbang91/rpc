@@ -103,6 +103,11 @@ void DracoDataManager::SendData() {
     msg.add_rf_ori_kd(data_->rf_ori_kd[i]);
   }
 
+  for (int i(0); i < 4; i++) {
+    // quaternion in order (w,x,y,z)
+    msg.add_quat_world_local(data_->quat_world_local_.coeffs()[i]);
+  }
+
   // for (int i = 0; i < 3; ++i) {
   // msg.add_base_joint_pos(data_->base_joint_pos_[i]);
   // msg.add_base_joint_ori(data_->base_joint_ori_[i]);

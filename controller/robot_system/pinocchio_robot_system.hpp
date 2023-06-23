@@ -96,6 +96,9 @@ public:
     return joint_trq_limits_;
   }
 
+  // setters
+  void SetRobotComOffset(const Eigen::Vector3d &com_offset);
+
 private:
   void _Initialize();
   void _UpdateCentroidalQuantities();
@@ -132,4 +135,5 @@ private:
   std::map<double, std::string> link_idx_map_;
 
   double total_mass_;
+  Eigen::Vector3d com_offset_;
 };

@@ -208,6 +208,8 @@ while True:
     data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
     data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
 
+    data_saver.add('quat_world_local', list(msg.quat_world_local))
+
     data_saver.advance()
 
     ## publish back to plot juggler

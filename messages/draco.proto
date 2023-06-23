@@ -68,6 +68,9 @@ message pnc_msg {
   float rfoot_volt_normal_raw = 46;
   bool b_lfoot = 47;
   bool b_rfoot = 48;
+
+  repeated float quat_world_local = 49;
+
 }
 
 // TODO:
