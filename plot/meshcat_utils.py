@@ -20,6 +20,19 @@ def add_arrow(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
     meshcat_visualizer[obj_name]["head"].set_object(arrow_head, material)
 
 
+def add_arrow_composite(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
+    arrow_shaft = g.Cylinder(height, 0.01)
+    arrow_head = g.Cylinder(0.04, 0.04, radiusTop=0.001, radiusBottom=0.04)
+    material = g.MeshPhongMaterial()
+    material.color = int(color[0] * 255) * 256**2 + int(
+        color[1] * 255) * 256 + int(color[2] * 255)
+
+    shaft_offset = tf.translation_matrix([0., height/2., 0.])
+    meshcat_visualizer[obj_name]["arrow/shaft"].set_object(arrow_shaft, material)
+    meshcat_visualizer[obj_name]["arrow/head"].set_object(arrow_head, material)
+    meshcat_visualizer[obj_name]["arrow/head"].set_transform(shaft_offset)
+
+
 def add_footsteps(meshcat_visualizer, obj_name, footsteps_to_add,
                   color=[1, 0, 0], foot_length=0.25, foot_width=0.15):
     # create footstep
@@ -46,6 +59,28 @@ def add_sphere(parent_visualizer,
     sphere_viz.loadViewerModel(rootNodeName=node_name, color=color)
 
     return sphere_viz, sphere_model
+
+
+def add_coordiante_frame(frame_viz, name):
+    arrow_height = 0.2
+    add_arrow_composite(frame_viz, name + "/x", [1, 0, 0], arrow_height)
+    add_arrow_composite(frame_viz, name + "/y", [0, 1, 0], arrow_height)
+    add_arrow_composite(frame_viz, name + "/z", [0, 0, 1], arrow_height)
+
+    arrow_offset_x = tf.translation_matrix([arrow_height/2., 0., 0.])
+    arrow_offset_y = tf.translation_matrix([0., arrow_height/2., 0.])
+    arrow_offset_z = tf.translation_matrix([0., 0., arrow_height/2.])
+    tf_front = tf.rotation_matrix(-np.pi/2., [0., 0., 1.])
+    tf_left = tf.identity_matrix()
+    tf_up = tf.rotation_matrix(np.pi/2., [1., 0., 0.])
+
+    # translate and rotate
+    T_front = tf.concatenate_matrices(arrow_offset_x, tf_front)
+    T_left = tf.concatenate_matrices(arrow_offset_y, tf_left)
+    T_up = tf.concatenate_matrices(arrow_offset_z, tf_up)
+    frame_viz[name+"/x"]["arrow"].set_transform(T_front)
+    frame_viz[name+"/y"]["arrow"].set_transform(T_left)
+    frame_viz[name+"/z"]["arrow"].set_transform(T_up)
 
 
 def set_grf_default_position(meschat_visualizer, foot_position):
@@ -113,3 +148,13 @@ def display_visualizer_frames(meshcat_visualizer, frame):
         # Update viewer configuration.
         frame[meshcat_visualizer.getViewerNodeName(
             visual, pin.GeometryType.VISUAL)].set_transform(T)
+
+
+def display_coordinate_frame(viz_name, frame_quat, viz_frame):
+    # Note: frame_quat assumes convention [w,x,y,z], e.g., as
+    # if coming from Eigen
+
+    frame_quat = np.array(frame_quat)
+    frame_quat = frame_quat[[3, 0, 1, 2]]
+    tf_quat = tf.quaternion_matrix(frame_quat)
+    viz_frame[viz_name].set_transform(tf_quat)

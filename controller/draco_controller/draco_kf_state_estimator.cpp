@@ -391,6 +391,9 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     dm->data_->rfoot_rf_normal_ = contact_manager_->GetRFootNormalForceRaw();
     dm->data_->lfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::LFoot);
     dm->data_->rfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::RFoot);
+
+    // Local frame
+    dm->data_->quat_world_local_ = Eigen::Quaterniond(sp_->rot_world_local_);
 #endif
 
 #if B_USE_MATLOGGER

@@ -35,6 +35,7 @@ lfoot_orientation, rfoot_orientation = [], []
 lfoot_grf, rfoot_grf = [], []
 icp, icp_des = [], []
 cmp_des = []
+quat_world_local = []
 
 # variables loaded from yaml
 t_ini_footsteps_planned, t_end_footsteps_planned = [], []
@@ -165,6 +166,7 @@ with open('experiment_data/pnc.pkl', 'rb') as file:
                 rfoot_grf.append(d['rfoot_rf_cmd'])
 
             cmp_des.append(d['des_cmp'])
+            quat_world_local.append(d['quat_world_local'])
 
         except EOFError:
             break
@@ -180,6 +182,11 @@ vis_tools.add_footsteps(footsteps_viz, "rf_footsteps", len(rfoot_contact_pos[0])
                         color=[0, 0, 1], foot_width=2.*foot_half_width,
                         foot_length=2.*foot_half_length)
 b_footsteps_visible_on_viewer = False
+
+# add local frame
+local_frame_name = "local_frame"
+local_frame_viz = meshcat.Visualizer(window=viz.viewer.window)
+vis_tools.add_coordiante_frame(local_frame_viz, local_frame_name)
 
 # replay data and create animation
 curr_step_plan = 0
@@ -247,6 +254,10 @@ for ti in range(len(exp_time)):
         vis_tools.display_visualizer_frames(icp_des_viz, frame)  # desired ICP
 
         vis_tools.display_visualizer_frames(cmp_des_viz, frame)  # desired CMP
+
+        vis_tools.display_coordinate_frame(local_frame_name,
+                                       quat_world_local[ti], frame)
+
 
         # show footsteps ONLY if they have already been planned
         if b_show_footsteps and b_footsteps_available:

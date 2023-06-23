@@ -81,6 +81,8 @@ public:
   Eigen::Vector3d rf_ori_weight = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kp = Eigen::Vector3d::Zero();
   Eigen::Vector3d rf_ori_kd = Eigen::Vector3d::Zero();
+
+  Eigen::Quaterniond quat_world_local_ = Eigen::Quaterniond::Identity();
 };
 
 // Singleton class
