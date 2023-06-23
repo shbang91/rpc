@@ -11,6 +11,7 @@ PinocchioRobotSystem::PinocchioRobotSystem(const std::string &urdf_file,
   this->_Initialize();
   if (b_print_info)
     this->_PrintRobotInfo();
+  com_offset_.setZero();
 }
 
 void PinocchioRobotSystem::_Initialize() {
@@ -237,7 +238,7 @@ PinocchioRobotSystem::GetLinkBodyJacobianDotQdot(const int link_idx) {
 }
 
 Eigen::Vector3d PinocchioRobotSystem::GetRobotComPos() {
-  return pinocchio::centerOfMass(model_, data_, q_);
+  return pinocchio::centerOfMass(model_, data_, q_) + com_offset_;
 }
 Eigen::Vector3d PinocchioRobotSystem::GetRobotComLinVel() {
   pinocchio::centerOfMass(model_, data_, q_, qdot_);
@@ -317,4 +318,8 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
   std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ << ";"
             << std::endl;
   exit(0);
+}
+
+void PinocchioRobotSystem::SetRobotComOffset(const Eigen::Vector3d &com_offset) {
+  com_offset_ = com_offset;
 }
