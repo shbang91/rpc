@@ -1,5 +1,6 @@
 #pragma once
 
+#include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/centroidal.hpp>
 #include <pinocchio/algorithm/crba.hpp>
@@ -67,6 +68,7 @@ public:
 
   // dynamics getter
   Eigen::MatrixXd GetMassMatrix();
+  Eigen::MatrixXd GetMassMatrixInverse();
   Eigen::VectorXd GetGravity();
   Eigen::VectorXd GetCoriolis();
   double GetTotalMass() const { return total_mass_; }

@@ -163,7 +163,7 @@ void DracoController::GetCommand(void *command) {
 
     // mass, cori, grav update
     Eigen::MatrixXd M = robot_->GetMassMatrix();
-    Eigen::MatrixXd Minv = robot_->GetMassMatrix().inverse();
+    Eigen::MatrixXd Minv = robot_->GetMassMatrixInverse();
     Eigen::VectorXd cori = robot_->GetCoriolis();
     Eigen::VectorXd grav = robot_->GetGravity();
     wbic_->UpdateSetting(M, Minv, cori, grav);

@@ -257,10 +257,18 @@ Eigen::Matrix<double, 3, 1> PinocchioRobotSystem::GetComLinJacobianDotQdot() {
 
 // dynamics getter
 Eigen::MatrixXd PinocchioRobotSystem::GetMassMatrix() {
+  // composite rigid body algorithm (crba)
   pinocchio::crba(model_, data_, q_);
   data_.M.triangularView<Eigen::StrictlyLower>() =
       data_.M.transpose().triangularView<Eigen::StrictlyLower>();
   return data_.M;
+}
+Eigen::MatrixXd PinocchioRobotSystem::GetMassMatrixInverse() {
+  // articulated body algorithm (aba)
+  pinocchio::computeMinverse(model_, data_, q_);
+  data_.Minv.triangularView<Eigen::StrictlyLower>() =
+      data_.Minv.transpose().triangularView<Eigen::StrictlyLower>();
+  return data_.Minv;
 }
 Eigen::VectorXd PinocchioRobotSystem::GetGravity() {
   return pinocchio::computeGeneralizedGravity(model_, data_, q_);
