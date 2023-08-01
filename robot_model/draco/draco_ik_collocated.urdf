@@ -549,13 +549,13 @@
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00193727 -0.00408989 -0.1636"/>
-      <mass value="3.0"/>
+      <mass value="2.0"/>
       <inertia ixx="61021.51e-06" ixy="-47.486e-06" ixz="578.602e-06" iyy="67907.577e-06" iyz="3610.535e-06" izz="14521.809e-06"/>
     </inertial>
   </link>
 
   <!--=============================== l_knee_fe_jp (l_knee_fe_lp) ===========================-->
-  <joint name="l_knee_fe_jp" type="fixed">
+  <joint name="l_knee_fe_jp" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.324231"/>
     <parent link="l_hip_fe_link"/>
     <child link="l_knee_fe_lp"/>
@@ -579,7 +579,7 @@
   </link>
 
   <!--=============================== l_knee_adj (l_knee_adj_link) ===========================-->
-  <joint name="l_knee_adj" type="revolute">
+  <joint name="l_knee_adj" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 -0.0558693"/>
     <parent link="l_knee_fe_lp"/>
     <child link="l_knee_adj_link"/>
@@ -603,7 +603,7 @@
 
   <!--=============================== l_knee_fe_jd (l_knee_fe_ld) ===========================-->
   <!-- NOTE: If you're NOT using Apptronik's simulator, please uncomment line 716 and use that, instead of line 717 -->
-  <joint name="l_knee_fe_jd" type="fixed">
+  <joint name="l_knee_fe_jd" type="revolute">
     <!-- <origin xyz="${0 + 0*l_knee_adj_param} ${0.00599 + 0.0537 * l_knee_adj_param} ${-0.1115386 + -0.9985 * l_knee_adj_param}" rpy="-1.90275e-16 1.31839e-16 2.80923e-17" /> -->
     <origin rpy="0 0 0" xyz="0.0 0.0 -0.0558693"/>
     <parent link="l_knee_adj_link"/>
@@ -622,7 +622,7 @@
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00588785 0.0041898 -0.0805522"/>
-      <mass value="4.5"/>
+      <mass value="5.5"/>
       <inertia ixx="9986.75806e-06" ixy="-264.73832e-06" ixz="40.35627e-06" iyy="11291.38892e-06" iyz="725.40626e-06" izz="4054.98067e-06"/>
     </inertial>
   </link>
@@ -765,13 +765,13 @@
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00193727 0.00408989 -0.1636"/>
-      <mass value="3.0"/>
+      <mass value="5.0"/>
       <inertia ixx="61021.51e-06" ixy="47.486e-06" ixz="578.602e-06" iyy="67907.577e-06" iyz="-3610.535e-06" izz="14521.809e-06"/>
     </inertial>
   </link>
 
   <!--=============================== r_knee_fe_jp (r_knee_fe_lp) ===========================-->
-  <joint name="r_knee_fe_jp" type="fixed">
+  <joint name="r_knee_fe_jp" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.324231"/>
     <parent link="r_hip_fe_link"/>
     <child link="r_knee_fe_lp"/>
@@ -795,7 +795,7 @@
   </link>
 
   <!--=============================== r_knee_adj (r_knee_adj_link) ===========================-->
-  <joint name="r_knee_adj" type="revolute">
+  <joint name="r_knee_adj" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 -0.0558693"/>
     <parent link="r_knee_fe_lp"/>
     <child link="r_knee_adj_link"/>
@@ -819,7 +819,7 @@
 
   <!--=============================== r_knee_fe_jd (r_knee_fe_ld) ===========================-->
   <!-- NOTE: If you're NOT using Apptronik's simulator, please uncomment line 1019 and use that, instead of line 1020 -->
-  <joint name="r_knee_fe_jd" type="fixed">
+  <joint name="r_knee_fe_jd" type="revolute">
     <!-- <origin xyz="${0 + 0 * r_knee_adj_param} ${-0.006 + -0.0537 * r_knee_adj_param} ${-0.1115386 + -0.9985 * r_knee_adj_param}" rpy="1.06003e-30 6.64446e-33 -5.70613e-32" /> -->
     <origin rpy="0 0 0" xyz="0 0 -0.0558693"/>
     <parent link="r_knee_adj_link"/>
@@ -839,7 +839,7 @@
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00590237 -0.00420298 -0.0805676"/>
-      <mass value="4.5"/>
+      <mass value="5.5"/>
       <inertia ixx="9986.75806e-06" ixy="264.73832e-06" ixz="40.35627e-06" iyy="11291.38892e-06" iyz="-725.40626e-06" izz="4054.98067e-06"/>
     </inertial>
   </link>
