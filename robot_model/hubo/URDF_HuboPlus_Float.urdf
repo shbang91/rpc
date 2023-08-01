@@ -4,24 +4,6 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="huboplus">
-    <link name="World">
-        <inertial>
-            <mass value = "0"/>
-            <origin xyz = "0 0 0"/>
-            <inertia ixx = "0" ixy = "0" ixz = "0" iyy = "0" iyz = "0" izz = "0"/>
-        </inertial>
-        <visual>
-            <geometry>
-                <box size="0.001 0.001 0.001" />
-            </geometry>
-        </visual>
-    </link>
-    <joint name="W2B" type="continuous">
-        <axis xyz="0  0  1"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <parent link="World"/>
-        <child link="Body_Torso"/>
-    </joint>
   <link name="Body_Torso">
     <inertial>
       <mass value="7.50334"/>
