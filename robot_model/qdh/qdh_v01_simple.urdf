@@ -1,0 +1,868 @@
+<robot name="qdh">
+<link name="Torso">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/torso_link_visual.stl"/>
+</geometry>
+<material name="torso_link_material">
+<color rgba="0.661061 0.809813 0.846468 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="torso_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0 0.0 0.292777" rpy="0 0 0"/>
+<mass value="24.1689" />
+<inertia ixx="0.541355" ixy="-1.93174e-10"  ixz="1.63423e-05" iyy="0.395745" iyz="-1.75763e-09" izz="0.169528" />
+</inertial>
+</link>
+
+<!--=============================== l_hip_ie (l_hip_ie_link) ===========================-->
+<joint name="l_hip_ie" type="revolute">
+<origin xyz="0.0 0.125 0.0" rpy="0.0 0.0 -3.14159" />
+<parent link="Torso" />
+<child link="l_hip_ie_link" />
+<axis xyz="0 0.258819 0.965926"/>
+<limit effort="70.0" velocity="4.1" lower="-0.523599" upper="0.523599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_hip_ie_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_hip_ie_link_visual.stl"/>
+</geometry>
+<material name="l_hip_ie_link_material">
+<color rgba="0.882221 0.910189 0.926037 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_hip_ie_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.104392 0.00237928 0.00887718" rpy="0 0 0"/>
+<mass value="3.96893" />
+<inertia ixx="0.0130843" ixy="0.000634222"  ixz="0.00236696" iyy="0.011952" iyz="-0.000642295" izz="0.00972725" />
+</inertial>
+</link>
+
+<!--=============================== l_hip_aa (l_hip_aa_link) ===========================-->
+<joint name="l_hip_aa" type="revolute">
+<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+<parent link="l_hip_ie_link" />
+<child link="l_hip_aa_link" />
+<axis xyz="-1 0 0"/>
+<limit effort="250.0" velocity="16.33" lower="-0.261799" upper="0.785398"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_hip_aa_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_hip_aa_link_visual.stl"/>
+</geometry>
+<material name="l_hip_aa_link_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_hip_aa_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0453699 0.00851046 0.0" rpy="0 0 0"/>
+<mass value="1.04819" />
+<inertia ixx="0.00149146" ixy="0.000268709"  ixz="0.0" iyy="0.00313198" iyz="0.0" izz="0.00258003" />
+</inertial>
+</link>
+
+<!--=============================== l_hip_fe (l_thigh_link) ===========================-->
+<joint name="l_hip_fe" type="revolute">
+<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+<parent link="l_hip_aa_link" />
+<child link="l_thigh_link" />
+<axis xyz="-0 -1 -0"/>
+<limit effort="250.0" velocity="16.33" lower="-2.0944" upper="0.523599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_thigh_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_thigh_link_visual.stl"/>
+</geometry>
+<material name="l_thigh_link_material">
+<color rgba="0.848889 0.848889 0.848889 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_thigh_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0122458 -0.00837821 -0.126312" rpy="0.0 0.0 0.0"/>
+<mass value="8.11218" />
+<inertia ixx="0.132804" ixy="-9.17515e-05"  ixz="-0.00330904" iyy="0.137766" iyz="0.0111776" izz="0.015208" />
+</inertial>
+</link>
+
+<!--=============================== l_knee_fe (l_shin_link) ===========================-->
+<joint name="l_knee_fe" type="revolute">
+<origin xyz="0.0 0.0 -0.42" rpy="0.0 0.0 3.14159" />
+<parent link="l_thigh_link" />
+<child link="l_shin_link" />
+<axis xyz="0 1 6.12323e-17"/>
+<limit effort="250.0" velocity="16.33" lower="-0.174533" upper="2.61799"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_shin_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_shin_link_visual.stl"/>
+</geometry>
+<material name="l_shin_link_material">
+<color rgba="0.408645 0.494114 0.680797 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_shin_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0227771 0.00202875 -0.190035" rpy="0 0 0"/>
+<mass value="1.68866" />
+<inertia ixx="0.019695" ixy="0.000101816"  ixz="-0.00036985" iyy="0.0207143" iyz="-2.21663e-05" izz="0.00143483" />
+</inertial>
+</link>
+
+<!--=============================== l_ankle_fe (l_foot_link) ===========================-->
+<joint name="l_ankle_fe" type="revolute">
+<origin xyz="0.0 0.0 -0.42" rpy="0.0 0.0 0.0" />
+<parent link="l_shin_link" />
+<child link="l_foot_link" />
+<axis xyz="0 1 6.12323e-17"/>
+<limit effort="99.0" velocity="5.7" lower="-1.309" upper="0.523599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_foot_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_foot_link_visual.stl"/>
+</geometry>
+<material name="l_foot_link_material">
+<color rgba="0.862341 0.862341 0.862341 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_foot_link_collision.stl"/>
+</geometry>
+<material name="l_foot_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0227981 0.000174967 -0.0266022" rpy="0 0 0"/>
+<mass value="0.659155" />
+<inertia ixx="0.00291555" ixy="7.85635e-06"  ixz="0.00160026" iyy="0.0051971" iyz="-1.09285e-05" izz="0.00253433" />
+</inertial>
+</link>
+
+<!--=============================== l_shldr_fe (l_shldr_fe_link) ===========================-->
+<joint name="l_shldr_fe" type="revolute">
+<origin xyz="0.0 0.225 0.5" rpy="0.0 0.0 -3.14159" />
+<parent link="Torso" />
+<child link="l_shldr_fe_link" />
+<axis xyz="0 -0.866025 0.5"/>
+<limit effort="70.0" velocity="4.1" lower="-3.14159" upper="0.785398"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_shldr_fe_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_shldr_fe_link_visual.stl"/>
+</geometry>
+<material name="l_shldr_fe_link_material">
+<color rgba="0.778525 0.671347 0.361217 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_shldr_fe_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.000369843 0.00906443 -0.00296103" rpy="0 0 0"/>
+<mass value="1.29278" />
+<inertia ixx="0.00132913" ixy="4.33403e-06"  ixz="-1.35362e-06" iyy="0.000862929" iyz="0.000100516" izz="0.0011652" />
+</inertial>
+</link>
+
+<!--=============================== l_shldr_aa (l_shldr_aa_link) ===========================-->
+<joint name="l_shldr_aa" type="revolute">
+<origin xyz="0.0 0.0 0" rpy="0.0 0.0 0.0" />
+<parent link="l_shldr_fe_link" />
+<child link="l_shldr_aa_link" />
+<axis xyz="-1 0 0"/>
+<limit effort="70.0" velocity="4.1" lower="0" upper="2.0944"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_shldr_aa_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_shldr_aa_link_visual.stl"/>
+</geometry>
+<material name="l_shldr_aa_link_material">
+<color rgba="0.980392 0.713725 0.00392157 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_shldr_aa_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0235146 0.0 -0.0282856" rpy="0.0 0.0 0.0"/>
+<mass value="0.50916" />
+<inertia ixx="0.000477279" ixy="-9.4465e-36"  ixz="0.000156224" iyy="0.00055751" iyz="2.01636e-34" izz="0.000283247" />
+</inertial>
+</link>
+
+<!--=============================== l_shldr_ie (l_shldr_ie_link) ===========================-->
+<joint name="l_shldr_ie" type="revolute">
+<origin xyz="0 0 0" rpy="0.0 0.0 0.0" />
+<parent link="l_shldr_aa_link" />
+<child link="l_shldr_ie_link" />
+<axis xyz="0 0 1"/>
+<limit effort="70.0" velocity="4.1" lower="0" upper="0"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_shldr_ie_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_shldr_ie_link_visual.stl"/>
+</geometry>
+<material name="l_shldr_ie_link_material">
+<color rgba="0.770977 0.805086 0.645547 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_shldr_ie_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0 0.000139041 -0.246428" rpy="0 0 0"/>
+<mass value="1.7655" />
+<inertia ixx="0.0145824" ixy="-1.98116e-05"  ixz="4.02637e-05" iyy="0.0146254" iyz="1.24064e-05" izz="0.000666801" />
+</inertial>
+</link>
+
+<!--=============================== l_elbow_fe (l_elbow_fe_link) ===========================-->
+<joint name="l_elbow_fe" type="revolute">
+<origin xyz="0.0 0.0 -0.325" rpy="0.0 0.0 -0.392699" />
+<parent link="l_shldr_ie_link" />
+<child link="l_elbow_fe_link" />
+<axis xyz="0 -1 -6.12323e-17"/>
+<limit effort="70.0" velocity="4.1" lower="-2.53073" upper="0.174533"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="l_elbow_fe_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/l_elbow_fe_link_visual.stl"/>
+</geometry>
+<material name="l_elbow_fe_link_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="l_elbow_fe_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0 -0.00643269 -0.162661" rpy="0 0 0"/>
+<mass value="1.02527" />
+<inertia ixx="0.0115586" ixy="0.0"  ixz="0.0" iyy="0.011444" iyz="0.000942624" izz="0.000366721" />
+</inertial>
+</link>
+
+<!--=============================== r_hip_ie (r_hip_ie_link) ===========================-->
+<joint name="r_hip_ie" type="revolute">
+<origin xyz="0.0 -0.125 0.0" rpy="0.0 0.0 0.0" />
+<parent link="Torso" />
+<child link="r_hip_ie_link" />
+<axis xyz="0 0.258819 0.965926"/>
+<limit effort="70.0" velocity="4.1" lower="-0.523599" upper="0.523599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_hip_ie_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_hip_ie_link_visual.stl"/>
+</geometry>
+<material name="r_hip_ie_link_material">
+<color rgba="0.882221 0.910189 0.926037 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_hip_ie_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.104392 0.00237807 0.0088775" rpy="0 0 0"/>
+<mass value="3.96893" />
+<inertia ixx="0.0130843" ixy="-0.000641895"  ixz="-0.00236694" iyy="0.011952" iyz="-0.000630085" izz="0.00972728" />
+</inertial>
+</link>
+
+<!--=============================== r_hip_aa (r_hip_aa_link) ===========================-->
+<joint name="r_hip_aa" type="revolute">
+<origin xyz="0 0.0 0.0" rpy="0.0 0.0 0.0" />
+<parent link="r_hip_ie_link" />
+<child link="r_hip_aa_link" />
+<axis xyz="1 0 0"/>
+<limit effort="250.0" velocity="16.33" lower="-0.785398" upper="0.261799"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_hip_aa_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_hip_aa_link_visual.stl"/>
+</geometry>
+<material name="r_hip_aa_link_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_hip_aa_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0453699 0.00851046 0.0" rpy="0 0 0"/>
+<mass value="1.04819" />
+<inertia ixx="0.00149146" ixy="-0.000268709"  ixz="-1.1019e-33" iyy="0.00313198" iyz="-1.11739e-33" izz="0.00258003" />
+</inertial>
+</link>
+
+<!--=============================== r_hip_fe (r_thigh_link) ===========================-->
+<joint name="r_hip_fe" type="revolute">
+<origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+<parent link="r_hip_aa_link" />
+<child link="r_thigh_link" />
+<axis xyz="0 1 0"/>
+<limit effort="250.0" velocity="16.33" lower="-2.0944" upper="0.523599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_thigh_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_thigh_link_visual.stl"/>
+</geometry>
+<material name="r_thigh_link_material">
+<color rgba="0.848889 0.848889 0.848889 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_thigh_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0122457 -0.00837821 -0.126312" rpy="0 0 0"/>
+<mass value="8.11218" />
+<inertia ixx="0.132804" ixy="9.17761e-05"  ixz="0.00330976" iyy="0.137766" iyz="0.0111776" izz="0.0152083" />
+</inertial>
+</link>
+
+<!--=============================== r_knee_fe (r_shin_link) ===========================-->
+<joint name="r_knee_fe" type="revolute">
+<origin xyz="0.0 0.0 -0.42" rpy="0.0 0.0 0.0" />
+<parent link="r_thigh_link" />
+<child link="r_shin_link" />
+<axis xyz="0 1 6.12323e-17"/>
+<limit effort="250.0" velocity="16.33" lower="-0.174533" upper="2.61799"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_shin_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_shin_link_visual.stl"/>
+</geometry>
+<material name="r_shin_link_material">
+<color rgba="0.408645 0.494114 0.680797 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_shin_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0227695 -0.0020287 -0.190035" rpy="0 0 0"/>
+<mass value="1.68866" />
+<inertia ixx="0.019695" ixy="-9.5015e-05"  ixz="-0.000557333" iyy="0.0207135" iyz="2.21742e-05" izz="0.00143407" />
+</inertial>
+</link>
+
+<!--=============================== r_ankle_fe (r_foot_link) ===========================-->
+<joint name="r_ankle_fe" type="revolute">
+<origin xyz="0.0 0 -0.42" rpy="0.0 0.0 0.0" />
+<parent link="r_shin_link" />
+<child link="r_foot_link" />
+<axis xyz="0 1 6.12323e-17"/>
+<limit effort="99.0" velocity="5.7" lower="-1.309" upper="0.523599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_foot_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_foot_link_visual.stl"/>
+</geometry>
+<material name="r_foot_link_material">
+<color rgba="0.862341 0.862341 0.862341 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_foot_link_collision.stl"/>
+</geometry>
+<material name="r_foot_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0227995 -0.000174941 -0.0266021" rpy="0 0 0"/>
+<mass value="0.659155" />
+<inertia ixx="0.00291557" ixy="-8.08351e-06"  ixz="0.00158457" iyy="0.00519698" iyz="1.09285e-05" izz="0.0025342" />
+</inertial>
+</link>
+
+<!--=============================== r_shldr_fe (r_shldr_fe_link) ===========================-->
+<joint name="r_shldr_fe" type="revolute">
+<origin xyz="0.0 -0.225 0.5" rpy="0.0 0.0 0.0" />
+<parent link="Torso" />
+<child link="r_shldr_fe_link" />
+<axis xyz="0 0.866025 -0.5"/>
+<limit effort="70.0" velocity="4.1" lower="-3.14159" upper="0.785398"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_shldr_fe_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_shldr_fe_link_visual.stl"/>
+</geometry>
+<material name="r_shldr_fe_link_material">
+<color rgba="0.778525 0.671347 0.361217 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_shldr_fe_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.000369843 0.00906443 -0.00299746" rpy="0 0 0"/>
+<mass value="1.29278" />
+<inertia ixx="0.00132885" ixy="-4.33403e-06"  ixz="1.49529e-06" iyy="0.000862648" iyz="0.000100089" izz="0.0011652" />
+</inertial>
+</link>
+
+<!--=============================== r_shldr_aa (r_shldr_aa_link) ===========================-->
+<joint name="r_shldr_aa" type="revolute">
+<origin xyz="-1.57772e-30 0 0" rpy="0.0 0.0 0.0" />
+<parent link="r_shldr_fe_link" />
+<child link="r_shldr_aa_link" />
+<axis xyz="1 0 0"/>
+<limit effort="70.0" velocity="4.1" lower="-2.0944" upper="0"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_shldr_aa_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_shldr_aa_link_visual.stl"/>
+</geometry>
+<material name="r_shldr_aa_link_material">
+<color rgba="0.980392 0.713725 0.00392157 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_shldr_aa_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0235146 0.0 -0.0282856" rpy="0 0 0"/>
+<mass value="0.50916" />
+<inertia ixx="0.000477279" ixy="-7.64958e-34"  ixz="-0.000156224" iyy="0.00055751" iyz="6.71119e-34" izz="0.000283247" />
+</inertial>
+</link>
+
+<!--=============================== r_shldr_ie (r_shldr_ie_link) ===========================-->
+<joint name="r_shldr_ie" type="revolute">
+<origin xyz="0.0 0 0" rpy="0.0 0.0 0.0" />
+<parent link="r_shldr_aa_link" />
+<child link="r_shldr_ie_link" />
+<axis xyz="0 0 1"/>
+<limit effort="70.0" velocity="4.1" lower="0" upper="0"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_shldr_ie_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_shldr_ie_link_visual.stl"/>
+</geometry>
+<material name="r_shldr_ie_link_material">
+<color rgba="0.770977 0.805086 0.645547 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_shldr_ie_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0 0.00012884 -0.246428" rpy="0 0 0"/>
+<mass value="1.7655" />
+<inertia ixx="0.0145824" ixy="1.98274e-05"  ixz="-4.36817e-05" iyy="0.0146255" iyz="1.0988e-05" izz="0.000666801" />
+</inertial>
+</link>
+
+<!--=============================== r_elbow_fe (r_elbow_fe_link) ===========================-->
+<joint name="r_elbow_fe" type="revolute">
+<origin xyz="0.0 0.0 -0.325" rpy="0.0 0.0 0.392699" />
+<parent link="r_shldr_ie_link" />
+<child link="r_elbow_fe_link" />
+<axis xyz="0 1 6.12323e-17"/>
+<limit effort="70.0" velocity="4.1" lower="-2.53073" upper="0.174533"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="r_elbow_fe_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package://qdh_model_meshes/meshes/qdh_v01/r_elbow_fe_link_visual.stl"/>
+</geometry>
+<material name="r_elbow_fe_link_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+        <sphere radius="0.01"/>
+</geometry>
+<material name="r_elbow_fe_link_material">
+<color rgba="0.5 0.5 0.5 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0 -0.00643269 -0.162661" rpy="0 0 0"/>
+<mass value="1.02527" />
+<inertia ixx="0.0115586" ixy="-4.44287e-18"  ixz="-4.9277e-20" iyy="0.011444" iyz="0.000942624" izz="0.000366721" />
+</inertial>
+</link>
+
+
+  <link name="IMU">
+    <inertial>
+      <mass value="0.0001"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.00000001" ixy="0" ixz="0" iyy="0.00000001" iyz="0" izz="0.00000001"/>
+    </inertial>
+  </link>
+  <joint name="IMU" type="fixed">
+    <origin rpy="0 3.1415926 0" xyz="-0.05 -0.00 0.055"/>
+    <parent link="Torso"/>
+    <child link="IMU"/>
+  </joint>
+
+
+  <link name="lToe">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="lToe" type="fixed">
+    <origin rpy="0 0 0" xyz="0.125 0 -0.075"/>
+    <parent link="l_foot_link"/>
+    <child link="lToe"/>
+  </joint>
+  <link name="lHeel">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="lHeel" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.025 0 -0.075"/>
+    <parent link="l_foot_link"/>
+    <child link="lHeel"/>
+  </joint>
+  <joint name="l_foot_contact_frame" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 -0.075"/>
+    <parent link="l_foot_link"/>
+    <child link="lFoot"/>
+  </joint>
+  <link name="lFoot">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <link name="rToe">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="rToe" type="fixed">
+    <origin rpy="0 0 0" xyz="0.125 0 -0.075"/>
+    <parent link="r_foot_link"/>
+    <child link="rToe"/>
+  </joint>
+  <link name="rHeel">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="rHeel" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.025 0 -0.075"/>
+    <parent link="r_foot_link"/>
+    <child link="rHeel"/>
+  </joint>
+  <joint name="r_foot_contact_frame" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 -0.075"/>
+    <parent link="r_foot_link"/>
+    <child link="rFoot"/>
+  </joint>
+  <link name="rFoot">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+
+
+  <link name="lHand">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.000001"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="lHand" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 -0.3"/>
+    <parent link="l_elbow_fe_link"/>
+    <child link="lHand"/>
+  </joint>
+  <link name="rHand">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.000001"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  <joint name="rHand" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 -0.3"/>
+    <parent link="r_elbow_fe_link"/>
+    <child link="rHand"/>
+  </joint>
+
+
+
+  <gazebo>
+    <plugin filename="ign_cortex_control_plugin" name="aptk::sim::IgnControlPlugin">
+      <control_rate>1000</control_rate>
+    </plugin>
+    <plugin filename="ignition-gazebo-imu-system" name="ignition::gazebo::systems::Imu">
+    </plugin>
+    <plugin filename="ignition-gazebo-odometry-publisher-system" name="ignition::gazebo::systems::OdometryPublisher">
+      <dimensions>3</dimensions>
+      <odom_publish_frequency>1000</odom_publish_frequency>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="IMU">
+    <sensor name="IMU" type="imu">
+      <always_on>1</always_on>
+      <update_rate>1000</update_rate>
+      <visualize>true</visualize>
+      <topic>imu_link</topic>
+      <imu>
+        <angular_velocity>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+  </gazebo>
+
+
+</robot>
