@@ -293,8 +293,7 @@ def get_centroidal_rot_inertia_in_body(robot_system, base_com_pos,
     base_joint_pos = base_com_pos - np.dot(rot_w_basejoint,
                                            pos_basejoint_to_basecom)
     #update pinocchio robotsystem
-    robot_system.update_system(base_com_pos, base_com_quat, np.zeros(3),
-                               np.zeros(3), base_joint_pos,
+    robot_system.update_system(base_joint_pos,
                                util.rot_to_quat(rot_w_basejoint), np.zeros(3),
                                np.zeros(3), joint_pos,
                                nominal_sensor_data_dict['joint_vel'], True)
@@ -315,7 +314,7 @@ def generate_data_set(num_swing,
         np.random.seed(rseed)
     x_data, y_data = [], []
 
-    from pnc.robot_system.pinocchio_robot_system import PinocchioRobotSystem
+    from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
     robot_system = PinocchioRobotSystem(cwd + "/robot_model/atlas/atlas.urdf",
                                         cwd + "/robot_model/atlas", False,
                                         False)
