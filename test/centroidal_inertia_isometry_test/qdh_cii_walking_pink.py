@@ -23,11 +23,11 @@ from util.python_utils import util
 from util.python_utils import liegroup
 from plot.data_saver import DataSaver
 
-try:
-    from robot_descriptions.loaders.pinocchio import load_robot_description
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("Examples need robot_descriptions, "
-                              "try `pip install robot_descriptions`")
+# try:
+    # from robot_descriptions.loaders.pinocchio import load_robot_description
+# except ModuleNotFoundError:
+    # raise ModuleNotFoundError("Examples need robot_descriptions, "
+                              # "try `pip install robot_descriptions`")
 
 ## parameters
 INITIAL_POS = [0., 0., 0.660]
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # robot = load_robot_description("icub_description",
     # root_joint=pin.JointModelFreeFlyer())
     robot = pin.RobotWrapper.BuildFromURDF(
-        cwd + '/robot_model/qdh/qdh_v01_simple.urdf',
+        cwd + '/robot_model/qdh/qdh_v01.urdf',
         cwd + '/robot_model/qdh',
         root_joint=pin.JointModelFreeFlyer())
 
