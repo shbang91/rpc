@@ -15,15 +15,15 @@ import time
 import copy
 import math
 from tqdm import tqdm
+from ruamel.yaml import YAML
+from casadi import *
 import shutil
-
 
 import os
 import sys
 
 cwd = os.getcwd()
 sys.path.append(cwd)
-
 
 from util.python_utils import interpolation
 from util.python_utils import util
@@ -40,10 +40,7 @@ import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
-VIDEO_RECORD = False
 VISUALIZE = True
-PRINT_FREQ = 10
-PRINT_ROBOT_INFO = False
 INITIAL_POS_WORLD_TO_BASEJOINT = [0, 0, 0.660]
 INITIAL_QUAT_WORLD_TO_BASEJOINT = [0., 0., 0., 1.]
 
@@ -62,11 +59,12 @@ FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.deg2rad(45)])
 BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.6, 0.7
 
 ## Data generation parameters
-N_SWING_MOTIONS = 10000
+N_SWING_MOTIONS = 1000
 N_DATA_PER_SWING = 15
 N_CPU_USE_FOR_PARALELL_COM = 5
 
-LR = 0.001
+## learning hyperparameters
+LR = 0.01
 BATCH_SIZE = 32
 EPOCH = 20
 
@@ -368,6 +366,87 @@ def parallerize_data_generate(num_swing, num_samples_per_swing, nominal_lf_iso,
         data_y += result[1]
     return data_x, data_y
 
+def save_weights_to_yaml(pytorch_model):
+    model_path = cwd + "/experiment_data/pytorch_model/qdh_crbi"
+    mlp_model = dict()
+    mlp_model['num_layer'] = len(pytorch_model.layers)
+    for l_id, l in enumerate(pytorch_model.layers):
+        mlp_model['w' + str(l_id)] = l.weights[0].numpy().tolist()
+        mlp_model['b' + str(l_id)] = l.weights[1].numpy().reshape(
+            1, l.weights[1].shape[0]).tolist()
+        # Activation Fn Idx: None: 0, Tanh: 1
+        if (l_id == (len(pytorch_model.layers) - 1)):
+            mlp_model['act_fn' + str(l_id)] = 0
+        else:
+            mlp_model['act_fn' + str(l_id)] = 1
+    with open(model_path + '/mlp_model.yaml', 'w') as f:
+        yml = YAML()
+        yml.dump(mlp_model, f)
+
+
+def generate_casadi_func(pytorch_model,
+                         input_mean,
+                         input_std,
+                         output_mean,
+                         output_std,
+                         generate_c_code=True):
+    c_code_path = cwd + "/experiment_data/pytorch_model/qdh_crbi"
+    ## Computational Graph
+    b = MX.sym('b', 3)
+    l = MX.sym('l', 3)
+    r = MX.sym('r', 3)
+    # Input
+    l_minus_b = l - b
+    r_minus_b = r - b
+    inp = vertcat(l_minus_b, r_minus_b)
+    normalized_inp = (inp - input_mean) / input_std  # (6, 1)
+    # MLP (Somewhat manual)
+
+    w0 = pytorch_model.layers[0].weight.detach().numpy()  # (6, 64)
+    b0 = pytorch_model.layers[0].bias.detach().numpy().reshape(-1, 1)  # (1, 64)
+    w1 = pytorch_model.layers[2].weight.detach().numpy()  # (64, 64)
+    b1 = pytorch_model.layers[2].bias.detach().numpy().reshape(-1, 1)  # (1, 64)
+    w2 = pytorch_model.layers[4].weight.detach().numpy()  # (64, 6)
+    b2 = pytorch_model.layers[4].bias.detach().numpy().reshape(-1, 1)  # (6)
+    print("-----------------------------------------------")
+    print(pytorch_model)
+    print(w0.shape)
+    print(b0.shape)
+    print(w1.shape)
+    print(b1.shape)
+    print(w2.shape)
+    print(b2.shape)
+    # output = mtimes(
+        # tanh(mtimes(tanh(mtimes(normalized_inp.T, w0) + b0), w1) + b1),
+        # w2) + b2
+    output = mtimes(
+        w2, tanh(mtimes(w1, tanh(mtimes(w0, normalized_inp) + b0)) + b1)
+        ) + b2
+    denormalized_output = (output * output_std) + output_mean
+
+    # Define casadi function
+    func = Function('qdh_crbi_helper', [b, l, r], [denormalized_output])
+    jac_func = func.jacobian()
+    print(func)
+    print(jac_func)
+
+    if generate_c_code:
+        # Code generator
+        code_gen = CodeGenerator('qdh_crbi_helper.c', dict(with_header=True))
+        code_gen.add(func)
+        code_gen.add(jac_func)
+        code_gen.generate()
+        shutil.move(
+            cwd + '/qdh_crbi_helper.h', cwd +
+            "/experiment_data/qdh_crbi_helper.h"
+        )
+        shutil.move(
+            cwd + '/qdh_crbi_helper.c',
+            cwd + "/experiment_data/qdh_crbi_helper.c")
+
+    return func, jac_func
+
+
 
 #main loop
 if __name__ == "__main__":
@@ -459,11 +538,12 @@ if __name__ == "__main__":
         lfoot_contact_frame = viz.viewer["lFoot"]
         meshcat_shapes.frame(lfoot_contact_frame)
 
+    ##TODO: make it as argument
     # case 0: right foot swing motion sampling
     # case 1: generate data set without multiprocessing and training
     # case 2: generate data set with multiprocessing and training CRBI model
 
-    CASE = 1
+    CASE = 2
     if (CASE == 0):
         print('=' * 80)
         print('right foot swing motion sampling')
@@ -571,7 +651,7 @@ if __name__ == "__main__":
                                              shuffle=True,
                                              num_workers=2)
 
-        crbi_model = NetWork(6, 16, 16, 6)
+        crbi_model = NetWork(6, 64, 64, 6)
         optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR)
         loss_function = torch.nn.MSELoss()
 
@@ -637,6 +717,7 @@ if __name__ == "__main__":
         print(
             'Pressed 5: generate data set with multiprocessing and training CRBI model'
         )
+        VISUALIZE = False
 
         ##################################################################
         '''DATA Generation'''
@@ -723,7 +804,7 @@ if __name__ == "__main__":
         '''Training Regressor'''
         ##################################################################
         #regressor model
-        nn_crbi_model = NetWork(6, 16, 16, 6)
+        nn_crbi_model = NetWork(6, 64, 64, 6)
 
         #loss & optimizer
         loss_function = torch.nn.MSELoss()
@@ -769,11 +850,7 @@ if __name__ == "__main__":
                     'validation': val_loss_per_epoch
                 }, epoch + 1)
 
-        # save the model
-        model_path = "experiment_data/pytorch_model/qdh_crbi.pth"
-        if os.path.exists(model_path):
-            os.remove(model_path)
-        torch.save(nn_crbi_model, model_path)
+
 
         print('=' * 80)
         print("CRBI training done")
@@ -840,6 +917,30 @@ if __name__ == "__main__":
                 gt_inertia_list.append(gt_denormalized_output)
                 predict_inertia_list.append(predict_denormalized_output)
                 num_iter += 1
+
+        # save the model
+        model_path = cwd + '/experiment_data/pytorch_model/qdh_crbi'
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+        torch.save(nn_crbi_model, model_path + '/qdh_crbi.pth')
+        print("==============================================")
+        print("Saved PyTorch Model State")
+        print("==============================================")
+
+        data_stats = {
+                'input_mean' : mean_x_data.tolist(),
+                'input_std' : std_x_data.tolist(),
+                'output_mean' : mean_y_data.tolist(),
+                'output_std' : std_y_data.tolist()
+                }
+        # with open(model_path + '/data_stat.yaml', 'w') as f:
+            # yml = YAML()
+            # yml.dump(data_stats, f)
+        # save_weights_to_yaml(nn_crbi_model)
+
+        cas_func, cas_jac_func = generate_casadi_func(
+            nn_crbi_model, mean_x_data, std_x_data, mean_y_data, std_y_data,
+            True)
 
         ##plot
         fig, axes = plt.subplots(6, 1)
