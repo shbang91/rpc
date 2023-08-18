@@ -1,11 +1,21 @@
 #pragma once
 
+/***
+ * Friction compensator based on a modified version of the Karnopp friction
+ * model. This version assumes a quadratic friction force instead of the
+ * zero-force dead-zone in the Karnopp model. Moreover, it assumes a linear
+ * viscous friction model after reaching the coulomb friction at the
+ * dead-zone velocity. This force is meant to be used as a feedforward
+ * torque.
+ *
+ * Created on: 8/17/2023
+ */
+
 #include <boost/math/special_functions/sign.hpp>
 
 class KarnoppCompensator {
 public:
   KarnoppCompensator(double static_force,
-                     double coulomb_force,
                      double viscous_force,
                      double vel_deadzone);
   ~KarnoppCompensator();

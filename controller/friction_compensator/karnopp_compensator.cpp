@@ -3,11 +3,10 @@
 using namespace boost::math;
 
 KarnoppCompensator::KarnoppCompensator(double static_force,
-                                       double coulomb_force,
                                        double viscous_force,
                                        double vel_deadzone) {
   force_static_ = static_force;
-  force_coulomb_ = coulomb_force;
+  force_coulomb_ = static_force;
   viscous_friction_ = viscous_force;
 
   vel_deadzone_ = vel_deadzone;
