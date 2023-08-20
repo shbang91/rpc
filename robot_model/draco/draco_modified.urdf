@@ -639,7 +639,7 @@
   </joint>
   <link name="l_ankle_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0 -0.105 0.83"/>
+      <origin rpy="0 -0 0" xyz="0 -0.101 0.834"/>
       <geometry>
         <mesh filename="package://meshes/l_ankle_fe_link.stl"/>
       </geometry>
@@ -861,7 +861,7 @@
   </joint>
   <link name="r_ankle_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0 0.105 0.83"/>
+      <origin rpy="0 -0 0" xyz="0 0.101 0.834"/>
       <geometry>
         <mesh filename="package://meshes/r_ankle_fe_link.stl"/>
       </geometry>
