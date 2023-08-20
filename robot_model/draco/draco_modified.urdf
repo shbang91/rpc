@@ -653,46 +653,45 @@
   </link>
 
   <!--=============================== l_ankle_ie (l_ankle_ie_link) ===========================-->
+  <!-- Note: the new 'zero' position (when calibrating the robot) with the tilted ankle is
+        actually 15 deg, not 0 -->
   <joint name="l_ankle_ie" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="l_ankle_fe_link"/>
     <child link="l_ankle_ie_link"/>
     <axis xyz="1 0 0"/>
-    <limit effort="30" lower="-0.785398" upper="0.261799" velocity="11.1"/>
+    <limit effort="30" lower="-0.523599" upper="0.523599" velocity="11.1"/>
     <joint_properties friction="0.0"/>
   </joint>
   <link name="l_ankle_ie_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.01 -0.08 0.835"/>
+      <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/l_ankle_ie_link.stl"/>
+        <mesh filename="package://meshes/l_ankle_ie_link_small_foot.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
     <collision>
-      <!--<origin rpy="0 -0 0" xyz="0 -0.005 -0.046"/>-->
-      <origin rpy="0 -0 0" xyz="0 -0.005 -0.0533"/>
+      <origin rpy="0 -0 0" xyz="0 -0.008432 -0.0832995"/>
       <geometry>
-        <box size="0.2 0.1 0.0591"/>
+        <box size="0.22 0.092012 0.0045015"/>
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0440152"/>
+      <origin rpy="0 0 0" xyz="-0.00051 -0.012552 -0.054344"/>
       <!--<origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0513152"/>-->
       <!--original mass = 0.478--> 
       <!--F/T sensor mass = 0.0917--> 
       <!--F/T interface mass = 0.078--> 
       <!--old beam mass = 0.056--> 
       <mass value="0.5917"/>
-      <inertia ixx="1064.65492e-06" ixy="-25.85803e-06" ixz="148.2107e-06" iyy="1820.44891e-06" iyz="145.81372e-06" izz="1268.38379e-06"/>
-      <!--TODO: inertia needs to be updated--> 
+      <inertia ixx="1153.713e-06" ixy="1.229e-06" ixz="6.473e-06" iyy="1721.464e-06" iyz="134.94e-06" izz="988.325e-06"/>
     </inertial>
   </link>
 
   <!--=============================== l_foot_contact_frame (l_foot_contact) ===========================-->
   <joint name="l_foot_contact_frame" type="fixed">
-      <!--<origin rpy="0 0 0" xyz="0 0 -0.076"/> -->
-      <origin rpy="0 0 0" xyz="0 0 -0.0833"/> 
+    <origin rpy="0 0 0" xyz="0 -0.008432 -0.087801"/>
     <parent link="l_ankle_ie_link"/>
     <child link="l_foot_contact"/>
   </joint>
@@ -876,44 +875,46 @@
   </link>
 
   <!--=============================== r_ankle_ie (r_ankle_ie_link) ===========================-->
+  <!-- Note: the new 'zero' position (when calibrating the robot) with the tilted ankle is
+        actually -15 deg, not 0 -->
   <joint name="r_ankle_ie" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="r_ankle_fe_link"/>
     <child link="r_ankle_ie_link"/>
     <axis xyz="1 0 0"/>
-    <limit effort="30" lower="-0.261799" upper="0.785398" velocity="11.1"/>
+    <limit effort="30" lower="-0.523599" upper="0.523599" velocity="11.1"/>
     <joint_properties friction="0.0"/>
   </joint>
   <link name="r_ankle_ie_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.01 0.08 0.835"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/r_ankle_ie_link.stl"/>
+        <mesh filename="package://meshes/r_ankle_ie_link_small_foot.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
     <collision>
       <!--<origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>-->
-      <origin rpy="0 -0 0" xyz="0 0.005 -0.0533"/>
+      <origin rpy="0 -0 0" xyz="0 0.008432 -0.0832995"/>
       <geometry>
-        <box size="0.2 0.1 0.0591"/>
+        <box size="0.22 0.092012 0.0045015"/>
       </geometry>
     </collision>
     <inertial>
-      <origin rpy="0 0 0" xyz="-0.00321562 0.00678152 -0.0440164"/>
-      <!--original mass = 0.478--> 
+      <origin rpy="0 0 0" xyz="-0.00051 0.012552 -0.054344"/>
+<!--      <origin rpy="0 0 0" xyz="-0.00321562 0.00678152 -0.0440164"/>-->
+      <!--original mass = 0.478-->
       <!--F/T sensor mass = 0.0917--> 
       <!--F/T interface mass = 0.078--> 
       <!--old beam mass = 0.056--> 
       <mass value="0.5917"/>
-      <inertia ixx="1064.65492e-06" ixy="25.85803e-06" ixz="148.2107e-06" iyy="1820.44891e-06" iyz="-145.81372e-06" izz="1268.38379e-06"/>
-      <!--TODO: inertia needs to be updated--> 
+      <inertia ixx="1153.713e-06" ixy="-1.229e-06" ixz="6.473e-06" iyy="1721.464e-06" iyz="-134.94e-06" izz="988.325e-06"/>
     </inertial>
   </link>
 
   <!--=============================== r_foot_contact_frame (r_foot_contact) ===========================-->
   <joint name="r_foot_contact_frame" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 -0.0833"/>
+    <origin rpy="0 0 0" xyz="0 0.008432 -0.087801"/>
     <parent link="r_ankle_ie_link"/>
     <child link="r_foot_contact"/>
   </joint>
