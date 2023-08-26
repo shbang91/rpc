@@ -102,9 +102,6 @@ if __name__ == "__main__":
         cost=1e-1,  # [cost] / [rad]
     )
 
-    # tasks = [
-    # left_foot_task, pelvis_task, torso_task, right_foot_task, posture_task
-    # ]
     tasks = [left_foot_task, torso_task, right_foot_task, posture_task]
 
     nominal_base_iso = configuration.get_transform_frame_to_world(
@@ -115,7 +112,7 @@ if __name__ == "__main__":
     swing_time = 0.5
     ONE_STEP_X_LB, ONE_STEP_X_UB = 0.1 * NORMALIZE_FACTOR, 0.2 * NORMALIZE_FACTOR
     ONE_STEP_Y_LB, ONE_STEP_Y_UB = -0.1 * NORMALIZE_FACTOR, 0.1 * NORMALIZE_FACTOR
-    SWING_HEIGHT = 0.10 * NORMALIZE_FACTOR
+    SWING_HEIGHT = 0.20 * NORMALIZE_FACTOR
     NUM_NODE_PER_SWING = 30
 
     rate = RateLimiter(frequency=NUM_NODE_PER_SWING / swing_time)
@@ -129,9 +126,6 @@ if __name__ == "__main__":
 
     rfoot_contact_frame = viz.viewer["rFoot"]
     meshcat_shapes.frame(rfoot_contact_frame)
-    # T_nominal_rf_iso = liegroup.RpToTrans(nominal_rf_iso.rotation,
-    # nominal_rf_iso.translation)
-    # rfoot_contact_frame.set_transform(T_nominal_rf_iso)
     for one_step_x in np.linspace(ONE_STEP_X_LB, ONE_STEP_X_UB, num=10):
         for one_step_y in np.linspace(ONE_STEP_Y_LB, ONE_STEP_Y_UB, num=10):
 
