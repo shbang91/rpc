@@ -100,6 +100,9 @@ else()
     set(B_USE_ZMQ false)
 endif()
 
+#hpipm-cpp
+find_package(hpipm-cpp REQUIRED)
+
 #Boost
 #find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
 #include_directories(${Boost_INCLUDE_DIRS})

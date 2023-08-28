@@ -1,1 +1,2 @@
 add_subdirectory(dcm_planner)
+add_subdirectory(convex_mpc)
