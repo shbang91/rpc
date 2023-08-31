@@ -27,9 +27,7 @@ StateEquation::StateEquation(const double dt, const double m, const Matrix3d &I,
 
 void StateEquation::initQP(QPData &qp_data) const {
   for (int i = 0; i < qp_data.dim_.N; ++i) {
-    qp_data.qp_[i].A.setZero();
     qp_data.qp_[i].A.setIdentity();
-    qp_data.qp_[i].A *= dt_;
     qp_data.qp_[i].A.template block<3, 3>(3, 9) = dt_ * Matrix3d::Identity();
   }
   for (int i = 0; i < qp_data.dim_.N; ++i) {

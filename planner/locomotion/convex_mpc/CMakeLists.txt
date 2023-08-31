@@ -17,6 +17,7 @@ target_link_libraries(
   PUBLIC
   ${PINOCCHIO_LIBRARIES}
   hpipm-cpp::hpipm-cpp
+  rpc-util
 )
 target_include_directories(
   ${PROJECT_NAME} 

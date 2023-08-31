@@ -7,6 +7,8 @@
 #include "convex_mpc/single_rigid_body.hpp"
 #include "convex_mpc/types.hpp"
 
+#include "util/util.hpp"
+
 namespace convexmpc {
 
 class MPCSolution {
@@ -20,9 +22,13 @@ public:
   void update(const ContactSchedule &contact_schedule,
               const RobotState &robot_state, const QPData &qp_data);
 
+  const std::vector<double> &time() const { return time_; }
+
   const aligned_vector<Vector3d> &pos() const { return pos_; }
 
   const aligned_vector<Quaterniond> &quat() const { return quat_; }
+
+  const aligned_vector<Vector3d> &euler() const { return euler_xyz_; }
 
   const aligned_vector<Matrix3d> &R() const { return R_; }
 
@@ -39,8 +45,10 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
+  std::vector<double> time_;
   aligned_vector<Vector3d> pos_;
   aligned_vector<Quaterniond> quat_;
+  aligned_vector<Vector3d> euler_xyz_;
   aligned_vector<Matrix3d> R_;
   aligned_vector<Vector7d> pose_;
   aligned_vector<Vector6d> twist_;

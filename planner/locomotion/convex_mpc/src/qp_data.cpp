@@ -9,20 +9,11 @@ void QPData::init(const ContactSchedule &contact_schedule) {
   dim_.resize(N);
   const int nx = 12;
   const int nu = 12; // possible max size
-  // hpipm::fill_vector(dim_.nx, nx);
-  // hpipm::fill_vector(dim_.nu, nu);
-  // hpipm::fill_vector(dim_.nbx, 0);
-  // dim_.nbx[0] = nx;
-  // hpipm::fill_vector(dim_.nbu, 4); // fz_min < fz < fz_max for 4 legs
-  // dim_.nbu[N] = 0;
-  // hpipm::fill_vector(dim_.ng, 16); // -inf < cone * [fx, fy, fz] < 0 for 4
-  // legs dim_.ng[N] = 0;
-
   // fill vector
   std::fill(dim_.nx.begin(), dim_.nx.end(), nx);
   std::fill(dim_.nu.begin(), dim_.nu.end(), nu);
-  std::fill(dim_.nbx.begin(), dim_.nbx.end(), 0);
-  dim_.nbx[0] = nx;
+  // std::fill(dim_.nbx.begin(), dim_.nbx.end(), 0);
+  // dim_.nbx[0] = nx;
   std::fill(dim_.nbu.begin(), dim_.nbu.end(),
             4); // fz_min < fz < fz_max for 4 legs
   dim_.nbu[N] = 0;
@@ -76,9 +67,6 @@ void QPData::init(const ContactSchedule &contact_schedule) {
     qp_[i].ubu.setZero();
     qp_[i].idxbu.clear();
     qp_[i].idxbu.resize(dim_.nbu[i]);
-    // for (int j = 0; j < dim_.nbu[i]; ++j) {
-    // qp_[i].idxbu.push_back(j);
-    //}
   }
   // inequality constraints
   for (int i = 0; i < dim_.N; ++i) {
@@ -163,6 +151,8 @@ void QPData::resize(const ContactSchedule &contact_schedule) {
     qp_[i].ubu.setZero();
     qp_[i].idxbu.clear();
     qp_[i].idxbu.resize(dim_.nbu[i]);
+    // qp_[i].ubu_mask.resize(dim_.nbu[i]);
+    // qp_[i].ubu_mask.setZero();
     // for (int j = 0; j < dim_.nbu[i]; ++j) {
     // qp_[i].idxbu.push_back(j);
     //}

@@ -22,6 +22,7 @@ macro(add_srbd_mpc_test TESTNAME)
     GTest::GTest
     GTest::GMock
     ${PROJECT_NAME}
+    matlogger2::matlogger2
   )
   add_dependencies(
     ${TESTNAME} 

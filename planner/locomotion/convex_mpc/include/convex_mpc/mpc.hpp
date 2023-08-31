@@ -32,6 +32,7 @@ public:
              const GaitCommand &gait_command);
 
   const MPCSolution &getSolution() const { return mpc_solution_; }
+  const QPData &getQPData() const { return qp_data_; }
 
 private:
   StateEquation state_equation_;

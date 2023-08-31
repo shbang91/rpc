@@ -11,6 +11,7 @@ MPC::MPC(const StateEquation &state_equation, const CostFunction &cost_function,
 
 void MPC::setOptions(const SolverOptions &solver_options) {
   qp_solver_.settings.mode = hpipm::HpipmMode::Speed;
+  qp_solver_.settings.iter_max = solver_options.iter_max;
   qp_solver_.settings.mu0 = solver_options.mu0;
   qp_solver_.settings.tol_stat = solver_options.tol_stat;
   qp_solver_.settings.tol_eq = solver_options.tol_eq;
@@ -21,6 +22,7 @@ void MPC::setOptions(const SolverOptions &solver_options) {
   qp_solver_.settings.pred_corr = solver_options.pred_corr;
   qp_solver_.settings.ric_alg = solver_options.ric_alg;
   qp_solver_.settings.split_step = solver_options.split_step;
+  qp_solver_.settings.alpha_min = solver_options.alpha_min;
 }
 
 void MPC::init(const ContactSchedule &contact_schedule) {
@@ -39,7 +41,10 @@ void MPC::solve(const Eigen::VectorXd &init_state,
                 const GaitCommand &gait_command) {
   qp_data_.resize(contact_schedule);
   state_equation_.setQP(contact_schedule, robot_state, qp_data_);
-  cost_function_.setQP(contact_schedule, robot_state, gait_command, qp_data_);
+  cost_function_.setQP(init_state, contact_schedule, robot_state, gait_command,
+                       qp_data_);
+  // cost_function_.setQP(contact_schedule, robot_state, gait_command,
+  // qp_data_);
   friction_cone_.setQP(qp_data_);
   qp_solver_.solve(init_state, qp_data_);
   assert(qp_data_.checkSize());

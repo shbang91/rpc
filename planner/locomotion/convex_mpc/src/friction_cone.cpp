@@ -49,24 +49,23 @@ void FrictionCone::setQP(QPData &qp_data) const {
     if (std::isinf(fzmax_)) {
       // qp_data.qp_[i].ubu_mask.fill(1.0);
       qp_data.qp_[i].ubu_mask =
-          Eigen::VectorXd::Constant(qp_data.qp_[i].ubu_mask.size(), 1.0);
+          Eigen::VectorXd::Constant(qp_data.qp_[i].ubu_mask.size(), 0.0);
     }
   }
 
   // inequality constraints
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     qp_data.qp_[i].C.setZero();
-    const int num_conatcts = qp_data.dim_.nbu[i] / 3;
-    assert(qp_data.dim_.nbu[i] % 3 == 0);
+    const int num_conatcts = qp_data.dim_.nbu[i];
+    // assert(qp_data.dim_.nbu[i] % 3 == 0);
     if (num_conatcts > 0) {
       qp_data.qp_[i].D =
           cone_.topLeftCorner(qp_data.qp_[i].D.rows(), qp_data.qp_[i].D.cols());
     }
     qp_data.qp_[i].lg.setZero();
     qp_data.qp_[i].ug.setZero();
-    // qp_data.qp_.lg_mask[i].fill(1.0);
-    qp_data.qp_[i].lg_mask =
-        Eigen::VectorXd::Constant(qp_data.qp_[i].lg_mask.size(), 1.0);
+    qp_data.qp_[i].lg_mask = Eigen::VectorXd::Constant(
+        qp_data.qp_[i].lg_mask.size(), 0.0); // disable lower bounds
   }
 }
 

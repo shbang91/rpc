@@ -22,6 +22,10 @@ public:
 
   void update(const Vector19d &q, const Vector18d &v);
 
+  const double &mass() const { return mass_; }
+
+  const Eigen::Matrix3d &I() const { return I_; }
+
   const Vector3d &com() const { return data_.com[0]; }
 
   const Matrix3d &R() const { return R_; }
@@ -61,6 +65,9 @@ private:
   std::vector<int> feet_;
   aligned_vector<Vector3d> fk_;
   aligned_vector<Matrix3d> fk_skew_;
+
+  double mass_;
+  Eigen::Matrix3d I_;
 };
 
 } // namespace convexmpc
