@@ -12,6 +12,8 @@ class FrictionCone {
 public:
   FrictionCone(const double mu, const double fzmin = 0.0,
                const double fzmax = std::numeric_limits<double>::infinity());
+  FrictionCone(const double mu, const double fzmin, const double fzmax,
+               const double x, const double y);
 
   FrictionCone();
 
@@ -20,7 +22,7 @@ public:
   void setQP(QPData &qp_data) const;
 
 private:
-  double mu_, fzmin_, fzmax_;
+  double mu_, fzmin_, fzmax_, x_, y_;
   MatrixXd cone_;
 };
 

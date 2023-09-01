@@ -21,6 +21,7 @@ public:
   ~RobotState() = default;
 
   void update(const Vector19d &q, const Vector18d &v);
+  void update(const Vector34d &q, const Vector33d &v);
 
   const double &mass() const { return mass_; }
 

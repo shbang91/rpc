@@ -12,7 +12,7 @@ namespace convexmpc {
 
 struct SolverOptions {
   int iter_max = 30; // max iter
-                     //
+
   double alpha_min = 1e-12;
 
   double mu0 = 1.0e+02; // intial barrier parameter

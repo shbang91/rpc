@@ -40,7 +40,8 @@ public:
 
   const aligned_vector<Vector3d> &w() const { return w_; }
 
-  const aligned_vector<aligned_vector<Vector3d>> &f() const { return f_; }
+  // const aligned_vector<aligned_vector<Vector3d>> &f() const { return f_; }
+  const aligned_vector<aligned_vector<Vector6d>> &f() const { return f_; }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -53,7 +54,8 @@ private:
   aligned_vector<Vector7d> pose_;
   aligned_vector<Vector6d> twist_;
   aligned_vector<Vector3d> v_, w_;
-  aligned_vector<aligned_vector<Vector3d>> f_;
+  // aligned_vector<aligned_vector<Vector3d>> f_;
+  aligned_vector<aligned_vector<Vector6d>> f_;
   SingleRigidBody single_rigid_body_;
 };
 

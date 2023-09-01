@@ -16,8 +16,10 @@ namespace convexmpc {
 
 class CostFunction {
 public:
+  // CostFunction(const double dt, const Matrix6d &Qqq, const Matrix6d &Qvv,
+  // const Matrix3d &Quu, const double decay_rate = 1.0);
   CostFunction(const double dt, const Matrix6d &Qqq, const Matrix6d &Qvv,
-               const Matrix3d &Quu, const double decay_rate = 1.0);
+               const Matrix6d &Quu, const double decay_rate = 1.0);
 
   CostFunction() = default;
 

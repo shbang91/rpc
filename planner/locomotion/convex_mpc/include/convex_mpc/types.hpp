@@ -24,6 +24,8 @@ using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Vector7d = Eigen::Matrix<double, 7, 1>;
 using Vector19d = Eigen::Matrix<double, 19, 1>;
 using Vector18d = Eigen::Matrix<double, 18, 1>;
+using Vector34d = Eigen::Matrix<double, 34, 1>;
+using Vector33d = Eigen::Matrix<double, 33, 1>;
 
 using Quaterniond = Eigen::Quaternion<double>;
 using Eigen::Block;

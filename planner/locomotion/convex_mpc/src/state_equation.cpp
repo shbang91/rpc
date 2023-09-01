@@ -11,7 +11,8 @@ StateEquation::StateEquation(const double dt, const double m, const Matrix3d &I,
                              const Vector3d &g)
     : dt_(dt), m_(m), g_(g), R_(Matrix3d::Identity()), I_local_(I),
       I_global_(I), I_global_inv_(I_global_.inverse()),
-      I_inv_r_skew_(4, Matrix3d::Zero()) {
+      // I_inv_r_skew_(4, Matrix3d::Zero()) {
+      I_inv_r_skew_(2, Matrix3d::Zero()) {
   try {
     if (dt <= 0.0) {
       throw std::out_of_range("Invalid argument: dt must be positive!");
@@ -32,8 +33,14 @@ void StateEquation::initQP(QPData &qp_data) const {
   }
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     qp_data.qp_[i].B.setZero();
-    for (int j = 0; j < 4; ++j) {
-      qp_data.qp_[i].B.template block<3, 3>(9, j * 3) =
+    // point contact
+    // for (int j = 0; j < 4; ++j) {
+    // qp_data.qp_[i].B.template block<3, 3>(9, j * 3) =
+    //(dt_ / m_) * Matrix3d::Identity();
+    //}
+    // surface contact
+    for (int j = 0; j < 2; ++j) {
+      qp_data.qp_[i].B.template block<3, 3>(9, j * 6) =
           (dt_ / m_) * Matrix3d::Identity();
     }
   }
@@ -52,22 +59,34 @@ void StateEquation::setQP(const ContactSchedule &contact_schedule,
   I_global_.noalias() = I_global_inv_ * R_;
   I_global_inv_ = I_global_.inverse();
   // dynamics w.r.t. control input
-  for (int i = 0; i < 4; ++i) {
+  // for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 2; ++i) {
     I_inv_r_skew_[i].noalias() =
         dt_ * I_global_inv_ * robot_state.getLegKinematicsSkew(i);
   }
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     qp_data.qp_[i].A.template block<3, 3>(0, 6) = dt_ * R_;
     int nu = 0;
-    for (int j = 0; j < 4; ++j) {
+    // point contact (4 legs)
+    // for (int j = 0; j < 4; ++j) {
+    // if (contact_schedule.isContactActive(contact_schedule.phase(i))[j]) {
+    // qp_data.qp_[i].B.template block<3, 3>(6, nu) = I_inv_r_skew_[j];
+    // qp_data.qp_[i].B.template block<3, 3>(9, nu) =
+    //(dt_ / m_) * Matrix3d::Identity();
+    // nu += 3;
+    //}
+    // surface contact (2 legs)
+    for (int j = 0; j < 2; ++j) {
       if (contact_schedule.isContactActive(contact_schedule.phase(i))[j]) {
+        qp_data.qp_[i].B.template block<3, 3>(6, nu) = dt_ * I_global_inv_;
+        qp_data.qp_[i].B.template block<3, 3>(9, nu) = Eigen::Matrix3d::Zero();
+        nu += 3;
         qp_data.qp_[i].B.template block<3, 3>(6, nu) = I_inv_r_skew_[j];
         qp_data.qp_[i].B.template block<3, 3>(9, nu) =
-            (dt_ / m_) * Matrix3d::Identity();
+            (dt_ / m_) * Eigen::Matrix3d::Identity();
         nu += 3;
       }
     }
   }
 }
-
 } // namespace convexmpc

@@ -2,18 +2,29 @@
 
 namespace convexmpc {
 
+// CostFunction::CostFunction(const double dt, const Matrix6d &Qqq,
+// const Matrix6d &Qvv, const Matrix3d &Quu,
+// const double decay_rate)
+//: dt_(dt), Qqq_(Qqq), Qvv_(Qvv), Quu_(Matrix12d::Zero()),
+// decay_rate_(decay_rate), base_pose_(Vector7d::Zero()), base_pose_ref_(),
+// single_rigid_body_(), qdiff_(Vector6d::Zero()), Jqdiff_(Matrix6d::Zero()),
+// JtQqq_(Matrix6d::Zero()) {
+// for (int i = 0; i < 4; ++i) {
+// Quu_.template block<3, 3>(3 * i, 3 * i) = Quu;
+//}
+//}
+
 CostFunction::CostFunction(const double dt, const Matrix6d &Qqq,
-                           const Matrix6d &Qvv, const Matrix3d &Quu,
+                           const Matrix6d &Qvv, const Matrix6d &Quu,
                            const double decay_rate)
     : dt_(dt), Qqq_(Qqq), Qvv_(Qvv), Quu_(Matrix12d::Zero()),
       decay_rate_(decay_rate), base_pose_(Vector7d::Zero()), base_pose_ref_(),
       single_rigid_body_(), qdiff_(Vector6d::Zero()), Jqdiff_(Matrix6d::Zero()),
       JtQqq_(Matrix6d::Zero()) {
-  for (int i = 0; i < 4; ++i) {
-    Quu_.template block<3, 3>(3 * i, 3 * i) = Quu;
+  for (int i = 0; i < 2; ++i) {
+    Quu_.template block<6, 6>(6 * i, 6 * i) = Quu;
   }
 }
-
 void CostFunction::initQP(QPData &qp_data) {
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     qp_data.qp_[i].Q.template topLeftCorner<6, 6>() =

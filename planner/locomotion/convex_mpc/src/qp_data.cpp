@@ -14,12 +14,19 @@ void QPData::init(const ContactSchedule &contact_schedule) {
   std::fill(dim_.nu.begin(), dim_.nu.end(), nu);
   // std::fill(dim_.nbx.begin(), dim_.nbx.end(), 0);
   // dim_.nbx[0] = nx;
+  // std::fill(dim_.nbu.begin(), dim_.nbu.end(),
+  // 4); // fz_min < fz < fz_max for 4 legs
+  // dim_.nbu[N] = 0;
+  // std::fill(dim_.ng.begin(), dim_.ng.end(),
+  // 16); // -inf < cone * [fx, fy, fz] < 0 for 4 legs
+  // dim_.ng[N] = 0;
   std::fill(dim_.nbu.begin(), dim_.nbu.end(),
-            4); // fz_min < fz < fz_max for 4 legs
+            2); // fz_min < fz < fz_max for 4 legs
   dim_.nbu[N] = 0;
   std::fill(dim_.ng.begin(), dim_.ng.end(),
-            16); // -inf < cone * [fx, fy, fz] < 0 for 4 legs
+            32); // -inf < cone * [fx, fy, fz, mx, my, mz] < 0 for 2 legs
   dim_.ng[N] = 0;
+
   // const auto dim_err_msg = dim_.checkSize();
   // if (!dim_err_msg.empty()) {
   // for (const auto &e : dim_err_msg) {
@@ -82,9 +89,9 @@ void QPData::init(const ContactSchedule &contact_schedule) {
   }
   // qp_.lg_mask.resize(dim_.N + 1);
   // qp_[0].lg_mask.resize(0);
-  for (int i = 0; i < N; ++i) {
-    qp_[i].lg_mask = Eigen::VectorXd::Zero(16);
-  }
+  // for (int i = 0; i < N; ++i) {
+  // qp_[i].lg_mask = Eigen::VectorXd::Zero(16);
+  //}
   // const auto qp_err_msg = qp_.checkSize(dim_);
   // if (!qp_err_msg.empty()) {
   // for (const auto &e : qp_err_msg) {
@@ -104,21 +111,33 @@ void QPData::init(const ContactSchedule &contact_schedule) {
   // return;
   //}
   // qp_solution_.createHpipmData(dim_);
-}
+} // namespace convexmpc
 
 void QPData::resize(const ContactSchedule &contact_schedule) {
+  // for (int i = 0; i < dim_.N; ++i) {
+  // dim_.nu[i] =
+  // 3 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
+  //}
+  // for (int i = 0; i < dim_.N; ++i) {
+  // dim_.nbu[i] =
+  // 1 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
+  //}
+  // for (int i = 0; i < dim_.N; ++i) {
+  // dim_.ng[i] =
+  // 4 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
+  //}
+  // surface contat
   for (int i = 0; i < dim_.N; ++i) {
     dim_.nu[i] =
-        3 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
+        6 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
   }
   for (int i = 0; i < dim_.N; ++i) {
     dim_.nbu[i] =
-        // 3 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
         1 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
   }
   for (int i = 0; i < dim_.N; ++i) {
     dim_.ng[i] =
-        4 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
+        16 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
   }
   // const auto dim_err_msg = dim_.checkSize();
   // if (!dim_err_msg.empty()) {
@@ -166,7 +185,8 @@ void QPData::resize(const ContactSchedule &contact_schedule) {
     qp_[i].lg.setZero();
     qp_[i].ug.resize(dim_.ng[i]);
     qp_[i].ug.setZero();
-    qp_[i].lg_mask.setZero(dim_.ng[i]);
+    // qp_[i].lg_mask.setZero(dim_.ng[i]);
+    qp_[i].ug_mask.setZero(dim_.ng[i]);
   }
   // const auto qp_err_msg = qp_.checkSize(dim_);
   // if (!qp_err_msg.empty()) {
