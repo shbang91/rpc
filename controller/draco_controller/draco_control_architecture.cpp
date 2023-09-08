@@ -6,15 +6,20 @@
 #include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_move.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_landing.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_landing_transition.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_lifting.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_lifting_transition.hpp"
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
-//#include
+// #include
 //"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
-//#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
+// #include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -135,7 +140,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->force_task_map_["rf_force_task"], robot_);
 
   //=============================================================
-  // initialize state machines
+  // initialize walking state machines
   //=============================================================
   state_machine_container_[draco_states::kInitialize] =
       new Initialize(draco_states::kInitialize, robot_, this);
@@ -168,6 +173,39 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
                                this);
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
+
+  //==============================================================
+  // initialize static walking state machines
+  //==============================================================
+  state_machine_container_[draco_states::kDoubleSupportMoveCoMLeftFoot] =
+      new DoubleSupportMove(draco_states::kDoubleSupportMoveCoMLeftFoot, robot_,
+                            this);
+  state_machine_container_[draco_states::kDoubleSupportMoveCoMCenter] =
+      new DoubleSupportMove(draco_states::kDoubleSupportMoveCoMCenter, robot_,
+                            this);
+  state_machine_container_[draco_states::kDoubleSupportMoveCoMRightFoot] =
+      new DoubleSupportMove(draco_states::kDoubleSupportMoveCoMRightFoot,
+                            robot_, this);
+  state_machine_container_[draco_states::kLFootLiftingTransition] =
+      new FootLiftingTransition(draco_states::kLFootLiftingTransition, robot_,
+                                this);
+  state_machine_container_[draco_states::kRFootLiftingTransition] =
+      new FootLiftingTransition(draco_states::kRFootLiftingTransition, robot_,
+                                this);
+  state_machine_container_[draco_states::kLFootLifting] =
+      new FootLifting(draco_states::kLFootLifting, robot_, this);
+  state_machine_container_[draco_states::kRFootLifting] =
+      new FootLifting(draco_states::kRFootLifting, robot_, this);
+  state_machine_container_[draco_states::kLFootLanding] =
+      new FootLanding(draco_states::kLFootLanding, robot_, this);
+  state_machine_container_[draco_states::kRFootLanding] =
+      new FootLanding(draco_states::kRFootLanding, robot_, this);
+  state_machine_container_[draco_states::kLFootLandingTransition] =
+      new FootLandingTransition(draco_states::kLFootLandingTransition, robot_,
+                                this);
+  state_machine_container_[draco_states::kRFootLandingTransition] =
+      new FootLandingTransition(draco_states::kRFootLandingTransition, robot_,
+                                this);
 
   this->_InitializeParameters();
 }
@@ -206,6 +244,19 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionEnd];
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
+
+  // static walking
+  delete state_machine_container_[draco_states::kDoubleSupportMoveCoMLeftFoot];
+  delete state_machine_container_[draco_states::kDoubleSupportMoveCoMCenter];
+  delete state_machine_container_[draco_states::kDoubleSupportMoveCoMRightFoot];
+  delete state_machine_container_[draco_states::kLFootLiftingTransition];
+  delete state_machine_container_[draco_states::kRFootLiftingTransition];
+  delete state_machine_container_[draco_states::kLFootLifting];
+  delete state_machine_container_[draco_states::kRFootLifting];
+  delete state_machine_container_[draco_states::kLFootLanding];
+  delete state_machine_container_[draco_states::kRFootLanding];
+  delete state_machine_container_[draco_states::kLFootLandingTransition];
+  delete state_machine_container_[draco_states::kRFootLandingTransition];
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -239,6 +290,30 @@ void DracoControlArchitecture::_InitializeParameters() {
       cfg_["state_machine"]["single_support_swing"]);
   state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
       cfg_["state_machine"]["com_swaying"]);
+
+  // static walk
+  state_machine_container_[draco_states::kDoubleSupportMoveCoMLeftFoot]
+      ->SetParameters(cfg_["state_machine"]["move_com_left_foot"]);
+  state_machine_container_[draco_states::kDoubleSupportMoveCoMCenter]
+      ->SetParameters(cfg_["state_machine"]["move_com_center"]);
+  state_machine_container_[draco_states::kDoubleSupportMoveCoMRightFoot]
+      ->SetParameters(cfg_["state_machine"]["move_com_right_foot"]);
+  state_machine_container_[draco_states::kLFootLiftingTransition]
+      ->SetParameters(cfg_["state_machine"]["foot_lifting_transition"]);
+  state_machine_container_[draco_states::kRFootLiftingTransition]
+      ->SetParameters(cfg_["state_machine"]["foot_lifting_transition"]);
+  state_machine_container_[draco_states::kLFootLifting]->SetParameters(
+      cfg_["state_machine"]["lfoot_lifting"]);
+  state_machine_container_[draco_states::kRFootLifting]->SetParameters(
+      cfg_["state_machine"]["rfoot_lifting"]);
+  state_machine_container_[draco_states::kLFootLanding]->SetParameters(
+      cfg_["state_machine"]["lfoot_landing"]);
+  state_machine_container_[draco_states::kRFootLanding]->SetParameters(
+      cfg_["state_machine"]["rfoot_landing"]);
+  state_machine_container_[draco_states::kLFootLandingTransition]
+      ->SetParameters(cfg_["state_machine"]["foot_landing_transition"]);
+  state_machine_container_[draco_states::kRFootLandingTransition]
+      ->SetParameters(cfg_["state_machine"]["foot_landing_transition"]);
 
   // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc]
   //->SetParameters(cfg_["state_machine"]["lmpc_com_swaying"]);

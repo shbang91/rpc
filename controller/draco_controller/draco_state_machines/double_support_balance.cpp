@@ -81,7 +81,7 @@ void DoubleSupportBalance::LastVisit() {
   state_machine_time_ = 0.;
 
   if (sp_->b_use_base_height_)
-    sp_->des_com_height_ = robot_->GetRobotComPos()[2];
+    sp_->des_com_height_for_dcm_ = robot_->GetRobotComPos()[2];
 
   std::cout << "-----------------------------------------" << std::endl;
   std::cout << "des com height: " << sp_->des_com_height_ << std::endl;
@@ -119,13 +119,15 @@ StateId DoubleSupportBalance::GetNextState() {
   // if (b_nmpc_walking_)
   // return;
 
-  // if (b_static_walking_) {
-  // if (true) {
-  // return draco_states::kMoveComToLFoot;
-  //} else {
-  // return draco_states::kMoveComToRFoot;
-  //}
-  //}
+  if (b_static_walking_) {
+    if (sp_->stance_foot_ == draco_link::l_foot_contact) {
+      return draco_states::kDoubleSupportMoveCoMLeftFoot;
+    } else if (sp_->stance_foot_ == draco_link::r_foot_contact) {
+      return draco_states::kDoubleSupportMoveCoMRightFoot;
+    } else {
+      assert(false);
+    }
+  }
 }
 
 void DoubleSupportBalance::SetParameters(const YAML::Node &node) {}

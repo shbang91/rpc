@@ -13,6 +13,18 @@ constexpr int kRFContactTransitionStart = 8;
 constexpr int kRFContactTransitionEnd = 9;
 constexpr int kRFSingleSupportSwing = 10;
 constexpr int kDoubleSupportSwayingLmpc = 11;
+// static walk
+constexpr int kDoubleSupportMoveCoMLeftFoot = 12;
+constexpr int kDoubleSupportMoveCoMCenter = 13;
+constexpr int kDoubleSupportMoveCoMRightFoot = 14;
+constexpr int kLFootLiftingTransition = 15;
+constexpr int kRFootLiftingTransition = 16;
+constexpr int kLFootLifting = 17;
+constexpr int kRFootLifting = 18;
+constexpr int kLFootLanding = 19;
+constexpr int kRFootLanding = 20;
+constexpr int kLFootLandingTransition = 21;
+constexpr int kRFootLandingTransition = 22;
 } // namespace draco_states
 
 class DracoController;

@@ -1,6 +1,11 @@
 #include "controller/draco_controller/draco_interrupt_handler.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_move.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_landing.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_landing_transition.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_lifting.hpp"
+#include "controller/draco_controller/draco_state_machines/foot_lifting_transition.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 
 DracoInterruptHandler::DracoInterruptHandler(
@@ -128,6 +133,74 @@ void DracoInterruptHandler::Process() {
           ->DoDcmWalking();
     } else
       std::cout << "Wait Until Balance State" << std::endl;
+  }
+
+  if (b_button_j) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button j pressed: Static Stepping " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
+      static_cast<DoubleSupportBalance *>(
+          ctrl_arch_
+              ->state_machine_container()[draco_states::kDoubleSupportBalance])
+          ->DoStaticWalking();
+    } else if (ctrl_arch_->state() ==
+               draco_states::kDoubleSupportMoveCoMLeftFoot) {
+      static_cast<DoubleSupportMove *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kDoubleSupportMoveCoMLeftFoot])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kRFootLiftingTransition) {
+      static_cast<FootLiftingTransition *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kRFootLiftingTransition])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kRFootLifting) {
+      static_cast<FootLifting *>(
+          ctrl_arch_->state_machine_container()[draco_states::kRFootLifting])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kRFootLanding) {
+      static_cast<FootLanding *>(
+          ctrl_arch_->state_machine_container()[draco_states::kRFootLanding])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kRFootLandingTransition) {
+      static_cast<FootLandingTransition *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kRFootLandingTransition])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() ==
+               draco_states::kDoubleSupportMoveCoMCenter) {
+      static_cast<DoubleSupportMove *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kDoubleSupportMoveCoMCenter])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() ==
+               draco_states::kDoubleSupportMoveCoMRightFoot) {
+      static_cast<DoubleSupportMove *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kDoubleSupportMoveCoMRightFoot])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kLFootLiftingTransition) {
+      static_cast<FootLiftingTransition *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kLFootLiftingTransition])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kLFootLifting) {
+      static_cast<FootLifting *>(
+          ctrl_arch_->state_machine_container()[draco_states::kLFootLifting])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kLFootLanding) {
+      static_cast<FootLanding *>(
+          ctrl_arch_->state_machine_container()[draco_states::kLFootLanding])
+          ->b_static_walking_trigger_ = true;
+    } else if (ctrl_arch_->state() == draco_states::kLFootLandingTransition) {
+      static_cast<FootLandingTransition *>(
+          ctrl_arch_->state_machine_container()
+              [draco_states::kLFootLandingTransition])
+          ->b_static_walking_trigger_ = true;
+    } else {
+      std::cout << "Wait Until Balance State" << std::endl;
+    }
   }
 
   this->_ResetFlags();

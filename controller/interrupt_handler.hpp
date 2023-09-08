@@ -7,7 +7,7 @@ public:
       : b_signal_received_(false), b_button_one(false), b_button_two(false),
         b_button_three(false), b_button_four(false), b_button_five(false),
         b_button_six(false), b_button_seven(false), b_button_eight(false),
-        b_button_nine(false) {}
+        b_button_nine(false), b_button_j(false) {}
   virtual ~InterruptHandler() = default;
 
   virtual void Process() { _ResetFlags(); };
@@ -47,6 +47,11 @@ public:
     b_button_nine = true;
   }
 
+  void PressJ() {
+    b_signal_received_ = true;
+    b_button_j = true;
+  }
+
 protected:
   void _ResetFlags() {
     b_signal_received_ = false;
@@ -59,6 +64,8 @@ protected:
     b_button_seven = false;
     b_button_eight = false;
     b_button_nine = false;
+
+    b_button_j = false;
   }
 
   bool b_signal_received_;
@@ -71,4 +78,5 @@ protected:
   bool b_button_seven;
   bool b_button_eight;
   bool b_button_nine;
+  bool b_button_j;
 };
