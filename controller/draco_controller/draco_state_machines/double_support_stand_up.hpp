@@ -29,6 +29,7 @@ private:
 
   double target_height_;
   bool b_use_base_height_;
+  Eigen::Vector3d com_offset_local_;
 
   double rf_z_max_interp_duration_;
   Eigen::Matrix<double, 6, 1> init_reaction_force_;

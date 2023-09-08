@@ -15,7 +15,8 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
-      rf_z_max_interp_duration_(0.) {
+      rf_z_max_interp_duration_(0.),
+      com_offset_local_(Eigen::Vector3d::Zero()) {
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -55,6 +56,8 @@ void DoubleSupportStandUp::FirstVisit() {
 
   Eigen::Vector3d target_com_pos =
       (lfoot_iso.translation() + rfoot_iso.translation()) / 2.;
+  target_com_pos +=
+      sp_->rot_world_local_ * com_offset_local_; // add desired com offset
   target_com_pos[2] = target_height_;
 
   Eigen::Quaterniond lfoot_quat(lfoot_iso.linear());
@@ -116,6 +119,8 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
     std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
     util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
     sp_->des_com_height_ = target_height_;
+    util::ReadParameter(node, "com_offset_local", com_offset_local_);
+    sp_->com_offset_local_ = com_offset_local_;
     util::ReadParameter(node, "rf_z_max_interp_duration",
                         rf_z_max_interp_duration_);
   } catch (std::runtime_error &e) {

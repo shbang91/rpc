@@ -47,4 +47,6 @@ DracoStateProvider::DracoStateProvider() {
   cam_est_ = Eigen::Vector3d::Zero();
 
   rot_world_local_ = Eigen::Matrix3d::Identity();
+
+  com_offset_local_.setZero();
 }

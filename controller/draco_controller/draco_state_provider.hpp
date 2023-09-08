@@ -49,6 +49,8 @@ public:
 
   Eigen::Vector3d cam_est_;
 
+  Eigen::Vector3d com_offset_local_;
+
 private:
   DracoStateProvider();
 };

@@ -96,9 +96,6 @@ public:
     return joint_trq_limits_;
   }
 
-  // setters
-  void SetRobotComOffset(const Eigen::Vector3d &com_offset);
-
 private:
   void _Initialize();
   void _UpdateCentroidalQuantities();

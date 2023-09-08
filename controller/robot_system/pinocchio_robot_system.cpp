@@ -319,7 +319,3 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
             << std::endl;
   exit(0);
 }
-
-void PinocchioRobotSystem::SetRobotComOffset(const Eigen::Vector3d &com_offset) {
-  com_offset_ = com_offset;
-}
