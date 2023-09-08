@@ -20,7 +20,11 @@ public:
                                  const Eigen::Isometry3d &fin_pose,
                                  const double swing_height,
                                  const double duration);
+  void InitializeHalfSwingTrajectory(const Eigen::Isometry3d &ini_pose,
+                                     const Eigen::Isometry3d &fin_pose,
+                                     const double duration);
   void UpdateDesired(const double current_time);
+  void UpdateHalfSwingDesired(const double current_time);
 
 private:
   Task *pos_task_;
@@ -31,5 +35,7 @@ private:
   HermiteCurveVec *pos_second_half_curve_;
   HermiteQuaternionCurve *ori_curve_;
 
+  HermiteCurveVec *half_swing_pos_curve_;
+  HermiteQuaternionCurve *half_swing_ori_curve_;
   double duration_ = 0.;
 };
