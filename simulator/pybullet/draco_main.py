@@ -35,7 +35,8 @@ if Config.MEASURE_COMPUTATION_TIME:
 imu_dvel_bias = np.array([0.0, 0.0, 0.0])
 l_contact_volt_noise = 0.001
 r_contact_volt_noise = 0.001
-imu_ang_vel_noise_std_dev = 0.      # based on real IMU: 0.0052
+imu_ang_vel_noise_std_dev = 0.  # based on real IMU: 0.0052
+
 
 def get_sensor_data_from_pybullet(robot):
 
@@ -118,13 +119,15 @@ def get_sensor_data_from_pybullet(robot):
 
     # normal force measured on each foot
     _l_normal_force = 0
-    contacts = pb.getContactPoints(bodyA=robot, linkIndexA=DracoLinkIdx.l_ankle_ie_link)
+    contacts = pb.getContactPoints(bodyA=robot,
+                                   linkIndexA=DracoLinkIdx.l_ankle_ie_link)
     for contact in contacts:
         # add z-component on all points of contact
         _l_normal_force += contact[9]
 
     _r_normal_force = 0
-    contacts = pb.getContactPoints(bodyA=robot, linkIndexA=DracoLinkIdx.r_ankle_ie_link)
+    contacts = pb.getContactPoints(bodyA=robot,
+                                   linkIndexA=DracoLinkIdx.r_ankle_ie_link)
     for contact in contacts:
         # add z-component on all points of contact
         _r_normal_force += contact[9]
@@ -309,6 +312,7 @@ if __name__ == "__main__":
 
     ## connect pybullet sim server
     pb.connect(pb.GUI)
+    pb.configureDebugVisualizer(pb.COV_ENABLE_GUI, 0)
 
     pb.resetDebugVisualizerCamera(cameraDistance=1.5,
                                   cameraYaw=120,
@@ -475,6 +479,8 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressEight()
         elif pybullet_util.is_key_triggered(keys, '9'):
             rpc_draco_interface.interrupt_.PressNine()
+        elif pybullet_util.is_key_triggered(keys, 'j'):
+            rpc_draco_interface.interrupt_.PressJ()
 
         #get sensor data
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact, \
@@ -483,9 +489,12 @@ if __name__ == "__main__":
         l_normal_force = pybullet_util.simulate_contact_sensor(l_normal_force)
         r_normal_force = pybullet_util.simulate_contact_sensor(r_normal_force)
         imu_dvel = pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
-        imu_ang_vel = pybullet_util.add_sensor_noise(imu_ang_vel, imu_ang_vel_noise)
-        l_normal_force = pybullet_util.add_sensor_noise(l_normal_force, l_normal_volt_noise)
-        r_normal_force = pybullet_util.add_sensor_noise(r_normal_force, r_normal_volt_noise)
+        imu_ang_vel = pybullet_util.add_sensor_noise(imu_ang_vel,
+                                                     imu_ang_vel_noise)
+        l_normal_force = pybullet_util.add_sensor_noise(
+            l_normal_force, l_normal_volt_noise)
+        r_normal_force = pybullet_util.add_sensor_noise(
+            r_normal_force, r_normal_volt_noise)
 
         #copy sensor data to rpc sensor data class
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
