@@ -41,6 +41,7 @@ public:
   bool b_use_kf_state_estimator_;
 
   double des_com_height_;
+  double des_com_height_for_dcm_;
   Eigen::Quaterniond des_torso_quat_;
 
   int planning_id_;

@@ -38,6 +38,7 @@ DracoStateProvider::DracoStateProvider() {
   b_use_kf_state_estimator_ = false;
 
   des_com_height_ = 0.;
+  des_com_height_for_dcm_ = 0.;
   des_torso_quat_ = Eigen::Quaterniond::Identity();
 
   planning_id_ = 0;
