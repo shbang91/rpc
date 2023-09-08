@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 contact_detection:
   b_debug_only_log: true
@@ -82,7 +82,6 @@ state_estimator:
 controller:
   exp_smoothing_command_duration: 3 ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
-  com_offset: [0., -0.01, 0.]
 
 wbc:
   task:
@@ -96,7 +95,7 @@ wbc:
       sim_weight : [1000., 1000.]
       sim_kp : [200., 200.]
       sim_kd : [10., 10.]
-      sim_icp_weight : [40000., 40000.] # only used when feedback source : 1
+      sim_icp_weight : [3000., 3000.] # only used when feedback source : 1
       sim_icp_kp : [0.6, 1.4]
       sim_icp_kd : [0., 0.,] # x, y will be ignored
       sim_icp_ki : [0., 0.]
@@ -139,7 +138,7 @@ wbc:
       sim_com_kp : [100.]
       sim_com_kd : [5.]
 
-      sim_base_weight : [1000.] # only used when target source : 1
+      sim_base_weight : [5000.] # only used when target source : 1
       sim_base_kp : [100.]
       sim_base_kd : [5.] # x, y will be ignored
 
@@ -171,7 +170,7 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [100., 100., 10.]
+      sim_weight : [2000., 2000., 1000.]
       sim_kp : [200., 200., 100.]
       sim_kd : [14., 14., 10.]
 
@@ -202,8 +201,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [5000., 5000., 5000.]
-      sim_weight_at_swing : [8000., 8000., 8000.]
+      sim_weight : [50000., 50000., 50000.]
+      sim_weight_at_swing : [30000., 30000., 30000.]
       sim_kp : [300., 300., 300.]
       sim_kd : [30., 30., 30.]
 
@@ -219,8 +218,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [5000., 5000., 5000.]
-      sim_weight_at_swing : [5000., 5000., 5000.]
+      sim_weight : [50000., 50000., 50000.]
+      sim_weight_at_swing : [30000., 30000., 30000.]
       sim_kp : [80., 80., 80.]
       sim_kd : [4., 4., 4.]
 
@@ -237,14 +236,15 @@ wbc:
       ## sim params
       ########################################################################
       #sim_weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
-      sim_weight : [0., 0., 0., 1e-8, 1e-8, 5e-10] ## trq, force order
-      #sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
+      #sim_weight : [0., 0., 0., 1e-8, 1e-8, 5e-10] ## trq, force order
+      sim_weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [0., 0., 0., 5e-7, 5e-7, 8e-7]
+      #exp_weight : [0., 0., 0., 5e-7, 5e-7, 8e-7]
       #exp_weight : [0., 0., 0., 0., 0., 1e-4]
+      exp_weight : [0., 0., 0., 0., 0., 0.]
 
   contact:
     ########################################################################
@@ -272,8 +272,9 @@ wbc:
   qp:
     b_save_costs: true
     lambda_qddot: 5e-6 ##regularization
-    lambda_rf: [9e-7, 5e-7, 6e-7, 0., 0., 0., 9e-7, 5e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    #lambda_rf: [9e-7, 5e-7, 6e-7, 0., 0., 0., 9e-7, 5e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
     #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5, 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5]  #regulariztion lfoot / rfoot (trq, force order)
     b_trq_limit: false
 
   joint_integrator:
@@ -291,13 +292,16 @@ state_machine:
       wait_time: 15.
 
     stand_up:
-      standup_duration: 5.
+      standup_duration: 3.
       target_com_height: 0.658
       target_base_height: 0.90
 
+      #com_offset_local: [0., 0.05, 0.]
+      com_offset_local: [0.0, 0.0, 0.0]
+
       rf_z_max_interp_duration: 0.1
 
-    b_use_const_desired_foot_pos: true
+    b_use_const_desired_foot_pos: false
 
     single_support_swing:
       swing_height: 0.05
@@ -307,6 +311,35 @@ state_machine:
       frequency: [0., 0.08, 0.] # [hz]
       #amplitude: [0., 0., 0.05] # [m]
       #frequency: [0., 0., 0.05] # [hz]
+
+    move_com_left_foot:
+      moving_duration: 3.0
+
+    move_com_center:
+      moving_duration: 3.0
+
+    move_com_right_foot:
+      moving_duration: 3.0
+
+    foot_lifting_transition:
+      max_rf_z_ramp_time: 0.5
+    lfoot_lifting:
+      moving_duration: 1.0
+      foot_offset_local: [0.0, 0.0, 0.05]
+    rfoot_lifting:
+      moving_duration: 1.0
+      foot_offset_local: [0.0, 0.0, 0.05]
+
+    foot_landing_transition:
+      max_rf_z_ramp_time: 0.5
+    lfoot_landing:
+      moving_duration: 1.0
+      foot_offset_local: [0.0, 0.0, -0.06]
+    rfoot_landing:
+      moving_duration: 1.0
+      foot_offset_local: [0.0, 0.0, -0.06]
+
+
 
     lmpc_com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
