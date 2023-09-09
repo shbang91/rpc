@@ -5,8 +5,8 @@ ip_address: "tcp://127.0.0.1:5557"
 #data_save_freq: 1
 data_save_freq: 50
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 contact_detection:
   b_debug_only_log: true
@@ -28,7 +28,7 @@ state_estimator:
   kf: false
   b_use_marg_filter: false   # only used when kf is set to true
 
-  joint_vel_lp_filter_cutoff_freq: 0.2
+  joint_vel_lp_filter_cutoff_freq: 0.01
   ########################################################################
   ## sim params
   ########################################################################
@@ -118,9 +118,9 @@ wbc:
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
       exp_icp_weight : [3000., 3000.] # only used when feedback source : 1
-      exp_icp_kp : [0.5, 0.5]
+      exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.5, 0.5] 
+      exp_icp_ki : [0.6, 0.8] 
 
       ## IF icp_integrator_type == 0:
       #exp_time_constant : 0.35

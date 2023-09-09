@@ -180,10 +180,14 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
   prev_base_joint_pos_ = base_joint_pos;
 
   // Update robot model with full estimate
-  robot_->UpdateRobotModel(
-      base_joint_pos, Eigen::Quaterniond(base_joint_ori_rot).normalized(),
-      base_joint_lin_vel, sensor_data->imu_ang_vel_, sensor_data->joint_pos_,
-      sensor_data->joint_vel_, true);
+  robot_->UpdateRobotModel(base_joint_pos,
+                           Eigen::Quaterniond(base_joint_ori_rot).normalized(),
+                           base_joint_lin_vel, sensor_data->imu_ang_vel_,
+                           sensor_data->joint_pos_, filtered_joint_vel, true);
+  // robot_->UpdateRobotModel(
+  // base_joint_pos, Eigen::Quaterniond(base_joint_ori_rot).normalized(),
+  // base_joint_lin_vel, sensor_data->imu_ang_vel_, sensor_data->joint_pos_,
+  // sensor_data->joint_vel_, true);
 
   // TODO:foot contact switch
   // sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
