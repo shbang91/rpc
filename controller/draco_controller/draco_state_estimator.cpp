@@ -34,8 +34,8 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
     bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
 
     std::string prefix = b_sim ? "sim" : "exp";
-    int foot_frame = util::ReadParameter<int>(
-            cfg["state_estimator"], "foot_reference_frame");
+    int foot_frame = util::ReadParameter<int>(cfg["state_estimator"],
+                                              "foot_reference_frame");
 
     // set the foot that will be used to estimate base in first_visit
     if (foot_frame == 0) {
@@ -69,6 +69,12 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
           new LowPassVelocityFilter(sp_->servo_dt_, cut_off_period, 3);
     }
 
+    int joint_vel_dim = robot_->GetJointPos().size();
+    double joint_vel_cutoff_freq = util::ReadParameter<double>(
+        cfg["state_estimator"], "joint_vel_lp_filter_cutoff_freq");
+    joint_vel_lp_filter_ = new FirstOrderLowPassFilter(
+        sp_->servo_dt_, joint_vel_cutoff_freq, joint_vel_dim);
+
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -86,13 +92,24 @@ DracoStateEstimator::~DracoStateEstimator() {
   }
   if (com_vel_exp_filter_ != nullptr)
     delete com_vel_exp_filter_;
+
+  delete joint_vel_lp_filter_;
 }
 
 void DracoStateEstimator::Initialize(DracoSensorData *sensor_data) {
-  robot_->UpdateRobotModel(
-      Eigen::Vector3d::Zero(), Eigen::Quaterniond::Identity(),
-      Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), sensor_data->joint_pos_,
-      sensor_data->joint_vel_, false);
+  Eigen::VectorXd filtered_joint_vel =
+      Eigen::VectorXd::Zero(robot_->GetJointPos().size());
+  joint_vel_lp_filter_->Input(sensor_data->joint_vel_);
+  filtered_joint_vel = joint_vel_lp_filter_->Output();
+
+  robot_->UpdateRobotModel(Eigen::Vector3d::Zero(),
+                           Eigen::Quaterniond::Identity(),
+                           Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(),
+                           sensor_data->joint_pos_, filtered_joint_vel, false);
+  // robot_->UpdateRobotModel(
+  // Eigen::Vector3d::Zero(), Eigen::Quaterniond::Identity(),
+  // Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), sensor_data->joint_pos_,
+  // sensor_data->joint_vel_, false);
 
   // save data
 #if B_USE_MATLOGGER
@@ -116,12 +133,23 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
   // TODO imu angular velocity filtering for real experiment -> PnC does not use
   // this in controller
 
+  // joint vel filter
+  Eigen::VectorXd filtered_joint_vel =
+      Eigen::VectorXd::Zero(robot_->GetJointPos().size());
+
+  joint_vel_lp_filter_->Input(sensor_data->joint_vel_);
+  filtered_joint_vel = joint_vel_lp_filter_->Output();
+
   // Update robot model only with base orientation
   robot_->UpdateRobotModel(Eigen::Vector3d::Zero(),
                            Eigen::Quaterniond(base_joint_ori_rot).normalized(),
                            Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
-                           sensor_data->joint_pos_, sensor_data->joint_vel_,
-                           false);
+                           sensor_data->joint_pos_, filtered_joint_vel, false);
+  // robot_->UpdateRobotModel(Eigen::Vector3d::Zero(),
+  // Eigen::Quaterniond(base_joint_ori_rot).normalized(),
+  // Eigen::Vector3d::Zero(), sensor_data->imu_ang_vel_,
+  // sensor_data->joint_pos_, sensor_data->joint_vel_,
+  // false);
 
   // Estimate floating base position
   // anchor frame depending on the stance foot

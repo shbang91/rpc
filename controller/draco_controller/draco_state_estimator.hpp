@@ -50,6 +50,7 @@ private:
   std::vector<SimpleMovingAverage *> com_vel_mv_avg_filter_;
   ExponentialMovingAverageFilter *com_vel_exp_filter_;
   LowPassVelocityFilter *com_vel_lp_filter_;
+  FirstOrderLowPassFilter *joint_vel_lp_filter_;
 
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
