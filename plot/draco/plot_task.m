@@ -17,8 +17,8 @@ d = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 fprintf('loading %s \n', d(i).name)
 load(d(i).name)
 
-% dd = dir("/tmp/draco_state_estimator_data*.mat");
-dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
+dd = dir("/tmp/draco_state_estimator_data*.mat");
+% dd = dir(sprintf("%s/draco_state_estimator_kf_data*.mat", exp_data_location));
 [tmp, i] = max([dd.datenum]);
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'icp_est')
@@ -1201,10 +1201,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
 num_fig = num_fig + 1;
-l_joint_lim_low = [-0.872665; -0.2618; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.7854]; 
-l_joint_lim_up = [0.872665; 0.7854; 0.5236; 1.52716; 1.52716; 1.0472; 0.2618]; 
-r_joint_lim_low = [-0.872665; -0.7854; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.2618]; 
-r_joint_lim_up = [0.872665; 0.2618; 0.5236; 1.52716; 1.52716; 1.0472; 0.7854]; 
+l_joint_lim_low = [-0.872665; -0.2618; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.523599]; 
+l_joint_lim_up = [0.872665; 0.7854; 0.5236; 1.52716; 1.52716; 1.0472; 0.523599]; 
+r_joint_lim_low = [-0.872665; -0.7854; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.523599]; 
+r_joint_lim_up = [0.872665; 0.2618; 0.5236; 1.52716; 1.52716; 1.0472; 0.523599]; 
 j = 0;
 k = 0;
 for i = 1:14
@@ -1341,12 +1341,12 @@ num_of_rows = ceil(num_of_tasks/num_of_columns);
 for i = 1:num_of_tasks
     curr_task_cost = eval(sprintf('wbc_cost_w_%s', task_names{i}));
     ax(i) = subplot(num_of_rows, num_of_columns, i);
-    plot(wbc_time(35:end), curr_task_cost(35:end), 'r', 'LineWidth', 3);
+    plot(wbc_time(5:end), curr_task_cost(5:end), 'r', 'LineWidth', 3);
     hold on;
     grid on
     if ~(any(isnan(curr_task_cost)))
-        min_val = min(curr_task_cost(35:end));
-        max_val = max(curr_task_cost(35:end));
+        min_val = min(curr_task_cost(5:end));
+        max_val = max(curr_task_cost(5:end));
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
     else
@@ -1453,4 +1453,50 @@ max_val = max_val + 0.1;
 plot_phase(time, state, min_val, max_val, phase_color)
 xlabel('time')
 ylabel('RF')
+linkaxes(ax, 'x')
+
+%%%%%%% upper body task %%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:13
+    ax(i) = subplot(13,1,i);
+        plot(wbc_time, des_upper_body_pos(i, :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(wbc_time, act_upper_body_pos(i, :), 'b', 'LineWidth', 2);
+        min_val = min([des_upper_body_pos(i,:), act_upper_body_pos(i,:)]);
+        max_val = max([des_upper_body_pos(i,:), act_upper_body_pos(i,:)]);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+%         ylabel(draco_lf_label(j))
+%         if j == 1
+%             title('left foot jpos data', 'FontSize',30)
+%         end
+end
+linkaxes(ax, 'x')
+
+%% upper body velocity
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:13
+    ax(i) = subplot(13,1,i);
+        plot(wbc_time, des_upper_body_vel(i, :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(wbc_time, act_upper_body_vel(i, :), 'b', 'LineWidth', 2);
+        min_val = min([des_upper_body_vel(i,:), act_upper_body_vel(i,:)]);
+        max_val = max([des_upper_body_vel(i,:), act_upper_body_vel(i,:)]);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+%         ylabel(draco_lf_label(j))
+%         if j == 1
+%             title('left foot jpos data', 'FontSize',30)
+%         end
+end
 linkaxes(ax, 'x')

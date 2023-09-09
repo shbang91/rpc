@@ -149,7 +149,7 @@ for i = 1:3
     xlabel('time')
     ylabel(xyz_label(i))
 end
-sgtitle('IMU accel in Balance State', 'FontSize', 30)
+sgtitle('IMU gyroscope in Balance State', 'FontSize', 30)
 linkaxes(ax)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,7 +272,7 @@ for i = 1:3
 end
 
 % compute imu accel errors
-bal_accel = imu_accel_raw(:, wbc_state == balance_state);
+bal_accel = imu_accel_est(:, wbc_state == balance_state);
 bal_accel_mu = mean(bal_accel, 2);
 bal_accel_errors = bal_accel - bal_accel_mu;
 

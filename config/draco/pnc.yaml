@@ -50,13 +50,13 @@ state_estimator:
   ## exp params
   ########################################################################
   exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
-  exp_sigma_base_acc: [0.17, 0.17, 0.072]
+  exp_sigma_base_acc: [0.05, 0.05, 0.12]
   exp_sigma_pos_lfoot: [0.001, 0.001, 0.005]
   exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
   exp_sigma_vel_lfoot: [0.003, 0.003, 0.001]
   exp_sigma_vel_rfoot: [0.003, 0.003, 0.001]
-  exp_imu_accel_bias: [0.0, 0.0, 0.15]
-  exp_base_accel_time_constant: 0.02
+  exp_imu_accel_bias: [0.0, 0.0, 0.11]
+  exp_base_accel_time_constant: 0.05
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 0.1
   exp_num_data_base_accel: [10, 10, 10]
@@ -82,14 +82,14 @@ state_estimator:
 
 
 controller:
-  exp_smoothing_command_duration: 3 ## this only used when b_sim: false
+  exp_smoothing_command_duration: 5 ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
 
 wbc:
   task:
     com_xy_task:
       com_feedback_source: 1 # 0: com feedback / 1: icp feedback
-      icp_integrator_type: 1 # 0: exponential smoother / 1: leaky integrator
+      icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
 
       ########################################################################
       ## sim params
@@ -117,13 +117,14 @@ wbc:
       exp_weight : [1000., 1000.]
       exp_kp : [200., 200.]
       exp_kd : [10., 10.]
-      exp_icp_weight : [40000., 50000.] # only used when feedback source : 1
-      exp_icp_kp : [0.7, 1.4]
+      exp_icp_weight : [3000., 3000.] # only used when feedback source : 1
+      exp_icp_kp : [0.5, 0.5]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.0, 0.0] 
+      exp_icp_ki : [0.5, 0.5] 
 
       ## IF icp_integrator_type == 0:
-      exp_time_constant : 0.35
+      #exp_time_constant : 0.35
+      exp_time_constant : 0.2
       exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
@@ -289,7 +290,8 @@ wbc:
 state_machine:
     initialize:
       init_duration: 5.
-      target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [0., 0.160, -0.785, 0.785, 0.785, -0.785, -0.160, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.160, -0.785, 0.785, 0.785, -0.785, 0.160, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
       wait_time: 15.
 
