@@ -44,6 +44,16 @@ DracoStateProvider::DracoStateProvider() {
   planning_id_ = 0;
 
   floating_base_jidx_ = {0, 1, 2, 3, 4, 5};
+  left_leg_jidx_ = {
+      draco_joint::l_hip_ie + 6,     draco_joint::l_hip_aa + 6,
+      draco_joint::l_hip_fe + 6,     draco_joint::l_knee_fe_jp + 6,
+      draco_joint::l_knee_fe_jd + 6, draco_joint::l_ankle_fe + 6,
+      draco_joint::l_ankle_ie + 6};
+  right_leg_jidx_ = {
+      draco_joint::r_hip_ie + 6,     draco_joint::r_hip_aa + 6,
+      draco_joint::r_hip_fe + 6,     draco_joint::r_knee_fe_jp + 6,
+      draco_joint::r_knee_fe_jd + 6, draco_joint::r_ankle_fe + 6,
+      draco_joint::r_ankle_ie + 6};
 
   cam_est_ = Eigen::Vector3d::Zero();
 

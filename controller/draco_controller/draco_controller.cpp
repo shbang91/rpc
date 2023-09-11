@@ -29,6 +29,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
       b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
       b_use_modified_swing_foot_jac_(false), smoothing_command_duration_(0.),
+      b_use_modified_swing_foot_jac_(false), b_use_modified_com_xy_jac_(false),
+      smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
@@ -98,6 +100,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
     b_use_modified_swing_foot_jac_ = util::ReadParameter<bool>(
         cfg["controller"], "b_use_modified_swing_foot_jac");
+    b_use_modified_com_xy_jac_ = util::ReadParameter<bool>(
+        cfg["controller"], "b_use_modified_com_xy_jac");
 
     // initialize iwbc qp params
     ihwbc_->SetParameters(cfg["wbc"]["qp"]);
@@ -188,6 +192,18 @@ void DracoController::GetCommand(void *command) {
           sp_->floating_base_jidx_);
       tci_container_->task_map_["rf_ori_task"]->ModifyJacobian(
           sp_->floating_base_jidx_);
+    }
+
+    if (b_use_modified_com_xy_jac_ && !sp_->b_lf_contact_) {
+      // TEST
+      tci_container_->task_map_["com_xy_task"]->ModifyJacobian(
+          sp_->left_leg_jidx_);
+    }
+
+    if (b_use_modified_com_xy_jac_ && !sp_->b_rf_contact_) {
+      // TEST
+      tci_container_->task_map_["com_xy_task"]->ModifyJacobian(
+          sp_->right_leg_jidx_);
     }
 
     int rf_dim(0);

@@ -47,6 +47,8 @@ public:
   int planning_id_;
 
   std::vector<int> floating_base_jidx_;
+  std::vector<int> left_leg_jidx_;
+  std::vector<int> right_leg_jidx_;
 
   Eigen::Vector3d cam_est_;
 
