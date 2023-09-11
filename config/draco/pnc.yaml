@@ -28,7 +28,7 @@ state_estimator:
   kf: false
   b_use_marg_filter: false   # only used when kf is set to true
 
-  joint_vel_lp_filter_cutoff_freq: 0.01
+  joint_vel_lp_filter_cutoff_freq: 0.05
   ########################################################################
   ## sim params
   ########################################################################
@@ -85,6 +85,9 @@ controller:
   exp_smoothing_command_duration: 5 ## this only used when b_sim: false
   b_use_modified_swing_foot_jac: true
   b_use_modified_com_xy_jac: false
+
+  b_use_filtered_torque: false
+  alpha_cmd: 0.9
 
 wbc:
   task:
