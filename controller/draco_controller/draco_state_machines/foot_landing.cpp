@@ -40,8 +40,9 @@ void FootLanding::FirstVisit() {
     target_des_foot_iso.translation() =
         init_des_foot_iso.translation() +
         init_des_foot_iso.linear() * foot_pos_offset_local_;
-    target_des_foot_iso.translation()[2] =
-        sp_->nominal_right_foot_iso_.translation()[2];
+    // target_des_foot_iso.translation()[2] =
+    // sp_->nominal_right_foot_iso_.translation()[2];
+    target_des_foot_iso.translation()[2] = 0.0;
     // TODO: make this general (getting ori command from yaml)
     target_des_foot_iso.linear() = init_des_foot_iso.linear();
 
@@ -68,8 +69,9 @@ void FootLanding::FirstVisit() {
     target_des_foot_iso.translation() =
         init_des_foot_iso.translation() +
         init_des_foot_iso.linear() * foot_pos_offset_local_;
-    target_des_foot_iso.translation()[2] =
-        sp_->nominal_left_foot_iso_.translation()[2];
+    // target_des_foot_iso.translation()[2] =
+    // sp_->nominal_left_foot_iso_.translation()[2];
+    target_des_foot_iso.translation()[2] = 0.0;
     // TODO: make this general (getting ori command from yaml)
     target_des_foot_iso.linear() = init_des_foot_iso.linear();
 
@@ -103,8 +105,7 @@ void FootLanding::OneStep() {
 void FootLanding::LastVisit() { b_static_walking_trigger_ = false; }
 
 bool FootLanding::EndOfState() {
-  return (state_machine_time_ > end_time_ && b_static_walking_trigger_) ? true
-                                                                        : false;
+  return (state_machine_time_ > end_time_) ? true : false;
 }
 
 StateId FootLanding::GetNextState() {

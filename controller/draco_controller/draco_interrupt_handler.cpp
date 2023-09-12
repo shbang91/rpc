@@ -150,11 +150,6 @@ void DracoInterruptHandler::Process() {
           ctrl_arch_->state_machine_container()
               [draco_states::kDoubleSupportMoveCoMLeftFoot])
           ->b_static_walking_trigger_ = true;
-    } else if (ctrl_arch_->state() == draco_states::kRFootLiftingTransition) {
-      static_cast<FootLiftingTransition *>(
-          ctrl_arch_->state_machine_container()
-              [draco_states::kRFootLiftingTransition])
-          ->b_static_walking_trigger_ = true;
     } else if (ctrl_arch_->state() == draco_states::kRFootLifting) {
       static_cast<FootLifting *>(
           ctrl_arch_->state_machine_container()[draco_states::kRFootLifting])
@@ -179,11 +174,6 @@ void DracoInterruptHandler::Process() {
       static_cast<DoubleSupportMove *>(
           ctrl_arch_->state_machine_container()
               [draco_states::kDoubleSupportMoveCoMRightFoot])
-          ->b_static_walking_trigger_ = true;
-    } else if (ctrl_arch_->state() == draco_states::kLFootLiftingTransition) {
-      static_cast<FootLiftingTransition *>(
-          ctrl_arch_->state_machine_container()
-              [draco_states::kLFootLiftingTransition])
           ->b_static_walking_trigger_ = true;
     } else if (ctrl_arch_->state() == draco_states::kLFootLifting) {
       static_cast<FootLifting *>(

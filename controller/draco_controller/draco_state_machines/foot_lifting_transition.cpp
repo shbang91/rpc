@@ -27,18 +27,33 @@ void FootLiftingTransition::FirstVisit() {
   sp_->b_lf_contact_ = true;
   sp_->b_rf_contact_ = true;
 
+  // saving nominal foot pose for foot impedance control
+  // right foot
+  sp_->nominal_right_foot_iso_.translation() =
+      // ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+      ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->CurrentPos();
+  Eigen::VectorXd rf_quat_vec =
+      // ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+      ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->CurrentPos();
+  Eigen::Quaterniond rf_quat(rf_quat_vec[3], rf_quat_vec[0], rf_quat_vec[1],
+                             rf_quat_vec[2]);
+  sp_->nominal_right_foot_iso_.linear() =
+      rf_quat.normalized().toRotationMatrix();
+
+  // left foot
+  sp_->nominal_left_foot_iso_.translation() =
+      // ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+      ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->CurrentPos();
+  Eigen::VectorXd lf_quat_vec =
+      // ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+      ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->CurrentPos();
+  Eigen::Quaterniond lf_quat(lf_quat_vec[3], lf_quat_vec[0], lf_quat_vec[1],
+                             lf_quat_vec[2]);
+  sp_->nominal_left_foot_iso_.linear() =
+      lf_quat.normalized().toRotationMatrix();
+
   if (sp_->stance_foot_ == draco_link::l_foot_contact) {
     std::cout << "draco_states::kRFootLiftingTransition" << std::endl;
-
-    // right foot
-    sp_->nominal_right_foot_iso_.translation() =
-        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
-    Eigen::VectorXd rf_quat_vec =
-        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
-    Eigen::Quaterniond rf_quat(rf_quat_vec[3], rf_quat_vec[0], rf_quat_vec[1],
-                               rf_quat_vec[2]);
-    sp_->nominal_right_foot_iso_.linear() =
-        rf_quat.normalized().toRotationMatrix();
 
     // reaction force manager
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
@@ -52,16 +67,6 @@ void FootLiftingTransition::FirstVisit() {
 
   } else if (sp_->stance_foot_ == draco_link::r_foot_contact) {
     std::cout << "draco_states::kLFootLiftingTransition" << std::endl;
-
-    // left foot
-    sp_->nominal_left_foot_iso_.translation() =
-        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
-    Eigen::VectorXd lf_quat_vec =
-        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
-    Eigen::Quaterniond lf_quat(lf_quat_vec[3], lf_quat_vec[0], lf_quat_vec[1],
-                               lf_quat_vec[2]);
-    sp_->nominal_left_foot_iso_.linear() =
-        lf_quat.normalized().toRotationMatrix();
 
     // reaction force manager
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);

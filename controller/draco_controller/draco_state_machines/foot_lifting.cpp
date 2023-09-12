@@ -20,6 +20,12 @@ FootLifting::FootLifting(const StateId state_id, PinocchioRobotSystem *robot,
 void FootLifting::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
 
+  // saving nominal foot pose for foot impedance control
+  sp_->nominal_right_foot_iso_ =
+      robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  sp_->nominal_left_foot_iso_ =
+      robot_->GetLinkIsometry(draco_link::l_foot_contact);
+
   if (sp_->stance_foot_ == draco_link::l_foot_contact) {
     std::cout << "draco_states::kRFootLifting" << std::endl;
 

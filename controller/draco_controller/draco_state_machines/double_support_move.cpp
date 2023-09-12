@@ -28,15 +28,24 @@ void DoubleSupportMove::FirstVisit() {
 
   Eigen::Vector3d init_com_pos = Eigen::Vector3d::Zero();
   init_com_pos.head<2>() =
-      ctrl_arch_->tci_container_->task_map_["com_xy_task"]->DesiredPos();
+      // ctrl_arch_->tci_container_->task_map_["com_xy_task"]->DesiredPos();
+      ctrl_arch_->tci_container_->task_map_["com_xy_task"]->CurrentPos();
   init_com_pos[2] =
-      ctrl_arch_->tci_container_->task_map_["com_z_task"]->DesiredPos()[0];
+      // ctrl_arch_->tci_container_->task_map_["com_z_task"]->DesiredPos()[0];
+      ctrl_arch_->tci_container_->task_map_["com_z_task"]->CurrentPos()[0];
   Eigen::VectorXd init_torso_quat_vec =
       ctrl_arch_->tci_container_->task_map_["torso_ori_task"]
-          ->DesiredPos(); // q.x, q.y, q.z, q.w
+          ->CurrentPos(); // q.x, q.y, q.z, q.w
+                          //->DesiredPos(); // q.x, q.y, q.z, q.w
   Eigen::Quaterniond init_torso_quat(
       init_torso_quat_vec[3], init_torso_quat_vec[0], init_torso_quat_vec[1],
       init_torso_quat_vec[2]);
+
+  // saving nominal foot pose for foot impedance control
+  sp_->nominal_right_foot_iso_ =
+      robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  sp_->nominal_left_foot_iso_ =
+      robot_->GetLinkIsometry(draco_link::l_foot_contact);
 
   if (state_id_ == draco_states::kDoubleSupportMoveCoMLeftFoot) {
     std::cout << "draco_states::kDoubleSupportMoveCoMLeftFoot" << std::endl;
