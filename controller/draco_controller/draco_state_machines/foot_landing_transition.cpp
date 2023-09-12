@@ -2,7 +2,9 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -85,21 +87,44 @@ void FootLandingTransition::OneStep() {
   }
 
   // foot task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  ctrl_arch_->lf_SE3_tm_->UseNominal(sp_->nominal_left_foot_iso_);
+  ctrl_arch_->rf_SE3_tm_->UseNominal(sp_->nominal_right_foot_iso_);
 }
 
 void FootLandingTransition::LastVisit() {
   b_static_walking_trigger_ = false;
-  if (state_id_ == draco_states::kLFootLandingTransition)
+  if (state_id_ == draco_states::kLFootLandingTransition) {
     sp_->stance_foot_ = draco_link::l_foot_contact;
-  if (state_id_ == draco_states::kRFootLandingTransition)
+    // left foot
+    sp_->nominal_left_foot_iso_.translation() =
+        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->CurrentPos();
+    Eigen::VectorXd lf_quat_vec =
+        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->CurrentPos();
+    Eigen::Quaterniond lf_quat(lf_quat_vec[3], lf_quat_vec[0], lf_quat_vec[1],
+                               lf_quat_vec[2]);
+    sp_->nominal_left_foot_iso_.linear() =
+        lf_quat.normalized().toRotationMatrix();
+  }
+  if (state_id_ == draco_states::kRFootLandingTransition) {
     sp_->stance_foot_ = draco_link::r_foot_contact;
+    // right foot
+    sp_->nominal_right_foot_iso_.translation() =
+        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->CurrentPos();
+    Eigen::VectorXd rf_quat_vec =
+        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->CurrentPos();
+    Eigen::Quaterniond rf_quat(rf_quat_vec[3], rf_quat_vec[0], rf_quat_vec[1],
+                               rf_quat_vec[2]);
+    sp_->nominal_right_foot_iso_.linear() =
+        rf_quat.normalized().toRotationMatrix();
+  }
 }
 
 bool FootLandingTransition::EndOfState() {
-  return (state_machine_time_ > end_time_ && b_static_walking_trigger_) ? true
-                                                                        : false;
+  // return (state_machine_time_ > end_time_ && b_static_walking_trigger_) ?
+  // true : false;
+  return (state_machine_time_ > end_time_) ? true : false;
 }
 
 StateId FootLandingTransition::GetNextState() {

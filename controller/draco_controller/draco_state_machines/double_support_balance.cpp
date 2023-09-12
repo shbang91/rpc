@@ -26,8 +26,6 @@ DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
   }
 
   sp_ = DracoStateProvider::GetStateProvider();
-  nominal_lfoot_iso_.setIdentity();
-  nominal_rfoot_iso_.setIdentity();
 }
 
 void DoubleSupportBalance::FirstVisit() {
@@ -46,10 +44,12 @@ void DoubleSupportBalance::FirstVisit() {
   b_static_walking_ = false;
 
   // set current foot position as nominal (desired) for rest of this state
-  nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
-  nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
-  FootStep::MakeHorizontal(nominal_lfoot_iso_);
-  FootStep::MakeHorizontal(nominal_rfoot_iso_);
+  sp_->nominal_left_foot_iso_ =
+      robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  sp_->nominal_right_foot_iso_ =
+      robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  FootStep::MakeHorizontal(sp_->nominal_left_foot_iso_);
+  FootStep::MakeHorizontal(sp_->nominal_right_foot_iso_);
 }
 
 void DoubleSupportBalance::OneStep() {
@@ -57,8 +57,8 @@ void DoubleSupportBalance::OneStep() {
 
   // update foot pose task update
   if (b_use_fixed_foot_pos_) {
-    ctrl_arch_->lf_SE3_tm_->UseNominal(nominal_lfoot_iso_);
-    ctrl_arch_->rf_SE3_tm_->UseNominal(nominal_rfoot_iso_);
+    ctrl_arch_->lf_SE3_tm_->UseNominal(sp_->nominal_left_foot_iso_);
+    ctrl_arch_->rf_SE3_tm_->UseNominal(sp_->nominal_right_foot_iso_);
   } else {
     ctrl_arch_->lf_SE3_tm_->UseCurrent();
     ctrl_arch_->rf_SE3_tm_->UseCurrent();

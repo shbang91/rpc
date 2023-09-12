@@ -54,6 +54,9 @@ public:
 
   Eigen::Vector3d com_offset_local_;
 
+  Eigen::Isometry3d nominal_left_foot_iso_;
+  Eigen::Isometry3d nominal_right_foot_iso_;
+
 private:
   DracoStateProvider();
 };

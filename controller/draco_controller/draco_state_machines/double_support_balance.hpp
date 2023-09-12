@@ -48,6 +48,6 @@ private:
 
   // set nominal desired position/orientation (e.g., for zero acceleration cmd)
   bool b_use_fixed_foot_pos_;
-  Eigen::Isometry3d nominal_lfoot_iso_;
-  Eigen::Isometry3d nominal_rfoot_iso_;
+  // Eigen::Isometry3d nominal_lfoot_iso_;
+  // Eigen::Isometry3d nominal_rfoot_iso_;
 };

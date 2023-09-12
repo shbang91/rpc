@@ -94,8 +94,10 @@ void DoubleSupportMove::OneStep() {
   ctrl_arch_->floating_base_tm_->UpdateDesired(state_machine_time_);
 
   // foot task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  ctrl_arch_->lf_SE3_tm_->UseNominal(sp_->nominal_left_foot_iso_);
+  ctrl_arch_->rf_SE3_tm_->UseNominal(sp_->nominal_right_foot_iso_);
 }
 
 void DoubleSupportMove::LastVisit() { b_static_walking_trigger_ = false; }

@@ -2,7 +2,9 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -28,6 +30,16 @@ void FootLiftingTransition::FirstVisit() {
   if (sp_->stance_foot_ == draco_link::l_foot_contact) {
     std::cout << "draco_states::kRFootLiftingTransition" << std::endl;
 
+    // right foot
+    sp_->nominal_right_foot_iso_.translation() =
+        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+    Eigen::VectorXd rf_quat_vec =
+        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+    Eigen::Quaterniond rf_quat(rf_quat_vec[3], rf_quat_vec[0], rf_quat_vec[1],
+                               rf_quat_vec[2]);
+    sp_->nominal_right_foot_iso_.linear() =
+        rf_quat.normalized().toRotationMatrix();
+
     // reaction force manager
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(end_time_);
@@ -40,6 +52,17 @@ void FootLiftingTransition::FirstVisit() {
 
   } else if (sp_->stance_foot_ == draco_link::r_foot_contact) {
     std::cout << "draco_states::kLFootLiftingTransition" << std::endl;
+
+    // left foot
+    sp_->nominal_left_foot_iso_.translation() =
+        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+    Eigen::VectorXd lf_quat_vec =
+        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+    Eigen::Quaterniond lf_quat(lf_quat_vec[3], lf_quat_vec[0], lf_quat_vec[1],
+                               lf_quat_vec[2]);
+    sp_->nominal_left_foot_iso_.linear() =
+        lf_quat.normalized().toRotationMatrix();
+
     // reaction force manager
     ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMin(end_time_);
     ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(end_time_);
@@ -85,15 +108,18 @@ void FootLiftingTransition::OneStep() {
   }
 
   // foot task
-  ctrl_arch_->lf_SE3_tm_->UseCurrent();
-  ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+  // ctrl_arch_->rf_SE3_tm_->UseCurrent();
+  ctrl_arch_->lf_SE3_tm_->UseNominal(sp_->nominal_left_foot_iso_);
+  ctrl_arch_->rf_SE3_tm_->UseNominal(sp_->nominal_right_foot_iso_);
 }
 
 void FootLiftingTransition::LastVisit() { b_static_walking_trigger_ = false; }
 
 bool FootLiftingTransition::EndOfState() {
-  return (state_machine_time_ > end_time_ && b_static_walking_trigger_) ? true
-                                                                        : false;
+  // return (state_machine_time_ > end_time_ && b_static_walking_trigger_) ?
+  // true
+  return (state_machine_time_ > end_time_) ? true : false;
 }
 
 StateId FootLiftingTransition::GetNextState() {

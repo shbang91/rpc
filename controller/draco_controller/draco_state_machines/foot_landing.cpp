@@ -25,9 +25,11 @@ void FootLanding::FirstVisit() {
 
     Eigen::Isometry3d init_des_foot_iso;
     init_des_foot_iso.translation() =
-        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->CurrentPos();
     Eigen::VectorXd des_rfoot_quat_vec =
-        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->CurrentPos();
     Eigen::Quaterniond des_rfoot_quat(
         des_rfoot_quat_vec[3], des_rfoot_quat_vec[0], des_rfoot_quat_vec[1],
         des_rfoot_quat_vec[2]);
@@ -38,6 +40,8 @@ void FootLanding::FirstVisit() {
     target_des_foot_iso.translation() =
         init_des_foot_iso.translation() +
         init_des_foot_iso.linear() * foot_pos_offset_local_;
+    target_des_foot_iso.translation()[2] =
+        sp_->nominal_right_foot_iso_.translation()[2];
     // TODO: make this general (getting ori command from yaml)
     target_des_foot_iso.linear() = init_des_foot_iso.linear();
 
@@ -49,9 +53,11 @@ void FootLanding::FirstVisit() {
     std::cout << "draco_states::kLFootLanding" << std::endl;
     Eigen::Isometry3d init_des_foot_iso;
     init_des_foot_iso.translation() =
-        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->CurrentPos();
     Eigen::VectorXd des_lfoot_quat_vec =
-        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->CurrentPos();
     Eigen::Quaterniond des_lfoot_quat(
         des_lfoot_quat_vec[3], des_lfoot_quat_vec[0], des_lfoot_quat_vec[1],
         des_lfoot_quat_vec[2]);
@@ -62,6 +68,8 @@ void FootLanding::FirstVisit() {
     target_des_foot_iso.translation() =
         init_des_foot_iso.translation() +
         init_des_foot_iso.linear() * foot_pos_offset_local_;
+    target_des_foot_iso.translation()[2] =
+        sp_->nominal_left_foot_iso_.translation()[2];
     // TODO: make this general (getting ori command from yaml)
     target_des_foot_iso.linear() = init_des_foot_iso.linear();
 
@@ -80,11 +88,13 @@ void FootLanding::OneStep() {
   if (sp_->stance_foot_ == draco_link::l_foot_contact) {
     // rfoot swing
     ctrl_arch_->rf_SE3_tm_->UpdateHalfSwingDesired(state_machine_time_);
-    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    ctrl_arch_->lf_SE3_tm_->UseNominal(sp_->nominal_left_foot_iso_);
   } else if (sp_->stance_foot_ == draco_link::r_foot_contact) {
     // lfoot swing
     ctrl_arch_->lf_SE3_tm_->UpdateHalfSwingDesired(state_machine_time_);
-    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    // ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    ctrl_arch_->rf_SE3_tm_->UseNominal(sp_->nominal_right_foot_iso_);
   } else {
     assert(false);
   }

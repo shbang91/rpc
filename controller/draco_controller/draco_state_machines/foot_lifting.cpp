@@ -28,13 +28,17 @@ void FootLifting::FirstVisit() {
 
     Eigen::Isometry3d init_des_foot_iso;
     init_des_foot_iso.translation() =
-        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->CurrentPos();
+    // sp_->nominal_right_foot_iso_.translation();
     Eigen::VectorXd des_rfoot_quat_vec =
-        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->CurrentPos();
     Eigen::Quaterniond des_rfoot_quat(
         des_rfoot_quat_vec[3], des_rfoot_quat_vec[0], des_rfoot_quat_vec[1],
         des_rfoot_quat_vec[2]);
     init_des_foot_iso.linear() = des_rfoot_quat.normalized().toRotationMatrix();
+    // init_des_foot_iso.linear() = sp_->nominal_right_foot_iso_.linear();
 
     // desired foot pose at apex
     Eigen::Isometry3d target_des_foot_iso;
@@ -55,13 +59,17 @@ void FootLifting::FirstVisit() {
 
     Eigen::Isometry3d init_des_foot_iso;
     init_des_foot_iso.translation() =
-        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->CurrentPos();
+    // sp_->nominal_left_foot_iso_.translation();
     Eigen::VectorXd des_lfoot_quat_vec =
-        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+        // ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->DesiredPos();
+        ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->CurrentPos();
     Eigen::Quaterniond des_lfoot_quat(
         des_lfoot_quat_vec[3], des_lfoot_quat_vec[0], des_lfoot_quat_vec[1],
         des_lfoot_quat_vec[2]);
     init_des_foot_iso.linear() = des_lfoot_quat.normalized().toRotationMatrix();
+    // init_des_foot_iso.linear() = sp_->nominal_left_foot_iso_.linear();
 
     // desired foot pose at apex
     Eigen::Isometry3d target_des_foot_iso;
@@ -86,11 +94,13 @@ void FootLifting::OneStep() {
   if (sp_->stance_foot_ == draco_link::l_foot_contact) {
     // rfoot swing
     ctrl_arch_->rf_SE3_tm_->UpdateHalfSwingDesired(state_machine_time_);
-    ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    // ctrl_arch_->lf_SE3_tm_->UseCurrent();
+    ctrl_arch_->lf_SE3_tm_->UseNominal(sp_->nominal_left_foot_iso_);
   } else if (sp_->stance_foot_ == draco_link::r_foot_contact) {
     // lfoot swing
     ctrl_arch_->lf_SE3_tm_->UpdateHalfSwingDesired(state_machine_time_);
-    ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    // ctrl_arch_->rf_SE3_tm_->UseCurrent();
+    ctrl_arch_->rf_SE3_tm_->UseNominal(sp_->nominal_right_foot_iso_);
   } else {
     assert(false);
   }

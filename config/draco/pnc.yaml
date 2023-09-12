@@ -50,12 +50,12 @@ state_estimator:
   ## exp params
   ########################################################################
   exp_sigma_base_vel: [0.0, 0.0, 0.0]   # leave these always as zero
-  exp_sigma_base_acc: [0.05, 0.05, 0.12]
-  exp_sigma_pos_lfoot: [0.001, 0.001, 0.005]
-  exp_sigma_pos_rfoot: [0.001, 0.001, 0.005]
-  exp_sigma_vel_lfoot: [0.003, 0.003, 0.001]
-  exp_sigma_vel_rfoot: [0.003, 0.003, 0.001]
-  exp_imu_accel_bias: [0.0, 0.0, 0.11]
+  exp_sigma_base_acc: [0.3, 0.3, 0.25]
+  exp_sigma_pos_lfoot: [0.005, 0.001, 0.005]
+  exp_sigma_pos_rfoot: [0.005, 0.001, 0.005]
+  exp_sigma_vel_lfoot: [0.02, 0.01, 0.005]
+  exp_sigma_vel_rfoot: [0.02, 0.01, 0.005]
+  exp_imu_accel_bias: [0.0, 0.0, 0.07]
   exp_base_accel_time_constant: 0.05
   exp_base_accel_limits: [1., 1., 1.]
   exp_base_com_vel_time_constant: 0.1
@@ -87,7 +87,7 @@ controller:
   b_use_modified_com_xy_jac: false
 
   b_use_filtered_torque: false
-  alpha_cmd: 0.9
+  alpha_cmd: 0.7
 
 wbc:
   task:
@@ -124,11 +124,11 @@ wbc:
       exp_icp_weight : [3000., 3000.] # only used when feedback source : 1
       exp_icp_kp : [0.0, 0.0]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.6, 0.8] 
+      exp_icp_ki : [0.6, 1.6]
 
       ## IF icp_integrator_type == 0:
       #exp_time_constant : 0.35
-      exp_time_constant : 0.2
+      exp_time_constant : 0.3
       exp_avg_icp_error_limit: [0.06, 0.06]
 
       ## IF icp_integrator_type == 1:
@@ -182,7 +182,7 @@ wbc:
       sim_kd : [14., 14., 10.]
 
       ## exp params
-      exp_weight : [2500., 1500., 200.]
+      exp_weight : [2500., 1500., 1000.]
       exp_kp : [100., 100., 30.]
       exp_kd : [9.0, 7.0, 2.0]
 
@@ -216,10 +216,11 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [6000., 6000., 5000.]
-      exp_weight_at_swing : [8000., 8500., 8000.]
-      exp_kp : [150., 200., 250.]
-      exp_kd : [3.0, 0.8, 7.0]
+      exp_weight : [500., 500., 500.]
+      #exp_weight : [50000., 50000., 50000.]
+      exp_weight_at_swing : [1000., 1500., 1000.]
+      exp_kp : [80., 80., 80.]
+      exp_kd : [0.5, 0.5, 0.5]
 
     foot_ori_task:
       ########################################################################
@@ -233,10 +234,11 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_weight : [3000., 3000., 3000.]
-      exp_weight_at_swing : [5000., 5000., 5000.]
-      exp_kp : [60., 60., 40.]
-      exp_kd : [0.1, 1.0, 1.0]
+      exp_weight : [500., 500., 500.]
+      #exp_weight : [50000., 50000., 50000.]
+      exp_weight_at_swing : [1000., 1000., 1000.]
+      exp_kp : [30., 30., 30.]
+      exp_kd : [0.1, 0.1, 0.1]
 
     foot_rf_task:
       ########################################################################
@@ -272,7 +274,7 @@ wbc:
 
     exp_mu: 0.4
     exp_foot_half_length: 0.08
-    exp_foot_half_width: 0.030
+    exp_foot_half_width: 0.04
 #    exp_foot_half_length: 0.125
 #    exp_foot_half_width: 0.075
 
@@ -294,8 +296,8 @@ wbc:
 state_machine:
     initialize:
       init_duration: 5.
-      #target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      target_joint_pos: [0., 0.160, -0.785, 0.785, 0.785, -0.785, -0.160, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.160, -0.785, 0.785, 0.785, -0.785, 0.160, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.160, -0.785, 0.785, 0.785, -0.785, -0.160, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.160, -0.785, 0.785, 0.785, -0.785, 0.160, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
       wait_time: 15.
 
@@ -304,12 +306,12 @@ state_machine:
       target_com_height: 0.658
       target_base_height: 0.90
 
-      #com_offset_local: [0., 0.05, 0.]
+      #com_offset_local: [-0.01, 0.03, 0.]
       com_offset_local: [0.0, 0.0, 0.0]
 
       rf_z_max_interp_duration: 0.1
 
-    b_use_const_desired_foot_pos: false
+    b_use_const_desired_foot_pos: true
 
     single_support_swing:
       swing_height: 0.05
@@ -333,18 +335,22 @@ state_machine:
       max_rf_z_ramp_time: 0.5
     lfoot_lifting:
       moving_duration: 1.0
+      #foot_offset_local: [0.05, 0.0, 0.05]
       foot_offset_local: [0.0, 0.0, 0.05]
     rfoot_lifting:
       moving_duration: 1.0
+      #foot_offset_local: [0.05, 0.0, 0.05]
       foot_offset_local: [0.0, 0.0, 0.05]
 
     foot_landing_transition:
       max_rf_z_ramp_time: 0.5
     lfoot_landing:
       moving_duration: 1.0
+      #foot_offset_local: [0.05, 0.0, -0.06]
       foot_offset_local: [0.0, 0.0, -0.06]
     rfoot_landing:
       moving_duration: 1.0
+      #foot_offset_local: [0.05, 0.0, -0.06]
       foot_offset_local: [0.0, 0.0, -0.06]
 
 

@@ -60,4 +60,7 @@ DracoStateProvider::DracoStateProvider() {
   rot_world_local_ = Eigen::Matrix3d::Identity();
 
   com_offset_local_.setZero();
+
+  nominal_left_foot_iso_.setIdentity();
+  nominal_right_foot_iso_.setIdentity();
 }
