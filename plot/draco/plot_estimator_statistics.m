@@ -6,12 +6,13 @@ addpath("/tmp")
 addpath("experiment_data")
 addpath("plot")
 
-exp_data_location = 'experiment_data';
+exp_data_location = '/tmp';
 base_estimator_type = {'est', 'kf'};    % 'est' = kinematics-only
 est_or_kf = 2;                        % 1: est, 2: kf
 
 dd = dir(sprintf("%s/draco_controller_data*.mat", exp_data_location));
 ddd = dir(sprintf("%s/draco_state_estimator_kf_*.mat", exp_data_location));
+% ddd = dir(sprintf("%s/draco_state_estimator*.mat", exp_data_location));
 
 
 [~, i] = max([dd.datenum]);
@@ -141,8 +142,10 @@ num_fig = num_fig + 1;
 for i = 1:3
     ax(i) = subplot(3,1,i);
     plot(wbc_time, base_joint_ang_vel_kf(i,:), 'r', 'LineWidth', 3)
+%     plot(wbc_time, base_joint_ang_vel_est(i,:), 'r', 'LineWidth', 3)
     hold on
     plot(wbc_time, base_joint_ang_vel_kf(i,:), 'b', 'LineWidth', 2)
+%     plot(wbc_time, base_joint_ang_vel_est(i,:), 'b', 'LineWidth', 2)
     grid on
     set_fig_opt()
     plot_phase(time, state, min_val, max_val, phase_color)
@@ -165,6 +168,8 @@ for i = 1:3
     grid on
     min_val = min([imu_accel_raw(j,:), imu_accel_est(j,:)]);
     max_val = max([imu_accel_raw(j,:), imu_accel_est(j,:)]);
+%     min_val = min([imu_accel_raw(j,:)]);
+%     max_val = max([imu_accel_raw(j,:)]);
     min_val = min_val - 0.1 * (max_val - min_val);
     max_val = max_val + 0.1 *(max_val - min_val);
     set_fig_opt()
@@ -178,8 +183,8 @@ linkaxes(ax)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % KF histograms
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-discount_init = 80;
-discount_end = 100;
+discount_init = 10;
+discount_end = 50;
 balance_state = 3;
 wbc_state = state(end-num_wbc_data+discount_init:end-discount_end);
 bal_rf_pos = local_act_rf_pos(:, wbc_state == balance_state);
@@ -261,7 +266,9 @@ k = 0;
 for i = 1:3
     subplot(3,1,i);
     histfit(base_joint_ang_vel_kf(i, discount_init:end-discount_end))
+%     histfit(base_joint_ang_vel_est(i, discount_init:end-discount_end))
     pd = fitdist(base_joint_ang_vel_kf(i, discount_init:end-discount_end)', 'Normal');
+%     pd = fitdist(base_joint_ang_vel_est(i, discount_init:end-discount_end)', 'Normal');
     mu_fit_str = sprintf('mu = %.4f', pd.mu);
     sigma_fit_str = sprintf('sigma = %.4f', pd.sigma);
     annotation('textbox', [0.35, 0.8-0.3*(i-1), 0.1, 0.1], 'String', mu_fit_str)
@@ -273,6 +280,7 @@ end
 
 % compute imu accel errors
 bal_accel = imu_accel_est(:, wbc_state == balance_state);
+% bal_accel = imu_accel_raw(:, wbc_state == balance_state);
 bal_accel_mu = mean(bal_accel, 2);
 bal_accel_errors = bal_accel - bal_accel_mu;
 

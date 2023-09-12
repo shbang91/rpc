@@ -268,6 +268,10 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     logger_->add("icp_vel_est", sp_->dcm_vel_.head<2>());
 
     // TODO: imu ang vel
+
+    // imu accel data
+    logger_->add("imu_accel_raw", sensor_data->imu_dvel_ / sp_->servo_dt_);
+    logger_->add("world_LA_imu", sensor_data->imu_lin_acc_);
   }
 #endif
 }
