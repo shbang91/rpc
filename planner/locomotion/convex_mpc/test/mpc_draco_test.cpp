@@ -6,6 +6,8 @@
 #include "configuration.hpp"
 #include "convex_mpc/mpc.hpp"
 
+#include "convex_mpc/gait.hpp"
+
 // plotting
 #include <matlogger2/matlogger2.h>
 
@@ -72,6 +74,104 @@ protected:
   XBot::MatLogger2::Ptr logger_;
 };
 
+// gait test
+TEST(Test, OffsetDurationGaitTest) {
+  int nHorizon = 10;
+  OffsetDurationGait gait = OffsetDurationGait(
+      nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
+  int iterationsBetweenMPC = 2;
+  int iteration_counter = 0;
+  double dt = 0.00125;
+  double MPCdt = dt * iterationsBetweenMPC;
+
+  std::cout << "=======================================" << std::endl;
+  gait.setIterations(iterationsBetweenMPC, iteration_counter);
+
+  // iterate gait (calc gait)
+  ++iteration_counter;
+
+  for (int i = 0; i < 2; ++i) {
+    std::cout << i
+              << "th leg swing duration : " << gait.getSwingDuration(MPCdt, i)
+              << std::endl;
+    std::cout << i
+              << "th leg stance duration : " << gait.getStanceDuration(MPCdt, i)
+              << std::endl;
+  }
+
+  Eigen::Vector2d contact_state = gait.getContactState();
+  Eigen::Vector2d swing_state = gait.getSwingState();
+  int *mpc_gait = gait.getMPCGait();
+
+  for (int j = 0; j < 20; ++j) {
+    std::cout << "=======================================" << std::endl;
+    gait.setIterations(iterationsBetweenMPC, iteration_counter);
+
+    // iterate gait (calc gait)
+    ++iteration_counter;
+
+    for (int i = 0; i < 2; ++i) {
+      std::cout << i
+                << "th leg swing duration : " << gait.getSwingDuration(MPCdt, i)
+                << std::endl;
+      std::cout << i << "th leg stance duration : "
+                << gait.getStanceDuration(MPCdt, i) << std::endl;
+    }
+
+    contact_state = gait.getContactState();
+    swing_state = gait.getSwingState();
+    mpc_gait = gait.getMPCGait();
+  }
+}
+
+TEST(Test, OffsetGaitTest) {
+  int nHorizon = 10;
+  OffsetGait gait =
+      OffsetGait(nHorizon, Eigen::Matrix<int, 4, 1>(0, 0, 0, 0),
+                 Eigen::Matrix<int, 4, 1>(10, 10, 10, 10), "standing");
+  double dt = 0.002;
+  int iterationsBetweenMPC = 27 / (dt * 1000);
+  std::cout << iterationsBetweenMPC << std::endl;
+  int iteration_counter = 0;
+  double MPCdt = iterationsBetweenMPC * dt;
+
+  std::cout << "=======================================" << std::endl;
+  gait.setIterations(iterationsBetweenMPC, iteration_counter);
+
+  // iterate gait (calc gait)
+  ++iteration_counter;
+
+  for (int i = 0; i < 4; ++i) {
+    std::cout << i << "th leg swing duration : "
+              << gait.getCurrentSwingTime(MPCdt, i) << std::endl;
+    std::cout << i << "th leg stance duration : "
+              << gait.getCurrentStanceTime(MPCdt, i) << std::endl;
+  }
+
+  Eigen::Matrix<float, 4, 1> contact_state = gait.getContactState();
+  Eigen::Matrix<float, 4, 1> swing_state = gait.getSwingState();
+  int *mpc_gait = gait.getMpcTable();
+
+  for (int i = 0; i < 1; ++i) {
+    std::cout << "=======================================" << std::endl;
+    gait.setIterations(iterationsBetweenMPC, iteration_counter);
+
+    // iterate gait (calc gait)
+    ++iteration_counter;
+
+    for (int j = 0; j < 4; ++j) {
+      std::cout << j << "th leg swing duration : "
+                << gait.getCurrentSwingTime(MPCdt, j) << std::endl;
+      std::cout << j << "th leg stance duration : "
+                << gait.getCurrentStanceTime(MPCdt, j) << std::endl;
+    }
+
+    contact_state = gait.getContactState();
+    swing_state = gait.getSwingState();
+    mpc_gait = gait.getMpcTable();
+  }
+}
+
 TEST_F(MPCTest, testMPC) {
   // robot state
   // Eigen::VectorXd q = Eigen::VectorXd::Random(19);
@@ -89,8 +189,37 @@ TEST_F(MPCTest, testMPC) {
   robot_state.update(q, v);
   std::cout << "robot com: " << robot_state.com().transpose() << std::endl;
 
+  // gait generation
+  int nHorizon = 10;
+  OffsetDurationGait gait = OffsetDurationGait(
+      nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
+  int iterationsBetweenMPC = 40;
+  int iteration_counter = 0;
+  double dt = 0.00125;
+  double MPCdt = dt * iterationsBetweenMPC;
+
+  std::cout << "=======================================" << std::endl;
+  gait.setIterations(iterationsBetweenMPC, iteration_counter);
+
+  // iterate gait (calc gait)
+  ++iteration_counter;
+
+  for (int i = 0; i < 2; ++i) {
+    std::cout << i
+              << "th leg swing duration : " << gait.getSwingDuration(MPCdt, i)
+              << std::endl;
+    std::cout << i
+              << "th leg stance duration : " << gait.getStanceDuration(MPCdt, i)
+              << std::endl;
+  }
+
+  Eigen::Vector2d contact_state = gait.getContactState();
+  Eigen::Vector2d swing_state = gait.getSwingState();
+  int *mpc_gait = gait.getMPCGait();
+
   // initialize dynamics, cost, constraint
-  auto state_equation = StateEquation(dt, robot_state.mass(), robot_state.I());
+  auto state_equation =
+      StateEquation(MPCdt, robot_state.mass(), robot_state.I());
   std::cout << "robot mass: " << robot_state.mass() << std::endl;
   std::cout << "robot inertia: " << robot_state.I() << std::endl;
   auto cost_function = CostFunction(dt, Qqq, Qvv, Quu);
@@ -98,19 +227,12 @@ TEST_F(MPCTest, testMPC) {
   double foot_width_half(0.05);
   auto friction_cone =
       FrictionCone(mu, fzmin, fzmax, foot_length_half, foot_width_half);
-  MPC mpc(state_equation, cost_function, friction_cone);
 
-  // contact schedule
-  auto contact_schedule = ContactSchedule(T, N);
-  const double t0 = 0.0;
-  const double t1 = 0.4;
-  const double t2 = 0.7;
-  contact_schedule.reset(t0, {true, true});
-  contact_schedule.push_back(t1, {false, true});
-  // contact_schedule.push_back(t2, {true, true});
+  // mpc set options
   SolverOptions solver_options;
-  mpc.setOptions(solver_options);
-  mpc.init(contact_schedule);
+  // initialze mpc
+  MPC mpc(nHorizon, MPCdt, state_equation, cost_function, friction_cone,
+          solver_options);
 
   // gait command
   auto gait_command = GaitCommand();
@@ -119,14 +241,36 @@ TEST_F(MPCTest, testMPC) {
   gait_command.vcom = Eigen::VectorXd::Zero(3);
   // gait_command.vcom << 1.0, 0.0, 0.0;
   gait_command.yaw_rate = Eigen::VectorXd::Zero(1)[0];
-  // gait_command.yaw_rate = 3.14;
+  // gait_command.yaw_rate = 1.57;
 
-  // initial state
+  // set initial state
   Eigen::VectorXd init_state = Eigen::VectorXd::Zero(12);
-  init_state.segment<3>(3) = robot_state.com();
+  init_state.segment<3>(3) = q.head<3>();
+
+  Eigen::Vector3d rpy = Eigen::Vector3d::Zero();
+  Eigen::Vector3d com = q.head<3>();
+  Eigen::Vector3d ang_vel_world = Eigen::Vector3d::Zero();
+  Eigen::Vector3d lin_vel_world = Eigen::Vector3d::Zero();
+  mpc.setX0(rpy, com, ang_vel_world, lin_vel_world);
+
+  // set feet pos
+  Eigen::Vector3d lfoot_pos, rfoot_pos;
+  lfoot_pos << 0.05, 0.1, -0.76;
+  rfoot_pos << 0.05, -0.1, -0.76;
+  Vector6d feet_pos;
+  feet_pos.head<3>() = lfoot_pos;
+  feet_pos.tail<3>() = rfoot_pos;
+  mpc.setFeet(feet_pos);
+
+  // set contact trajectory
+  std::vector<ContactState> contact_trajectory;
+  for (int i(0); i < nHorizon; i++)
+    contact_trajectory.emplace_back(mpc_gait[2 * i], mpc_gait[2 * i + 1]);
+  mpc.setContactTrajectory(contact_trajectory.data(),
+                           contact_trajectory.size());
 
   // solve mpc
-  mpc.solve(init_state, robot_state, contact_schedule, gait_command);
+  mpc.solve(gait_command);
 
   const auto qp_data = mpc.getQPData();
 
@@ -134,12 +278,13 @@ TEST_F(MPCTest, testMPC) {
   ASSERT_TRUE(qp_data.qp_solution_[0].x.isApprox(init_state));
 
   // check dynamic feasibility
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < nHorizon; ++i) {
     ASSERT_TRUE(qp_data.qp_solution_[i + 1].x.isApprox(
         qp_data.qp_[i].A * qp_data.qp_solution_[i].x +
         qp_data.qp_[i].B * qp_data.qp_solution_[i].u + qp_data.qp_[i].b));
   }
 
+  // check dynamic feasibility
   // get solution
   const auto solution = mpc.getSolution();
   const auto time = solution.time();

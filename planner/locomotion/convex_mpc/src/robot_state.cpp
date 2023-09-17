@@ -90,7 +90,9 @@ void RobotState::update(const Vector34d &q, const Vector33d &v) {
   twist_world_.template head<3>() = w_world_;
   // surface contact
   for (int i = 0; i < 2; ++i) {
-    fk_[i] = data_.oMf[feet_[i]].translation() - data_.com[0];
+    // fk_[i] = data_.oMf[feet_[i]].translation() - data_.com[0];
+    fk_[i] = data_.oMf[feet_[i]].translation() - q.head<3>();
+    std::cout << "feet pos: " << fk_[i].transpose() << std::endl;
     pinocchio::skew(fk_[i], fk_skew_[i]);
   }
   for (pinocchio::JointIndex i(0);

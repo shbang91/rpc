@@ -86,8 +86,6 @@ void CostFunction::setQP(const ContactSchedule &contact_schedule,
 }
 
 void CostFunction::setQP(const Eigen::VectorXd &init_state,
-                         const ContactSchedule &contact_schedule,
-                         const RobotState &robot_state,
                          const GaitCommand &gait_command, QPData &qp_data) {
   v_command_.template head<3>() = gait_command.vcom;
   v_command_.template tail<3>() << 0., 0., gait_command.yaw_rate;

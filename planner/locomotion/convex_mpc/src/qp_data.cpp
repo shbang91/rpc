@@ -2,10 +2,10 @@
 
 namespace convexmpc {
 
-void QPData::init(const ContactSchedule &contact_schedule) {
+void QPData::init(const int horizon_length) {
   // Here, we allocate memory as the possible maximum size.
   // initialize dim
-  const int N = contact_schedule.N();
+  const int N = horizon_length;
   dim_.resize(N);
   const int nx = 12;
   const int nu = 12; // possible max size
@@ -113,7 +113,7 @@ void QPData::init(const ContactSchedule &contact_schedule) {
   // qp_solution_.createHpipmData(dim_);
 } // namespace convexmpc
 
-void QPData::resize(const ContactSchedule &contact_schedule) {
+void QPData::resize(const std::vector<int> &num_contact_vec) {
   // for (int i = 0; i < dim_.N; ++i) {
   // dim_.nu[i] =
   // 3 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
@@ -128,16 +128,9 @@ void QPData::resize(const ContactSchedule &contact_schedule) {
   //}
   // surface contat
   for (int i = 0; i < dim_.N; ++i) {
-    dim_.nu[i] =
-        6 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
-  }
-  for (int i = 0; i < dim_.N; ++i) {
-    dim_.nbu[i] =
-        1 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
-  }
-  for (int i = 0; i < dim_.N; ++i) {
-    dim_.ng[i] =
-        16 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
+    dim_.nu[i] = 6 * num_contact_vec[i];
+    dim_.nbu[i] = num_contact_vec[i];
+    dim_.ng[i] = 16 * num_contact_vec[i];
   }
   // const auto dim_err_msg = dim_.checkSize();
   // if (!dim_err_msg.empty()) {

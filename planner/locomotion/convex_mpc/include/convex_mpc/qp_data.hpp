@@ -15,9 +15,9 @@ public:
 
   ~QPData() = default;
 
-  void init(const ContactSchedule &contact_schedule);
+  void init(const int horizon_length);
 
-  void resize(const ContactSchedule &contact_schedule);
+  void resize(const std::vector<int> &num_contact_vec);
 
   bool checkSize() const;
 

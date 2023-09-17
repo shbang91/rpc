@@ -17,10 +17,10 @@ public:
 
   ~MPCSolution() = default;
 
-  void init(const ContactSchedule &contact_schedule);
+  void init(const int horizon_length, const double mpc_dt);
 
-  void update(const ContactSchedule &contact_schedule,
-              const RobotState &robot_state, const QPData &qp_data);
+  void update(const std::vector<ContactState> &contact_trajectory,
+              const QPData &qp_data);
 
   const std::vector<double> &time() const { return time_; }
 
@@ -46,6 +46,8 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
+  int N_;
+  double mpc_dt_;
   std::vector<double> time_;
   aligned_vector<Vector3d> pos_;
   aligned_vector<Quaterniond> quat_;

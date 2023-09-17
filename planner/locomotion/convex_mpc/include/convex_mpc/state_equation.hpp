@@ -24,8 +24,9 @@ public:
 
   void initQP(QPData &qp_data) const;
 
-  void setQP(const ContactSchedule &contact_schedule,
-             const RobotState &robot_state, QPData &qp_data);
+  void setQP(const Vector12d &initial_state,
+             const std::vector<ContactState> &contact_trajectory,
+             const Vector6d &feet_pos, QPData &qp_data);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -33,7 +34,7 @@ private:
   int N_;
   double dt_, m_;
   Vector3d g_;
-  Matrix3d R_, I_local_, I_global_, I_global_inv_;
+  Matrix3d I_local_;
   aligned_vector<Matrix3d> I_inv_r_skew_;
 };
 

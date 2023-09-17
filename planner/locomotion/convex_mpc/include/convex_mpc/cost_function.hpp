@@ -31,9 +31,7 @@ public:
              const RobotState &robot_state, const GaitCommand &gait_command,
              QPData &qp_data);
 
-  void setQP(const Eigen::VectorXd &init_state,
-             const ContactSchedule &contact_schedule,
-             const RobotState &robot_state, const GaitCommand &gait_command,
+  void setQP(const Eigen::VectorXd &init_state, const GaitCommand &gait_command,
              QPData &qp_data);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

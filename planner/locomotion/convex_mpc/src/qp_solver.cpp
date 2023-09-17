@@ -10,7 +10,7 @@ void QPSolver::init(QPData &qp_data) {
   solver_ = std::make_shared<hpipm::OcpQpIpmSolver>(qp_data.qp_, settings);
 }
 
-void QPSolver::solve(const Eigen::VectorXd &init_state, QPData &qp_data) {
+void QPSolver::solve(const Vector12d &init_state, QPData &qp_data) {
   // settings_.createHpipmData(qp_data.dim);
   // solver_.createHpipmData(qp_data.dim, settings);
   // for (int i = 0; i < qp_data.dim_.N; ++i) {
