@@ -43,7 +43,7 @@ protected:
     Qvv(0, 0) = 10;
     Qvv(1, 1) = 10;
     Qvv(2, 2) = 10;
-    Qvv(3, 3) = 10;
+    Qvv(3, 3) = 100;
     Qvv(4, 4) = 10;
     Qvv(5, 5) = 10;
 
@@ -54,10 +54,6 @@ protected:
     Quu(4, 4) = 1e-6;
     Quu(5, 5) = 1e-6;
 
-    T = 1.0;
-    N = 20;
-    dt = T / N;
-
     logger_ = XBot::MatLogger2::MakeLogger("/tmp/srbd_draco_mpc");
   }
 
@@ -65,11 +61,8 @@ protected:
 
   std::string urdf;
   std::vector<std::string> feet;
-  double dt, mu, fzmin, fzmax;
+  double mu, fzmin, fzmax;
   Eigen::MatrixXd Qqq, Qvv, Quu;
-
-  double T;
-  int N;
 
   XBot::MatLogger2::Ptr logger_;
 };
@@ -192,8 +185,9 @@ TEST_F(MPCTest, testMPC) {
   // gait generation
   int nHorizon = 10;
   OffsetDurationGait gait = OffsetDurationGait(
-      nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
-  int iterationsBetweenMPC = 40;
+      // nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
+      nHorizon, Eigen::Vector2i(0, 4), Eigen::Vector2i(5, 6), "walking");
+  int iterationsBetweenMPC = 10;
   int iteration_counter = 0;
   double dt = 0.00125;
   double MPCdt = dt * iterationsBetweenMPC;
@@ -222,7 +216,7 @@ TEST_F(MPCTest, testMPC) {
       StateEquation(MPCdt, robot_state.mass(), robot_state.I());
   std::cout << "robot mass: " << robot_state.mass() << std::endl;
   std::cout << "robot inertia: " << robot_state.I() << std::endl;
-  auto cost_function = CostFunction(dt, Qqq, Qvv, Quu);
+  auto cost_function = CostFunction(Qqq, Qvv, Quu);
   double foot_length_half(0.10);
   double foot_width_half(0.05);
   auto friction_cone =
@@ -238,19 +232,21 @@ TEST_F(MPCTest, testMPC) {
   auto gait_command = GaitCommand();
   // gait_command.vcom = Eigen::VectorXd::Random(3);
   // gait_command.yaw_rate = Eigen::VectorXd::Random(1)[0];
-  gait_command.vcom = Eigen::VectorXd::Zero(3);
-  // gait_command.vcom << 1.0, 0.0, 0.0;
+  // gait_command.vcom = Eigen::VectorXd::Zero(3);
+  gait_command.vcom << 1.0, 0.0, 0.0;
   gait_command.yaw_rate = Eigen::VectorXd::Zero(1)[0];
   // gait_command.yaw_rate = 1.57;
 
   // set initial state
   Eigen::VectorXd init_state = Eigen::VectorXd::Zero(12);
   init_state.segment<3>(3) = q.head<3>();
+  init_state[8] = gait_command.yaw_rate;
+  init_state.segment<3>(9) = gait_command.vcom;
 
-  Eigen::Vector3d rpy = Eigen::Vector3d::Zero();
-  Eigen::Vector3d com = q.head<3>();
-  Eigen::Vector3d ang_vel_world = Eigen::Vector3d::Zero();
-  Eigen::Vector3d lin_vel_world = Eigen::Vector3d::Zero();
+  Eigen::Vector3d rpy = init_state.head<3>();
+  Eigen::Vector3d com = init_state.segment<3>(3);
+  Eigen::Vector3d ang_vel_world = init_state.segment<3>(6);
+  Eigen::Vector3d lin_vel_world = init_state.segment<3>(9);
   mpc.setX0(rpy, com, ang_vel_world, lin_vel_world);
 
   // set feet pos
@@ -260,7 +256,23 @@ TEST_F(MPCTest, testMPC) {
   Vector6d feet_pos;
   feet_pos.head<3>() = lfoot_pos;
   feet_pos.tail<3>() = rfoot_pos;
-  mpc.setFeet(feet_pos);
+  mpc.setFeetRelativeToBody(feet_pos);
+
+  // TODO: set state trajectory
+  aligned_vector<Vector12d> des_state_trajectory; // length = horizon length + 1
+  des_state_trajectory.resize(nHorizon + 1);
+  des_state_trajectory[0].head<3>() = Eigen::Vector3d::Zero();
+  des_state_trajectory[0].segment<3>(3) = q.head<3>();
+  des_state_trajectory[0][8] = gait_command.yaw_rate;
+  des_state_trajectory[0].tail<3>() = gait_command.vcom;
+  for (int i = 1; i < nHorizon + 1; ++i) {
+    des_state_trajectory[i] = des_state_trajectory[i - 1];
+    des_state_trajectory[i][2] =
+        des_state_trajectory[i - 1][2] + MPCdt * gait_command.yaw_rate;
+    des_state_trajectory[i].segment<3>(3) =
+        des_state_trajectory[i - 1].segment<3>(3) + MPCdt * gait_command.vcom;
+  }
+  mpc.setDesiredStateTrajectory(des_state_trajectory);
 
   // set contact trajectory
   std::vector<ContactState> contact_trajectory;
@@ -270,7 +282,7 @@ TEST_F(MPCTest, testMPC) {
                            contact_trajectory.size());
 
   // solve mpc
-  mpc.solve(gait_command);
+  mpc.solve();
 
   const auto qp_data = mpc.getQPData();
 
@@ -314,7 +326,7 @@ TEST_F(MPCTest, testMPC) {
     logger_->add("force_LF", e[0]);
     logger_->add("force_RF", e[1]);
   }
-}
+} // namespace convexmpc
 } // namespace convexmpc
 
 int main(int argc, char **argv) {
