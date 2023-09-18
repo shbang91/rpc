@@ -175,7 +175,7 @@ void FrictionCone::setQP(QPData &qp_data) const {
     }
     qp_data.qp_[i].lg.setZero();
     qp_data.qp_[i].ug.setZero();
-    qp_data.qp_[i].lg_mask = Eigen::VectorXd::Constant(
+    qp_data.qp_[i].ug_mask = Eigen::VectorXd::Constant(
         // qp_data.qp_[i].lg_mask.size(), 0.0); // disable lower bounds
         qp_data.qp_[i].ug_mask.size(), 0.0); // disable upper bounds
   }

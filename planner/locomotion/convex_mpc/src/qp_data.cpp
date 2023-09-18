@@ -85,7 +85,7 @@ void QPData::init(const int horizon_length) {
     qp_[i].lg.setZero();
     qp_[i].ug.resize(dim_.ng[i]);
     qp_[i].ug.setZero();
-    qp_[i].lg_mask.setZero(dim_.ng[i]);
+    qp_[i].ug_mask.setZero(dim_.ng[i]);
   }
   // qp_.lg_mask.resize(dim_.N + 1);
   // qp_[0].lg_mask.resize(0);
