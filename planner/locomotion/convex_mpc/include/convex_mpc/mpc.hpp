@@ -25,7 +25,7 @@ public:
   ~MPC() = default;
 
   // use after calling setter functions
-  void solve(const GaitCommand &gait_command);
+  void solve();
 
   // getter functions
   const MPCSolution &getSolution() const { return mpc_solution_; }
@@ -57,8 +57,11 @@ public:
   }
 
   // TODO
-  void setDesiredStateTrajectory() {}
-  void setFeet(const Vector6d &feet_pos) { feet_pos_ = feet_pos; }
+  void
+  setDesiredStateTrajectory(const aligned_vector<Vector12d> &des_state_traj) {
+    des_state_trajectory_ = des_state_traj;
+  }
+  void setFeetRelativeToBody(const Vector6d &feet_pos) { feet_pos_ = feet_pos; }
   void setIntertiaTrajectory() {}
 
 private:
@@ -82,6 +85,7 @@ private:
 
   // mpc input trajectory
   std::vector<ContactState> contact_trajectory_;
+  aligned_vector<Vector12d> des_state_trajectory_;
 
   // intermediate variables
   std::vector<int> num_contacts_vec_;

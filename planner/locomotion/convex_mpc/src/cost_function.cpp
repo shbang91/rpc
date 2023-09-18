@@ -14,17 +14,28 @@ namespace convexmpc {
 //}
 //}
 
-CostFunction::CostFunction(const double dt, const Matrix6d &Qqq,
-                           const Matrix6d &Qvv, const Matrix6d &Quu,
-                           const double decay_rate)
-    : dt_(dt), Qqq_(Qqq), Qvv_(Qvv), Quu_(Matrix12d::Zero()),
-      decay_rate_(decay_rate), base_pose_(Vector7d::Zero()), base_pose_ref_(),
-      single_rigid_body_(), qdiff_(Vector6d::Zero()), Jqdiff_(Matrix6d::Zero()),
-      JtQqq_(Matrix6d::Zero()) {
+// CostFunction::CostFunction(const double dt, const Matrix6d &Qqq,
+// const Matrix6d &Qvv, const Matrix6d &Quu,
+// const double decay_rate)
+//: dt_(dt), Qqq_(Qqq), Qvv_(Qvv), Quu_(Matrix12d::Zero()),
+// decay_rate_(decay_rate), base_pose_(Vector7d::Zero()), base_pose_ref_(),
+// single_rigid_body_(), qdiff_(Vector6d::Zero()), Jqdiff_(Matrix6d::Zero()),
+// JtQqq_(Matrix6d::Zero()) {
+// for (int i = 0; i < 2; ++i) {
+// Quu_.template block<6, 6>(6 * i, 6 * i) = Quu;
+//}
+//}
+
+CostFunction::CostFunction(const Matrix6d &Qqq, const Matrix6d &Qvv,
+                           const Matrix6d &Quu, const double decay_rate)
+    : Qqq_(Qqq), Qvv_(Qvv), Quu_(Matrix12d::Zero()), decay_rate_(decay_rate),
+      base_pose_(Vector7d::Zero()), base_pose_ref_(), qdiff_(Vector6d::Zero()),
+      Jqdiff_(Matrix6d::Zero()), JtQqq_(Matrix6d::Zero()) {
   for (int i = 0; i < 2; ++i) {
     Quu_.template block<6, 6>(6 * i, 6 * i) = Quu;
   }
 }
+
 void CostFunction::initQP(QPData &qp_data) {
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     qp_data.qp_[i].Q.template topLeftCorner<6, 6>() =
@@ -37,12 +48,13 @@ void CostFunction::initQP(QPData &qp_data) {
   qp_data.qp_[qp_data.dim_.N].Q.template bottomRightCorner<6, 6>() =
       std::pow(decay_rate_, qp_data.dim_.N) * Qvv_;
 
-  base_pose_ref_ =
-      aligned_vector<Vector7d>(qp_data.dim_.N + 1, Vector7d::Zero());
-  base_pose_ref_euler_ =
-      aligned_vector<Vector6d>(qp_data.dim_.N + 1, Vector6d::Zero());
+  // base_pose_ref_ =
+  // aligned_vector<Vector7d>(qp_data.dim_.N + 1, Vector7d::Zero());
+  // base_pose_ref_euler_ =
+  // aligned_vector<Vector6d>(qp_data.dim_.N + 1, Vector6d::Zero());
 }
 
+/*
 void CostFunction::setQP(const ContactSchedule &contact_schedule,
                          const RobotState &robot_state,
                          const GaitCommand &gait_command, QPData &qp_data) {
@@ -159,4 +171,27 @@ void CostFunction::setQP(const Eigen::VectorXd &init_state,
     qp_data.qp_[i].r.setZero();
   }
 }
+*/
+
+void CostFunction::setQP(const Eigen::VectorXd &init_state,
+                         const aligned_vector<Vector12d> &des_state_traj,
+                         QPData &qp_data) {
+  for (int i = 0; i < qp_data.dim_.N + 1; ++i) {
+    qp_data.qp_[i].q.template head<6>().noalias() =
+        -1. * Qqq_ * des_state_traj[i].head<6>() * std::pow(decay_rate_, i);
+    qp_data.qp_[i].q.template tail<6>().noalias() =
+        -1. * Qvv_ * des_state_traj[i].tail<6>() * std::pow(decay_rate_, i);
+  }
+  // qp_data.qp_[qp_data.dim_.N].q.template head<6>() *= 10000;
+  // qp_data.qp_[qp_data.dim_.N].q.template tail<6>() *= 10000;
+
+  for (int i = 0; i < qp_data.dim_.N; ++i) {
+    qp_data.qp_[i].S.setZero();
+    qp_data.qp_[i].R =
+        Quu_.topLeftCorner(qp_data.dim_.nu[i], qp_data.dim_.nu[i]) *
+        std::pow(decay_rate_, i);
+    qp_data.qp_[i].r.setZero();
+  }
+}
+
 } // namespace convexmpc

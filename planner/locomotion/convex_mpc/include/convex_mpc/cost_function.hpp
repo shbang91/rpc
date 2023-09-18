@@ -18,8 +18,11 @@ class CostFunction {
 public:
   // CostFunction(const double dt, const Matrix6d &Qqq, const Matrix6d &Qvv,
   // const Matrix3d &Quu, const double decay_rate = 1.0);
-  CostFunction(const double dt, const Matrix6d &Qqq, const Matrix6d &Qvv,
-               const Matrix6d &Quu, const double decay_rate = 1.0);
+  // CostFunction(const double dt, const Matrix6d &Qqq, const Matrix6d &Qvv,
+  // const Matrix6d &Quu, const double decay_rate = 1.0);
+
+  CostFunction(const Matrix6d &Qqq, const Matrix6d &Qvv, const Matrix6d &Quu,
+               const double decay_rate = 1.0);
 
   CostFunction() = default;
 
@@ -27,12 +30,14 @@ public:
 
   void initQP(QPData &qp_data);
 
-  void setQP(const ContactSchedule &contact_schedule,
-             const RobotState &robot_state, const GaitCommand &gait_command,
-             QPData &qp_data);
+  // void setQP(const ContactSchedule &contact_schedule,
+  // const RobotState &robot_state, const GaitCommand &gait_command,
+  // QPData &qp_data);
 
-  void setQP(const Eigen::VectorXd &init_state, const GaitCommand &gait_command,
-             QPData &qp_data);
+  // void setQP(const Eigen::VectorXd &init_state, const GaitCommand
+  // &gait_command, QPData &qp_data);
+  void setQP(const Eigen::VectorXd &init_state,
+             const aligned_vector<Vector12d> &des_state_traj, QPData &qp_data);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
