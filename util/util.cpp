@@ -431,6 +431,22 @@ Eigen::Matrix3d SO3FromRPY(double r, double p, double y) {
   return q.normalized().toRotationMatrix();
 }
 
+Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
+                                   const double theta) {
+  double s = std::sin(theta);
+  double c = std::cos(theta);
+
+  Eigen::Matrix3d R;
+  if (axis == CoordinateAxis::X)
+    R << 1, 0, 0, 0, c, s, 0, -s, c;
+  else if (axis == CoordinateAxis::Y)
+    R << c, 0, -s, 0, 1, 0, s, 0, c;
+  else if (axis == CoordinateAxis::Z)
+    R << c, s, 0, -s, c, 0, 0, 0, 1;
+
+  return R;
+}
+
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori) {
   Eigen::Quaternion<double> ori_diff1;

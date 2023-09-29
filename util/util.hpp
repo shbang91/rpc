@@ -84,6 +84,8 @@ std::string PrettyString(double vv);
 // =========================================================================
 // Math
 // =========================================================================
+enum class CoordinateAxis { X, Y, Z };
+
 Eigen::MatrixXd hStack(const Eigen::MatrixXd &a_, const Eigen::MatrixXd &b_);
 Eigen::MatrixXd vStack(const Eigen::MatrixXd &a_, const Eigen::MatrixXd &b_);
 Eigen::MatrixXd block_diag(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
@@ -122,6 +124,9 @@ Eigen::Vector3d RPYFromSO3(const Eigen::Matrix3d &R);
 
 // euler angles to rotation matrix
 Eigen::Matrix3d SO3FromRPY(double r, double p, double y);
+
+Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
+                                   const double theta);
 
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori);
