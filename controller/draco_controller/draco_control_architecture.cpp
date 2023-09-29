@@ -10,11 +10,9 @@
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
 //#include
-//"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
-//#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -22,6 +20,7 @@
 #include "controller/whole_body_controller/managers/qp_params_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
+#include "convex_mpc/convex_mpc_locomotion.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "util/util.hpp"
 
@@ -62,6 +61,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   // tci_container_->torso_ori_task_, tci_container_->lf_reaction_force_task_,
   // tci_container_->rf_reaction_force_task_, draco_link::l_foot_contact,
   // draco_link::r_foot_contact);
+  int itertations_between_mpc = 10; // TODO: make it yaml
+  convex_mpc_locomotion_ =
+      new ConvexMPCLocomotion(sp_->servo_dt_, itertations_between_mpc, robot_);
 
   //=============================================================
   // trajectory Managers
@@ -144,6 +146,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete tci_container_;
   delete controller_;
   delete dcm_planner_;
+  delete convex_mpc_locomotion_;
 
   // tm
   delete upper_body_tm_;
