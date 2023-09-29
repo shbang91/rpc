@@ -130,5 +130,18 @@ void DracoInterruptHandler::Process() {
       std::cout << "Wait Until Balance State" << std::endl;
   }
 
+  if (b_button_m) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button M pressed: MPC Locomotion " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
+      static_cast<DoubleSupportBalance *>(
+          ctrl_arch_
+              ->state_machine_container()[draco_states::kDoubleSupportBalance])
+          ->DoMPCWalking();
+    } else
+      std::cout << "Wait Until Balance State" << std::endl;
+  }
+
   this->_ResetFlags();
 }

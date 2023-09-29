@@ -26,7 +26,7 @@ public:
   void DoComSwayingWithNMPC() { b_nmpc_swaying_ = true; }
 
   void DoDcmWalking() { b_dcm_walking_ = true; }
-  void DoDcmWalkingWithLMPC() { b_lmpc_walking_ = true; }
+  void DoMPCWalking() { b_lmpc_walking_ = true; }
   void DoDcmWalkingWithNMPC() { b_nmpc_walking_ = true; }
 
   void DoStaticWalking() { b_static_walking_ = true; }

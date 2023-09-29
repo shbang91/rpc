@@ -12,6 +12,7 @@ constexpr int kLFSingleSupportSwing = 7;
 constexpr int kRFContactTransitionStart = 8;
 constexpr int kRFContactTransitionEnd = 9;
 constexpr int kRFSingleSupportSwing = 10;
+constexpr int kLocomotion = 11;
 } // namespace draco_states
 
 class DracoController;
@@ -25,7 +26,6 @@ class DCMTrajectoryManager;
 class DracoStateProvider;
 class ForceTrajectoryManager;
 class QPParamsManager;
-
 class ConvexMPCLocomotion;
 
 class DracoControlArchitecture : public ControlArchitecture {

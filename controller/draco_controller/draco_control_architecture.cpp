@@ -8,9 +8,9 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
-#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
-//#include
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
+#include "controller/draco_controller/draco_state_machines/locomotion.hpp"
+#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
@@ -54,13 +54,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   controller_ = new DracoController(tci_container_, robot_);
 
   dcm_planner_ = new DCMPlanner();
-
-  // mpc handler
-  // lmpc_handler_ = new LMPCHandler(
-  // dcm_planner_, robot_, tci_container_->com_task_,
-  // tci_container_->torso_ori_task_, tci_container_->lf_reaction_force_task_,
-  // tci_container_->rf_reaction_force_task_, draco_link::l_foot_contact,
-  // draco_link::r_foot_contact);
   int itertations_between_mpc = 10; // TODO: make it yaml
   convex_mpc_locomotion_ =
       new ConvexMPCLocomotion(sp_->servo_dt_, itertations_between_mpc, robot_);
@@ -135,9 +128,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
 
-  // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc] =
-  // new DoubleSupportSwayingLmpc(draco_states::kDoubleSupportSwayingLmpc,
-  // robot_, this);
+  state_machine_container_[draco_states::kLocomotion] =
+      new Locomotion(draco_states::kLocomotion, robot_, this);
 
   this->_InitializeParameters();
 }
@@ -171,7 +163,8 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionEnd];
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
-  // delete state_machine_container_[draco_states::kDoubleSupportSwayingLmpc];
+
+  delete state_machine_container_[draco_states::kLocomotion];
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -214,9 +207,6 @@ void DracoControlArchitecture::_InitializeParameters() {
       ->SetParameters(cfg_);
   state_machine_container_[draco_states::kRFContactTransitionEnd]
       ->SetParameters(cfg_);
-
-  // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc]
-  //->SetParameters(cfg_["state_machine"]["lmpc_com_swaying"]);
 
   // dcm planner params initialization
   dcm_tm_->InitializeParameters(cfg_["dcm_walking"]);

@@ -91,8 +91,10 @@ StateId DoubleSupportBalance::GetNextState() {
   //}
   //}
 
-  // if (b_lmpc_walking_)
-  // return;
+  if (b_lmpc_walking_) {
+    b_lmpc_walking_ = false;
+    return draco_states::kLocomotion;
+  }
   // if (b_nmpc_walking_)
   // return;
 

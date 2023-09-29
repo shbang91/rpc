@@ -692,6 +692,8 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressEight()
         elif pybullet_util.is_key_triggered(keys, '9'):
             rpc_draco_interface.interrupt_.PressNine()
+        elif pybullet_util.is_key_triggered(keys, 'm'):
+            rpc_draco_interface.interrupt_.PressM()
 
         #get sensor data
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
