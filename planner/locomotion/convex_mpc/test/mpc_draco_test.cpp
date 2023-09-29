@@ -8,10 +8,10 @@
 
 #include "convex_mpc/gait.hpp"
 
+#include "convex_mpc/robot_state.hpp"
+
 // plotting
 #include <matlogger2/matlogger2.h>
-
-namespace convexmpc {
 
 class MPCTest : public ::testing::Test {
 protected:
@@ -233,7 +233,8 @@ TEST_F(MPCTest, testMPC) {
   // gait_command.vcom = Eigen::VectorXd::Random(3);
   // gait_command.yaw_rate = Eigen::VectorXd::Random(1)[0];
   // gait_command.vcom = Eigen::VectorXd::Zero(3);
-  gait_command.vcom << 1.0, 0.0, 0.0;
+  gait_command.vel_xy_des[0] = 1.0;
+  gait_command.vel_xy_des[1] = 0.0;
   gait_command.yaw_rate = Eigen::VectorXd::Zero(1)[0];
   // gait_command.yaw_rate = 1.57;
 
@@ -241,7 +242,9 @@ TEST_F(MPCTest, testMPC) {
   Eigen::VectorXd init_state = Eigen::VectorXd::Zero(12);
   init_state.segment<3>(3) = q.head<3>();
   init_state[8] = gait_command.yaw_rate;
-  init_state.segment<3>(9) = gait_command.vcom;
+  // init_state.segment<3>(9) = gait_command.vcom;
+  init_state[9] = gait_command.vel_xy_des[0];
+  init_state[10] = gait_command.vel_xy_des[1];
 
   Eigen::Vector3d rpy = init_state.head<3>();
   Eigen::Vector3d com = init_state.segment<3>(3);
@@ -250,12 +253,13 @@ TEST_F(MPCTest, testMPC) {
   mpc.setX0(rpy, com, ang_vel_world, lin_vel_world);
 
   // set feet pos
+  aligned_vector<Vector3d> feet_pos;
+  feet_pos.resize(2);
   Eigen::Vector3d lfoot_pos, rfoot_pos;
   lfoot_pos << 0.05, 0.1, -0.76;
   rfoot_pos << 0.05, -0.1, -0.76;
-  Vector6d feet_pos;
-  feet_pos.head<3>() = lfoot_pos;
-  feet_pos.tail<3>() = rfoot_pos;
+  feet_pos[0] = lfoot_pos;
+  feet_pos[1] = rfoot_pos;
   mpc.setFeetRelativeToBody(feet_pos);
 
   // TODO: set state trajectory
@@ -264,13 +268,19 @@ TEST_F(MPCTest, testMPC) {
   des_state_trajectory[0].head<3>() = Eigen::Vector3d::Zero();
   des_state_trajectory[0].segment<3>(3) = q.head<3>();
   des_state_trajectory[0][8] = gait_command.yaw_rate;
-  des_state_trajectory[0].tail<3>() = gait_command.vcom;
+  // des_state_trajectory[0].tail<3>() = gait_command.vcom;
+  des_state_trajectory[0][9] = gait_command.vel_xy_des[0];
+  des_state_trajectory[0][10] = gait_command.vel_xy_des[1];
   for (int i = 1; i < nHorizon + 1; ++i) {
     des_state_trajectory[i] = des_state_trajectory[i - 1];
     des_state_trajectory[i][2] =
         des_state_trajectory[i - 1][2] + MPCdt * gait_command.yaw_rate;
-    des_state_trajectory[i].segment<3>(3) =
-        des_state_trajectory[i - 1].segment<3>(3) + MPCdt * gait_command.vcom;
+    // des_state_trajectory[i].segment<3>(3) =
+    // des_state_trajectory[i - 1].segment<3>(3) + MPCdt * gait_command.vcom;
+    des_state_trajectory[i][3] =
+        des_state_trajectory[i - 1][3] + MPCdt * gait_command.vel_xy_des[0];
+    des_state_trajectory[i][4] =
+        des_state_trajectory[i - 1][4] + MPCdt * gait_command.vel_xy_des[1];
   }
   mpc.setDesiredStateTrajectory(des_state_trajectory);
 
@@ -306,7 +316,8 @@ TEST_F(MPCTest, testMPC) {
   const auto ang_vel = solution.w();
   const auto force = solution.f();
   std::cout << "gait command ->"
-            << "vcom: " << gait_command.vcom.transpose()
+            << "vcom: " << gait_command.vel_xy_des[0] << ","
+            << gait_command.vel_xy_des[1]
             << " yaw_rate: " << gait_command.yaw_rate << std::endl;
   std::cout << "======================" << std::endl;
   logger_->add("time", time);
@@ -326,8 +337,7 @@ TEST_F(MPCTest, testMPC) {
     logger_->add("force_LF", e[0]);
     logger_->add("force_RF", e[1]);
   }
-} // namespace convexmpc
-} // namespace convexmpc
+}
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -5,10 +5,8 @@
 
 #include "convex_mpc/contact_schedule.hpp"
 #include "convex_mpc/qp_data.hpp"
-#include "convex_mpc/robot_state.hpp"
+//#include "convex_mpc/robot_state.hpp"
 #include "convex_mpc/types.hpp"
-
-namespace convexmpc {
 
 struct SolverOptions {
   int iter_max = 30; // max iter
@@ -61,7 +59,5 @@ struct SolverOptions {
   // int split_step =
   // 0; //  use different step for primal and dual variables or not
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_SOLVER_OPTIONS_HPP_

@@ -3,19 +3,15 @@
 
 #include "convex_mpc/types.hpp"
 
-namespace convexmpc {
-
 struct GaitCommand {
 public:
   GaitCommand() = default;
 
   ~GaitCommand() = default;
 
-  Vector3d vcom;
+  double vel_xy_des[2];
 
   double yaw_rate;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_GAIT_COMMAND_HPP_

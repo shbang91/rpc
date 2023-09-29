@@ -4,8 +4,6 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace convexmpc {
-
 // FrictionCone::FrictionCone(const double mu, const double fzmin,
 // const double fzmax)
 //: mu_(mu), fzmin_(fzmin), fzmax_(fzmax), cone_(MatrixXd::Zero(16, 12)) {
@@ -180,5 +178,3 @@ void FrictionCone::setQP(QPData &qp_data) const {
         qp_data.qp_[i].ug_mask.size(), 0.0); // disable upper bounds
   }
 }
-
-} // namespace convexmpc

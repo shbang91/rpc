@@ -4,8 +4,6 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace convexmpc {
-
 // ContactSchedule::ContactSchedule(const double T, const int N)
 //: T_(T), dt_(T / N), N_(N), t_({0.}),
 // is_contact_active_({std::vector<bool>({true, true, true, true})}),
@@ -107,5 +105,3 @@ void ContactSchedule::push_back(const double t,
     std::fill(phase_.begin() + stage_begin, phase_.end(), next_phase);
   }
 }
-
-} // namespace convexmpc

@@ -7,8 +7,6 @@
 
 #include "convex_mpc/types.hpp"
 
-namespace convexmpc {
-
 class ContactSchedule {
 public:
   ContactSchedule(const double T, const int N);
@@ -53,7 +51,5 @@ private:
   std::vector<int> num_active_contacts_;
   std::vector<int> phase_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_CONTACT_SCHEDULE_HPP_

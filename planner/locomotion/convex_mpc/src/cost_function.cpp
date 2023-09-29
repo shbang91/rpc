@@ -1,7 +1,5 @@
 #include "convex_mpc/cost_function.hpp"
 
-namespace convexmpc {
-
 // CostFunction::CostFunction(const double dt, const Matrix6d &Qqq,
 // const Matrix6d &Qvv, const Matrix3d &Quu,
 // const double decay_rate)
@@ -193,5 +191,3 @@ void CostFunction::setQP(const Eigen::VectorXd &init_state,
     qp_data.qp_[i].r.setZero();
   }
 }
-
-} // namespace convexmpc

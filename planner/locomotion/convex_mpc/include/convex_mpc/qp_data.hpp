@@ -7,8 +7,6 @@
 #include "convex_mpc/contact_schedule.hpp"
 #include "hpipm-cpp/hpipm-cpp.hpp"
 
-namespace convexmpc {
-
 struct QPData {
 public:
   QPData() = default;
@@ -27,7 +25,5 @@ public:
   std::vector<hpipm::OcpQp> qp_;
   std::vector<hpipm::OcpQpSolution> qp_solution_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_QP_DATA_HPP_

@@ -1,7 +1,5 @@
 #include "convex_mpc/qp_data.hpp"
 
-namespace convexmpc {
-
 void QPData::init(const int horizon_length) {
   // Here, we allocate memory as the possible maximum size.
   // initialize dim
@@ -230,5 +228,3 @@ bool QPData::checkSize() const {
   //}
   return true;
 }
-
-} // namespace convexmpc

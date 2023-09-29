@@ -5,8 +5,6 @@
 #include "convex_mpc/types.hpp"
 #include "hpipm-cpp/hpipm-cpp.hpp"
 
-namespace convexmpc {
-
 class QPSolver {
 public:
   QPSolver() = default;
@@ -23,7 +21,5 @@ private:
   // hpipm::OcpQpIpmSolver solver_;
   std::shared_ptr<hpipm::OcpQpIpmSolver> solver_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_QP_DATA_HPP_

@@ -2,15 +2,13 @@
 
 #include <cassert>
 
-namespace convexmpc {
-
 MPC::MPC(const int horizon_length, const double mpc_dt,
          const StateEquation &state_equation, const CostFunction &cost_function,
          const FrictionCone &friction_cone, const SolverOptions &solver_options)
     : horizon_length_(horizon_length), mpc_dt_(mpc_dt),
-      initial_state_(Vector12d::Zero()), feet_pos_(Vector6d::Zero()),
-      state_equation_(state_equation), cost_function_(cost_function),
-      friction_cone_(friction_cone), qp_data_(), qp_solver_() {
+      initial_state_(Vector12d::Zero()), state_equation_(state_equation),
+      cost_function_(cost_function), friction_cone_(friction_cone), qp_data_(),
+      qp_solver_() {
   this->_setOptions(solver_options);
   this->_init();
 }
@@ -50,5 +48,3 @@ void MPC::solve() {
   // assert(qp_data_.checkSize());
   mpc_solution_.update(contact_trajectory_, qp_data_);
 }
-
-} // namespace convexmpc

@@ -8,8 +8,6 @@
 #include "util/util.hpp"
 #include <pinocchio/algorithm/frames.hpp>
 
-namespace convexmpc {
-
 StateEquation::StateEquation(const double dt, const double m,
                              const Matrix3d &I_body, const Vector3d &g)
     : dt_(dt), m_(m), g_(g), I_local_(I_body),
@@ -99,7 +97,8 @@ void StateEquation::setQP(const ContactSchedule &contact_schedule,
 
 void StateEquation::setQP(const Vector12d &initial_state,
                           const std::vector<ContactState> &contact_trajectory,
-                          const Vector6d &feet_pos, QPData &qp_data) {
+                          const aligned_vector<Eigen::Vector3d> &feet_pos,
+                          QPData &qp_data) {
   // rotation matrix
   Eigen::Matrix3d Ryaw = util::EulerZYXtoQuat(0.0, 0.0, initial_state[2])
                              .toRotationMatrix(); // yaw angle
@@ -111,7 +110,7 @@ void StateEquation::setQP(const Vector12d &initial_state,
 
   for (int i = 0; i < 2; ++i) {
     Eigen::Matrix3d r_skew;
-    pinocchio::skew(feet_pos.segment<3>(3 * i), r_skew);
+    pinocchio::skew(feet_pos[i], r_skew);
     I_inv_r_skew_[i].noalias() = dt_ * I_world_inv * r_skew;
   }
   for (int i = 0; i < qp_data.dim_.N; ++i) {
@@ -142,4 +141,3 @@ void StateEquation::setQP(const Vector12d &initial_state,
     }
   }
 }
-} // namespace convexmpc

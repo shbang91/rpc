@@ -1,7 +1,5 @@
 #include "convex_mpc/mpc_solution.hpp"
 
-namespace convexmpc {
-
 void MPCSolution::init(const int horizon_length, const double mpc_dt) {
   N_ = horizon_length;
   mpc_dt_ = mpc_dt;
@@ -67,5 +65,3 @@ void MPCSolution::update(const std::vector<ContactState> &contact_trajectory,
     }
   }
 }
-
-} // namespace convexmpc

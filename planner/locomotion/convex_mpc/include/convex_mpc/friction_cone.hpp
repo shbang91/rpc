@@ -6,8 +6,6 @@
 #include "convex_mpc/qp_data.hpp"
 #include "convex_mpc/types.hpp"
 
-namespace convexmpc {
-
 class FrictionCone {
 public:
   FrictionCone(const double mu, const double fzmin = 0.0,
@@ -25,7 +23,5 @@ private:
   double mu_, fzmin_, fzmax_, x_, y_;
   MatrixXd cone_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_FRICTION_CONE_HPP_

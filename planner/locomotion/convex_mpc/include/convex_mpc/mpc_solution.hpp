@@ -3,13 +3,11 @@
 
 #include "convex_mpc/contact_schedule.hpp"
 #include "convex_mpc/qp_data.hpp"
-#include "convex_mpc/robot_state.hpp"
-#include "convex_mpc/single_rigid_body.hpp"
+//#include "convex_mpc/robot_state.hpp"
+//#include "convex_mpc/single_rigid_body.hpp"
 #include "convex_mpc/types.hpp"
 
 #include "util/util.hpp"
-
-namespace convexmpc {
 
 class MPCSolution {
 public:
@@ -58,9 +56,7 @@ private:
   aligned_vector<Vector3d> v_, w_;
   // aligned_vector<aligned_vector<Vector3d>> f_;
   aligned_vector<aligned_vector<Vector6d>> f_;
-  SingleRigidBody single_rigid_body_;
+  // SingleRigidBody single_rigid_body_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_MPC_SOLUTION_HPP_

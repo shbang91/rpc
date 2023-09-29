@@ -10,8 +10,6 @@
 #include "pinocchio/spatial/explog.hpp"
 #include "pinocchio/spatial/se3.hpp"
 
-namespace convexmpc {
-
 using MatrixXd = Eigen::MatrixXd;
 using VectorXd = Eigen::VectorXd;
 
@@ -52,7 +50,5 @@ struct ContactState {
 
   ContactState() {}
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_TYPES_HPP_

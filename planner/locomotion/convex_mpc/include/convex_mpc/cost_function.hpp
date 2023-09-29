@@ -6,13 +6,11 @@
 #include "convex_mpc/contact_schedule.hpp"
 #include "convex_mpc/gait_command.hpp"
 #include "convex_mpc/qp_data.hpp"
-#include "convex_mpc/robot_state.hpp"
-#include "convex_mpc/single_rigid_body.hpp"
+//#include "convex_mpc/robot_state.hpp"
+//#include "convex_mpc/single_rigid_body.hpp"
 #include "convex_mpc/types.hpp"
 
 #include "util/util.hpp"
-
-namespace convexmpc {
 
 class CostFunction {
 public:
@@ -50,12 +48,10 @@ private:
   aligned_vector<Vector7d> base_pose_ref_; // x, y, z, q.x, q.y, q.z, q.w order
   aligned_vector<Vector6d>
       base_pose_ref_euler_; // euler roll, pitch, yaw, x, y, z
-  SingleRigidBody single_rigid_body_;
+  // SingleRigidBody single_rigid_body_;
   Vector6d qdiff_;
   Matrix6d Jqdiff_, JtQqq_;
   double decay_rate_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_COST_FUNCTION_HPP_

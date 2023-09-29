@@ -4,8 +4,6 @@
 #include "pinocchio/multibody/model.hpp"
 #include "pinocchio/parsers/urdf.hpp"
 
-namespace convexmpc {
-
 SingleRigidBody::SingleRigidBody() : model_(), data_() {
   const auto ffidx = model_.addJoint(0, pinocchio::JointModelFreeFlyer(),
                                      SE3::Identity(), "floating_base_joint");
@@ -39,5 +37,3 @@ void SingleRigidBody::dDifference_dq0(const Vector7d &qf, const Vector7d &q0,
                                       Matrix6d &Jdiff) const {
   pinocchio::dDifference(model_, q0, qf, Jdiff, pinocchio::ARG0);
 }
-
-} // namespace convexmpc

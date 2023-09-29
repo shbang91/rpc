@@ -5,10 +5,8 @@
 
 #include "convex_mpc/contact_schedule.hpp"
 #include "convex_mpc/qp_data.hpp"
-#include "convex_mpc/robot_state.hpp"
+//#include "convex_mpc/robot_state.hpp"
 #include "convex_mpc/types.hpp"
-
-namespace convexmpc {
 
 class StateEquation {
 public:
@@ -26,7 +24,7 @@ public:
 
   void setQP(const Vector12d &initial_state,
              const std::vector<ContactState> &contact_trajectory,
-             const Vector6d &feet_pos, QPData &qp_data);
+             const aligned_vector<Eigen::Vector3d> &feet_pos, QPData &qp_data);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -37,7 +35,5 @@ private:
   Matrix3d I_local_;
   aligned_vector<Matrix3d> I_inv_r_skew_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_STATE_EQUATION_HPP_

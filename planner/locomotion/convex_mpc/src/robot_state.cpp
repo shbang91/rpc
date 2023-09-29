@@ -9,8 +9,6 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace convexmpc {
-
 // RobotState::RobotState(const std::string &urdf,
 // const std::vector<std::string> &feet)
 //: model_(), data_(), R_(Matrix3d::Identity()),
@@ -101,5 +99,3 @@ void RobotState::update(const Vector34d &q, const Vector33d &v) {
 
   I_ = data_.Ig.matrix().block<3, 3>(3, 3);
 }
-
-} // namespace convexmpc

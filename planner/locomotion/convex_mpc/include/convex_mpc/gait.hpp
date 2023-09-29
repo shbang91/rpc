@@ -5,6 +5,11 @@
 #include <queue>
 #include <string>
 
+namespace gait {
+constexpr int kStand = 0;
+constexpr int kWalking = 1;
+} // namespace gait
+
 class Gait {
 public:
   Gait() = default;

@@ -8,11 +8,9 @@
 #include "convex_mpc/mpc_solution.hpp"
 #include "convex_mpc/qp_data.hpp"
 #include "convex_mpc/qp_solver.hpp"
-#include "convex_mpc/robot_state.hpp"
+//#include "convex_mpc/robot_state.hpp"
 #include "convex_mpc/solver_options.hpp"
 #include "convex_mpc/state_equation.hpp"
-
-namespace convexmpc {
 
 class MPC {
 public:
@@ -56,12 +54,14 @@ public:
     }
   }
 
-  // TODO
   void
   setDesiredStateTrajectory(const aligned_vector<Vector12d> &des_state_traj) {
     des_state_trajectory_ = des_state_traj;
   }
-  void setFeetRelativeToBody(const Vector6d &feet_pos) { feet_pos_ = feet_pos; }
+  void setFeetRelativeToBody(const aligned_vector<Vector3d> &feet_pos) {
+    feet_pos_ = feet_pos;
+  }
+  // TODO: inertia rollout
   void setIntertiaTrajectory() {}
 
 private:
@@ -81,7 +81,7 @@ private:
 
   // mpc inputs
   Vector12d initial_state_;
-  Vector6d feet_pos_; // left, right order
+  aligned_vector<Vector3d> feet_pos_; // left, right order
 
   // mpc input trajectory
   std::vector<ContactState> contact_trajectory_;
@@ -90,7 +90,5 @@ private:
   // intermediate variables
   std::vector<int> num_contacts_vec_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_MPC_HPP_

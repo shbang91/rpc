@@ -10,8 +10,6 @@
 
 #include "convex_mpc/types.hpp"
 
-namespace convexmpc {
-
 class RobotState {
 public:
   RobotState(const std::string &urdf, const std::vector<std::string> &feet);
@@ -70,7 +68,5 @@ private:
   double mass_;
   Eigen::Matrix3d I_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_ROBOT_STATE_HPP_

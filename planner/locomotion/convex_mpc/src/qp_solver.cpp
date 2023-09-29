@@ -1,7 +1,5 @@
 #include "convex_mpc/qp_solver.hpp"
 
-namespace convexmpc {
-
 void QPSolver::init(QPData &qp_data) {
   // settings.createHpipmData(qp_data.dim);
   // solver_.createHpipmData(qp_data.dim, settings);
@@ -37,6 +35,4 @@ void QPSolver::solve(const Vector12d &init_state, QPData &qp_data) {
     std::cout << stat << std::endl;
     std::exit(EXIT_FAILURE);
   }
-} // namespace convexmpc
-
-} // namespace convexmpc
+}

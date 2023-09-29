@@ -1,11 +1,15 @@
 project(convex-mpc CXX)
 
-
 ######################
 ## Build convex-mpc ##
 ######################
 file(GLOB_RECURSE ${PROJECT_NAME}_SOURCES src/*.cpp)
-file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS include/${PROJECT_NAME}/*.h*)
+file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS include/convex_mpc/*.h*)
+
+#include(CMakePrintHelpers)
+#cmake_print_variables(${PROJECT_NAME}_HEADERS)
+#cmake_print_variables(${PROJECT_NAME}_SOURCES)
+
 add_library(
   ${PROJECT_NAME} 
   SHARED
@@ -15,26 +19,32 @@ add_library(
 target_link_libraries(
   ${PROJECT_NAME} 
   PUBLIC
-  ${PINOCCHIO_LIBRARIES}
+  #${PINOCCHIO_LIBRARIES}
+  #pinocchio::pinocchio
   hpipm-cpp::hpipm-cpp
   rpc-util
+  rpc-pin-robot-system
+  rpc-wbc
 )
+
 target_include_directories(
   ${PROJECT_NAME} 
   PUBLIC
   ${EIGEN3_INCLUDE_DIR}
-  ${PINOCCHIO_INCLUDE_DIRS}
+  #${PINOCCHIO_INCLUDE_DIRS}
+  #${pinocchio_INCLUDE_DIRS}
   ${hpipm-cpp_INCLUDE_DIRS}
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-if (OPTIMIZE_FOR_NATIVE)
-  target_compile_options(
-    ${PROJECT_NAME} 
-    PUBLIC
-    -march=native
-  )
-endif()
+#if (OPTIMIZE_FOR_NATIVE)
+  #target_compile_options(
+    #${PROJECT_NAME} 
+    #PUBLIC
+    #-march=native
+  #)
+#endif()
 
 #############
 ## Testing ##

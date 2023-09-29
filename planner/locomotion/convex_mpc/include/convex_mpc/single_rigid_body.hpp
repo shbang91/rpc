@@ -8,8 +8,6 @@
 #include "convex_mpc/robot_state.hpp"
 #include "convex_mpc/types.hpp"
 
-namespace convexmpc {
-
 class SingleRigidBody {
 public:
   SingleRigidBody();
@@ -35,7 +33,5 @@ private:
   pinocchio::Model model_;
   pinocchio::Data data_;
 };
-
-} // namespace convexmpc
 
 #endif // CONVEX_MPC_SINGLE_RIGID_BODY_HPP_
