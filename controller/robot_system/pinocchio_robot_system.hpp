@@ -39,6 +39,8 @@ public:
                         const Eigen::VectorXd &joint_vel,
                         bool b_update_centroid = false);
 
+  std::string GetRootFrameName() const { return root_frame_name_; }
+
   // kinematics getter
   Eigen::VectorXd GetQ() const;
   Eigen::VectorXd GetQdot() const;
@@ -50,7 +52,10 @@ public:
   Eigen::VectorXd GetJointVel() const;
 
   Eigen::Isometry3d GetLinkIsometry(const int link_idx);
+  Eigen::Isometry3d GetLinkIsometry(const std::string &link_name);
   Eigen::Matrix<double, 6, 1> GetLinkSpatialVel(const int link_idx) const;
+  Eigen::Matrix<double, 6, 1>
+  GetLinkSpatialVel(const std::string &link_name) const;
 
   Eigen::Matrix<double, 6, Eigen::Dynamic> GetLinkJacobian(const int link_idx);
   Eigen::Matrix<double, 6, 1> GetLinkJacobianDotQdot(const int link_idx);
@@ -66,12 +71,27 @@ public:
   Eigen::Matrix<double, 3, Eigen::Dynamic> GetComLinJacobian();
   Eigen::Matrix<double, 3, 1> GetComLinJacobianDotQdot();
 
+  // floating base
+  Eigen::Matrix3d GetBodyOriRot();
+  Eigen::Vector3d GetBodyOriYPR();
+  Eigen::Vector3d GetBodyPos();
+
+  Eigen::Isometry3d GetTransform(const std::string &ref_frame,
+                                 const std::string &target_frame);
+  Eigen::Vector3d GetLocomotionControlPointsInBody(const int cp_idx);
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
+  GetBaseToFootXYOffset();
+
   // dynamics getter
   Eigen::MatrixXd GetMassMatrix();
   Eigen::MatrixXd GetMassMatrixInverse();
   Eigen::VectorXd GetGravity();
   Eigen::VectorXd GetCoriolis();
   double GetTotalMass() const { return total_mass_; }
+  double GetTotalWeight() const {
+    return -1. * pinocchio::computeTotalMass(model_) *
+           model_.gravity981.coeff(2);
+  }
 
   // centroidal quantity getter
   Eigen::Matrix<double, 6, 6> GetIg() const;
@@ -98,8 +118,19 @@ public:
     return joint_trq_limits_;
   }
 
+  // setter funtion
+  void SetFeetControlPoint(const std::string &lfoot_cp_string,
+                           const std::string &rfoot_cp_string) {
+    foot_cp_string_vec_.clear();
+    lfoot_cp_string_ = lfoot_cp_string;
+    rfoot_cp_string_ = rfoot_cp_string;
+    foot_cp_string_vec_.push_back(lfoot_cp_string_);
+    foot_cp_string_vec_.push_back(rfoot_cp_string_);
+  }
+
 private:
   void _Initialize();
+  void _InitializeRootFrame();
   void _UpdateCentroidalQuantities();
   void _PrintRobotInfo();
 
@@ -134,4 +165,11 @@ private:
   std::map<double, std::string> link_idx_map_;
 
   double total_mass_;
+  std::string root_frame_name_;
+  Eigen::Vector3d base_local_com_pos_;
+
+  // locomotion control point
+  std::string lfoot_cp_string_;
+  std::string rfoot_cp_string_;
+  std::vector<std::string> foot_cp_string_vec_;
 };
