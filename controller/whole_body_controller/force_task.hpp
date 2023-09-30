@@ -16,6 +16,20 @@ public:
 
   // setter
   void UpdateDesired(const Eigen::VectorXd &rf_des) { rf_des_ = rf_des; };
+  void UpdateDesiredToLocal(const Eigen::VectorXd &rf_des) {
+    Eigen::MatrixXd local_R_world(contact_->Dim(), contact_->Dim());
+    local_R_world.setZero();
+    if (contact_->Dim() == 6) {
+      local_R_world.topLeftCorner<3, 3>() = contact_->R().transpose();
+      local_R_world.bottomRightCorner<3, 3>() = contact_->R().transpose();
+      rf_des_ = local_R_world * rf_des;
+    } else if (contact_->Dim() == 3) {
+      local_R_world = contact_->R().transpose();
+      rf_des_ = local_R_world * rf_des;
+    } else {
+      assert(false);
+    }
+  };
   void UpdateCmd(const Eigen::VectorXd &rf_cmd) { rf_cmd_ = rf_cmd; };
 
   // getter

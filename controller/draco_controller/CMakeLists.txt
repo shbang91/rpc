@@ -6,7 +6,6 @@ file(GLOB draco_task_headers "draco_task/*.hpp")
 list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
 list(REMOVE_ITEM controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
 
-
 if(BUILD_WITH_ZMQ_PROTOBUF)
     list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
     list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
@@ -25,7 +24,8 @@ target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-dcm-planner
                                            PUBLIC rpc-lmpc-handler
                                            PUBLIC rpc-filter
-                                           PUBLIC rpc-state-estimator)
+                                           PUBLIC rpc-state-estimator
+                                           PUBLIC convex-mpc)
 
 if(BUILD_WITH_ZMQ_PROTOBUF)
     target_link_libraries(rpc-draco-controller PUBLIC ${Protobuf_LIBRARIES}
@@ -36,6 +36,7 @@ endif()
 if(BUILD_WITH_MATLOGGER)
     target_link_libraries(rpc-draco-controller PUBLIC matlogger2::matlogger2)
 endif()
+
 
 
 install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")

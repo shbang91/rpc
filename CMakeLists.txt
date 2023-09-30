@@ -36,6 +36,8 @@ option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 option(BUILD_GTESTS "build google tests" OFF)
 option(FETCH_GTEST_PKG "use fetch pkg to clone google test" OFF)
 
+option(BUILD_TESTING "build testing" OFF)
+
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
 endif()

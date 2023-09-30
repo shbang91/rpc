@@ -138,6 +138,7 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
     std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
     util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
     sp_->des_com_height_ = target_height_;
+    sp_->des_body_height_ = target_height_;
     util::ReadParameter(node, "rf_z_max_interp_duration",
                         rf_z_max_interp_duration_);
 
