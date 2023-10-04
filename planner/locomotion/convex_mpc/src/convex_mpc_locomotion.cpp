@@ -12,7 +12,7 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
       robot_(robot), iteration_counter_(0),
       standing_(n_horizon_, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10),
                 "standing"),
-      walking_(n_horizon_, Eigen::Vector2i(0, 4), Eigen::Vector2i(5, 6),
+      walking_(n_horizon_, Eigen::Vector2i(0, 5), Eigen::Vector2i(5, 5),
                "walking") {
   util::PrettyConstructor(2, "ConvexMPCLocomotion");
 
@@ -202,6 +202,7 @@ void ConvexMPCLocomotion::Solve() {
 
   // calculate gait
   gait->setIterations(iterations_btw_mpc_, iteration_counter_);
+  // mpc iteration counter
   iteration_counter_++;
 
   Eigen::Vector2d contact_states = gait->getContactState();
@@ -293,6 +294,9 @@ void ConvexMPCLocomotion::Solve() {
 
   // contact state
   contact_state_ = gait->getContactState();
+
+  // mpc iteration counter
+  // iteration_counter_++;
 }
 
 void ConvexMPCLocomotion::_InitializeConvexMPC() {

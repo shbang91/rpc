@@ -54,9 +54,13 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   controller_ = new DracoController(tci_container_, robot_);
 
   dcm_planner_ = new DCMPlanner();
-  int itertations_between_mpc = 10; // TODO: make it yaml
+
+  YAML::Node cfg_mpc =
+      YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
+  double iterations_between_mpc =
+      util::ReadParameter<double>(cfg_mpc, "iterations_btw_mpc");
   convex_mpc_locomotion_ =
-      new ConvexMPCLocomotion(sp_->servo_dt_, itertations_between_mpc, robot_);
+      new ConvexMPCLocomotion(sp_->servo_dt_, iterations_between_mpc, robot_);
 
   //=============================================================
   // trajectory Managers

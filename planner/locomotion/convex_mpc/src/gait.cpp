@@ -28,6 +28,7 @@ Eigen::Vector2d OffsetDurationGait::getContactState() {
   Eigen::Array2d progress = phase_ - offsetsDouble_;
 
   for (int i = 0; i < 2; ++i) {
+    // if (progress[i] <= 0)
     if (progress[i] < 0)
       progress[i] += 1.0;
     if (progress[i] > durationsDouble_[i]) {
@@ -51,6 +52,7 @@ Eigen::Vector2d OffsetDurationGait::getSwingState() {
   Eigen::Array2d progress = phase_ - swing_offset;
 
   for (int i = 0; i < 2; ++i) {
+    // if (progress[i] <= 0.0)
     if (progress[i] < 0.0)
       progress[i] += 1.0;
     if (progress[i] > swing_duration[i]) {
