@@ -29,4 +29,12 @@ private:
   double x_vel_cmd_, y_vel_cmd_, yaw_rate_cmd_;
   int gait_number_;
   double swing_height_;
+
+  // QP params yaml
+  Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd W_force_rate_of_change_right_foot_ = Eigen::VectorXd::Zero(6);
+
+  // TODO remove this later
+  Eigen::Quaterniond lf_ori_quat_ = Eigen::Quaterniond::Identity();
+  Eigen::Quaterniond rf_ori_quat_ = Eigen::Quaterniond::Identity();
 };

@@ -7,6 +7,7 @@
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
+#include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "convex_mpc/convex_mpc_locomotion.hpp"
 
 Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
@@ -16,6 +17,13 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
 
   sp_ = DracoStateProvider::GetStateProvider();
 
+  // TODO: check this wbc yaml
+  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_left_foot",
+                      W_force_rate_of_change_left_foot_);
+  util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_right_foot",
+                      W_force_rate_of_change_right_foot_);
+  // mpc yaml
   YAML::Node mpc_cfg =
       YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
 
@@ -33,6 +41,11 @@ void Locomotion::FirstVisit() {
   std::cout << "draco_states: kLocomotion" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
+  // wbc reaction wrench smoother
+  ctrl_arch_->tci_container_->qp_params_->W_force_rate_of_change_
+      << W_force_rate_of_change_left_foot_,
+      W_force_rate_of_change_right_foot_;
+
   // TODO: initialize convexMPC
   gait_command_->vel_xy_des[0] = x_vel_cmd_;
   gait_command_->vel_xy_des[1] = y_vel_cmd_;
@@ -43,19 +56,37 @@ void Locomotion::FirstVisit() {
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(swing_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
       robot_->GetBaseToFootXYOffset());
+
+  // TODO: should be generated inside of convexmpclocomotion class
+  lf_ori_quat_ = Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
+  rf_ori_quat_ = Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
 }
 
 void Locomotion::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
-
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
   const auto &tci_container = ctrl_arch_->tci_container_;
 
   // solve convexMPC
   mpc_interface->Solve();
 
+  // contact and task clear
+  auto &contact_vector = ctrl_arch_->tci_container_->contact_vector_;
+  auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
+  contact_vector.clear();
+  auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
+  auto &task_map = ctrl_arch_->tci_container_->task_map_;
+  task_vector.clear();
+
+  task_vector.push_back(task_map["com_z_task"]);
+  task_vector.push_back(task_map["torso_ori_task"]);
+  task_vector.push_back(task_map["com_xy_task"]);
+  task_vector.push_back(task_map["upper_body_task"]); // des task set up outside
+
   // update desired task
-  // 1. centroidal task
+  // centroidal task
   Eigen::Vector3d zero_vec = Eigen::Vector3d::Zero();
   tci_container->task_map_["com_z_task"]->UpdateDesired(
       mpc_interface->des_body_pos_.tail<1>(),
@@ -73,27 +104,59 @@ void Locomotion::OneStep() {
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
 
-  // 2. foot task
-  tci_container->task_map_["lf_pos_task"]->UpdateDesired(
-      mpc_interface->des_foot_pos_[0], mpc_interface->des_foot_vel_[0],
-      mpc_interface->des_foot_acc_[0]);
-  tci_container->task_map_["rf_pos_task"]->UpdateDesired(
-      mpc_interface->des_foot_pos_[1], mpc_interface->des_foot_vel_[1],
-      mpc_interface->des_foot_acc_[1]);
-
-  // 3. reaction force task
-  tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
-      mpc_interface->des_lf_wrench_);
-  tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
-      mpc_interface->des_rf_wrench_);
-  // std::cout << "======================================================="
-  //<< std::endl;
-  // std::cout << "lf wrench: " << mpc_interface->des_lf_wrench_.transpose()
-  //<< std::endl;
-  // std::cout << "rf wrench: " << mpc_interface->des_rf_wrench_.transpose()
-  //<< std::endl;
-
   // TODO:update contact state for controller
+  for (int leg = 0; leg < 2; leg++) {
+    if (mpc_interface->contact_state_[leg] > 0.0) // in contact
+    {
+      if (leg == 0) {
+        // contact
+        contact_vector.push_back(contact_map["lf_contact"]);
+        sp_->b_lf_contact_ =
+            true; // TODO(change this):timing based contact switch
+        tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
+            mpc_interface->des_lf_wrench_);
+
+        // task
+        // task_vector.push_back(task_map["lf_pos_task"]);
+        // task_vector.push_back(task_map["lf_ori_task"]);
+        lf_ori_quat_ = Eigen::Quaterniond(
+            robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
+      } else {
+        // contact
+        contact_vector.push_back(contact_map["rf_contact"]);
+        sp_->b_rf_contact_ =
+            true; // TODO(change this):timing based contact switch
+        tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
+            mpc_interface->des_rf_wrench_);
+        // task
+        // task_vector.push_back(task_map["rf_pos_task"]);
+        // task_vector.push_back(task_map["rf_ori_task"]);
+        rf_ori_quat_ = Eigen::Quaterniond(
+            robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
+      }
+    } else {
+      // in swing
+      if (leg == 0) {
+        task_vector.push_back(task_map["lf_pos_task"]);
+        tci_container->task_map_["lf_pos_task"]->UpdateDesired(
+            mpc_interface->des_foot_pos_[0], mpc_interface->des_foot_vel_[0],
+            mpc_interface->des_foot_acc_[0]);
+        // task_vector.push_back(task_map["lf_ori_task"]);
+        // tci_container->task_map_["lf_ori_task"]->UpdateDesired(
+        // lf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
+        // Eigen::Vector3d::Zero());
+      } else {
+        task_vector.push_back(task_map["rf_pos_task"]);
+        tci_container->task_map_["rf_pos_task"]->UpdateDesired(
+            mpc_interface->des_foot_pos_[1], mpc_interface->des_foot_vel_[1],
+            mpc_interface->des_foot_acc_[1]);
+        // task_vector.push_back(task_map["rf_ori_task"]);
+        // tci_container->task_map_["rf_ori_task"]->UpdateDesired(
+        // rf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
+        // Eigen::Vector3d::Zero());
+      }
+    }
+  }
 }
 
 bool Locomotion::EndOfState() { return false; }
