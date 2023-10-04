@@ -265,4 +265,11 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
 
   // dm->data_->joint_positions_ = sensor_data->joint_pos_;
 #endif
+#if B_USE_MATLOGGER
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    // joint encoder data
+    logger_->add("joint_pos_act", sensor_data->joint_pos_);
+    logger_->add("joint_vel_act", sensor_data->joint_vel_);
+  }
+#endif
 }

@@ -117,9 +117,10 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
         ? se_kf_->Initialize(draco_sensor_data)
         : se_kf_->Update(draco_sensor_data);
   } else {
-    sp_->state_ == draco_states::kInitialize
-        ? se_->Initialize(draco_sensor_data)
-        : se_->Update(draco_sensor_data);
+    // sp_->state_ == draco_states::kInitialize
+    //? se_->Initialize(draco_sensor_data)
+    //: se_->Update(draco_sensor_data);
+    se_->UpdateGroundTruthSensorData(draco_sensor_data);
   }
 
   // process interrupt & task gains
