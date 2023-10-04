@@ -729,13 +729,13 @@ if __name__ == "__main__":
         #apply command to pybullet robot
 
         # joint impedance control
-        trq_command = rpc_trq_command + JointGains.kp.dot(
-            rpc_joint_pos_command -
-            joint_pos) + JointGains.kd.dot(rpc_joint_vel_command - joint_vel)
-        apply_torque_control_to_pybullet(draco_humanoid, trq_command)
+        # trq_command = rpc_trq_command + JointGains.kp.dot(
+        # rpc_joint_pos_command -
+        # joint_pos) + JointGains.kd.dot(rpc_joint_vel_command - joint_vel)
+        # apply_torque_control_to_pybullet(draco_humanoid, trq_command)
 
         # joint torque control
-        # apply_torque_control_to_pybullet(draco_humanoid, rpc_trq_command)
+        apply_torque_control_to_pybullet(draco_humanoid, rpc_trq_command)
 
         # joint position control
         # apply_position_control_to_pybullet(draco_humanoid,
