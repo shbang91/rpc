@@ -79,10 +79,11 @@ void ConvexMPCLocomotion::Solve() {
   current_gait_number_ = gait_number_;
 
   // TODO:integrate position setpoint
-  Eigen::Vector3d des_body_vel_in_body(x_vel_cmd_, y_vel_cmd_,
+  // Eigen::Vector3d des_body_vel_in_body(x_vel_cmd_, y_vel_cmd_,
+  // 0.0); // in local body frame
+  Eigen::Vector3d des_body_vel_in_body(x_vel_des_, y_vel_des_,
                                        0.0); // in local body frame
-  des_body_vel_in_world_ =
-      robot_->GetBodyOriRot().transpose() * des_body_vel_in_body;
+  des_body_vel_in_world_ = robot_->GetBodyOriRot() * des_body_vel_in_body;
   Eigen::Vector3d body_vel_in_world =
       robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).tail<3>();
 
