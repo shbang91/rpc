@@ -20,9 +20,10 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
       rf_z_max_interp_duration_(0.), W_delta_qddot_(0.),
       W_xc_ddot_in_contact_(0.),
       W_delta_rf_left_foot_in_contact_(Eigen::VectorXd::Zero(6)),
-      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6)),
-      W_force_rate_of_change_left_foot_(Eigen::VectorXd::Zero(6)),
-      W_force_rate_of_change_right_foot_(Eigen::VectorXd::Zero(6)) {
+      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6))
+// W_force_rate_of_change_left_foot_(Eigen::VectorXd::Zero(6)),
+// W_force_rate_of_change_right_foot_(Eigen::VectorXd::Zero(6)) {
+{
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -118,8 +119,8 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 
   // update force traj manager
-  // ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
-  // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}
@@ -151,10 +152,10 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
                         W_delta_rf_left_foot_in_contact_);
     util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
                         W_delta_rf_right_foot_in_contact_);
-    util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_left_foot",
-                        W_force_rate_of_change_left_foot_);
-    util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_right_foot",
-                        W_force_rate_of_change_right_foot_);
+    // util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_left_foot",
+    // W_force_rate_of_change_left_foot_);
+    // util::ReadParameter(cfg["wbc"]["qp"],
+    // "W_force_rate_of_change_right_foot", W_force_rate_of_change_right_foot_);
 
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
