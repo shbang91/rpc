@@ -61,8 +61,10 @@ void ConvexMPCLocomotion::Solve() {
     stand_traj_[0] = 0.0;                        // roll
     stand_traj_[1] = 0.0;                        // pitch
     stand_traj_[2] = robot_->GetBodyOriYPR()[0]; // yaw
-    stand_traj_[3] = robot_->GetBodyPos()[0];    // TODO:base CoM x
-    stand_traj_[4] = robot_->GetBodyPos()[1];    // TODO:base CoM y
+    // stand_traj_[3] = robot_->GetBodyPos()[0];    // TODO:base CoM x
+    // stand_traj_[4] = robot_->GetBodyPos()[1];    // TODO:base CoM y
+    stand_traj_[3] = robot_->GetRobotComPos()[0];
+    stand_traj_[4] = robot_->GetRobotComPos()[1];
     stand_traj_[5] =
         des_body_height_; // des height should be same as stand up height
 
@@ -119,9 +121,11 @@ void ConvexMPCLocomotion::Solve() {
   if (b_first_visit_) {
     // for body pos task
     des_body_pos_in_world_[0] =
-        robot_->GetBodyPos()[0]; // TODO: com xy vs body com xy
+        // robot_->GetBodyPos()[0]; // TODO: com xy vs body com xy
+        robot_->GetRobotComPos()[0]; // TODO: com xy vs body com xy
     des_body_pos_in_world_[1] =
-        robot_->GetBodyPos()[1]; // TODO: com xy vs body com xy
+        // robot_->GetBodyPos()[1]; // TODO: com xy vs body com xy
+        robot_->GetRobotComPos()[1]; // TODO: com xy vs body com xy
 
     for (int i = 0; i < 2; ++i) {
       // initialize swing foot trajectory
@@ -378,7 +382,8 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     // when not standing
 
     // initial state compensation strategy
-    Eigen::Vector3d curr_body_pos_in_world = robot_->GetBodyPos();
+    // Eigen::Vector3d curr_body_pos_in_world = robot_->GetBodyPos();
+    Eigen::Vector3d curr_body_pos_in_world = robot_->GetRobotComPos();
 
     const double max_pos_error = 0.1;
     double x_start = des_body_pos_in_world_[0];
