@@ -5,8 +5,8 @@
 // for wrench task -> in order of torque, force
 class ForceTask {
 public:
-  ForceTask(Contact *contact)
-      : contact_(contact), dim_(contact_->Dim()),
+  ForceTask(PinocchioRobotSystem *robot, Contact *contact)
+      : robot_(robot), contact_(contact), dim_(contact_->Dim()),
         rf_des_(Eigen::VectorXd::Zero(contact_->Dim())),
         rf_cmd_(Eigen::VectorXd::Zero(contact_->Dim())),
         weight_(Eigen::VectorXd::Zero(contact_->Dim())) {
@@ -20,11 +20,19 @@ public:
     Eigen::MatrixXd local_R_world(contact_->Dim(), contact_->Dim());
     local_R_world.setZero();
     if (contact_->Dim() == 6) {
-      local_R_world.topLeftCorner<3, 3>() = contact_->R().transpose();
-      local_R_world.bottomRightCorner<3, 3>() = contact_->R().transpose();
+      local_R_world.topLeftCorner<3, 3>() =
+          robot_->GetLinkIsometry(contact_->TargetLinkIdx())
+              .linear()
+              .transpose();
+      local_R_world.bottomRightCorner<3, 3>() =
+          robot_->GetLinkIsometry(contact_->TargetLinkIdx())
+              .linear()
+              .transpose();
       rf_des_ = local_R_world * rf_des;
     } else if (contact_->Dim() == 3) {
-      local_R_world = contact_->R().transpose();
+      local_R_world = robot_->GetLinkIsometry(contact_->TargetLinkIdx())
+                          .linear()
+                          .transpose();
       rf_des_ = local_R_world * rf_des;
     } else {
       assert(false);
@@ -51,6 +59,7 @@ public:
   }
 
 protected:
+  PinocchioRobotSystem *robot_;
   Contact *contact_;
   int dim_;
   Eigen::VectorXd rf_des_; // reference reaction force value
