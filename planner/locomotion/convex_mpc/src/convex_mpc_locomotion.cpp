@@ -102,16 +102,17 @@ void ConvexMPCLocomotion::Solve() {
   // current foot pos
   for (int i = 0; i < 2; ++i) {
     foot_pos_[i] =
-        robot_->GetBodyPos() + robot_->GetBodyOriRot().transpose() *
-                                   robot_->GetLocomotionControlPointsInBody(
-                                       i); // TODO: check both length are the
-                                           // same at the very beginning
+        robot_->GetBodyPos() +
+        robot_->GetBodyOriRot() * robot_->GetLocomotionControlPointsInBody(
+                                      i); // TODO: check both length are the
+                                          // same at the very beginning
   }
 
   // set body states desired
   if (gait != &standing_)
     des_body_pos_in_world_ +=
-        dt_ * Eigen::Vector3d(body_vel_in_world[0], body_vel_in_world[1], 0.0);
+        dt_ * Eigen::Vector3d(des_body_vel_in_world_[0],
+                              des_body_vel_in_world_[1], 0.0);
 
   // first visit initialization
   if (b_first_visit_) {
