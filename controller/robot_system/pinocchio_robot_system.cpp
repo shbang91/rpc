@@ -294,13 +294,13 @@ Eigen::Matrix<double, 3, 1> PinocchioRobotSystem::GetComLinJacobianDotQdot() {
 Eigen::Matrix3d PinocchioRobotSystem::GetBodyOriRot() {
   Eigen::Quaterniond world_Q_body;
   world_Q_body.coeffs() = q_.segment<4>(3);
-  return world_Q_body.toRotationMatrix();
+  return world_Q_body.normalized().toRotationMatrix();
 }
 
 Eigen::Vector3d PinocchioRobotSystem::GetBodyOriYPR() {
   Eigen::Quaterniond world_Q_body;
   world_Q_body.coeffs() = q_.segment<4>(3);
-  return util::QuatToEulerZYX(world_Q_body);
+  return util::QuatToEulerZYX(world_Q_body.normalized());
 }
 
 Eigen::Vector3d PinocchioRobotSystem::GetBodyPos() {
@@ -322,7 +322,7 @@ PinocchioRobotSystem::GetTransform(const std::string &ref_frame,
 Eigen::Vector3d
 PinocchioRobotSystem::GetLocomotionControlPointsInBody(const int cp_idx) {
   return GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx])
-             .translation() +
+             .translation() -
          base_local_com_pos_;
 }
 
