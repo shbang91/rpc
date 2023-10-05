@@ -1,4 +1,4 @@
-iterations_btw_mpc: 20
+iterations_btw_mpc: 25
 
 gait:
   x_vel_cmd: 0.0

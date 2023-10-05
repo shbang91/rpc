@@ -23,6 +23,10 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
                       W_force_rate_of_change_left_foot_);
   util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_right_foot",
                       W_force_rate_of_change_right_foot_);
+  util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_left_foot_in_contact_mpc",
+                      W_delta_rf_lfoot_);
+  util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact_mpc",
+                      W_delta_rf_rfoot_);
   // mpc yaml
   YAML::Node mpc_cfg =
       YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
@@ -45,6 +49,9 @@ void Locomotion::FirstVisit() {
   ctrl_arch_->tci_container_->qp_params_->W_force_rate_of_change_
       << W_force_rate_of_change_left_foot_,
       W_force_rate_of_change_right_foot_;
+
+  ctrl_arch_->tci_container_->qp_params_->W_delta_rf_ << W_delta_rf_lfoot_,
+      W_delta_rf_rfoot_;
 
   // TODO: initialize convexMPC
   gait_command_->vel_xy_des[0] = x_vel_cmd_;
