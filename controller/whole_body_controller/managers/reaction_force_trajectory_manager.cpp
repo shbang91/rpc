@@ -54,17 +54,17 @@ void ForceTrajectoryManager::UpdateDesired(double query_time) {
     Eigen::VectorXd aug_ext_des_com_acc = Eigen::VectorXd::Zero(6);
     aug_ext_des_com_acc.tail(3) = des_com_acc;
     des_rf = robot_->GetTotalMass() / 2.0 * (aug_ext_des_com_acc + grav_vec_);
-    _ConvertToLocalDesired(des_rf);
-    force_task_->UpdateDesired(des_rf);
+    //_ConvertToLocalDesired(des_rf);
+    force_task_->UpdateDesiredToLocal(des_rf);
   } else {
     query_time = util::Clamp(query_time, 0., duration_);
 
     Eigen::VectorXd des_rf =
         des_init_rf_ + (des_final_rf_ - des_init_rf_) / duration_ * query_time;
 
-    _ConvertToLocalDesired(des_rf);
+    //_ConvertToLocalDesired(des_rf);
 
-    force_task_->UpdateDesired(des_rf);
+    force_task_->UpdateDesiredToLocal(des_rf);
   }
 }
 

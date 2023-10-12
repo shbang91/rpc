@@ -257,13 +257,16 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
   this->_ComputeDCM();
 
 #if B_USE_ZMQ
-  // DracoDataManager *dm = DracoDataManager::GetDataManager();
+  DracoDataManager *dm = DracoDataManager::GetDataManager();
   // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
   // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
   // dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
   // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
 
-  // dm->data_->joint_positions_ = sensor_data->joint_pos_;
+  dm->data_->est_base_joint_pos_ = sensor_data->base_joint_pos_;
+  dm->data_->est_base_joint_ori_ = sensor_data->base_joint_quat_;
+  dm->data_->joint_positions_ = sensor_data->joint_pos_;
+
 #endif
 #if B_USE_MATLOGGER
   if (sp_->count_ % sp_->data_save_freq_ == 0) {

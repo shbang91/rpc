@@ -2,9 +2,11 @@
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
+#include "controller/whole_body_controller/task.hpp"
 
 DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
                                            PinocchioRobotSystem *robot,
@@ -68,6 +70,23 @@ void DoubleSupportBalance::LastVisit() {
       robot_->GetLinkIsometry(draco_link::torso_com_link);
   FootStep::MakeHorizontal(torso_iso);
   sp_->rot_world_local_ = torso_iso.linear();
+
+  // update foot desried
+  Eigen::Isometry3d lf_iso =
+      robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  Eigen::Isometry3d rf_iso =
+      robot_->GetLinkIsometry(draco_link::r_foot_contact);
+
+  ctrl_arch_->tci_container_->task_map_["lf_pos_task"]->UpdateDesired(
+      lf_iso.translation(), Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+  ctrl_arch_->tci_container_->task_map_["lf_ori_task"]->UpdateDesired(
+      Eigen::Quaterniond(lf_iso.linear()).normalized().coeffs(),
+      Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+  ctrl_arch_->tci_container_->task_map_["rf_pos_task"]->UpdateDesired(
+      rf_iso.translation(), Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+  ctrl_arch_->tci_container_->task_map_["rf_ori_task"]->UpdateDesired(
+      Eigen::Quaterniond(rf_iso.linear()).normalized().coeffs(),
+      Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
 }
 
 StateId DoubleSupportBalance::GetNextState() {

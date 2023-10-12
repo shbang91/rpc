@@ -99,6 +99,19 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       // Eigen::JacobiSVD<Eigen::MatrixXd> svd(JtPre, Eigen::ComputeThinU |
       // Eigen::ComputeThinV);
       // util::PrettyPrint(svd.singularValues(), std::cout, "singular values");
+
+      // TEST
+      // std::cout <<
+      // "========================================================="
+      //<< std::endl;
+      // std::cout << "op cmd: " << first_task->OpCommand().transpose()
+      //<< std::endl;
+      // std::cout << "qddot cmd: "
+      //<< (JtPre_bar *
+      //(first_task->OpCommand() - JtDotQdot - Jt * qddot_cmd))
+      //.transpose()
+      //<< std::endl;
+      // TEST
     } else {
       const auto task = *it;
       Jt = task->Jacobian();
@@ -117,6 +130,15 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
       // Eigen::JacobiSVD<Eigen::MatrixXd> svd(JtPre, Eigen::ComputeThinU |
       // Eigen::ComputeThinV);
       // util::PrettyPrint(svd.singularValues(), std::cout, "singular values");
+
+      // TEST
+      // std::cout << "op cmd: " << task->OpCommand().transpose() << std::endl;
+      // std::cout << "qddot cmd: "
+      //<< (JtPre_bar *
+      //(task->OpCommand() - JtDotQdot - Jt * qddot_cmd))
+      //.transpose()
+      //<< std::endl;
+      // TEST
     }
 
     if (std::next(it) != task_vector.end()) {
@@ -154,12 +176,11 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
     }
 
     // std::cout << "========================================" << std::endl;
-    // std::cout << "Desired Pos: " << task->DesiredPos().transpose()
-    //<< std::endl;
-    // std::cout << "Current Pos: " << task->CurrentPos().transpose()
-    //<< std::endl;
-    // std::cout << "Op Command: " << task->OpCommand().transpose() <<
-    // std::endl; std::cout << "qddot cmd: " << qddot_cmd.transpose() <<
+    // std::cout << "Desired Pos: " << task->DesiredPos().transpose() <<
+    // std::endl; std::cout << "Current Pos: " << task->CurrentPos().transpose()
+    // << std::endl; std::cout << "Op Command: " <<
+    // task->OpCommand().transpose()
+    // << std::endl; std::cout << "qddot cmd: " << qddot_cmd.transpose() <<
     // std::endl;
   }
 
