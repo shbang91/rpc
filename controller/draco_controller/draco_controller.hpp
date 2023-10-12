@@ -38,6 +38,8 @@ private:
 
   bool b_sim_;
   bool b_use_modified_swing_foot_jac_;
+  bool b_use_filtered_torque_;
+  double alpha_cmd_;
 
   bool b_first_visit_wbc_ctrl_;
   bool b_first_visit_pos_ctrl_;

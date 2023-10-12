@@ -28,6 +28,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(false),
       b_first_visit_pos_ctrl_(true), b_first_visit_wbc_ctrl_(true),
       b_smoothing_command_(false), b_use_modified_swing_foot_jac_(false),
+      b_use_filtered_torque_(false), alpha_cmd_(0.0),
       smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
   util::PrettyConstructor(2, "DracoController");
@@ -88,6 +89,9 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
     b_use_modified_swing_foot_jac_ = util::ReadParameter<bool>(
         cfg["controller"], "b_use_modified_swing_foot_jac");
+    b_use_filtered_torque_ =
+        util::ReadParameter<bool>(cfg["controller"], "b_use_filtered_torque");
+    alpha_cmd_ = util::ReadParameter<double>(cfg["controller"], "alpha_cmd");
 
   } catch (std::runtime_error &e) {
     std::cout << "Error reading parameter [" << e.what() << "] at file: ["
@@ -200,12 +204,19 @@ void DracoController::GetCommand(void *command) {
       b_smoothing_command_ = false;
   }
 
+  if (!b_smoothing_command_ && b_use_filtered_torque_) {
+    joint_trq_cmd_ =
+        alpha_cmd_ * joint_trq_cmd_ + (1 - alpha_cmd_) * joint_trq_cmd_prev_;
+  }
+
   // copy command to DracoCommand class
   static_cast<DracoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
   static_cast<DracoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
   static_cast<DracoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
   // static_cast<DracoCommand *>(command)->joint_trq_cmd_ =
   // Eigen::VectorXd::Zero(joint_pos_cmd_.size());
+
+  joint_trq_cmd_prev_ = joint_trq_cmd_;
 
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
     this->_SaveData();
