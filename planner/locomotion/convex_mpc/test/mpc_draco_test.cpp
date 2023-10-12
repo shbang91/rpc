@@ -22,7 +22,7 @@ protected:
     mu = 0.5;
     fzmin = 20.0;
     // fzmax = std::numeric_limits<double>::infinity();
-    fzmax = 1000.0;
+    fzmax = 500.0;
     // Qqq = Eigen::VectorXd::Constant(6, 10.0).asDiagonal();
     // Qvv = Eigen::VectorXd::Constant(6, 0.1).asDiagonal();
     // Quu = Eigen::VectorXd::Constant(3, 0.001).asDiagonal();
@@ -72,7 +72,9 @@ TEST(Test, OffsetDurationGaitTest) {
   int nHorizon = 10;
   OffsetDurationGait gait = OffsetDurationGait(
       nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
-  int iterationsBetweenMPC = 2;
+  // OffsetDurationGait gait = OffsetDurationGait(
+  // nHorizon, Eigen::Vector2i(0, 5), Eigen::Vector2i(5, 5), "walking");
+  int iterationsBetweenMPC = 25;
   int iteration_counter = 0;
   double dt = 0.00125;
   double MPCdt = dt * iterationsBetweenMPC;
@@ -96,7 +98,7 @@ TEST(Test, OffsetDurationGaitTest) {
   Eigen::Vector2d swing_state = gait.getSwingState();
   int *mpc_gait = gait.getMPCGait();
 
-  for (int j = 0; j < 20; ++j) {
+  for (int j = 0; j < 30; ++j) {
     std::cout << "=======================================" << std::endl;
     gait.setIterations(iterationsBetweenMPC, iteration_counter);
 
@@ -120,11 +122,12 @@ TEST(Test, OffsetDurationGaitTest) {
 TEST(Test, OffsetGaitTest) {
   int nHorizon = 10;
   OffsetGait gait =
-      OffsetGait(nHorizon, Eigen::Matrix<int, 4, 1>(0, 0, 0, 0),
-                 Eigen::Matrix<int, 4, 1>(10, 10, 10, 10), "standing");
+      // OffsetGait(nHorizon, Eigen::Matrix<int, 4, 1>(0, 0, 0, 0),
+      // Eigen::Matrix<int, 4, 1>(10, 10, 10, 10), "standing");
+      OffsetGait(nHorizon, Eigen::Matrix<int, 4, 1>(0, 3, 5, 8),
+                 Eigen::Matrix<int, 4, 1>(5, 5, 5, 5), "walking");
   double dt = 0.002;
   int iterationsBetweenMPC = 27 / (dt * 1000);
-  std::cout << iterationsBetweenMPC << std::endl;
   int iteration_counter = 0;
   double MPCdt = iterationsBetweenMPC * dt;
 
@@ -185,9 +188,9 @@ TEST_F(MPCTest, testMPC) {
   // gait generation
   int nHorizon = 10;
   OffsetDurationGait gait = OffsetDurationGait(
-      // nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
-      nHorizon, Eigen::Vector2i(0, 4), Eigen::Vector2i(5, 6), "walking");
-  int iterationsBetweenMPC = 10;
+      nHorizon, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10), "standing");
+  // nHorizon, Eigen::Vector2i(0, 5), Eigen::Vector2i(5, 5), "walking");
+  int iterationsBetweenMPC = 25;
   int iteration_counter = 0;
   double dt = 0.00125;
   double MPCdt = dt * iterationsBetweenMPC;
