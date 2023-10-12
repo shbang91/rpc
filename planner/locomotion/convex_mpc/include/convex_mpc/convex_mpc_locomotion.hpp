@@ -31,20 +31,23 @@ public:
   }
 
   // WBC task variables
+  // from Raibert Heuristics
   Eigen::Vector3d des_foot_pos_[2]; // left, right order
   Eigen::Vector3d des_foot_vel_[2];
   Eigen::Vector3d des_foot_acc_[2];
 
+  // from desired state commands
   Eigen::Vector3d des_body_pos_;
   Eigen::Vector3d des_body_vel_;
   Eigen::Vector3d des_body_rpy_;
   Eigen::Vector3d des_body_ang_vel_;
 
-  // TODO: reaction force
+  // from convex mpc
   Vector6d des_lf_wrench_;
   Vector6d des_rf_wrench_;
 
   // contact variable
+  // from gait scheduler
   Eigen::Vector2d contact_state_;
 
 private:

@@ -76,6 +76,7 @@ void Locomotion::OneStep() {
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
   const auto &tci_container = ctrl_arch_->tci_container_;
 
+  std::cout << "time:" << sp_->current_time_ << std::endl;
   // solve convexMPC
   mpc_interface->Solve();
 
@@ -110,6 +111,14 @@ void Locomotion::OneStep() {
   tci_container->task_map_["torso_ori_task"]->UpdateDesired(
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
+  std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
+            << std::endl;
+  std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
+            << std::endl;
+  std::cout << "lfoot rf: " << mpc_interface->des_lf_wrench_.transpose()
+            << std::endl;
+  std::cout << "rfoot rf: " << mpc_interface->des_rf_wrench_.transpose()
+            << std::endl;
 
   // TODO:update contact state for controller
   for (int leg = 0; leg < 2; leg++) {
@@ -122,12 +131,13 @@ void Locomotion::OneStep() {
             true; // TODO(change this):timing based contact switch
         tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_lf_wrench_);
+        tci_container->contact_map_["lf_contact"]->SetMaxFz(500.0);
 
         // task
         // task_vector.push_back(task_map["lf_pos_task"]);
         // task_vector.push_back(task_map["lf_ori_task"]);
-        lf_ori_quat_ = Eigen::Quaterniond(
-            robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
+        // lf_ori_quat_ = Eigen::Quaterniond(
+        // robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
       } else {
         // contact
         contact_vector.push_back(contact_map["rf_contact"]);
@@ -135,35 +145,76 @@ void Locomotion::OneStep() {
             true; // TODO(change this):timing based contact switch
         tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_rf_wrench_);
+        tci_container->contact_map_["rf_contact"]->SetMaxFz(500.0);
         // task
         // task_vector.push_back(task_map["rf_pos_task"]);
         // task_vector.push_back(task_map["rf_ori_task"]);
-        rf_ori_quat_ = Eigen::Quaterniond(
-            robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
+        // rf_ori_quat_ = Eigen::Quaterniond(
+        // robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
       }
     } else {
       // in swing
       if (leg == 0) {
+
         task_vector.push_back(task_map["lf_pos_task"]);
         tci_container->task_map_["lf_pos_task"]->UpdateDesired(
-            mpc_interface->des_foot_pos_[0], mpc_interface->des_foot_vel_[0],
-            mpc_interface->des_foot_acc_[0]);
-        // task_vector.push_back(task_map["lf_ori_task"]);
-        // tci_container->task_map_["lf_ori_task"]->UpdateDesired(
-        // lf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
+            mpc_interface->des_foot_pos_[leg],
+            mpc_interface->des_foot_vel_[leg],
+            mpc_interface->des_foot_acc_[leg]);
         // Eigen::Vector3d::Zero());
+        task_vector.push_back(task_map["lf_ori_task"]);
+        tci_container->task_map_["lf_ori_task"]->UpdateDesired(
+            lf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
+            Eigen::Vector3d::Zero());
+
+        // contact
+        tci_container->contact_map_["lf_contact"]->SetMaxFz(0.01);
+        tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
+            mpc_interface->des_lf_wrench_);
       } else {
+
         task_vector.push_back(task_map["rf_pos_task"]);
         tci_container->task_map_["rf_pos_task"]->UpdateDesired(
-            mpc_interface->des_foot_pos_[1], mpc_interface->des_foot_vel_[1],
-            mpc_interface->des_foot_acc_[1]);
-        // task_vector.push_back(task_map["rf_ori_task"]);
-        // tci_container->task_map_["rf_ori_task"]->UpdateDesired(
-        // rf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
+            mpc_interface->des_foot_pos_[leg],
+            mpc_interface->des_foot_vel_[leg],
+            mpc_interface->des_foot_acc_[leg]);
         // Eigen::Vector3d::Zero());
+        task_vector.push_back(task_map["rf_ori_task"]);
+        tci_container->task_map_["rf_ori_task"]->UpdateDesired(
+            rf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
+            Eigen::Vector3d::Zero());
+
+        tci_container->contact_map_["rf_contact"]->SetMaxFz(0.01);
+        tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
+            mpc_interface->des_rf_wrench_);
       }
     }
   }
+  // TEST
+  // std::cout << "===================================================="
+  //<< std::endl;
+  // std::cout << "lf ori des: "
+  //<< tci_container->task_map_["lf_ori_task"]->DesiredPos().transpose()
+  //<< std::endl;
+  // std::cout << "lf ori act: "
+  //<< tci_container->task_map_["lf_ori_task"]->CurrentPos().transpose()
+  //<< std::endl;
+  // std::cout << "lf ori error: "
+  //<< tci_container->task_map_["lf_ori_task"]->PosError().transpose()
+  //<< std::endl;
+  // std::cout << "rf ori des: "
+  //<< tci_container->task_map_["rf_ori_task"]->DesiredPos().transpose()
+  //<< std::endl;
+  // std::cout << "rf ori act: "
+  //<< tci_container->task_map_["rf_ori_task"]->CurrentPos().transpose()
+  //<< std::endl;
+  // std::cout << "rf ori error: "
+  //<< tci_container->task_map_["rf_ori_task"]->PosError().transpose()
+  //<< std::endl;
+  // exit(0);
+  iter_++;
+  // if (iter_ == 50)
+  // exit(0);
 }
 
 bool Locomotion::EndOfState() { return false; }

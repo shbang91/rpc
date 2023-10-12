@@ -33,8 +33,12 @@ private:
   // QP params yaml
   Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd W_force_rate_of_change_right_foot_ = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd W_delta_rf_lfoot_ = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd W_delta_rf_rfoot_ = Eigen::VectorXd::Zero(6);
 
   // TODO remove this later
   Eigen::Quaterniond lf_ori_quat_ = Eigen::Quaterniond::Identity();
   Eigen::Quaterniond rf_ori_quat_ = Eigen::Quaterniond::Identity();
+
+  int iter_ = 0;
 };

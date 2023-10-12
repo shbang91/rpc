@@ -33,6 +33,9 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
   }
   des_lf_wrench_.setZero();
   des_rf_wrench_.setZero();
+  // double robot_total_weight = robot_->GetTotalWeight();
+  // des_lf_wrench_[5] = robot_total_weight / 2.;
+  // des_rf_wrench_[5] = robot_total_weight / 2.;
 }
 
 void ConvexMPCLocomotion::Initialize(const GaitCommand &gait_command,
@@ -81,13 +84,12 @@ void ConvexMPCLocomotion::Solve() {
   current_gait_number_ = gait_number_;
 
   // TODO:integrate position setpoint
-  // Eigen::Vector3d des_body_vel_in_body(x_vel_cmd_, y_vel_cmd_,
-  // 0.0); // in local body frame
   Eigen::Vector3d des_body_vel_in_body(x_vel_des_, y_vel_des_,
                                        0.0); // in local body frame
   des_body_vel_in_world_ = robot_->GetBodyOriRot() * des_body_vel_in_body;
   Eigen::Vector3d body_vel_in_world =
       robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).tail<3>();
+  // robot_->GetRobotComLinVel();
 
   // integral-esque pitch and roll compensation from MIT Cheetah
   if (std::fabs(body_vel_in_world[0]) > 0.2)
@@ -95,7 +97,7 @@ void ConvexMPCLocomotion::Solve() {
         dt_ * (pitch_des_ - robot_->GetBodyOriYPR()[1]) / body_vel_in_world[0];
   if (std::fabs(body_vel_in_world[1]) > 0.1)
     rpy_int_[0] +=
-        dt_ * (roll_des_ - robot_->GetBodyOriYPR()[3]) / body_vel_in_world[1];
+        dt_ * (roll_des_ - robot_->GetBodyOriYPR()[2]) / body_vel_in_world[1];
 
   rpy_int_[0] = fminf(fmaxf(rpy_int_[0], -0.25), 0.25);
   rpy_int_[1] = fminf(fmaxf(rpy_int_[1], -0.25), 0.25);
@@ -134,7 +136,7 @@ void ConvexMPCLocomotion::Solve() {
       foot_swing_trajectory_[i].SetHeight(swing_height_);
     }
 
-    b_first_visit_ = false;
+    // b_first_visit_ = false;
   }
 
   // TODO:foot placement with raibert hueristic
@@ -161,7 +163,8 @@ void ConvexMPCLocomotion::Solve() {
       swing_time_remaining_[leg] -= dt_;
 
     // TODO: check if this is right strategy
-    Eigen::Vector3d offset(0.0, side_sign[leg] * 0.06, 0.0);
+    // Eigen::Vector3d offset(0.0, side_sign[leg] * 0.06, 0.0);
+    Eigen::Vector3d offset(0.0, side_sign[leg] * 0.0, 0.0);
 
     double stance_time = gait->getStanceDuration(dt_mpc_, leg);
     Eigen::Vector3d foot_pos_from_body = base_to_hip_offset_[leg] + offset;
@@ -183,12 +186,12 @@ void ConvexMPCLocomotion::Solve() {
     double p_rel_max = 0.3;
     // Using the estimated velocity is correct
     double pfx_rel = body_vel_in_world[0] * 0.5 * stance_time +
-                     0.03 * (body_vel_in_world[0] - des_body_vel_in_world_[0]) +
+                     0.05 * (body_vel_in_world[0] - des_body_vel_in_world_[0]) +
                      (0.5 * robot_->GetBodyPos()[2] / 9.81) *
                          (body_vel_in_world[1] * yaw_rate_des_);
 
     float pfy_rel = body_vel_in_world[1] * 0.5 * stance_time +
-                    0.03 * (body_vel_in_world[1] - des_body_vel_in_world_[1]) +
+                    0.05 * (body_vel_in_world[1] - des_body_vel_in_world_[1]) +
                     (0.5 * robot_->GetBodyPos()[2] / 9.81) *
                         (-body_vel_in_world[0] * yaw_rate_des_);
     pfx_rel = fminf(fmaxf(pfx_rel, -p_rel_max), p_rel_max);
@@ -203,7 +206,7 @@ void ConvexMPCLocomotion::Solve() {
   // calculate gait
   gait->setIterations(iterations_btw_mpc_, iteration_counter_);
   // mpc iteration counter
-  iteration_counter_++;
+  // iteration_counter_++;
 
   Eigen::Vector2d contact_states = gait->getContactState();
   Eigen::Vector2d swing_states = gait->getSwingState();
@@ -213,11 +216,6 @@ void ConvexMPCLocomotion::Solve() {
   if (iteration_counter_ % iterations_btw_mpc_ == 0)
     _SolveConvexMPC(contact_schedule_table);
 
-  // TODO: get mpc solution
-  const auto solution = convex_mpc_->getSolution();
-  des_lf_wrench_ = solution.f()[0][0];
-  des_rf_wrench_ = solution.f()[0][1];
-
   // contact state for state estimator
   Eigen::Vector2d se_contact_state(0.0, 0.0);
 
@@ -225,6 +223,17 @@ void ConvexMPCLocomotion::Solve() {
   for (int foot(0); foot < 2; foot++) {
     double contact_state = contact_states[foot];
     double swing_state = swing_states[foot];
+
+    if (b_first_visit_) {
+      if (foot == 0) {
+        contact_state = 0.5;
+        swing_state = 0.0;
+      } else {
+        contact_state = 0.0;
+        swing_state = 0.001;
+        b_first_visit_ = false;
+      }
+    }
 
     if (swing_state > 0) {
       // foot is in swing
@@ -241,6 +250,18 @@ void ConvexMPCLocomotion::Solve() {
       des_foot_vel_[foot] = foot_swing_trajectory_[foot].GetVelocity();
       des_foot_acc_[foot] = foot_swing_trajectory_[foot].GetAcceleration();
 
+      // std::cout << "=================================================="
+      //<< std::endl;
+      // std::cout << "foot: " << foot << std::endl;
+      // std::cout << "curr foot pos: " << foot_pos_[foot].transpose()
+      //<< std::endl;
+      // std::cout << "des foot pos: " << des_foot_pos_[foot].transpose()
+      //<< std::endl;
+      // std::cout << "des foot vel: " << des_foot_vel_[foot].transpose()
+      //<< std::endl;
+      // std::cout << "des foot acc: " << des_foot_acc_[foot].transpose()
+      //<< std::endl;
+
       // TODO: misc (think about how to use this)
       Eigen::Vector3d des_leg_pos =
           robot_->GetBodyOriRot().transpose() *
@@ -248,6 +269,7 @@ void ConvexMPCLocomotion::Solve() {
           base_to_hip_offset_[foot];
       Eigen::Vector3d des_leg_vel = robot_->GetBodyOriRot().transpose() *
                                     (des_foot_vel_[foot] - body_vel_in_world);
+      contact_state_[foot] = 0.0;
     } else {
       // foot is in contact
       b_first_swing_[foot] = true;
@@ -265,8 +287,12 @@ void ConvexMPCLocomotion::Solve() {
                                     (des_foot_vel_[foot] - body_vel_in_world);
 
       se_contact_state[foot] = contact_state;
+      // wbc update
+      contact_state_[foot] = contact_state;
     }
   }
+
+  // exit(0);
 
   // TODO: set contact state for state estimator (donno if this is needed)
   // state_estimator->SetCotnactPhase(se_contact_state);
@@ -293,10 +319,10 @@ void ConvexMPCLocomotion::Solve() {
   des_body_ang_vel_[2] = yaw_rate_des_;
 
   // contact state
-  contact_state_ = gait->getContactState();
+  // contact_state_ = gait->getContactState();
 
   // mpc iteration counter
-  // iteration_counter_++;
+  iteration_counter_++;
 }
 
 void ConvexMPCLocomotion::_InitializeConvexMPC() {
@@ -342,8 +368,8 @@ void ConvexMPCLocomotion::_InitializeConvexMPC() {
   // wrnech cone constraint
   double mu = 0.5;
   double fz_min = 20.0;
-  double fz_max = 800.0;
-  double foot_half_length = 0.1;
+  double fz_max = 500.0;
+  double foot_half_length = 0.08;
   double foot_half_width = 0.04;
   friction_cone_ = std::make_shared<FrictionCone>(
       mu, fz_min, fz_max, foot_half_length, foot_half_width);
@@ -447,8 +473,11 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   //=====================================================
   aligned_vector<Vector3d> feet_pos_relative_to_body;
   feet_pos_relative_to_body.resize(2);
+  Eigen::Vector3d com_pos = robot_->GetRobotComPos();
+  com_pos[2] = des_body_height_;
   for (int leg(0); leg < 2; leg++) {
-    feet_pos_relative_to_body[leg] = foot_pos_[leg] - robot_->GetBodyPos();
+    // feet_pos_relative_to_body[leg] = foot_pos_[leg] - robot_->GetBodyPos();
+    feet_pos_relative_to_body[leg] = foot_pos_[leg] - com_pos;
   }
 
   // set initial state // TODO: check this is correct
@@ -464,6 +493,16 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
                                     contact_trajectory.size());
   // solve mpc
   convex_mpc_->solve();
+
+  // TODO: get mpc solution
+  const auto solution = convex_mpc_->getSolution();
+  des_lf_wrench_ = solution.f()[0][0];
+  des_rf_wrench_ = solution.f()[0][1];
+
+  std::cout << "=========================================================="
+            << std::endl;
+  std::cout << "des_lf_wrench: " << des_lf_wrench_.transpose() << std::endl;
+  std::cout << "des_rf_wrench: " << des_rf_wrench_.transpose() << std::endl;
 }
 
 void ConvexMPCLocomotion::_SetupBodyCommand() {
