@@ -358,14 +358,15 @@ void ConvexMPCLocomotion::_InitializeConvexMPC() {
       std::make_shared<CostFunction>(Qqq, Qvv, Quu); // TODO: make yaml
 
   // state equation
-  Eigen::Matrix3d nominal_inertia;
-  nominal_inertia << 5.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 3.0;
+  Eigen::Matrix3d nominal_inertia; // TODO: this params should be set outside
+  nominal_inertia << 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
+      -0.00292598, 0.885743, -0.00292598, 1.23588;
   state_equation_ = std::make_shared<StateEquation>(
       dt_mpc_, robot_->GetTotalMass(),
       nominal_inertia); // TODO:nominal inertia need to change for inertia
                         // roll-out
 
-  // wrnech cone constraint
+  // wrnech cone constraint (TODO: this params should be set outside)
   double mu = 0.5;
   double fz_min = 20.0;
   double fz_max = 500.0;
