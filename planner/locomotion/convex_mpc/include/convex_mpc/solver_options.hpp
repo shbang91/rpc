@@ -9,7 +9,7 @@
 #include "convex_mpc/types.hpp"
 
 struct SolverOptions {
-  int iter_max = 40; // max iter
+  int iter_max = 50; // max iter
 
   double alpha_min = 1e-12;
 
