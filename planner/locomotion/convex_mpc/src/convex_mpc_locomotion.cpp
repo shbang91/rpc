@@ -99,8 +99,8 @@ void ConvexMPCLocomotion::Solve() {
     rpy_int_[0] +=
         dt_ * (roll_des_ - robot_->GetBodyOriYPR()[2]) / body_vel_in_world[1];
 
-  rpy_int_[0] = fminf(fmaxf(rpy_int_[0], -0.25), 0.25);
-  rpy_int_[1] = fminf(fmaxf(rpy_int_[1], -0.25), 0.25);
+  rpy_int_[0] = fmin(fmax(rpy_int_[0], -0.25), 0.25);
+  rpy_int_[1] = fmin(fmax(rpy_int_[1], -0.25), 0.25);
   rpy_comp_[0] = body_vel_in_world[1] * rpy_int_[0];
   rpy_comp_[1] = body_vel_in_world[0] * rpy_int_[1];
 
@@ -194,8 +194,8 @@ void ConvexMPCLocomotion::Solve() {
                     0.05 * (body_vel_in_world[1] - des_body_vel_in_world_[1]) +
                     (0.5 * robot_->GetBodyPos()[2] / 9.81) *
                         (-body_vel_in_world[0] * yaw_rate_des_);
-    pfx_rel = fminf(fmaxf(pfx_rel, -p_rel_max), p_rel_max);
-    pfy_rel = fminf(fmaxf(pfy_rel, -p_rel_max), p_rel_max);
+    pfx_rel = fmin(fmax(pfx_rel, -p_rel_max), p_rel_max);
+    pfy_rel = fmin(fmax(pfy_rel, -p_rel_max), p_rel_max);
     des_foot_pos[0] += pfx_rel;
     des_foot_pos[1] += pfy_rel;
     // des_foot_pos[2] = -0.003;
@@ -224,6 +224,7 @@ void ConvexMPCLocomotion::Solve() {
     double contact_state = contact_states[foot];
     double swing_state = swing_states[foot];
 
+    // TODO:clean this mess
     if (b_first_visit_) {
       if (foot == 0) {
         contact_state = 0.5;
@@ -234,6 +235,7 @@ void ConvexMPCLocomotion::Solve() {
         b_first_visit_ = false;
       }
     }
+    //
 
     if (swing_state > 0) {
       // foot is in swing
