@@ -438,11 +438,11 @@ Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
 
   Eigen::Matrix3d R;
   if (axis == CoordinateAxis::X)
-    R << 1, 0, 0, 0, c, s, 0, -s, c;
+    R << 1, 0, 0, 0, c, -s, 0, s, c;
   else if (axis == CoordinateAxis::Y)
-    R << c, 0, -s, 0, 1, 0, s, 0, c;
+    R << c, 0, s, 0, 1, 0, -s, 0, c;
   else if (axis == CoordinateAxis::Z)
-    R << c, s, 0, -s, c, 0, 0, 0, 1;
+    R << c, -s, 0, s, c, 0, 0, 0, 1;
 
   return R;
 }

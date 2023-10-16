@@ -170,7 +170,9 @@ void ConvexMPCLocomotion::Solve() {
     Eigen::Vector3d foot_pos_from_body = base_to_hip_offset_[leg] + offset;
     Eigen::Vector3d foot_yaw_corrected =
         util::CoordinateRotation(util::CoordinateAxis::Z,
-                                 -yaw_rate_des_ * stance_time / 2.) *
+                                 yaw_rate_des_ * stance_time / 2.) *
+        // util::CoordinateRotation(util::CoordinateAxis::Z,
+        //-yaw_rate_des_ * stance_time / 2.) *
         foot_pos_from_body;
 
     Eigen::Vector3d des_vel;
@@ -235,7 +237,6 @@ void ConvexMPCLocomotion::Solve() {
         b_first_visit_ = false;
       }
     }
-    //
 
     if (swing_state > 0) {
       // foot is in swing
