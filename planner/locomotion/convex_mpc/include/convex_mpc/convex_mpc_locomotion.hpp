@@ -1,9 +1,36 @@
+/*****************************************************************************
+Copyright (c) 2019 MIT Biomimetic Robotics Lab
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*****************************************************************************/
+
+/*****************************************************************************
+ Modified by Seung Hyeon Bang (bangsh0718@gmail.com) for humanoid case
+*****************************************************************************/
+
 #ifndef CONVEX_MPC_CONVEX_MPC_LOCOMOTION_HPP_
 #define CONVEX_MPC_CONVEX_MPC_LOCOMOTION_HPP_
 
 #include "controller/whole_body_controller/managers/cubic_beizer_trajectory_manager.hpp"
 #include "convex_mpc/gait.hpp"
 #include "convex_mpc/mpc.hpp"
+#include "util/interpolation.hpp"
 
 /**
  * Input: Gait schedule, Gait command
@@ -35,6 +62,10 @@ public:
   Eigen::Vector3d des_foot_pos_[2]; // left, right order
   Eigen::Vector3d des_foot_vel_[2];
   Eigen::Vector3d des_foot_acc_[2];
+
+  Eigen::Quaterniond des_foot_ori_[2];
+  Eigen::Vector3d des_foot_ang_vel_[2];
+  Eigen::Vector3d des_foot_ang_acc_[2];
 
   // from desired state commands
   Eigen::Vector3d des_body_pos_;
@@ -105,8 +136,10 @@ private:
   bool b_first_swing_[2];
   double swing_height_;
   aligned_vector<Vector3d> foot_pos_;           // lfoot, rfoot order
+  aligned_vector<Matrix3d> foot_ori_;           // lfoot, rfoot order
   aligned_vector<Vector3d> base_to_hip_offset_; // lfoot, rfoot order
   CubicBeizerTrajectoryManager<double> foot_swing_trajectory_[2];
+  HermiteQuaternionCurve2 foot_swing_ori_trajectory_[2];
   double swing_time_[2];
   double swing_time_remaining_[2];
 };

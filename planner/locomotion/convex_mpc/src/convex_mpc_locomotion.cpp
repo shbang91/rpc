@@ -24,12 +24,17 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
 
   // swing foot
   foot_pos_.resize(2);
+  foot_ori_.resize(2);
   for (int i = 0; i < 2; ++i) {
     b_first_swing_[i] = true;
     foot_pos_[i].setZero();
+    foot_ori_[i].setIdentity();
     des_foot_pos_[i].setZero();
     des_foot_vel_[i].setZero();
     des_foot_acc_[i].setZero();
+    des_foot_ori_[i].setIdentity();
+    des_foot_ang_vel_[i].setZero();
+    des_foot_ang_acc_[i].setZero();
   }
   des_lf_wrench_.setZero();
   des_rf_wrench_.setZero();
@@ -106,11 +111,13 @@ void ConvexMPCLocomotion::Solve() {
 
   // current foot pos
   for (int i = 0; i < 2; ++i) {
-    foot_pos_[i] =
-        robot_->GetBodyPos() +
-        robot_->GetBodyOriRot() * robot_->GetLocomotionControlPointsInBody(
-                                      i); // TODO: check both length are the
-                                          // same at the very beginning
+    foot_pos_[i] = robot_->GetBodyPos() +
+                   robot_->GetBodyOriRot() *
+                       robot_->GetLocomotionControlPointsIsometryInBody(i)
+                           .translation(); // TODO: check both length are the
+                                           // same at the very beginning
+    foot_ori_[i] = robot_->GetBodyOriRot() *
+                   robot_->GetLocomotionControlPointsIsometryInBody(i).linear();
   }
 
   // set body states desired
@@ -154,15 +161,15 @@ void ConvexMPCLocomotion::Solve() {
   double v_abs = std::fabs(des_body_vel_in_body[0]);
   */
 
+  // foot placement strategy
   double side_sign[2] = {1, -1};
-
   for (int leg = 0; leg < 2; ++leg) {
     if (b_first_swing_[leg])
       swing_time_remaining_[leg] = swing_time_[leg];
     else
       swing_time_remaining_[leg] -= dt_;
 
-    // TODO: check if this is right strategy
+    // TODO: make this as yaml (foot step offset)
     // Eigen::Vector3d offset(0.0, side_sign[leg] * 0.06, 0.0);
     Eigen::Vector3d offset(0.0, side_sign[leg] * 0.0, 0.0);
 
@@ -243,6 +250,17 @@ void ConvexMPCLocomotion::Solve() {
       if (b_first_swing_[foot]) {
         b_first_swing_[foot] = false;
         foot_swing_trajectory_[foot].SetInitialPosition(foot_pos_[foot]);
+        Eigen::Matrix3d world_R_body_yaw = robot_->GetBodyYawRotationMatrix();
+        Eigen::Matrix3d des_foot_ori =
+            util::CoordinateRotation(
+                util::CoordinateAxis::Z,
+                yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot) / 2.0) *
+            world_R_body_yaw;
+        foot_swing_ori_trajectory_[foot].Initialize(
+            Eigen::Quaterniond(foot_ori_[foot]).normalized(),
+            Eigen::Vector3d::Zero(),
+            Eigen::Quaterniond(des_foot_ori).normalized(),
+            Eigen::Vector3d::Zero());
       }
 
       foot_swing_trajectory_[foot].ComputeSwingTrajectoryBezier(
@@ -252,6 +270,13 @@ void ConvexMPCLocomotion::Solve() {
       des_foot_pos_[foot] = foot_swing_trajectory_[foot].GetPosition();
       des_foot_vel_[foot] = foot_swing_trajectory_[foot].GetVelocity();
       des_foot_acc_[foot] = foot_swing_trajectory_[foot].GetAcceleration();
+
+      des_foot_ori_[foot] =
+          foot_swing_ori_trajectory_[foot].GetOrientation(swing_state);
+      des_foot_ang_vel_[foot] =
+          foot_swing_ori_trajectory_[foot].GetAngularVelocity(swing_state);
+      des_foot_ang_acc_[foot] =
+          foot_swing_ori_trajectory_[foot].GetAngularAcceleration(swing_state);
 
       // std::cout << "=================================================="
       //<< std::endl;
@@ -280,6 +305,7 @@ void ConvexMPCLocomotion::Solve() {
       // save for WBC foot task
       des_foot_pos_[foot] = foot_swing_trajectory_[foot].GetPosition();
       des_foot_vel_[foot] = foot_swing_trajectory_[foot].GetVelocity();
+      des_foot_acc_[foot] = foot_swing_trajectory_[foot].GetAcceleration();
 
       // TODO: misc (think about how to use this)
       Eigen::Vector3d des_leg_pos =

@@ -65,10 +65,10 @@ void Locomotion::FirstVisit() {
       robot_->GetBaseToFootXYOffset());
 
   // TODO: should be generated inside of convexmpclocomotion class
-  lf_ori_quat_ = Eigen::Quaterniond(
-      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
-  rf_ori_quat_ = Eigen::Quaterniond(
-      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
+  // lf_ori_quat_ = Eigen::Quaterniond(
+  // robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
+  // rf_ori_quat_ = Eigen::Quaterniond(
+  // robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
 }
 
 void Locomotion::OneStep() {
@@ -76,7 +76,6 @@ void Locomotion::OneStep() {
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
   const auto &tci_container = ctrl_arch_->tci_container_;
 
-  std::cout << "time:" << sp_->current_time_ << std::endl;
   // solve convexMPC
   mpc_interface->Solve();
 
@@ -164,8 +163,9 @@ void Locomotion::OneStep() {
         // Eigen::Vector3d::Zero());
         task_vector.push_back(task_map["lf_ori_task"]);
         tci_container->task_map_["lf_ori_task"]->UpdateDesired(
-            lf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
-            Eigen::Vector3d::Zero());
+            mpc_interface->des_foot_ori_[leg].coeffs(),
+            mpc_interface->des_foot_ang_vel_[leg],
+            mpc_interface->des_foot_ang_acc_[leg]);
 
         // contact
         tci_container->contact_map_["lf_contact"]->SetMaxFz(0.01);
@@ -181,8 +181,9 @@ void Locomotion::OneStep() {
         // Eigen::Vector3d::Zero());
         task_vector.push_back(task_map["rf_ori_task"]);
         tci_container->task_map_["rf_ori_task"]->UpdateDesired(
-            rf_ori_quat_.coeffs(), Eigen::Vector3d::Zero(),
-            Eigen::Vector3d::Zero());
+            mpc_interface->des_foot_ori_[leg].coeffs(),
+            mpc_interface->des_foot_ang_vel_[leg],
+            mpc_interface->des_foot_ang_acc_[leg]);
 
         tci_container->contact_map_["rf_contact"]->SetMaxFz(0.01);
         tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
