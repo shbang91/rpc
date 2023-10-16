@@ -502,10 +502,10 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   des_lf_wrench_ = solution.f()[0][0];
   des_rf_wrench_ = solution.f()[0][1];
 
-  std::cout << "=========================================================="
-            << std::endl;
-  std::cout << "des_lf_wrench: " << des_lf_wrench_.transpose() << std::endl;
-  std::cout << "des_rf_wrench: " << des_rf_wrench_.transpose() << std::endl;
+  // std::cout << "=========================================================="
+  //<< std::endl;
+  // std::cout << "des_lf_wrench: " << des_lf_wrench_.transpose() << std::endl;
+  // std::cout << "des_rf_wrench: " << des_rf_wrench_.transpose() << std::endl;
 }
 
 void ConvexMPCLocomotion::_SetupBodyCommand() {

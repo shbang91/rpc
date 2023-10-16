@@ -37,7 +37,7 @@ Eigen::Vector2d OffsetDurationGait::getContactState() {
       progress[i] /= durationsDouble_[i];
     }
   }
-  printf("contact state: %.3f %.3f\n", progress[0], progress[1]);
+  // printf("contact state: %.3f %.3f\n", progress[0], progress[1]);
   return progress.matrix();
 }
 
@@ -61,7 +61,7 @@ Eigen::Vector2d OffsetDurationGait::getSwingState() {
       progress[i] /= swing_duration[i];
     }
   }
-  printf("swing state: %.3f %.3f\n", progress[0], progress[1]);
+  // printf("swing state: %.3f %.3f\n", progress[0], progress[1]);
   return progress.matrix();
 }
 
@@ -78,9 +78,9 @@ int *OffsetDurationGait::getMPCGait() {
       else
         mpc_gait_[i * 2 + j] = 0;
 
-      printf("%d ", mpc_gait_[i * 2 + j]);
+      // printf("%d ", mpc_gait_[i * 2 + j]);
     }
-    printf("\n");
+    // printf("\n");
   }
 
   return mpc_gait_;
@@ -104,8 +104,8 @@ void OffsetDurationGait::setIterations(const int iterationsBetweenMPC,
   iteration_ = (currentIteration / iterationsBetweenMPC) % nHorizon_;
   phase_ = (double)(currentIteration % (iterationsBetweenMPC * nHorizon_)) /
            (double)(iterationsBetweenMPC * nHorizon_);
-  std::cout << "internal iter: " << iteration_ << std::endl;
-  std::cout << "phase: " << phase_ << std::endl;
+  // std::cout << "internal iter: " << iteration_ << std::endl;
+  // std::cout << "phase: " << phase_ << std::endl;
 }
 
 void OffsetDurationGait::debugPrint() {}

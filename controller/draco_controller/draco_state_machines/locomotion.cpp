@@ -111,14 +111,14 @@ void Locomotion::OneStep() {
   tci_container->task_map_["torso_ori_task"]->UpdateDesired(
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
-  std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
-            << std::endl;
-  std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
-            << std::endl;
-  std::cout << "lfoot rf: " << mpc_interface->des_lf_wrench_.transpose()
-            << std::endl;
-  std::cout << "rfoot rf: " << mpc_interface->des_rf_wrench_.transpose()
-            << std::endl;
+  // std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
+  //<< std::endl;
+  // std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
+  //<< std::endl;
+  // std::cout << "lfoot rf: " << mpc_interface->des_lf_wrench_.transpose()
+  //<< std::endl;
+  // std::cout << "rfoot rf: " << mpc_interface->des_rf_wrench_.transpose()
+  //<< std::endl;
 
   // TODO:update contact state for controller
   for (int leg = 0; leg < 2; leg++) {
