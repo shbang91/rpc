@@ -75,10 +75,12 @@ public:
   Eigen::Matrix3d GetBodyOriRot();
   Eigen::Vector3d GetBodyOriYPR();
   Eigen::Vector3d GetBodyPos();
+  Eigen::Matrix3d GetBodyYawRotationMatrix();
 
   Eigen::Isometry3d GetTransform(const std::string &ref_frame,
                                  const std::string &target_frame);
   Eigen::Vector3d GetLocomotionControlPointsInBody(const int cp_idx);
+  Eigen::Isometry3d GetLocomotionControlPointsIsometryInBody(const int cp_idx);
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
   GetBaseToFootXYOffset();
 

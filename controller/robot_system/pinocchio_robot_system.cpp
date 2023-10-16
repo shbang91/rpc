@@ -310,6 +310,11 @@ Eigen::Vector3d PinocchioRobotSystem::GetBodyPos() {
   return q_.head<3>() + world_R_body * base_local_com_pos_;
 }
 
+Eigen::Matrix3d PinocchioRobotSystem::GetBodyYawRotationMatrix() {
+  Eigen::Vector3d ypr = this->GetBodyOriYPR();
+  return util::SO3FromRPY(0.0, 0.0, ypr(0));
+}
+
 Eigen::Isometry3d
 PinocchioRobotSystem::GetTransform(const std::string &ref_frame,
                                    const std::string &target_frame) {
@@ -324,6 +329,14 @@ PinocchioRobotSystem::GetLocomotionControlPointsInBody(const int cp_idx) {
   return GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx])
              .translation() -
          base_local_com_pos_;
+}
+Eigen::Isometry3d
+PinocchioRobotSystem::GetLocomotionControlPointsIsometryInBody(
+    const int cp_idx) {
+  Eigen::Isometry3d iso =
+      GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx]);
+  iso.translation() -= base_local_com_pos_;
+  return iso;
 }
 
 std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
