@@ -408,7 +408,8 @@ if __name__ == "__main__":
         os.makedirs(video_dir)
 
     previous_torso_velocity = np.array([0., 0., 0.])
-    rate = RateLimiter(frequency=1. / dt)
+    #rate = RateLimiter(frequency=1. / dt)
+    rate = RateLimiter(frequency=1./5./dt)
     while (True):
         l_normal_volt_noise = np.random.normal(0, l_contact_volt_noise)
         r_normal_volt_noise = np.random.normal(0, r_contact_volt_noise)

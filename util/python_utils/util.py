@@ -4,7 +4,7 @@ from scipy.spatial.transform import Slerp
 import numpy as np
 import json
 import multiprocessing as mp
-from tqdm import tqdm
+# from tqdm import tqdm
 
 
 def pretty_print(ob):
