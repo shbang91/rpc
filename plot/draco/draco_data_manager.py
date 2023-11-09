@@ -2,7 +2,6 @@ import asyncio
 import math
 
 import numpy
-import requests
 import time
 from base64 import b64encode
 from foxglove_websocket import run_cancellable
@@ -10,7 +9,6 @@ from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
 from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
 from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
 from mcap_protobuf.schema import build_file_descriptor_set
-from pyquaternion import Quaternion
 
 import zmq
 import sys
@@ -52,6 +50,18 @@ socket = context.socket(zmq.SUB)
 
 b_using_kf_estimator = False
 b_using_non_kf_estimator = False
+
+def isMesh(geometry_object):
+    """Check whether the geometry object contains a Mesh supported by MeshCat"""
+    if geometry_object.meshPath == "":
+        return False
+
+    _, file_extension = os.path.splitext(geometry_object.meshPath)
+    if file_extension.lower() in [".dae", ".obj", ".stl"]:
+        return True
+
+    return False
+
 
 async def main():
     async with FoxgloveServer("0.0.0.0", 8765, "example server") as server:
@@ -210,23 +220,23 @@ async def main():
             x, y, z = 0, 0, 0
             pp = "world"
 
-            pin.forwardKinematics(model,data, vis_q)
+            pin.forwardKinematics(model, data, vis_q)
             pin.updateGeometryPlacements(model, data, visual_model, visual_data)
             for visual in visual_model.geometryObjects:
-                visual_model.geometryObjects
                 # Get mesh pose.
                 M = visual_data.oMg[visual_model.getGeometryId(visual.name)]
                 # Manage scaling
-                scale = np.asarray(visual.meshScale).flatten()
-                S = np.diag(np.concatenate((scale, [1.0])))
-                T = np.array(M.homogeneous).dot(S)
+                if isMesh(visual):
+                    scale = np.asarray(visual.meshScale).flatten()
+                    S = np.diag(np.concatenate((scale, [1.0])))
+                    T = np.array(M.homogeneous).dot(S)
+                else:
+                    T = M.homogeneous
                 anti = visual.name[:-2] #use for frame_id
                 transform.parent_frame_id = pp
-                # transform.parent_frame_id = "torso"
-                if (visual_model.getGeometryId(visual.name) == 1) or (visual_model.getGeometryId(visual.name) == 9) or (visual_model.getGeometryId(visual.name) == 16) or (visual_model.getGeometryId(visual.name) == 17) or (visual_model.getGeometryId(visual.name) == 25):
-                    transform.parent_frame_id = "torso_link"
+                # if (visual_model.getGeometryId(visual.name) == 1) or (visual_model.getGeometryId(visual.name) == 9) or (visual_model.getGeometryId(visual.name) == 16) or (visual_model.getGeometryId(visual.name) == 17) or (visual_model.getGeometryId(visual.name) == 25):
+                #     transform.parent_frame_id = "torso_link"
                 transform.child_frame_id = anti
-                # print(f'from {transform.parent_frame_id} to {transform.child_frame_id} ')
                 x = T[0][3]
                 y = T[1][3]
                 z = T[2][3]
@@ -243,7 +253,6 @@ async def main():
                 asyncio.sleep(10)
                 transform.rotation.Clear()
                 transform.translation.Clear()
-                pp = anti
 
 
 def check_if_kf_estimator(kf_pos, est_pos):
