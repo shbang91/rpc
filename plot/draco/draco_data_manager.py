@@ -75,6 +75,27 @@ async def main():
                 ).decode("ascii"),
             }
         )
+
+        icp = await server.add_channel(
+            {
+                "topic": "icp",
+                "encoding": "json",
+                "schemaName": "icp",
+                "schema": json.dumps(
+                    {
+                        "type": "object",
+                        "properties": {
+                            "est_x": {"type": "number"},
+                            "est_y": {"type": "number"},
+                            "des_x": {"type": "number"},
+                            "des_y": {"type": "number"},
+                        },
+                    }
+                ),
+                "schemaEncoding": "jsonschema",
+            },
+        )
+
         tf_chan_id = await server.add_channel(
             {
                 "topic": "transforms",
@@ -217,6 +238,8 @@ async def main():
 
             # viz.display(vis_q)
 
+            await server.send_message(icp, now, json.dumps({"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1],"des_x": list(msg.des_icp)[0], "des_y": list(msg.des_icp)[1]}).encode("utf8"))
+
             x, y, z = 0, 0, 0
             pp = "world"
 
@@ -250,10 +273,9 @@ async def main():
                 transform.rotation.z = q[2]
                 transform.rotation.w = q[3]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
-                asyncio.sleep(10)
+                #asyncio.sleep(10)
                 transform.rotation.Clear()
                 transform.translation.Clear()
-
 
 def check_if_kf_estimator(kf_pos, est_pos):
     global b_using_kf_estimator, b_using_non_kf_estimator
