@@ -4,6 +4,8 @@ import math
 import numpy
 import time
 from base64 import b64encode
+
+from foxglove_schemas_protobuf.SpherePrimitive_pb2 import SpherePrimitive
 from foxglove_websocket import run_cancellable
 from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
 from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
@@ -64,7 +66,7 @@ def isMesh(geometry_object):
 
 
 async def main():
-    async with FoxgloveServer("0.0.0.0", 8765, "example server") as server:
+    async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
         scene_chan_id = await server.add_channel(
             {
                 "topic": "scene",
@@ -109,15 +111,33 @@ async def main():
 
         class Listener(FoxgloveServerListener):
             def on_subscribe(self, server, channel_id):
-                # Send the model data only when a client subscribes, to save bandwidth
+                # Send the model data only when a client subscribes to save bandwidth
                 if channel_id == scene_chan_id:
-                    scene_update = SceneUpdate()
-
-                asyncio.create_task(
-                    server.send_message(
-                        scene_chan_id, now, scene_update.SerializeToString()
-                    )
-                )
+                    sph = ["est_icp", "des_icp"]
+                    for obj in sph:
+                        scene_update = SceneUpdate()
+                        entity1 = scene_update.entities.add()
+                        entity1.timestamp.FromNanoseconds(now)
+                        entity1.id = obj
+                        entity1.frame_id = obj
+                        entity1.frame_locked = True
+                        nodel = entity1.spheres.add()
+                        nodel.size.x = .1
+                        nodel.size.y = .1
+                        nodel.size.z = .1
+                        nodel.color.r = 1
+                        if obj == "des_icp":
+                            nodel.color.r = 0
+                        nodel.color.g = 0.6
+                        if obj == "des_icp":
+                            nodel.color.g = 1
+                        nodel.color.b = 0
+                        nodel.color.a = 1
+                        asyncio.create_task(
+                            server.send_message(
+                                scene_chan_id, now, scene_update.SerializeToString()
+                            )
+                        )
 
             def on_unsubscribe(self, server, channel_id):
                 pass
@@ -126,6 +146,8 @@ async def main():
 
         # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
+        now = time.time_ns()
+
 
         while True:
             ##receive msg trough socket
@@ -276,6 +298,14 @@ async def main():
                 #asyncio.sleep(10)
                 transform.rotation.Clear()
                 transform.translation.Clear()
+
+            for obj in ["est_icp", "des_icp"]:
+                transform.parent_frame_id = "world"
+                transform.child_frame_id = obj
+                transform.timestamp.FromNanoseconds(now)
+                transform.translation.x = list(getattr(msg, obj))[0]
+                transform.translation.y = list(getattr(msg, obj))[1]
+                await server.send_message(tf_chan_id, now, transform.SerializeToString())
 
 def check_if_kf_estimator(kf_pos, est_pos):
     global b_using_kf_estimator, b_using_non_kf_estimator
