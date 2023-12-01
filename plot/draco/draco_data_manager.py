@@ -111,10 +111,9 @@ async def main():
 
         class Listener(FoxgloveServerListener):
             def on_subscribe(self, server, channel_id):
-                # Send the model data only when a client subscribes to save bandwidth
                 if channel_id == scene_chan_id:
-                    sph = ["est_icp", "des_icp"]
-                    for obj in sph:
+                    #sph = ["est_icp", "des_icp"]
+                    for obj in ["est_icp", "des_icp"]:
                         scene_update = SceneUpdate()
                         entity1 = scene_update.entities.add()
                         entity1.timestamp.FromNanoseconds(now)
@@ -148,38 +147,27 @@ async def main():
         transform = FrameTransform()
         now = time.time_ns()
 
-
         while True:
-            ##receive msg trough socket
+            #receive msg trough socket
             encoded_msg = socket.recv()
             msg.ParseFromString(encoded_msg)
-
-            ##print pnc msg
-            #print(msg)
 
             #save data in pkl file
             data_saver.add('time', msg.time)
             data_saver.add('phase', msg.phase)
-
             data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
             data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
             data_saver.add('kf_base_joint_pos', list(msg.kf_base_joint_pos))
             data_saver.add('kf_base_joint_ori', list(msg.kf_base_joint_ori))
-
             data_saver.add('joint_positions', list(msg.joint_positions))
-
             data_saver.add('des_com_pos', list(msg.des_com_pos))
             data_saver.add('act_com_pos', list(msg.act_com_pos))
-
             data_saver.add('lfoot_pos', list(msg.lfoot_pos))
             data_saver.add('rfoot_pos', list(msg.rfoot_pos))
-
             data_saver.add('lfoot_ori', list(msg.lfoot_ori))
             data_saver.add('rfoot_ori', list(msg.rfoot_ori))
-
             data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
             data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
-
             data_saver.add('b_lfoot', msg.b_lfoot)
             data_saver.add('b_rfoot', msg.b_rfoot)
             data_saver.add('lfoot_volt_normal_raw', msg.lfoot_volt_normal_raw)
@@ -188,52 +176,34 @@ async def main():
             data_saver.add('rfoot_rf_normal', msg.rfoot_rf_normal)
             data_saver.add('lfoot_rf_normal_filt', msg.lfoot_rf_normal_filt)
             data_saver.add('rfoot_rf_normal_filt', msg.rfoot_rf_normal_filt)
-
             data_saver.add('est_icp', list(msg.est_icp))
             data_saver.add('des_icp', list(msg.des_icp))
-
             data_saver.add('des_cmp', list(msg.des_cmp))
-
-            # data_saver.add('base_joint_pos', list(msg.base_joint_pos))
-            # data_saver.add('base_joint_ori', list(msg.base_joint_ori))
-            # data_saver.add('base_joint_lin_vel', list(msg.base_joint_lin_vel))
-            # data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
-
             data_saver.add('com_xy_weight', list(msg.com_xy_weight))
             data_saver.add('com_xy_kp', list(msg.com_xy_kp))
             data_saver.add('com_xy_kd', list(msg.com_xy_kd))
             data_saver.add('com_xy_ki', list(msg.com_xy_ki))
-
             data_saver.add('com_z_weight', msg.com_z_weight)
             data_saver.add('com_z_kp', msg.com_z_kp)
             data_saver.add('com_z_kd', msg.com_z_kd)
-
             data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
             data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
             data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
-
             data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
             data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
             data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
-
             data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
             data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
             data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
-
             data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
             data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
             data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
-
             data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
             data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
             data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
-
             data_saver.add('quat_world_local', list(msg.quat_world_local))
 
             data_saver.advance()
-
-            #if args.b_use_plotjuggler:
-             #   pj_socket.send_string(json.dumps(data_saver.history))
 
             await asyncio.sleep(0.02)
             now = time.time_ns()
@@ -250,21 +220,12 @@ async def main():
             vis_q[0:3] = np.array(base_pos)
             vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
             vis_q[7:] = np.array(msg.joint_positions)
-            #MeshcatVisualizer.display(model, q_q)
-            #print(q_q)
-            #return
 
-            vis_q[0:3] = np.array(base_pos)
-            vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
-            vis_q[7:] = np.array(msg.joint_positions)
-
-            # viz.display(vis_q)
-
+            #send 2 pairs of icp x & y as topics to foxglove
             await server.send_message(icp, now, json.dumps({"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1],"des_x": list(msg.des_icp)[0], "des_y": list(msg.des_icp)[1]}).encode("utf8"))
 
-            x, y, z = 0, 0, 0
+            #update mesh positions
             pp = "world"
-
             pin.forwardKinematics(model, data, vis_q)
             pin.updateGeometryPlacements(model, data, visual_model, visual_data)
             for visual in visual_model.geometryObjects:
@@ -279,8 +240,6 @@ async def main():
                     T = M.homogeneous
                 anti = visual.name[:-2] #use for frame_id
                 transform.parent_frame_id = pp
-                # if (visual_model.getGeometryId(visual.name) == 1) or (visual_model.getGeometryId(visual.name) == 9) or (visual_model.getGeometryId(visual.name) == 16) or (visual_model.getGeometryId(visual.name) == 17) or (visual_model.getGeometryId(visual.name) == 25):
-                #     transform.parent_frame_id = "torso_link"
                 transform.child_frame_id = anti
                 x = T[0][3]
                 y = T[1][3]
@@ -295,10 +254,10 @@ async def main():
                 transform.rotation.z = q[2]
                 transform.rotation.w = q[3]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
-                #asyncio.sleep(10)
                 transform.rotation.Clear()
                 transform.translation.Clear()
 
+            #update icp values on the grid
             for obj in ["est_icp", "des_icp"]:
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
