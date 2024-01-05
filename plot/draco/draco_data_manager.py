@@ -1,17 +1,3 @@
-import asyncio
-import math
-
-import numpy
-import time
-from base64 import b64encode
-
-from foxglove_schemas_protobuf.SpherePrimitive_pb2 import SpherePrimitive
-from foxglove_websocket import run_cancellable
-from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
-from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
-from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
-from mcap_protobuf.schema import build_file_descriptor_set
-
 import zmq
 import sys
 import os
@@ -31,18 +17,33 @@ from messages.draco_pb2 import *
 from plot.data_saver import *
 
 import pinocchio as pin
-from pinocchio.visualize import MeshcatVisualizer
-
-import meshcat
-from plot import meshcat_utils as vis_tools
 
 import json
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--b_visualize", type=bool, default=False)
 parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
+parser.add_argument("--visualizer", choices=['none', 'meshcat', 'foxglove'], default='none')
 args = parser.parse_args()
+
+if args.visualizer == 'meshcat':
+    from pinocchio.visualize import MeshcatVisualizer
+    import meshcat
+    from plot import meshcat_utils as vis_tools
+elif args.visualizer == 'foxglove':
+    import asyncio
+    import math
+
+    import numpy
+    import time
+    from base64 import b64encode
+
+    from foxglove_schemas_protobuf.SpherePrimitive_pb2 import SpherePrimitive
+    from foxglove_websocket import run_cancellable
+    from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
+    from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
+    from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
+    from mcap_protobuf.schema import build_file_descriptor_set
 
 ##==========================================================================
 ##Socket initialize
@@ -52,6 +53,7 @@ socket = context.socket(zmq.SUB)
 
 b_using_kf_estimator = False
 b_using_non_kf_estimator = False
+
 
 def isMesh(geometry_object):
     """Check whether the geometry object contains a Mesh supported by MeshCat"""
@@ -112,7 +114,7 @@ async def main():
         class Listener(FoxgloveServerListener):
             def on_subscribe(self, server, channel_id):
                 if channel_id == scene_chan_id:
-                    #sph = ["est_icp", "des_icp"]
+                    # sph = ["est_icp", "des_icp"]
                     for obj in ["est_icp", "des_icp"]:
                         scene_update = SceneUpdate()
                         entity1 = scene_update.entities.add()
@@ -148,62 +150,10 @@ async def main():
         now = time.time_ns()
 
         while True:
-            #receive msg trough socket
+            # receive msg trough socket
             encoded_msg = socket.recv()
             msg.ParseFromString(encoded_msg)
-
-            #save data in pkl file
-            data_saver.add('time', msg.time)
-            data_saver.add('phase', msg.phase)
-            data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
-            data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
-            data_saver.add('kf_base_joint_pos', list(msg.kf_base_joint_pos))
-            data_saver.add('kf_base_joint_ori', list(msg.kf_base_joint_ori))
-            data_saver.add('joint_positions', list(msg.joint_positions))
-            data_saver.add('des_com_pos', list(msg.des_com_pos))
-            data_saver.add('act_com_pos', list(msg.act_com_pos))
-            data_saver.add('lfoot_pos', list(msg.lfoot_pos))
-            data_saver.add('rfoot_pos', list(msg.rfoot_pos))
-            data_saver.add('lfoot_ori', list(msg.lfoot_ori))
-            data_saver.add('rfoot_ori', list(msg.rfoot_ori))
-            data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
-            data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
-            data_saver.add('b_lfoot', msg.b_lfoot)
-            data_saver.add('b_rfoot', msg.b_rfoot)
-            data_saver.add('lfoot_volt_normal_raw', msg.lfoot_volt_normal_raw)
-            data_saver.add('rfoot_volt_normal_raw', msg.rfoot_volt_normal_raw)
-            data_saver.add('lfoot_rf_normal', msg.lfoot_rf_normal)
-            data_saver.add('rfoot_rf_normal', msg.rfoot_rf_normal)
-            data_saver.add('lfoot_rf_normal_filt', msg.lfoot_rf_normal_filt)
-            data_saver.add('rfoot_rf_normal_filt', msg.rfoot_rf_normal_filt)
-            data_saver.add('est_icp', list(msg.est_icp))
-            data_saver.add('des_icp', list(msg.des_icp))
-            data_saver.add('des_cmp', list(msg.des_cmp))
-            data_saver.add('com_xy_weight', list(msg.com_xy_weight))
-            data_saver.add('com_xy_kp', list(msg.com_xy_kp))
-            data_saver.add('com_xy_kd', list(msg.com_xy_kd))
-            data_saver.add('com_xy_ki', list(msg.com_xy_ki))
-            data_saver.add('com_z_weight', msg.com_z_weight)
-            data_saver.add('com_z_kp', msg.com_z_kp)
-            data_saver.add('com_z_kd', msg.com_z_kd)
-            data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
-            data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
-            data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
-            data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
-            data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
-            data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
-            data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
-            data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
-            data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
-            data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
-            data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
-            data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
-            data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
-            data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
-            data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
-            data_saver.add('quat_world_local', list(msg.quat_world_local))
-
-            data_saver.advance()
+            check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
             await asyncio.sleep(0.02)
             now = time.time_ns()
@@ -221,10 +171,12 @@ async def main():
             vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
             vis_q[7:] = np.array(msg.joint_positions)
 
-            #send 2 pairs of icp x & y as topics to foxglove
-            await server.send_message(icp, now, json.dumps({"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1],"des_x": list(msg.des_icp)[0], "des_y": list(msg.des_icp)[1]}).encode("utf8"))
+            # send 2 pairs of icp x & y as topics to foxglove
+            await server.send_message(icp, now, json.dumps(
+                {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
+                 "des_y": list(msg.des_icp)[1]}).encode("utf8"))
 
-            #update mesh positions
+            # update mesh positions
             pp = "world"
             pin.forwardKinematics(model, data, vis_q)
             pin.updateGeometryPlacements(model, data, visual_model, visual_data)
@@ -238,7 +190,7 @@ async def main():
                     T = np.array(M.homogeneous).dot(S)
                 else:
                     T = M.homogeneous
-                anti = visual.name[:-2] #use for frame_id
+                anti = visual.name[:-2]  # use for frame_id
                 transform.parent_frame_id = pp
                 transform.child_frame_id = anti
                 x = T[0][3]
@@ -257,7 +209,7 @@ async def main():
                 transform.rotation.Clear()
                 transform.translation.Clear()
 
-            #update icp values on the grid
+            # update icp values on the grid
             for obj in ["est_icp", "des_icp"]:
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
@@ -265,6 +217,7 @@ async def main():
                 transform.translation.x = list(getattr(msg, obj))[0]
                 transform.translation.y = list(getattr(msg, obj))[1]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
+
 
 def check_if_kf_estimator(kf_pos, est_pos):
     global b_using_kf_estimator, b_using_non_kf_estimator
@@ -304,87 +257,167 @@ msg = pnc_msg()
 
 data_saver = DataSaver()
 
-##meshcat visualizer
-if args.b_visualize:
+#
+# Visualizer Settings
+#
+if args.visualizer != 'none':
+    # both meshcat and foxglove make use of Pinocchio model and model data
     model, collision_model, visual_model = pin.buildModelsFromUrdf(
         "robot_model/draco/draco_modified.urdf", "robot_model/draco",
         pin.JointModelFreeFlyer())
 
     data, collision_data, visual_data = pin.createDatas(model, collision_model, visual_model)
-    #foxglove testing
-    # viz = MeshcatVisualizer(model, collision_model, visual_model)
-    # try:
-    #     viz.initViewer(open=True)
-    # except ImportError as err:
-    #     print(
-    #         "Error while initializing the viewer. It seems you should install python meshcat"
-    #     )
-    #     print(err)
-    #     exit()
-    # viz.loadViewerModel(rootNodeName="draco3")
     vis_q = pin.neutral(model)
 
-    asyncio.run(main())
-    exit()
+    # define and initialize elements to visualize
+    if args.visualizer == 'meshcat':
+        viz = MeshcatVisualizer(model, collision_model, visual_model)
+        try:
+            viz.initViewer(open=True)
+        except ImportError as err:
+            print(
+                "Error while initializing the viewer. It seems you should install python meshcat"
+            )
+            print(err)
+            exit()
+        viz.loadViewerModel(rootNodeName="draco3")
 
-    # viz = MeshcatVisualizer(model, collision_model, visual_model)
-    # try:
-    #     viz.initViewer(open=True)
-    # except ImportError as err:
-    #     print(
-    #         "Error while initializing the viewer. It seems you should install python meshcat"
-    #     )
-    #     print(err)
-    #     exit()
-    # viz.loadViewerModel(rootNodeName="draco3")
-    # vis_q = pin.neutral(model)
+        # add other visualizations to viewer
+        com_des_viz, com_des_model = vis_tools.add_sphere(viz.viewer,
+                                                          "com_des",
+                                                          color=[0., 0., 1., 0.5])
+        com_des_viz_q = pin.neutral(com_des_model)
 
-    # add other visualizations to viewer
-    com_des_viz, com_des_model = vis_tools.add_sphere(viz.viewer,
-                                                      "com_des",
-                                                      color=[0., 0., 1., 0.5])
-    com_des_viz_q = pin.neutral(com_des_model)
+        com_viz, com_model = vis_tools.add_sphere(viz.viewer,
+                                                  "com",
+                                                  color=[1., 0., 0., 0.5])
+        com_viz_q = pin.neutral(com_model)
 
-    com_viz, com_model = vis_tools.add_sphere(viz.viewer,
-                                              "com",
-                                              color=[1., 0., 0., 0.5])
-    com_viz_q = pin.neutral(com_model)
+        com_proj_viz, com_proj_model = vis_tools.add_sphere(
+            viz.viewer, "com_proj", color=[0., 0., 1., 0.3])
+        com_proj_viz_q = pin.neutral(com_proj_model)
 
-    com_proj_viz, com_proj_model = vis_tools.add_sphere(
-        viz.viewer, "com_proj", color=[0., 0., 1., 0.3])
-    com_proj_viz_q = pin.neutral(com_proj_model)
+        icp_viz, icp_model = vis_tools.add_sphere(viz.viewer,
+                                                  "icp",
+                                                  color=vis_tools.violet)
+        icp_viz_q = pin.neutral(icp_model)
 
-    icp_viz, icp_model = vis_tools.add_sphere(viz.viewer,
-                                              "icp",
-                                              color=vis_tools.violet)
-    icp_viz_q = pin.neutral(icp_model)
+        icp_des_viz, icp_des_model = vis_tools.add_sphere(viz.viewer,
+                                                          "icp_des",
+                                                          color=[0., 1., 0., 0.3])
+        icp_des_viz_q = pin.neutral(icp_des_model)
 
-    icp_des_viz, icp_des_model = vis_tools.add_sphere(viz.viewer,
-                                                      "icp_des",
-                                                      color=[0., 1., 0., 0.3])
-    icp_des_viz_q = pin.neutral(icp_des_model)
+        cmp_des_viz, cmp_des_model = vis_tools.add_sphere(
+            viz.viewer, "cmp_des", color=[0., 0.75, 0.75, 0.3])
+        cmp_des_viz_q = pin.neutral(cmp_des_model)
 
-    cmp_des_viz, cmp_des_model = vis_tools.add_sphere(
-        viz.viewer, "cmp_des", color=[0., 0.75, 0.75, 0.3])
-    cmp_des_viz_q = pin.neutral(cmp_des_model)
+        # add arrows visualizers to viewer
+        arrow_viz = meshcat.Visualizer(window=viz.viewer.window)
+        vis_tools.add_arrow(arrow_viz, "grf_lf", color=[0, 0, 1])
+        vis_tools.add_arrow(arrow_viz, "grf_rf", color=[1, 0, 0])
+        vis_tools.add_arrow(arrow_viz, "grf_lf_normal", color=[0.2, 0.2, 0.2, 0.2])
+        vis_tools.add_arrow(arrow_viz, "grf_rf_normal", color=[0.2, 0.2, 0.2, 0.2])
 
-    # add arrows visualizers to viewer
-    arrow_viz = meshcat.Visualizer(window=viz.viewer.window)
-    vis_tools.add_arrow(arrow_viz, "grf_lf", color=[0, 0, 1])
-    vis_tools.add_arrow(arrow_viz, "grf_rf", color=[1, 0, 0])
-    vis_tools.add_arrow(arrow_viz, "grf_lf_normal", color=[0.2, 0.2, 0.2, 0.2])
-    vis_tools.add_arrow(arrow_viz, "grf_rf_normal", color=[0.2, 0.2, 0.2, 0.2])
+
+def process_data_saver(visualize_type):
+
+    if visualize_type == 'meshcat':
+        # save data in pkl file (saved to replay data)
+        data_saver.add('time', msg.time)
+        data_saver.add('phase', msg.phase)
+        data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
+        data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
+        data_saver.add('kf_base_joint_pos', list(msg.kf_base_joint_pos))
+        data_saver.add('kf_base_joint_ori', list(msg.kf_base_joint_ori))
+        data_saver.add('joint_positions', list(msg.joint_positions))
+        data_saver.add('des_com_pos', list(msg.des_com_pos))
+        data_saver.add('act_com_pos', list(msg.act_com_pos))
+        data_saver.add('lfoot_pos', list(msg.lfoot_pos))
+        data_saver.add('rfoot_pos', list(msg.rfoot_pos))
+        data_saver.add('lfoot_ori', list(msg.lfoot_ori))
+        data_saver.add('rfoot_ori', list(msg.rfoot_ori))
+        data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
+        data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
+        data_saver.add('b_lfoot', msg.b_lfoot)
+        data_saver.add('b_rfoot', msg.b_rfoot)
+        data_saver.add('lfoot_volt_normal_raw', msg.lfoot_volt_normal_raw)
+        data_saver.add('rfoot_volt_normal_raw', msg.rfoot_volt_normal_raw)
+        data_saver.add('lfoot_rf_normal', msg.lfoot_rf_normal)
+        data_saver.add('rfoot_rf_normal', msg.rfoot_rf_normal)
+        data_saver.add('lfoot_rf_normal_filt', msg.lfoot_rf_normal_filt)
+        data_saver.add('rfoot_rf_normal_filt', msg.rfoot_rf_normal_filt)
+        data_saver.add('est_icp', list(msg.est_icp))
+        data_saver.add('des_icp', list(msg.des_icp))
+        data_saver.add('des_cmp', list(msg.des_cmp))
+        data_saver.add('quat_world_local', list(msg.quat_world_local))
+
+    elif visualize_type == 'foxglove':
+        pass
+
+    elif visualize_type == 'none':
+
+        # save data in pkl file (typically, for Plotjuggler)
+        data_saver.add('time', msg.time)
+        data_saver.add('phase', msg.phase)
+        data_saver.add('est_base_joint_pos', list(msg.est_base_joint_pos))
+        data_saver.add('est_base_joint_ori', list(msg.est_base_joint_ori))
+        data_saver.add('kf_base_joint_pos', list(msg.kf_base_joint_pos))
+        data_saver.add('kf_base_joint_ori', list(msg.kf_base_joint_ori))
+        data_saver.add('joint_positions', list(msg.joint_positions))
+        data_saver.add('des_com_pos', list(msg.des_com_pos))
+        data_saver.add('act_com_pos', list(msg.act_com_pos))
+        data_saver.add('lfoot_pos', list(msg.lfoot_pos))
+        data_saver.add('rfoot_pos', list(msg.rfoot_pos))
+        data_saver.add('lfoot_ori', list(msg.lfoot_ori))
+        data_saver.add('rfoot_ori', list(msg.rfoot_ori))
+        data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
+        data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
+        data_saver.add('b_lfoot', msg.b_lfoot)
+        data_saver.add('b_rfoot', msg.b_rfoot)
+        data_saver.add('lfoot_volt_normal_raw', msg.lfoot_volt_normal_raw)
+        data_saver.add('rfoot_volt_normal_raw', msg.rfoot_volt_normal_raw)
+        data_saver.add('lfoot_rf_normal', msg.lfoot_rf_normal)
+        data_saver.add('rfoot_rf_normal', msg.rfoot_rf_normal)
+        data_saver.add('lfoot_rf_normal_filt', msg.lfoot_rf_normal_filt)
+        data_saver.add('rfoot_rf_normal_filt', msg.rfoot_rf_normal_filt)
+        data_saver.add('est_icp', list(msg.est_icp))
+        data_saver.add('des_icp', list(msg.des_icp))
+        data_saver.add('des_cmp', list(msg.des_cmp))
+        data_saver.add('com_xy_weight', list(msg.com_xy_weight))
+        data_saver.add('com_xy_kp', list(msg.com_xy_kp))
+        data_saver.add('com_xy_kd', list(msg.com_xy_kd))
+        data_saver.add('com_xy_ki', list(msg.com_xy_ki))
+        data_saver.add('com_z_weight', msg.com_z_weight)
+        data_saver.add('com_z_kp', msg.com_z_kp)
+        data_saver.add('com_z_kd', msg.com_z_kd)
+        data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
+        data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
+        data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
+        data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
+        data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
+        data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
+        data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
+        data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
+        data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
+        data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
+        data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
+        data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
+        data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
+        data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
+        data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
+        data_saver.add('quat_world_local', list(msg.quat_world_local))
+
+    data_saver.advance()
+
 
 while True:
-    ##----------------------------------------------##
-    ##all this stuff was moved into foxglove publisher
-    ##----------------------------------------------##
+    # if publishing raw messages, floating base estimates names are not important
+    if args.visualizer != 'none':
 
-    ## publish back to plot juggler
-    if args.b_use_plotjuggler:
-        pj_socket.send_string(json.dumps(data_saver.history))
+        # receive msg trough socket
+        encoded_msg = socket.recv()
+        msg.ParseFromString(encoded_msg)
 
-    if args.b_visualize:
         check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
         if b_using_kf_estimator:
@@ -398,49 +431,61 @@ while True:
         vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
         vis_q[7:] = np.array(msg.joint_positions)
 
-        com_des_viz_q[0] = msg.des_com_pos[0]
-        com_des_viz_q[1] = msg.des_com_pos[1]
-        com_des_viz_q[2] = msg.des_com_pos[2]
+        if args.visualizer == 'meshcat':
+            process_data_saver('meshcat')
 
-        com_viz_q[0] = msg.act_com_pos[0]
-        com_viz_q[1] = msg.act_com_pos[1]
-        com_viz_q[2] = msg.act_com_pos[2]
+            # update visualizer viewers
+            com_des_viz_q[0] = msg.des_com_pos[0]
+            com_des_viz_q[1] = msg.des_com_pos[1]
+            com_des_viz_q[2] = msg.des_com_pos[2]
 
-        com_proj_viz_q[0] = msg.des_com_pos[0]
-        com_proj_viz_q[1] = msg.des_com_pos[1]
+            com_viz_q[0] = msg.act_com_pos[0]
+            com_viz_q[1] = msg.act_com_pos[1]
+            com_viz_q[2] = msg.act_com_pos[2]
 
-        icp_viz_q[0] = msg.est_icp[0]
-        icp_viz_q[1] = msg.est_icp[1]
-        icp_viz_q[2] = 0.
+            com_proj_viz_q[0] = msg.des_com_pos[0]
+            com_proj_viz_q[1] = msg.des_com_pos[1]
 
-        icp_des_viz_q[0] = msg.des_icp[0]
-        icp_des_viz_q[1] = msg.des_icp[1]
-        icp_des_viz_q[2] = 0.
+            icp_viz_q[0] = msg.est_icp[0]
+            icp_viz_q[1] = msg.est_icp[1]
+            icp_viz_q[2] = 0.
 
-        cmp_des_viz_q[0] = msg.des_cmp[0]
-        cmp_des_viz_q[1] = msg.des_cmp[1]
-        cmp_des_viz_q[2] = 0.
+            icp_des_viz_q[0] = msg.des_icp[0]
+            icp_des_viz_q[1] = msg.des_icp[1]
+            icp_des_viz_q[2] = 0.
 
-        viz.display(vis_q)
-        com_des_viz.display(com_des_viz_q)
-        com_viz.display(com_viz_q)
-        com_proj_viz.display(com_proj_viz_q)
-        icp_viz.display(icp_viz_q)
-        icp_des_viz.display(icp_des_viz_q)
-        cmp_des_viz.display(cmp_des_viz_q)
+            cmp_des_viz_q[0] = msg.des_cmp[0]
+            cmp_des_viz_q[1] = msg.des_cmp[1]
+            cmp_des_viz_q[2] = 0.
 
-        # plot GRFs
-        if msg.phase != 1:
-            vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
-                                  msg.lfoot_ori, msg.lfoot_rf_cmd)
-            vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
-                                  msg.rfoot_ori, msg.rfoot_rf_cmd)
+            viz.display(vis_q)
+            com_des_viz.display(com_des_viz_q)
+            com_viz.display(com_viz_q)
+            com_proj_viz.display(com_proj_viz_q)
+            icp_viz.display(icp_viz_q)
+            icp_des_viz.display(icp_des_viz_q)
+            cmp_des_viz.display(cmp_des_viz_q)
 
-            # add sensed normal force
-            lfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.lfoot_rf_normal_filt])
-            rfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.rfoot_rf_normal_filt])
-            vis_tools.grf_display(arrow_viz["grf_lf_normal"], msg.lfoot_pos,
-                                  msg.lfoot_ori, lfoot_rf_normal)
-            vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
-                                  msg.rfoot_ori, rfoot_rf_normal)
+            # plot GRFs
+            if msg.phase != 1:
+                vis_tools.grf_display(arrow_viz["grf_lf"], msg.lfoot_pos,
+                                      msg.lfoot_ori, msg.lfoot_rf_cmd)
+                vis_tools.grf_display(arrow_viz["grf_rf"], msg.rfoot_pos,
+                                      msg.rfoot_ori, msg.rfoot_rf_cmd)
 
+                # add sensed normal force
+                lfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.lfoot_rf_normal_filt])
+                rfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.rfoot_rf_normal_filt])
+                vis_tools.grf_display(arrow_viz["grf_lf_normal"], msg.lfoot_pos,
+                                      msg.lfoot_ori, lfoot_rf_normal)
+                vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
+                                      msg.rfoot_ori, rfoot_rf_normal)
+        elif args.visualizer == 'foxglove':
+            asyncio.run(main())
+
+    # publish back to plot juggler
+    # note: currently, this is not reached when using foxglove but the corresponding
+    # ROS messages can be visualized within foxglove
+    if args.b_use_plotjuggler:
+        process_data_saver('none')
+        pj_socket.send_string(json.dumps(data_saver.history))
