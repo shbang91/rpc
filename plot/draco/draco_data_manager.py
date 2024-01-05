@@ -411,12 +411,12 @@ def process_data_saver(visualize_type):
 
 
 while True:
+    # receive msg through socket
+    encoded_msg = socket.recv()
+    msg.ParseFromString(encoded_msg)
+
     # if publishing raw messages, floating base estimates names are not important
     if args.visualizer != 'none':
-
-        # receive msg trough socket
-        encoded_msg = socket.recv()
-        msg.ParseFromString(encoded_msg)
 
         check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
@@ -482,6 +482,9 @@ while True:
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
             asyncio.run(main())
+
+    else:   # if 'none' specified
+        process_data_saver('none')
 
     # publish back to plot juggler
     # note: currently, this is not reached when using foxglove but the corresponding
