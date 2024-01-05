@@ -4,9 +4,9 @@
 #include "draco_data_manager.hpp"
 #endif
 
-DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
+DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot)
+  : robot_(_robot) {
   util::PrettyConstructor(1, "DracoKFStateEstimator");
-  robot_ = _robot;
   sp_ = DracoStateProvider::GetStateProvider();
 
   iso_imu_to_base_com_ =
