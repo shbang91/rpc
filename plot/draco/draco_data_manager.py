@@ -35,15 +35,18 @@ elif args.visualizer == 'foxglove':
     import math
 
     import numpy
-    import time
     from base64 import b64encode
 
+    # Foxglove dependencies
     from foxglove_schemas_protobuf.SpherePrimitive_pb2 import SpherePrimitive
     from foxglove_websocket import run_cancellable
-    from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
+    from foxglove_websocket.server import FoxgloveServer
     from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
     from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
     from mcap_protobuf.schema import build_file_descriptor_set
+
+    # local tools to manage Foxglove scenes
+    from plot.foxglove_utils import FoxgloveSphereListener
 
 ##==========================================================================
 ##Socket initialize
@@ -80,7 +83,7 @@ async def main():
             }
         )
 
-        icp = await server.add_channel(
+        icp_chan_id = await server.add_channel(
             {
                 "topic": "icp",
                 "encoding": "json",
@@ -111,43 +114,14 @@ async def main():
             }
         )
 
-        class Listener(FoxgloveServerListener):
-            def on_subscribe(self, server, channel_id):
-                if channel_id == scene_chan_id:
-                    # sph = ["est_icp", "des_icp"]
-                    for obj in ["est_icp", "des_icp"]:
-                        scene_update = SceneUpdate()
-                        entity1 = scene_update.entities.add()
-                        entity1.timestamp.FromNanoseconds(now)
-                        entity1.id = obj
-                        entity1.frame_id = obj
-                        entity1.frame_locked = True
-                        nodel = entity1.spheres.add()
-                        nodel.size.x = .1
-                        nodel.size.y = .1
-                        nodel.size.z = .1
-                        nodel.color.r = 1
-                        if obj == "des_icp":
-                            nodel.color.r = 0
-                        nodel.color.g = 0.6
-                        if obj == "des_icp":
-                            nodel.color.g = 1
-                        nodel.color.b = 0
-                        nodel.color.a = 1
-                        asyncio.create_task(
-                            server.send_message(
-                                scene_chan_id, now, scene_update.SerializeToString()
-                            )
-                        )
-
-            def on_unsubscribe(self, server, channel_id):
-                pass
-
-        server.set_listener(Listener())
+        # Create sphere markers for estimated and desired ICP
+        est_icp_listener = FoxgloveSphereListener(scene_chan_id, "est_icp", [0, 0, 1, 1])
+        server.set_listener(est_icp_listener)
+        des_icp_listener = FoxgloveSphereListener(scene_chan_id, "des_icp", [1, 0, 0, 1])
+        server.set_listener(des_icp_listener)
 
         # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
-        now = time.time_ns()
 
         while True:
             # receive msg trough socket
@@ -172,7 +146,7 @@ async def main():
             vis_q[7:] = np.array(msg.joint_positions)
 
             # send 2 pairs of icp x & y as topics to foxglove
-            await server.send_message(icp, now, json.dumps(
+            await server.send_message(icp_chan_id, now, json.dumps(
                 {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
 
