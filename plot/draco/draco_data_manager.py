@@ -46,7 +46,7 @@ elif args.visualizer == 'foxglove':
     from mcap_protobuf.schema import build_file_descriptor_set
 
     # local tools to manage Foxglove scenes
-    from plot.foxglove_utils import FoxgloveSphereListener
+    from plot.foxglove_utils import FoxgloveShapeListener
 
 ##==========================================================================
 ##Socket initialize
@@ -69,19 +69,35 @@ def isMesh(geometry_object):
 
     return False
 
+#old server class designation --- might return to, don't delete yet
+#class FoxgloveServerInterface(FoxgloveServer):
+#    def await_add_channel(self, scene_name):
+#        channel_dict = self.create_channel_dict(scene_name)
+#        self.scene_chan_id = await self.add_channel(channel_dict)
+
+scene_schema = b64encode(build_file_descriptor_set(SceneUpdate).SerializeToString()).decode("ascii")
+frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToString()).decode("ascii")
+
+class SceneChannel():
+    def __init__(self, topic, encoding, schemaName, schema):
+        self.topic = topic
+        self.encoding = encoding
+        self.schemaName = schemaName
+        self.schema = schema
+
+    def add_chan(self, server):
+        return server.add_channel({
+                "topic": self.topic,
+                "encoding": self.encoding,
+                "schemaName": self.schemaName,
+                "schema": self.schema,})
 
 async def main():
     async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
-        scene_chan_id = await server.add_channel(
-            {
-                "topic": "scene",
-                "encoding": "protobuf",
-                "schemaName": SceneUpdate.DESCRIPTOR.full_name,
-                "schema": b64encode(
-                    build_file_descriptor_set(SceneUpdate).SerializeToString()
-                ).decode("ascii"),
-            }
-        )
+        tittychan = await SceneChannel("testscene", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
+        scene_chan_id = await SceneChannel("scene", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
+        tf_chan_id = await SceneChannel("transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
+        #icp_chan_id = await SceneChannel("icp", "json", )
 
         icp_chan_id = await server.add_channel(
             {
@@ -103,24 +119,40 @@ async def main():
             },
         )
 
-        tf_chan_id = await server.add_channel(
+        norm_chan_id = await server.add_channel(
             {
-                "topic": "transforms",
-                "encoding": "protobuf",
-                "schemaName": FrameTransform.DESCRIPTOR.full_name,
-                "schema": b64encode(
-                    build_file_descriptor_set(FrameTransform).SerializeToString()
-                ).decode("ascii"),
-            }
+                "topic": "normal",
+                "encoding": "json",
+                "schemaName": "normal",
+                "schema": json.dumps(
+                    {
+                        "type": "object",
+                        "properties": {
+                            "lfoot_cmd": {"type": "number"},
+                            "rfoot_cmd": {"type": "number"},
+                            "lfoot_filt": {"type": "number"},
+                            "rfoot_filt": {"type": "number"},
+                        },
+                    }
+                ),
+                "schemaEncoding": "jsonschema",
+            },
         )
 
-        # Create sphere markers for estimated and desired ICP
-        est_icp_listener = FoxgloveSphereListener(scene_chan_id, "est_icp", [0, 0, 1, 1])
-        server.set_listener(est_icp_listener)
-        des_icp_listener = FoxgloveSphereListener(scene_chan_id, "des_icp", [1, 0, 0, 1])
-        server.set_listener(des_icp_listener)
 
-        # Send the FrameTransform every frame to update the model's position
+        #Create normal force vectors
+        ttest = FoxgloveShapeListener(scene_chan_id, "spheres", "ttest", [1, 0, 0, 1])
+        #server.set_listener(ttest)
+        ttest = FoxgloveShapeListener(tittychan, "spheres", "ttest2", [0, 0, 1, 1])
+        server.set_listener(ttest)
+
+        # Create sphere markers for estimated and desired ICP
+        #est_icp_listener = FoxgloveShapeListener(scene_chan_id, "spheres", "est_icp", [0, 0, 1, 1])
+        #server.set_listener(est_icp_listener)
+        #des_icp_listener = FoxgloveShapeListener(scene_chan_id, "spheres", "des_icp", [1, 0, 0, 1])
+        #server.set_listener(des_icp_listener)
+
+    # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
 
         while True:
@@ -145,10 +177,12 @@ async def main():
             vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
             vis_q[7:] = np.array(msg.joint_positions)
 
-            # send 2 pairs of icp x & y as topics to foxglove
+            #send 2 pairs of icp x & y as topics to foxglove
             await server.send_message(icp_chan_id, now, json.dumps(
                 {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
+
+
 
             # update mesh positions
             pp = "world"
@@ -191,6 +225,21 @@ async def main():
                 transform.translation.x = list(getattr(msg, obj))[0]
                 transform.translation.y = list(getattr(msg, obj))[1]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
+
+            transform.parent_frame_id = "world"
+            transform.child_frame_id = "ttest"
+            transform.timestamp.FromNanoseconds(now)
+            transform.translation.x = 0
+            transform.translation.y = 0
+            await server.send_message(tf_chan_id, now, transform.SerializeToString())
+            transform.parent_frame_id = "world"
+            transform.child_frame_id = "ttest2"
+            transform.timestamp.FromNanoseconds(now)
+            transform.translation.x = 1
+            transform.translation.y = 0
+            await server.send_message(tf_chan_id, now, transform.SerializeToString())
+
+
 
 
 def check_if_kf_estimator(kf_pos, est_pos):

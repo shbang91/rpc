@@ -25,7 +25,7 @@ contact_detection:
 
 state_estimator:
   foot_reference_frame: 1   # 0: left foot, 1: right foot
-  kf: true
+  kf: false
   b_use_marg_filter: false   # only used when kf is set to true
   ########################################################################
   ## sim params
