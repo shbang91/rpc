@@ -1,9 +1,9 @@
-iterations_btw_mpc: 25
+iterations_btw_mpc: 40
 
 gait:
-  x_vel_cmd: 0.0
+  x_vel_cmd: 0.3 ## 0.5
   y_vel_cmd: 0.0
-  yaw_rate_cmd: 0.5
+  yaw_rate_cmd: 0.3
 
   ## TODO: making this as interrupt keystroke
   ## 0: standing
@@ -11,4 +11,4 @@ gait:
   gait_number: 1
 
 swing_foot:
-  height: 0.05
+  height: 0.15

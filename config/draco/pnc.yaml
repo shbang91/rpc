@@ -154,7 +154,7 @@ wbc:
       ########################################################################
       sim_kp : [100., 100., 100.]
       sim_kd : [20., 20., 20.]
-      sim_kp_ik : [0.5, 0.5, 0.5]
+      sim_kp_ik : [1.0, 1.0, 1.0]
 
       ########################################################################
       ## exp params
@@ -270,8 +270,8 @@ wbc:
 
     #W_delta_rf_left_foot_in_contact_mpc: [1, 1, 1, 1000, 1000, 1000]
     #W_delta_rf_right_foot_in_contact_mpc: [1, 1, 1, 1000, 1000, 1000]
-    W_delta_rf_left_foot_in_contact_mpc: [100, 100, 100, 100, 100, 100]
-    W_delta_rf_right_foot_in_contact_mpc: [100, 100, 100, 100, 100, 100]
+    W_delta_rf_left_foot_in_contact_mpc: [1000, 1000, 100000, 1000, 1000, 1000]
+    W_delta_rf_right_foot_in_contact_mpc: [1000, 1000, 100000, 1000, 1000, 1000]
     #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]

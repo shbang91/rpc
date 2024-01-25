@@ -192,15 +192,15 @@ void ConvexMPCLocomotion::Solve() {
         robot_->GetBodyOriRot() *
             (foot_yaw_corrected + des_vel * swing_time_remaining_[leg]);
 
-    double p_rel_max = 0.3;
+    double p_rel_max = 0.4;
     // Using the estimated velocity is correct
     double pfx_rel = body_vel_in_world[0] * 0.5 * stance_time +
-                     0.05 * (body_vel_in_world[0] - des_body_vel_in_world_[0]) +
+                     0.1 * (body_vel_in_world[0] - des_body_vel_in_world_[0]) +
                      (0.5 * robot_->GetBodyPos()[2] / 9.81) *
                          (body_vel_in_world[1] * yaw_rate_des_);
 
     float pfy_rel = body_vel_in_world[1] * 0.5 * stance_time +
-                    0.05 * (body_vel_in_world[1] - des_body_vel_in_world_[1]) +
+                    0.1 * (body_vel_in_world[1] - des_body_vel_in_world_[1]) +
                     (0.5 * robot_->GetBodyPos()[2] / 9.81) *
                         (-body_vel_in_world[0] * yaw_rate_des_);
     pfx_rel = fmin(fmax(pfx_rel, -p_rel_max), p_rel_max);
@@ -222,7 +222,8 @@ void ConvexMPCLocomotion::Solve() {
   int *contact_schedule_table = gait->getMPCGait();
 
   // solve convex mpc with fixed control frequency
-  if (iteration_counter_ % iterations_btw_mpc_ == 0)
+  // if (iteration_counter_ % iterations_btw_mpc_ == 0)
+  if (iteration_counter_ % 5 == 0)
     _SolveConvexMPC(contact_schedule_table);
 
   // contact state for state estimator
@@ -419,6 +420,13 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   //=====================================================
   // set state trajectory
   //=====================================================
+  // set body inertia
+  Eigen::Matrix3d I_global = robot_->GetIg().topLeftCorner<3, 3>();
+  Eigen::Matrix3d global_R_local = robot_->GetBodyOriRot();
+  Eigen::Matrix3d I_local =
+      global_R_local.transpose() * I_global * global_R_local;
+  state_equation_->setBodyInertia(I_local);
+
   aligned_vector<Vector12d> des_state_traj;
   des_state_traj.resize(n_horizon_ + 1);
 
@@ -537,7 +545,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
 
 void ConvexMPCLocomotion::_SetupBodyCommand() {
   // filter body velocity command
-  double filter = 0.1;
+  double filter = 0.01;
   x_vel_des_ = x_vel_des_ * (1 - filter) + x_vel_cmd_ * filter;
   y_vel_des_ = y_vel_des_ * (1 - filter) + y_vel_cmd_ * filter;
   yaw_rate_des_ = yaw_rate_des_ * (1 - filter) + yaw_rate_cmd_ * filter;
