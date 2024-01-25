@@ -363,23 +363,23 @@ void ConvexMPCLocomotion::_InitializeConvexMPC() {
   Eigen::MatrixXd Qvv = Eigen::MatrixXd::Zero(6, 6);
   Eigen::MatrixXd Quu = Eigen::MatrixXd::Zero(6, 6);
 
-  Qqq(0, 0) = 1000;
-  Qqq(1, 1) = 1000;
-  Qqq(2, 2) = 1000;
-  Qqq(3, 3) = 1000;
-  Qqq(4, 4) = 1000;
-  Qqq(5, 5) = 1000;
+  Qqq(0, 0) = 1000;    // roll
+  Qqq(1, 1) = 1000;    // pitch
+  Qqq(2, 2) = 1000;    // yaw
+  Qqq(3, 3) = 1000;    // x
+  Qqq(4, 4) = 1000;    // y
+  Qqq(5, 5) = 1000000; // z
 
   Qvv(0, 0) = 10;
   Qvv(1, 1) = 10;
   Qvv(2, 2) = 10;
   Qvv(3, 3) = 10;
   Qvv(4, 4) = 10;
-  Qvv(5, 5) = 10;
+  Qvv(5, 5) = 1000;
 
-  Quu(0, 0) = 1e-6;
-  Quu(1, 1) = 1e-6;
-  Quu(2, 2) = 1e-6;
+  Quu(0, 0) = 1e-5;
+  Quu(1, 1) = 1e-5;
+  Quu(2, 2) = 5e-6;
   Quu(3, 3) = 1e-6;
   Quu(4, 4) = 1e-6;
   Quu(5, 5) = 1e-6;

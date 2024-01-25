@@ -42,9 +42,9 @@ void CostFunction::initQP(QPData &qp_data) {
         std::pow(decay_rate_, i) * Qvv_;
   }
   qp_data.qp_[qp_data.dim_.N].Q.template topLeftCorner<6, 6>() =
-      std::pow(decay_rate_, qp_data.dim_.N) * Qqq_;
+      std::pow(decay_rate_, qp_data.dim_.N) * Qqq_ * 10000;
   qp_data.qp_[qp_data.dim_.N].Q.template bottomRightCorner<6, 6>() =
-      std::pow(decay_rate_, qp_data.dim_.N) * Qvv_;
+      std::pow(decay_rate_, qp_data.dim_.N) * Qvv_ * 10000;
 
   // base_pose_ref_ =
   // aligned_vector<Vector7d>(qp_data.dim_.N + 1, Vector7d::Zero());
@@ -180,8 +180,8 @@ void CostFunction::setQP(const Eigen::VectorXd &init_state,
     qp_data.qp_[i].q.template tail<6>().noalias() =
         -1. * Qvv_ * des_state_traj[i].tail<6>() * std::pow(decay_rate_, i);
   }
-  // qp_data.qp_[qp_data.dim_.N].q.template head<6>() *= 10000;
-  // qp_data.qp_[qp_data.dim_.N].q.template tail<6>() *= 10000;
+  qp_data.qp_[qp_data.dim_.N].q.template head<6>() *= 10000;
+  qp_data.qp_[qp_data.dim_.N].q.template tail<6>() *= 10000;
 
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     qp_data.qp_[i].S.setZero();
