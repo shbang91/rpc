@@ -46,7 +46,7 @@ elif args.visualizer == 'foxglove':
     from mcap_protobuf.schema import build_file_descriptor_set
 
     # local tools to manage Foxglove scenes
-    from plot.foxglove_utils import FoxgloveShapeListener
+    from plot.foxglove_utils import FoxgloveShapeListener, SceneChannel
 
 ##==========================================================================
 ##Socket initialize
@@ -69,88 +69,25 @@ def isMesh(geometry_object):
 
     return False
 
-#old server class designation --- might return to, don't delete yet
-#class FoxgloveServerInterface(FoxgloveServer):
-#    def await_add_channel(self, scene_name):
-#        channel_dict = self.create_channel_dict(scene_name)
-#        self.scene_chan_id = await self.add_channel(channel_dict)
-
 scene_schema = b64encode(build_file_descriptor_set(SceneUpdate).SerializeToString()).decode("ascii")
 frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToString()).decode("ascii")
 
-class SceneChannel():
-    def __init__(self, topic, encoding, schemaName, schema):
-        self.topic = topic
-        self.encoding = encoding
-        self.schemaName = schemaName
-        self.schema = schema
 
-    def add_chan(self, server):
-        return server.add_channel({
-                "topic": self.topic,
-                "encoding": self.encoding,
-                "schemaName": self.schemaName,
-                "schema": self.schema,})
 
 async def main():
     async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
-        tittychan = await SceneChannel("testscene", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
-        scene_chan_id = await SceneChannel("scene", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
-        tf_chan_id = await SceneChannel("transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
-        #icp_chan_id = await SceneChannel("icp", "json", )
-
-        icp_chan_id = await server.add_channel(
-            {
-                "topic": "icp",
-                "encoding": "json",
-                "schemaName": "icp",
-                "schema": json.dumps(
-                    {
-                        "type": "object",
-                        "properties": {
-                            "est_x": {"type": "number"},
-                            "est_y": {"type": "number"},
-                            "des_x": {"type": "number"},
-                            "des_y": {"type": "number"},
-                        },
-                    }
-                ),
-                "schemaEncoding": "jsonschema",
-            },
-        )
-
-        norm_chan_id = await server.add_channel(
-            {
-                "topic": "normal",
-                "encoding": "json",
-                "schemaName": "normal",
-                "schema": json.dumps(
-                    {
-                        "type": "object",
-                        "properties": {
-                            "lfoot_cmd": {"type": "number"},
-                            "rfoot_cmd": {"type": "number"},
-                            "lfoot_filt": {"type": "number"},
-                            "rfoot_filt": {"type": "number"},
-                        },
-                    }
-                ),
-                "schemaEncoding": "jsonschema",
-            },
-        )
-
+        tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
+        icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
+        icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
+        norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]).add_chan(server)
 
         #Create normal force vectors
-        ttest = FoxgloveShapeListener(scene_chan_id, "spheres", "ttest", [1, 0, 0, 1])
+        #ttest = FoxgloveShapeListener(scene_chan_id, "spheres", "ttest", [1, 0, 0, 1])
         #server.set_listener(ttest)
-        ttest = FoxgloveShapeListener(tittychan, "spheres", "ttest2", [0, 0, 1, 1])
-        server.set_listener(ttest)
 
         # Create sphere markers for estimated and desired ICP
-        #est_icp_listener = FoxgloveShapeListener(scene_chan_id, "spheres", "est_icp", [0, 0, 1, 1])
-        #server.set_listener(est_icp_listener)
-        #des_icp_listener = FoxgloveShapeListener(scene_chan_id, "spheres", "des_icp", [1, 0, 0, 1])
-        #server.set_listener(des_icp_listener)
+        icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], [.1,.1,.1], {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
+        server.set_listener(icp_listener)
 
     # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
@@ -226,18 +163,6 @@ async def main():
                 transform.translation.y = list(getattr(msg, obj))[1]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
 
-            transform.parent_frame_id = "world"
-            transform.child_frame_id = "ttest"
-            transform.timestamp.FromNanoseconds(now)
-            transform.translation.x = 0
-            transform.translation.y = 0
-            await server.send_message(tf_chan_id, now, transform.SerializeToString())
-            transform.parent_frame_id = "world"
-            transform.child_frame_id = "ttest2"
-            transform.timestamp.FromNanoseconds(now)
-            transform.translation.x = 1
-            transform.translation.y = 0
-            await server.send_message(tf_chan_id, now, transform.SerializeToString())
 
 
 
