@@ -77,22 +77,28 @@ frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToSt
 async def main():
     async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
+        normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
+        norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
-        norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]).add_chan(server)
 
-        #Create normal force vectors
-        #ttest = FoxgloveShapeListener(scene_chan_id, "spheres", "ttest", [1, 0, 0, 1])
-        #server.set_listener(ttest)
-
-        # Create sphere markers for estimated and desired ICP
+        #create all of the visual scenes
+        scenes = []
+        norm_listener = FoxgloveShapeListener(normS_chan_id,"arrows",["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"],[.1,.1,.1,.2],{"lfoot_cmd":[1,0,1,1],"rfoot_cmd":[1,0,1,1],"lfoot_filt":[1,0,1,1],"rfoot_filt":[1,0,1,1]})
+        scenes.append(norm_listener)
         icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], [.1,.1,.1], {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
-        server.set_listener(icp_listener)
+        scenes.append(icp_listener)
+        scenecount = len(scenes)-1
 
     # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
 
         while True:
+            #cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
+            server.set_listener(scenes[scenecount])
+            scenecount = scenecount-1
+            if(scenecount == -1): scenecount = (len(scenes)-1)
+
             # receive msg trough socket
             encoded_msg = socket.recv()
             msg.ParseFromString(encoded_msg)
@@ -161,6 +167,16 @@ async def main():
                 transform.timestamp.FromNanoseconds(now)
                 transform.translation.x = list(getattr(msg, obj))[0]
                 transform.translation.y = list(getattr(msg, obj))[1]
+                await server.send_message(tf_chan_id, now, transform.SerializeToString())
+
+            count = 0
+            for obj in ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]:
+                transform.parent_frame_id = "world"
+                transform.child_frame_id = obj
+                transform.timestamp.FromNanoseconds(now)
+                transform.translation.x = count
+                transform.translation.y = count
+                count = count + 0.5
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
 
 
