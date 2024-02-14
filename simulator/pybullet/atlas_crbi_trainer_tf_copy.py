@@ -578,7 +578,7 @@ if __name__ == "__main__":
             data_x = l_data_x + r_data_x
             data_y = l_data_y + r_data_y
 
-            log_dir = "data/tensorboard/atlas_crbi_tf_copy"
+            log_dir = "experiment_data/tensorboard/atlas_crbi_tf_copy"
             if os.path.exists(log_dir):
                 shutil.rmtree(log_dir)
             writer = SummaryWriter(log_dir)
@@ -639,9 +639,8 @@ if __name__ == "__main__":
                 train_loss_per_epoch = train_loss / len(train_loader)
 
             # save model
-            model_path = 'data/tf_model/atlas_crbi_tf_copy.pth'
+            model_path = 'experiment_data/pytorch_model/atlas_crbi_tf_copy.pth'
             if os.path.exists(model_path):
-                # shutil.rmtree(model_path)
                 os.remove(model_path)
             torch.save(crbi_model, model_path)
             data_stats = {
