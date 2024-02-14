@@ -7,7 +7,6 @@ import math
 import copy
 import shutil
 import matplotlib.pyplot as plt
-import pybullet as p
 import numpy as np
 np.set_printoptions(precision=3)
 
@@ -19,21 +18,30 @@ from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import interpolation
 from util.python_utils import liegroup
-from util.python_utils import robot_kinematics
 
+# kinematics tools
+import qpsolvers
+import pinocchio as pin
+import meshcat_shapes
+import pink
+from pink import solve_ik
+from pink.tasks import FrameTask, JointCouplingTask, PostureTask
+from loop_rate_limiters import RateLimiter
+
+# training libraries / tools
 import torch
 import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
 
 ## Configs
+VISUALIZE = False
 VIDEO_RECORD = False
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
 INITIAL_POS_WORLD_TO_BASEJOINT = [0, 0, 1.5 - 0.761]
 INITIAL_QUAT_WORLD_TO_BASEJOINT = [0., 0., 0., 1.]
-DYN_LIB = "pinocchio"  # "dart"
 
 ## Motion Boundaries
 RFOOT_POS_LB = np.array([-0.15, -0.1, -0.05])
@@ -52,7 +60,7 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 
 ## Dataset Generation
 N_CPU_DATA_GEN = 5
-N_MOTION_PER_LEG = 1e4
+N_MOTION_PER_LEG = 1e3
 N_DATA_PER_MOTION = 15
 
 N_LAYER_OUTPUT = [64, 64]
@@ -74,55 +82,6 @@ class NetWork(torch.nn.Module):
 
     def forward(self, x):
         return self.layers(x)
-
-
-def inertia_from_one_hot_vec(vec):
-    ret = np.zeros((3, 3))
-
-    ret[0, 0] = vec[0]
-    ret[1, 1] = vec[1]
-    ret[2, 2] = vec[2]
-
-    ret[0, 1] = vec[3]
-    ret[1, 0] = vec[3]
-    ret[0, 2] = vec[4]
-    ret[2, 0] = vec[4]
-    ret[1, 2] = vec[5]
-    ret[2, 1] = vec[5]
-
-    return ret
-
-
-def inertia_to_one_hot_vec(inertia):
-    ret = np.zeros(6)
-    ret[0] = inertia[0, 0]
-    ret[1] = inertia[1, 1]
-    ret[2] = inertia[2, 2]
-    ret[3] = inertia[0, 1]
-    ret[4] = inertia[0, 2]
-    ret[5] = inertia[1, 2]
-    return ret
-
-
-def set_initial_config(robot, joint_id):
-    # shoulder_x
-    p.resetJointState(robot, joint_id["l_arm_shx"], -np.pi / 4, 0.)
-    p.resetJointState(robot, joint_id["r_arm_shx"], np.pi / 4, 0.)
-    # elbow_y
-    p.resetJointState(robot, joint_id["l_arm_ely"], -np.pi / 2, 0.)
-    p.resetJointState(robot, joint_id["r_arm_ely"], np.pi / 2, 0.)
-    # elbow_x
-    p.resetJointState(robot, joint_id["l_arm_elx"], -np.pi / 2, 0.)
-    p.resetJointState(robot, joint_id["r_arm_elx"], -np.pi / 2, 0.)
-    # hip_y
-    p.resetJointState(robot, joint_id["l_leg_hpy"], -np.pi / 4, 0.)
-    p.resetJointState(robot, joint_id["r_leg_hpy"], -np.pi / 4, 0.)
-    # knee
-    p.resetJointState(robot, joint_id["l_leg_kny"], np.pi / 2, 0.)
-    p.resetJointState(robot, joint_id["r_leg_kny"], np.pi / 2, 0.)
-    # ankle
-    p.resetJointState(robot, joint_id["l_leg_aky"], -np.pi / 4, 0.)
-    p.resetJointState(robot, joint_id["r_leg_aky"], -np.pi / 4, 0.)
 
 
 def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side):
@@ -250,55 +209,15 @@ def create_curves(lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
     return lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve
 
 
-def ik_feet(base_pos, base_quat, lf_pos, lf_quat, rf_pos, rf_quat,
-            nominal_sensor_data, joint_screws_in_ee_at_home, ee_SE3_at_home,
-            open_chain_joints):
-    joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-    T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat), base_pos)
-
-    # left foot
-    lf_q_guess = np.array([
-        nominal_sensor_data['joint_pos'][j_name]
-        for j_name in open_chain_joints[0]
-    ])
-    T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
-    T_base_lf = np.dot(liegroup.TransInv(T_w_base), T_w_lf)
-    lf_q_sol, lf_done = robot_kinematics.IKinBody(
-        joint_screws_in_ee_at_home[0], ee_SE3_at_home[0], T_base_lf,
-        lf_q_guess)
-    for j_id, j_name in enumerate(open_chain_joints[0]):
-        joint_pos[j_name] = lf_q_sol[j_id]
-
-    # right foot
-    rf_q_guess = np.array([
-        nominal_sensor_data['joint_pos'][j_name]
-        for j_name in open_chain_joints[1]
-    ])
-    T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
-    T_base_rf = np.dot(liegroup.TransInv(T_w_base), T_w_rf)
-    rf_q_sol, rf_done = robot_kinematics.IKinBody(
-        joint_screws_in_ee_at_home[1], ee_SE3_at_home[1], T_base_rf,
-        rf_q_guess)
-    for j_id, j_name in enumerate(open_chain_joints[1]):
-        joint_pos[j_name] = rf_q_sol[j_id]
-
-    return joint_pos, lf_done, rf_done
-
-
 def _do_generate_data(n_data,
                       nominal_lf_iso,
                       nominal_rf_iso,
-                      nominal_sensor_data,
+                      nominal_configuration,
                       side,
                       rseed=None,
                       cpu_idx=0):
     if rseed is not None:
         np.random.seed(rseed)
-
-    from controller.robot_system.pinocchio_robot_system import PinocchioRobotSystem
-    robot_sys = PinocchioRobotSystem(cwd + "/robot_model/atlas/atlas.urdf",
-                                     cwd + "/robot_model/atlas", False, False)
-
     data_x, data_y = [], []
 
     text = "#" + "{}".format(cpu_idx).zfill(3)
@@ -315,6 +234,9 @@ def _do_generate_data(n_data,
                 rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
                 base_ini_iso, base_fin_iso)
 
+            t = 0.
+            rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
+            dt = rate.period
             for s in np.linspace(0, 1, N_DATA_PER_MOTION):
                 base_pos = base_pos_curve.evaluate(s)
                 base_quat = base_quat_curve.evaluate(s)
@@ -330,38 +252,70 @@ def _do_generate_data(n_data,
                 lf_quat = lfoot_quat_curve.evaluate(s)
                 rf_quat = rfoot_quat_curve.evaluate(s)
 
-                joint_pos, lf_done, rf_done = ik_feet(
-                    base_pos, base_quat, lf_pos, lf_quat, rf_pos, rf_quat,
-                    nominal_sensor_data, joint_screws_in_ee_at_home,
-                    ee_SE3_at_home, open_chain_joints)
+                # set desired task
+                des_base_iso = pin.SE3(util.quat_to_rot(base_quat), base_pos)
+                task_dict['torso_task'].set_target(des_base_iso)
 
-                if lf_done and rf_done:
-                    rot_world_com = util.quat_to_rot(np.copy(base_quat))
-                    rot_world_joint = np.dot(
-                        rot_world_com, rot_basejoint_to_basecom.transpose())
-                    base_joint_pos = base_pos - np.dot(
-                        rot_world_joint, pos_basejoint_to_basecom)
-                    base_joint_quat = util.rot_to_quat(rot_world_joint)
-                    robot_sys.update_system(base_pos, base_quat, np.zeros(3),
-                                            np.zeros(3), base_joint_pos,
-                                            base_joint_quat, np.zeros(3),
-                                            np.zeros(3), joint_pos,
-                                            nominal_sensor_data['joint_vel'],
-                                            True)
-                    world_I = robot_sys.Ig[0:3, 0:3]
-                    local_I = np.dot(
-                        np.dot(rot_world_com.transpose(), world_I),
-                        rot_world_com)
-                    # append to data
-                    data_x.append(
-                        np.concatenate([lf_pos - base_pos, rf_pos - base_pos],
-                                       axis=0))
-                    data_y.append(
-                        np.array([
-                            local_I[0, 0], local_I[1, 1], local_I[2, 2],
-                            local_I[0, 1], local_I[0, 2], local_I[1, 2]
-                        ]))
-            pbar.update(1)
+                des_rfoot_iso = pin.SE3(util.quat_to_rot(rf_quat), rf_pos)
+                task_dict['rfoot_task'].set_target(des_rfoot_iso)
+
+                des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
+                task_dict['lfoot_task'].set_target(des_lfoot_iso)
+
+                #TODO: or set from configuration
+                task_dict['posture_task'].set_target(nominal_configuration)
+
+                # update meshcat visualizer
+                if VISUALIZE:
+                    #### base
+                    T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
+                                                  base_pos)
+                    #### right foot
+                    T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
+
+                    #### left foot
+                    T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
+
+                    lfoot_contact_frame.set_transform(T_w_lf)
+                    rfoot_contact_frame.set_transform(T_w_rf)
+
+                # solve ik
+                # Compute velocity and integrate it into next configuration
+                velocity = solve_ik(configuration, tasks, dt, solver=solver)
+                configuration.integrate_inplace(velocity, dt)
+
+                # Visualize result at fixed FPS
+                if VISUALIZE:
+                    viz.display(configuration.q)
+                    rate.sleep()
+                t += dt
+
+                # compute CRBI
+                _, _, centroidal_inertia = robot.centroidal(configuration.q, v0)
+                rot_inertia_in_world = np.copy(centroidal_inertia)[3:6, 3:6]
+
+                rot_w_base = util.quat_to_rot(base_quat)
+                rot_inertia_in_body = np.dot(np.dot(rot_w_base.transpose(), rot_inertia_in_world), rot_w_base)
+
+                # append data (end-effector SE3 & body inertia pair)
+                data_x.append(
+                    np.concatenate([
+                        lf_pos - base_pos, rf_pos - base_pos,
+                        ],
+                        axis=0))
+                data_y.append(
+                    np.array([
+                        rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1], rot_inertia_in_body[2, 2], rot_inertia_in_body[0, 1],
+                        rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
+                    ]))
+                pbar.update(1)
+
+            # reset config
+            configuration.q = q0
+            configuration.update()
+            if VISUALIZE:
+                viz.display(configuration.q)
+                rate.sleep()
 
     return data_x, data_y
 
@@ -387,25 +341,27 @@ def generate_data(n_data, nominal_lf_iso, nominal_rf_iso, nominal_sensor_data,
     return data_x, data_y
 
 
-def save_weights_to_yaml(tf_model):
-    model_path = 'data/tf_model/atlas_crbi'
+def save_weights_to_yaml(pytorch_model, path):
     mlp_model = dict()
-    mlp_model['num_layer'] = len(tf_model.layers)
-    for l_id, l in enumerate(tf_model.layers):
-        mlp_model['w' + str(l_id)] = l.weights[0].numpy().tolist()
-        mlp_model['b' + str(l_id)] = l.weights[1].numpy().reshape(
-            1, l.weights[1].shape[0]).tolist()
-        # Activation Fn Idx: None: 0, Tanh: 1
-        if (l_id == (len(tf_model.layers) - 1)):
-            mlp_model['act_fn' + str(l_id)] = 0
-        else:
-            mlp_model['act_fn' + str(l_id)] = 1
-    with open(model_path + '/mlp_model.yaml', 'w') as f:
+    mlp_model['num_layer'] = len(pytorch_model.layers)
+    for l_id, l in enumerate(pytorch_model.layers):
+        if hasattr(l, 'weight'):
+            mlp_model['w' + str(l_id)] = l.weight.tolist()
+            mlp_model['b' + str(l_id)] = l.bias.reshape(
+                1, l.weight.shape[0]).tolist()
+        else:   # is activation function
+            # Activation Fn Idx: None: 0, Tanh: 1
+            if l_id == (len(pytorch_model.layers) - 1):
+                mlp_model['act_fn' + str(l_id)] = 0
+            else:
+                mlp_model['act_fn' + str(l_id)] = 1
+
+    with open(path + '/mlp_model.yaml', 'w') as f:
         yml = YAML()
         yml.dump(mlp_model, f)
 
 
-def generate_casadi_func(tf_model,
+def generate_casadi_func(pytorch_model,
                          input_mean,
                          input_std,
                          output_mean,
@@ -422,36 +378,37 @@ def generate_casadi_func(tf_model,
     inp = vertcat(l_minus_b, r_minus_b)
     normalized_inp = (inp - input_mean) / input_std  # (6, 1)
     # MLP (Somewhat manual)
-    w0 = tf_model.layers[0].weights[0].numpy()  # (6, 64)
-    b0 = tf_model.layers[0].weights[1].numpy().reshape(1, -1)  # (1, 64)
-    w1 = tf_model.layers[1].weights[0].numpy()  # (64, 64)
-    b1 = tf_model.layers[1].weights[1].numpy().reshape(1, -1)  # (1, 64)
-    w2 = tf_model.layers[2].weights[0].numpy()  # (64, 6)
-    b2 = tf_model.layers[2].weights[1].numpy().reshape(1, -1)  # (6)
+    w0 = pytorch_model.layers[0].weight.detach().numpy()        # (6, 64)
+    b0 = pytorch_model.layers[0].bias.detach().reshape(-1, 1).numpy()   # (1, 64)
+    w1 = pytorch_model.layers[2].weight.detach().numpy()        # (64, 64)
+    b1 = pytorch_model.layers[2].bias.detach().reshape(-1, 1).numpy()   # (1, 64)
+    w2 = pytorch_model.layers[4].weight.detach().numpy()        # (64, 6)
+    b2 = pytorch_model.layers[4].bias.detach().reshape(-1, 1).numpy()   # (6)
+
     output = mtimes(
-        tanh(mtimes(tanh(mtimes(normalized_inp.T, w0) + b0), w1) + b1),
-        w2) + b2
-    denormalized_output = (output.T * output_std) + output_mean
+        w2, tanh(mtimes(w1, tanh(mtimes(w0, normalized_inp) + b0)) + b1)
+    ) + b2
+    denormalized_output = (output.T @ output_std) + output_mean
 
     # Define casadi function
-    func = Function('atlas_crbi_helper', [b, l, r], [denormalized_output])
+    func = Function('draco3_crbi_helper', [b, l, r], [denormalized_output])
     jac_func = func.jacobian()
     print(func)
     print(jac_func)
 
     if generate_c_code:
         # Code generator
-        code_gen = CodeGenerator('atlas_crbi_helper.c', dict(with_header=True))
+        code_gen = CodeGenerator('draco3_crbi_helper.c', dict(with_header=True))
         code_gen.add(func)
         code_gen.add(jac_func)
         code_gen.generate()
         shutil.move(
-            cwd + '/atlas_crbi_helper.h', cwd +
-            "/pnc/planner/locomotion/towr_plus/include/towr_plus/models/examples/atlas_crbi_helper.h"
+            cwd + '/draco3_crbi_helper.h', cwd +
+            "/experiment_data/draco3_crbi_helper.h"
         )
         shutil.move(
-            cwd + '/atlas_crbi_helper.c',
-            cwd + "/pnc/planner/locomotion/towr_plus/src/atlas_crbi_helper.c")
+            cwd + '/draco3_crbi_helper.c',
+            cwd + "/experiment_data/draco3_crbi_helper.c")
 
     return func, jac_func
 
@@ -475,395 +432,336 @@ def evaluate_crbi_model_using_tf(tf_model, b, l, r, input_mean, input_std,
 
 if __name__ == "__main__":
 
-    # Environment Setup
-    p.connect(p.GUI)
-    p.resetDebugVisualizerCamera(cameraDistance=1.5,
-                                 cameraYaw=120,
-                                 cameraPitch=-30,
-                                 cameraTargetPosition=[1, 0.5, 1.5])
-    p.setGravity(0, 0, -9.81)
-    p.setPhysicsEngineParameter(fixedTimeStep=DT, numSubSteps=1)
-    if VIDEO_RECORD:
-        if not os.path.exists('video'):
-            os.makedirs('video')
-        for f in os.listdir('video'):
-            if f == "atlas_crbi.mp4":
-                os.remove('video/' + f)
-        p.startStateLogging(p.STATE_LOGGING_VIDEO_MP4, "video/atlas_crbi.mp4")
+    NUM_FLOATING_BASE = 5   # pinocchio model
 
-    # Create Robot, Ground
-    p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
-    robot = p.loadURDF(cwd + "/robot_model/atlas/atlas.urdf",
-                       INITIAL_POS_WORLD_TO_BASEJOINT,
-                       INITIAL_QUAT_WORLD_TO_BASEJOINT)
+    # initialize robot model
+    robot = pin.RobotWrapper.BuildFromURDF(
+        cwd + '/robot_model/draco/draco_modified.urdf',
+        cwd + '/robot_model/draco',
+        root_joint=pin.JointModelFreeFlyer())
 
-    p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
+    # Initialize meschcat visualizer
+    if VISUALIZE:
+        viz = pin.visualize.MeshcatVisualizer(robot.model, robot.collision_model,
+                                              robot.visual_model)
+        robot.setVisualizer(viz, init=False)
+        viz.initViewer(open=True)
+        viz.loadViewerModel()
 
-    # Robot Configuration : 0 << Left Foot, 1 << Right Foot
-    nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
-        robot, INITIAL_POS_WORLD_TO_BASEJOINT, INITIAL_QUAT_WORLD_TO_BASEJOINT)
+    # Set initial robot configuration
+    q0 = robot.q0.copy()
+    q0[0:3] = np.array(INITIAL_POS_WORLD_TO_BASEJOINT)
+    q0[3:7] = np.array(INITIAL_QUAT_WORLD_TO_BASEJOINT)
+    lknee_jp_idx = robot.index("l_knee_fe_jp")
+    q0[NUM_FLOATING_BASE + lknee_jp_idx] = np.pi / 4
+    lknee_jd_idx = robot.index("l_knee_fe_jd")
+    q0[NUM_FLOATING_BASE + lknee_jd_idx] = np.pi / 4
+    rknee_jp_idx = robot.index("r_knee_fe_jp")
+    q0[NUM_FLOATING_BASE + rknee_jp_idx] = np.pi / 4
+    rknee_jd_idx = robot.index("r_knee_fe_jd")
+    q0[NUM_FLOATING_BASE + rknee_jd_idx] = np.pi / 4
+    l_hip_fe_idx = robot.index("l_hip_fe")
+    q0[NUM_FLOATING_BASE + l_hip_fe_idx] = -np.pi / 4
+    r_hip_fe_idx = robot.index("r_hip_fe")
+    q0[NUM_FLOATING_BASE + r_hip_fe_idx] = -np.pi / 4
+    l_ankle_fe_idx = robot.index("l_ankle_fe")
+    q0[NUM_FLOATING_BASE + l_ankle_fe_idx] = -np.pi / 4
+    r_ankle_fe_idx = robot.index("r_ankle_fe")
+    q0[NUM_FLOATING_BASE + r_ankle_fe_idx] = -np.pi / 4
+    # l_shoulder_aa_idx = robot.index("l_shldr_ie")
+    # q0[NUM_FLOATING_BASE + l_shoulder_aa_idx] = np.pi / 2
+    # r_shoulder_aa_idx = robot.index("r_shldr_ie")
+    # q0[NUM_FLOATING_BASE + r_shoulder_aa_idx] = np.pi / 2
+    ## avoid joint violation
+    configuration = pink.Configuration(robot.model, robot.data, q0)
+    v0 = np.zeros(len(q0) - 1)
 
-    joint_screws_in_ee_at_home, ee_SE3_at_home = dict(), dict()
-    open_chain_joints, base_link, ee_link = dict(), dict(), dict()
-    base_link[0] = 'pelvis'
-    ee_link[0] = 'l_sole'
-    open_chain_joints[0] = [
-        'l_leg_hpz', 'l_leg_hpx', 'l_leg_hpy', 'l_leg_kny', 'l_leg_aky',
-        'l_leg_akx'
-    ]
-    base_link[1] = 'pelvis'
-    ee_link[1] = 'r_sole'
-    open_chain_joints[1] = [
-        'r_leg_hpz', 'r_leg_hpx', 'r_leg_hpy', 'r_leg_kny', 'r_leg_aky',
-        'r_leg_akx'
-    ]
+    if VISUALIZE:
+        viz.display(configuration.q)
 
-    for ee in range(2):
-        joint_screws_in_ee_at_home[ee], ee_SE3_at_home[
-            ee] = pybullet_util.get_kinematics_config(robot, joint_id, link_id,
-                                                      open_chain_joints[ee],
-                                                      base_link[ee],
-                                                      ee_link[ee])
+    # Tasks initialization for IK
+    left_foot_task = FrameTask(
+        "l_foot_contact",
+        position_cost=10.0,
+        orientation_cost=1.0,
+    )
+    torso_task = FrameTask(
+        "torso_link",
+        position_cost=1.0,
+        orientation_cost=1.0,
+    )
+    right_foot_task = FrameTask(
+        "r_foot_contact",
+        position_cost=10.0,
+        orientation_cost=1.0,
+    )
+    posture_task = PostureTask(
+        cost=1e-1,  # [cost] / [rad]
+    )
 
-    # Initial Config
-    set_initial_config(robot, joint_id)
+    # Joint coupling task
+    r_knee_holonomic_task = JointCouplingTask(
+        ["r_knee_fe_jp", "r_knee_fe_jd"],
+        [1.0, -1.0],
+        100.0,
+        configuration,
+        lm_damping=1e-7,
+    )
+    l_knee_holonomic_task = JointCouplingTask(
+        ["l_knee_fe_jp", "l_knee_fe_jd"],
+        [1.0, -1.0],
+        100.0,
+        configuration,
+        lm_damping=1e-7,
+    )
 
-    # Joint Friction
-    pybullet_util.set_joint_friction(robot, joint_id, 0)
+    tasks = [left_foot_task, torso_task, right_foot_task, posture_task,
+             l_knee_holonomic_task, r_knee_holonomic_task]
+    task_dict = {'torso_task': torso_task,
+                 'lfoot_task': left_foot_task,
+                 'rfoot_task': right_foot_task,
+                 'posture_task': posture_task,
+                 'lknee_constr_task': l_knee_holonomic_task,
+                 'rknee_constr_task': r_knee_holonomic_task}
 
-    from controller.robot_system.pinocchio_robot_system import PinocchioRobotSystem
-    robot_sys = PinocchioRobotSystem(cwd + "/robot_model/atlas/atlas.urdf",
-                                     cwd + "/robot_model/atlas", False,
-                                     True)
+    nominal_base_iso = configuration.get_transform_frame_to_world(
+        "torso_link").copy()
+    nominal_rf_iso = configuration.get_transform_frame_to_world("r_foot_contact").copy()
+    nominal_lf_iso = configuration.get_transform_frame_to_world("l_foot_contact").copy()
 
-    # Run Sim
-    t = 0
-    dt = DT
-    count = 0
+    # Select QP solver
+    solver = qpsolvers.available_solvers[0]
+    if "quadprog" in qpsolvers.available_solvers:
+        solver = "quadprog"
 
-    nominal_sensor_data = pybullet_util.get_sensor_data(
-        robot, joint_id, link_id, pos_basejoint_to_basecom,
-        rot_basejoint_to_basecom)
-    nominal_lf_iso = pybullet_util.get_link_iso(robot, link_id['l_sole'])
-    nominal_rf_iso = pybullet_util.get_link_iso(robot, link_id['r_sole'])
-    base_pos = np.copy(nominal_sensor_data['base_com_pos'])
-    base_quat = np.copy(nominal_sensor_data['base_com_quat'])
-    joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-    s = 0.
-    b_ik = False
-    b_regressor_trained = False
-    while (1):
+    # meshcat visualizer
+    if VISUALIZE:
+        rfoot_contact_frame = viz.viewer["r_foot_contact"]
+        meshcat_shapes.frame(rfoot_contact_frame)
 
-        # Get Keyboard Event
-        keys = p.getKeyboardEvents()
+        lfoot_contact_frame = viz.viewer["l_foot_contact"]
+        meshcat_shapes.frame(lfoot_contact_frame)
 
-        # Set base_pos, base_quat, joint_pos here for visualization
-        if pybullet_util.is_key_triggered(keys, '8'):
-            # f, jac_f = generate_casadi_func(crbi_model, input_mean, input_std,
-            # output_mean, output_std, True)
-            pass
-        elif pybullet_util.is_key_triggered(keys, '5'):
-            # Generate Dataset
-            print("-" * 80)
-            print("Pressed 5: Train CRBI Regressor")
+    CASE = 5
 
-            l_data_x, l_data_y = generate_data(N_MOTION_PER_LEG,
-                                               nominal_lf_iso, nominal_rf_iso,
-                                               nominal_sensor_data, "left",
-                                               N_CPU_DATA_GEN)
-            r_data_x, r_data_y = generate_data(N_MOTION_PER_LEG,
-                                               nominal_lf_iso, nominal_rf_iso,
-                                               nominal_sensor_data, "right",
-                                               N_CPU_DATA_GEN)
-            data_x = l_data_x + r_data_x
-            data_y = l_data_y + r_data_y
+    # Set base_pos, base_quat, joint_pos here for visualization
+    if CASE == 5:
+        # Generate Dataset
+        print("-" * 80)
+        print("Pressed 5: Train CRBI Regressor w/multiprocessing")
+        VISUALIZE = False   # can't do this with multiprocessing
 
-            log_dir = "experiment_data/tensorboard/atlas_crbi_tf_copy"
-            if os.path.exists(log_dir):
-                shutil.rmtree(log_dir)
-            writer = SummaryWriter(log_dir)
+        nominal_configuration = q0
+        l_data_x, l_data_y = generate_data(N_MOTION_PER_LEG,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "left",
+                                           N_CPU_DATA_GEN)
+        r_data_x, r_data_y = generate_data(N_MOTION_PER_LEG,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "right",
+                                           N_CPU_DATA_GEN)
+        data_x = l_data_x + r_data_x
+        data_y = l_data_y + r_data_y
 
-            ## normalize training data
-            print("{} data is collected".format(len(data_x)))
-            input_mean, input_std, input_normalized_data = util.normalize_data(
-                data_x)
-            output_mean, output_std, output_normalized_data = util.normalize_data(
-                data_y)
+        log_dir = "experiment_data/tensorboard/draco3_crbi_tf_copy"
+        if os.path.exists(log_dir):
+            shutil.rmtree(log_dir)
+        writer = SummaryWriter(log_dir)
 
-            # create Torch data set
-            x_data_torch, y_data_torch = torch.from_numpy(
-                np.array(input_normalized_data)).float(), torch.from_numpy(
-                np.array(output_normalized_data)).float()
-            torch_dataset = torch_utils.TensorDataset(x_data_torch,
-                                                      y_data_torch)
+        ## normalize training data
+        print("{} data is collected".format(len(data_x)))
+        input_mean, input_std, input_normalized_data = util.normalize_data(
+            data_x)
+        output_mean, output_std, output_normalized_data = util.normalize_data(
+            data_y)
 
-            # Split into train and test data sets
-            train_size = int(len(torch_dataset) * 0.9)
-            test_size = len(torch_dataset) - train_size
-            train_dataset, test_dataset = torch.utils.data.random_split(torch_dataset,
-                                                                        [train_size, test_size])
+        # create Torch data set
+        x_data_torch, y_data_torch = torch.from_numpy(
+            np.array(input_normalized_data)).float(), torch.from_numpy(
+            np.array(output_normalized_data)).float()
+        torch_dataset = torch_utils.TensorDataset(x_data_torch,
+                                                  y_data_torch)
 
-            # Load test / train data
-            train_loader = torch_utils.DataLoader(dataset=train_dataset,
-                                                 batch_size=BATCH_SIZE,
-                                                 shuffle=True,
-                                                 num_workers=4)
-            test_loader = torch_utils.DataLoader(dataset=test_dataset,
-                                                 batch_size=BATCH_SIZE,
-                                                 shuffle=False,
-                                                 num_workers=4)
+        # Split into train and test data sets
+        train_size = int(len(torch_dataset) * 0.9)
+        test_size = len(torch_dataset) - train_size
+        train_dataset, test_dataset = torch.utils.data.random_split(torch_dataset,
+                                                                    [train_size, test_size])
 
-            # Create NN model
-            crbi_model = NetWork(6, 64, 64, 6)
-            optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR, momentum=0.)
-            loss_function = torch.nn.MSELoss()
+        # Load test / train data
+        train_loader = torch_utils.DataLoader(dataset=train_dataset,
+                                             batch_size=BATCH_SIZE,
+                                             shuffle=True,
+                                             num_workers=4)
+        test_loader = torch_utils.DataLoader(dataset=test_dataset,
+                                             batch_size=BATCH_SIZE,
+                                             shuffle=False,
+                                             num_workers=4)
 
-            # train
-            train_loss_per_epoch = 0.
-            val_loss_per_epoch = 0.
-            iter = 0
+        # Create NN model
+        crbi_model = NetWork(6, 64, 64, 6)
+        optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR, momentum=0.)
+        loss_function = torch.nn.MSELoss()
+
+        # train
+        train_loss_per_epoch = 0.
+        val_loss_per_epoch = 0.
+        iter = 0
+        for epoch in range(N_EPOCH):
+            train_loss = 0.
+            train_batch_loss = 0.
+            crbi_model.train()
+            for step, (b_x, b_y) in enumerate(train_loader):
+                output = crbi_model(b_x)
+                loss = loss_function(output, b_y)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                train_batch_loss = loss.item()
+                train_loss += loss.item()
+                iter += 1
+                writer.add_scalar('batch loss', train_batch_loss, iter)
+            train_loss_per_epoch = train_loss / len(train_loader)
+
+        print('=' * 80)
+        print('CRBI training done')
+
+        # test
+        crbi_model.eval()
+        with torch.no_grad():
+            test_loss_per_epoch = 0.
             for epoch in range(N_EPOCH):
-                train_loss = 0.
-                train_batch_loss = 0.
-                crbi_model.train()
-                for step, (b_x, b_y) in enumerate(train_loader):
+                test_loss = 0.
+                for i, (b_x, b_y) in enumerate(test_loader):
                     output = crbi_model(b_x)
                     loss = loss_function(output, b_y)
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-                    train_batch_loss = loss.item()
-                    train_loss += loss.item()
-                    iter += 1
-                    writer.add_scalar('batch loss', train_batch_loss, iter)
-                train_loss_per_epoch = train_loss / len(train_loader)
+                    test_loss += loss.item()
+                test_loss_per_epoch = test_loss / len(test_loader)
+                writer.add_scalar('test loss vs epoch',
+                                  test_loss_per_epoch, epoch + 1)
 
-            # save model
-            model_path = 'experiment_data/pytorch_model/atlas_crbi_tf_copy.pth'
-            if os.path.exists(model_path):
-                os.remove(model_path)
-            torch.save(crbi_model, model_path)
-            data_stats = {
-                'input_mean': input_mean.tolist(),
-                'input_std': input_std.tolist(),
-                'output_mean': output_mean.tolist(),
-                'output_std': output_std.tolist()
-            }
+        print('=' * 80)
+        print('CRBI test done')
 
-            print('=' * 80)
-            print('CRBI training done')
+        #####################################################
+        '''plot centroidal inertia dim = 6'''
+        #####################################################
+        test_data_loader2 = torch_utils.DataLoader(
+            dataset=test_dataset,
+            batch_size=1,
+            shuffle=False,
+            num_workers=6)
 
-            # with open(model_path + '/data_stat.yaml', 'w') as f:
-            #     yml = YAML()
-            #     yml.dump(data_stats, f)
-            # save_weights_to_yaml(crbi_model)
+        crbi_model.eval()
+        gt_inertia_list, predict_inertia_list = [], []
+        iter_list = []
+        num_iter = 0
+        with torch.no_grad():
+            for i, (b_x, b_y) in enumerate(test_data_loader2):
+                output = crbi_model(b_x)
+                gt_denormalized_output = util.denormalize(
+                    np.squeeze(b_y.numpy(), axis=0), output_mean,
+                    output_std)
+                predict_denormalized_output = util.denormalize(
+                    np.squeeze(output.numpy(), axis=0), output_mean,
+                    output_std)
+                iter_list.append(num_iter)
+                gt_inertia_list.append(gt_denormalized_output)
+                predict_inertia_list.append(predict_denormalized_output)
+                num_iter += 1
 
-            # test
-            crbi_model.eval()
-            with torch.no_grad():
-                test_loss_per_epoch = 0.
-                for epoch in range(N_EPOCH):
-                    test_loss = 0.
-                    for i, (b_x, b_y) in enumerate(test_loader):
-                        output = crbi_model(b_x)
-                        loss = loss_function(output, b_y)
-                        test_loss += loss.item()
-                    test_loss_per_epoch = test_loss / len(test_loader)
-                    writer.add_scalar('test loss vs epoch',
-                                      test_loss_per_epoch, epoch + 1)
-
-            print('=' * 80)
-            print('CRBI test done')
-
-            #####################################################
-            '''plot centroidal inertia dim = 6'''
-            #####################################################
-            test_data_loader2 = torch_utils.DataLoader(
-                dataset=test_dataset,
-                batch_size=1,
-                shuffle=False,
-                num_workers=6)
-
-            crbi_model.eval()
-            gt_inertia_list, predict_inertia_list = [], []
-            iter_list = []
-            num_iter = 0
-            with torch.no_grad():
-                for i, (b_x, b_y) in enumerate(test_data_loader2):
-                    output = crbi_model(b_x)
-                    gt_denormalized_output = util.denormalize(
-                        np.squeeze(b_y.numpy(), axis=0), output_mean,
-                        output_std)
-                    predict_denormalized_output = util.denormalize(
-                        np.squeeze(output.numpy(), axis=0), output_mean,
-                        output_std)
-                    iter_list.append(num_iter)
-                    gt_inertia_list.append(gt_denormalized_output)
-                    predict_inertia_list.append(predict_denormalized_output)
-                    num_iter += 1
-
-            ##plot
-            fig, axes = plt.subplots(6, 1)
-            for i in range(6):
-                if i == 0:
-                    axes[i].plot(iter_list,
-                                 [gt_inertia[i] for gt_inertia in gt_inertia_list],
-                                 'r')
-                    axes[i].plot(iter_list, [
-                        predict_inertia[i]
-                        for predict_inertia in predict_inertia_list
-                    ], 'b')
-                    axes[i].grid(True)
-                else:
-                    axes[i] = plt.subplot(6, 1, i + 1, sharex=axes[i-1])
-                    axes[i].plot(iter_list,
-                                 [gt_inertia[i] for gt_inertia in gt_inertia_list],
-                                 'r')
-                    axes[i].plot(iter_list, [
-                        predict_inertia[i]
-                        for predict_inertia in predict_inertia_list
-                    ], 'b')
-                    axes[i].grid(True)
-            plt.show()
-
-            exit(0)
-
-            # cas_func, cas_jac_func = generate_casadi_func(
-            #     crbi_model, input_mean, input_std, output_mean, output_std,
-            #     True)
-            #
-            # b_regressor_trained = True
-            #
-            # # Don't wanna mess up the visualizer
-            # base_pos = np.copy(nominal_sensor_data['base_com_pos'])
-            # base_quat = np.copy(nominal_sensor_data['base_com_quat'])
-            # joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-
-        elif pybullet_util.is_key_triggered(keys, '4'):
-            print("-" * 80)
-            print("Pressed 4: Load Pre-trained CRBI Model")
-            crbi_model = tf.keras.models.load_model("data/tf_model/atlas_crbi")
-            model_path = 'data/tf_model/atlas_crbi'
-            with open(model_path + '/data_stat.yaml', 'r') as f:
-                yml = YAML().load(f)
-                input_mean = np.array(yml['input_mean'])
-                input_std = np.array(yml['input_std'])
-                output_mean = np.array(yml['output_mean'])
-                output_std = np.array(yml['output_std'])
-
-            b_regressor_trained = True
-
-        elif pybullet_util.is_key_triggered(keys, '3'):
-            # Left Foot Swing, Right Foot Stance
-            print("-" * 80)
-            print("Pressed 3: Sample Motion for Left Foot Swing")
-
-            swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-                nominal_lf_iso, nominal_rf_iso, "left")
-            s = 0.
-            b_ik = True
-
-        elif pybullet_util.is_key_triggered(keys, '2'):
-            # Left Foot Stance, Right Foot Swing
-            print("-" * 80)
-            print("Pressed 2: Sample Motion for Right Foot Swing")
-
-            swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-                nominal_lf_iso, nominal_rf_iso, "right")
-            s = 0.
-            b_ik = True
-
-        elif pybullet_util.is_key_triggered(keys, '6'):
-            pass
-        elif pybullet_util.is_key_triggered(keys, '7'):
-            pass
-        elif pybullet_util.is_key_triggered(keys, '9'):
-            pass
-        elif pybullet_util.is_key_triggered(keys, '1'):
-            # Nominal Pos
-            print("-" * 80)
-            print("Pressed 1: Reset to Nominal Pos")
-            base_pos = np.copy(nominal_sensor_data['base_com_pos'])
-            base_quat = np.copy(nominal_sensor_data['base_com_quat'])
-            joint_pos = copy.deepcopy(nominal_sensor_data['joint_pos'])
-
-        # Solve IK if needed to define base_pos, base_quat, joint_pos
-        if b_ik:
-            if s == 0.:
-                # Create trajectories
-                lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
-                    lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
-                    rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
-                    base_ini_iso, base_fin_iso)
-
-                pbar = tqdm(total=math.floor(swing_time / DT))
-            if s >= 1.:
-                # Done
-                b_ik = False
-                s = 0
-                pbar.close()
+        ##plot
+        fig, axes = plt.subplots(6, 1)
+        for i in range(6):
+            if i == 0:
+                axes[i].plot(iter_list,
+                             [gt_inertia[i] for gt_inertia in gt_inertia_list],
+                             'r')
+                axes[i].plot(iter_list, [
+                    predict_inertia[i]
+                    for predict_inertia in predict_inertia_list
+                ], 'b')
+                axes[i].grid(True)
             else:
-                pbar.update(1)
-                # Solve IK and set base_pos, base_quat, joint_pos
-                base_pos = base_pos_curve.evaluate(s)
-                base_quat = base_quat_curve.evaluate(s)
+                axes[i] = plt.subplot(6, 1, i + 1, sharex=axes[i-1])
+                axes[i].plot(iter_list,
+                             [gt_inertia[i] for gt_inertia in gt_inertia_list],
+                             'r')
+                axes[i].plot(iter_list, [
+                    predict_inertia[i]
+                    for predict_inertia in predict_inertia_list
+                ], 'b')
+                axes[i].grid(True)
+        plt.show()
 
-                if s <= 0.5:
-                    sprime = 2.0 * s
-                    lf_pos = lfoot_pos_curve_ini_to_mid.evaluate(sprime)
-                    rf_pos = rfoot_pos_curve_ini_to_mid.evaluate(sprime)
-                else:
-                    sprime = 2.0 * (s - 0.5)
-                    lf_pos = lfoot_pos_curve_mid_to_fin.evaluate(sprime)
-                    rf_pos = rfoot_pos_curve_mid_to_fin.evaluate(sprime)
-                lf_quat = lfoot_quat_curve.evaluate(s)
-                rf_quat = rfoot_quat_curve.evaluate(s)
+        # save model
+        model_path = 'experiment_data/pytorch_model/draco3_crbi_tf_copy.pth'
+        if os.path.exists(model_path):
+            os.remove(model_path)
+        torch.save(crbi_model, model_path)
+        print("==============================================")
+        print("Saved PyTorch Model State")
+        print("==============================================")
 
-                joint_pos, lf_done, rf_done = ik_feet(
-                    base_pos, base_quat, lf_pos, lf_quat, rf_pos, rf_quat,
-                    nominal_sensor_data, joint_screws_in_ee_at_home,
-                    ee_SE3_at_home, open_chain_joints)
+        data_stats = {
+            'input_mean': input_mean.tolist(),
+            'input_std': input_std.tolist(),
+            'output_mean': output_mean.tolist(),
+            'output_std': output_std.tolist()
+        }
 
-                if not (lf_done and rf_done):
-                    print("====================================")
-                    __import__('ipdb').set_trace()
-                    print("====================================")
+        path = 'experiment_data/pytorch_model/draco3_crbi'
+        with open('experiment_data/pytorch_model' + '/data_stat.yaml', 'w') as f:
+            yml = YAML()
+            yml.dump(data_stats, f)
+        save_weights_to_yaml(crbi_model, path)
+        print('=' * 80)
+        print('Saved weights to yaml')
 
-                s += DT / swing_time
+        cas_func, cas_jac_func = generate_casadi_func(
+            crbi_model, input_mean, input_std, output_mean, output_std,
+            True)
 
-        # Visualize config
-        pybullet_util.set_config(robot, joint_id, base_pos, base_quat,
-                                 joint_pos)
+        exit(0)
 
-        # Get SensorData
-        sensor_data = pybullet_util.get_sensor_data(robot, joint_id, link_id,
-                                                    pos_basejoint_to_basecom,
-                                                    rot_basejoint_to_basecom)
-        if b_regressor_trained:
-            robot_sys.update_system(
-                sensor_data["base_com_pos"], sensor_data["base_com_quat"],
-                sensor_data["base_com_lin_vel"],
-                sensor_data["base_com_ang_vel"], sensor_data["base_joint_pos"],
-                sensor_data["base_joint_quat"],
-                sensor_data["base_joint_lin_vel"],
-                sensor_data["base_joint_ang_vel"], sensor_data["joint_pos"],
-                sensor_data["joint_vel"], True)
-            rot_world_base = util.quat_to_rot(sensor_data['base_com_quat'])
-            world_I = robot_sys.Ig[0:3, 0:3]
-            local_I = np.dot(np.dot(rot_world_base.transpose(), world_I),
-                             rot_world_base)
-            rf_iso = pybullet_util.get_link_iso(robot, link_id["r_sole"])
-            lf_iso = pybullet_util.get_link_iso(robot, link_id["l_sole"])
+    elif CASE == 4:
+        print("-" * 80)
+        print("Pressed 4: Load Pre-trained CRBI Model")
+        crbi_model = torch.load('experiment_data/pytorch_model/draco3_crbi_tf_copy.pth')
+        model_path = 'experiment_data/pytorch_model/draco3_crbi'
+        with open(model_path + '/data_stat.yaml', 'r') as f:
+            yml = YAML().load(f)
+            input_mean = np.array(yml['input_mean'])
+            input_std = np.array(yml['input_std'])
+            output_mean = np.array(yml['output_mean'])
+            output_std = np.array(yml['output_std'])
 
-            denormalized_output, output = evaluate_crbi_model_using_tf(
-                crbi_model, sensor_data["base_com_pos"], lf_iso[0:3, 3],
-                rf_iso[0:3, 3], input_mean, input_std, output_mean, output_std)
+        b_regressor_trained = True
 
-            local_I_est = inertia_from_one_hot_vec(denormalized_output)
+    elif CASE == 3:
+        # Left Foot Swing, Right Foot Stance
+        print("-" * 80)
+        print("Pressed 3: Sample Motion for Left Foot Swing")
 
-        # Disable forward step
-        # p.stepSimulation()
+        swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
+            nominal_lf_iso, nominal_rf_iso, "left")
+        s = 0.
+        b_ik = True
 
-        time.sleep(dt)
-        t += dt
-        count += 1
+    elif CASE == 2:
+        # Left Foot Stance, Right Foot Swing
+        print("-" * 80)
+        print("Pressed 2: Sample Motion for Right Foot Swing")
+
+        swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
+            nominal_lf_iso, nominal_rf_iso, "right")
+        s = 0.
+        b_ik = True
+
+    elif CASE == 1:
+        # Nominal Pos
+        print("-" * 80)
+        print("Pressed 1: Reset to Nominal Pos")
+        base_pos = np.copy(nominal_base_iso[:3, 3])
+        base_quat = np.copy(util.rot_to_quat(nominal_base_iso[:3, :3]))
+        joint_pos = copy.deepcopy(q0[7:])
