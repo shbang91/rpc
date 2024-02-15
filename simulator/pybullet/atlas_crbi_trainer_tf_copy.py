@@ -1,5 +1,8 @@
 import os
 import sys
+
+import meshcat
+
 cwd = os.getcwd()
 sys.path.append(cwd)
 import time
@@ -35,8 +38,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 ## Configs
-VISUALIZE = False
-VIDEO_RECORD = False
+VISUALIZE = True
+VIDEO_RECORD = True
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
@@ -84,9 +87,25 @@ class NetWork(torch.nn.Module):
         return self.layers(x)
 
 
-def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side):
+def display_visualizer_frames(meshcat_visualizer, frame):
+    for visual in meshcat_visualizer.visual_model.geometryObjects:
+        # Get mesh pose.
+        M = meshcat_visualizer.visual_data.oMg[
+            meshcat_visualizer.visual_model.getGeometryId(visual.name)]
+        # Manage scaling
+        scale = np.asarray(visual.meshScale).flatten()
+        S = np.diag(np.concatenate((scale, [1.0])))
+        T = np.array(M.homogeneous).dot(S)
+        # Update viewer configuration.
+        frame[meshcat_visualizer.getViewerNodeName(
+            visual, pin.GeometryType.VISUAL)].set_transform(T)
+
+
+def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=1.):
 
     swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
+    min_y_distance_btw_foot = abs(nominal_lf_iso.translation[1] - nominal_rf_iso.translation[1])
+    # TODO add swing height
     if side == "left":
         # Sample rfoot config
         rfoot_ini_iso = np.copy(nominal_rf_iso)
@@ -105,6 +124,23 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side):
         lfoot_ini_iso = liegroup.RpToTrans(lfoot_ini_rot, lfoot_ini_pos)
         lfoot_fin_pos = np.copy(nominal_lf_iso)[0:3, 3] + np.random.uniform(
             LFOOT_POS_LB, LFOOT_POS_UB)
+
+        # resample until min distance in y-direction is satisfied
+        while (abs(lfoot_ini_pos[1] - nominal_rf_iso.translation[1]) <
+               min_y_distance_btw_foot):
+            lfoot_ini_pos = nominal_lf_iso.translation + np.random.uniform(
+                LFOOT_POS_LB, LFOOT_POS_UB)
+        while (abs(lfoot_fin_pos[1] - nominal_rf_iso.translation[1]) <
+               min_y_distance_btw_foot):
+            lfoot_fin_pos = nominal_lf_iso.translation + np.random.uniform(
+                LFOOT_POS_LB, LFOOT_POS_UB)
+
+        # modify x-direction sample until min distance in x-direction is satisfied
+        while (abs(lfoot_fin_pos[0] - nominal_rf_iso.translation[0]) <
+               min_step_length):
+            lfoot_fin_pos[0] = lfoot_fin_pos[0] + np.random.uniform(
+                0., LFOOT_POS_UB[0])
+
         lfoot_fin_ea = np.random.uniform(FOOT_EA_LB, FOOT_EA_UB)
         lfoot_fin_rot = util.euler_to_rot(lfoot_fin_ea)
         lfoot_fin_iso = liegroup.RpToTrans(lfoot_fin_rot, lfoot_fin_pos)
@@ -147,6 +183,23 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side):
         rfoot_ini_iso = liegroup.RpToTrans(rfoot_ini_rot, rfoot_ini_pos)
         rfoot_fin_pos = np.copy(nominal_rf_iso)[0:3, 3] + np.random.uniform(
             RFOOT_POS_LB, RFOOT_POS_UB)
+
+        # resample until min distance in y-direction is satisfied
+        while (abs(rfoot_ini_pos[1] - nominal_lf_iso.translation[1]) <
+               min_y_distance_btw_foot):
+            rfoot_ini_pos = nominal_rf_iso.translation + np.random.uniform(
+                RFOOT_POS_LB, RFOOT_POS_UB)
+        while (abs(rfoot_fin_pos[1] - nominal_lf_iso.translation[1]) <
+               min_y_distance_btw_foot):
+            rfoot_fin_pos = nominal_rf_iso.translation + np.random.uniform(
+                RFOOT_POS_LB, RFOOT_POS_UB)
+
+        # modify x-direction sample until min distance in x-direction is satisfied
+        while (abs(rfoot_fin_pos[0] - nominal_lf_iso.translation[0]) <
+               min_step_length):
+            rfoot_fin_pos[0] = rfoot_fin_pos[0] + np.random.uniform(
+                0., RFOOT_POS_UB[0])
+
         rfoot_fin_ea = np.random.uniform(FOOT_EA_LB, FOOT_EA_UB)
         rfoot_fin_rot = util.euler_to_rot(rfoot_fin_ea)
         rfoot_fin_iso = liegroup.RpToTrans(rfoot_fin_rot, rfoot_fin_pos)
@@ -214,12 +267,14 @@ def _do_generate_data(n_data,
                       nominal_rf_iso,
                       nominal_configuration,
                       side,
+                      min_step_length=1.,
                       rseed=None,
                       cpu_idx=0):
     if rseed is not None:
         np.random.seed(rseed)
     data_x, data_y = [], []
 
+    frame_idx = int(0)
     text = "#" + "{}".format(cpu_idx).zfill(3)
     with tqdm(total=n_data,
               desc=text + ': Generating data',
@@ -227,7 +282,7 @@ def _do_generate_data(n_data,
         for i in range(n_data):
 
             swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-                nominal_lf_iso, nominal_rf_iso, side)
+                nominal_lf_iso, nominal_rf_iso, side, min_step_length)
 
             lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
                 lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
@@ -278,6 +333,11 @@ def _do_generate_data(n_data,
 
                     lfoot_contact_frame.set_transform(T_w_lf)
                     rfoot_contact_frame.set_transform(T_w_rf)
+                    if VIDEO_RECORD:
+                        with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
+                            frame.set_transform(T_w_lf)
+                        with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
+                            frame.set_transform(T_w_rf)
 
                 # solve ik
                 # Compute velocity and integrate it into next configuration
@@ -287,8 +347,12 @@ def _do_generate_data(n_data,
                 # Visualize result at fixed FPS
                 if VISUALIZE:
                     viz.display(configuration.q)
+                    if VIDEO_RECORD:
+                        with anim.at_frame(viz.viewer, frame_idx) as frame:
+                            display_visualizer_frames(viz, frame)
                     rate.sleep()
                 t += dt
+                frame_idx += 1
 
                 # compute CRBI
                 _, _, centroidal_inertia = robot.centroidal(configuration.q, v0)
@@ -542,7 +606,7 @@ if __name__ == "__main__":
         lfoot_contact_frame = viz.viewer["l_foot_contact"]
         meshcat_shapes.frame(lfoot_contact_frame)
 
-    CASE = 5
+    CASE = 3
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 5:
@@ -741,12 +805,14 @@ if __name__ == "__main__":
     elif CASE == 3:
         # Left Foot Swing, Right Foot Stance
         print("-" * 80)
-        print("Pressed 3: Sample Motion for Left Foot Swing")
+        print("Pressed 3: Sample Motions - long footsteps (left side)")
 
-        swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-            nominal_lf_iso, nominal_rf_iso, "left")
-        s = 0.
-        b_ik = True
+        if VIDEO_RECORD:
+            anim = meshcat.animation.Animation(default_framerate=1/DT)  # TODO fix rate
+        _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left", 0.5)
+
+        if VIDEO_RECORD:
+            viz.viewer.set_animation(anim, play=False)
 
     elif CASE == 2:
         # Left Foot Stance, Right Foot Swing
@@ -758,10 +824,3 @@ if __name__ == "__main__":
         s = 0.
         b_ik = True
 
-    elif CASE == 1:
-        # Nominal Pos
-        print("-" * 80)
-        print("Pressed 1: Reset to Nominal Pos")
-        base_pos = np.copy(nominal_base_iso[:3, 3])
-        base_quat = np.copy(util.rot_to_quat(nominal_base_iso[:3, :3]))
-        joint_pos = copy.deepcopy(q0[7:])
