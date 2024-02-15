@@ -38,8 +38,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 ## Configs
-VISUALIZE = True
-VIDEO_RECORD = True
+VISUALIZE = False
+VIDEO_RECORD = False
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
@@ -55,7 +55,7 @@ LFOOT_POS_UB = np.array([0.15, 0.1, 0.05])
 FOOT_EA_LB = np.array([np.deg2rad(-5.), np.deg2rad(-15.), -np.pi / 4.])
 FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.pi / 4.])
 
-SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.03, 0.20
+SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.30
 
 SWING_TIME_LB, SWING_TIME_UB = 0.35, 0.75
 
@@ -101,7 +101,7 @@ def display_visualizer_frames(meshcat_visualizer, frame):
             visual, pin.GeometryType.VISUAL)].set_transform(T)
 
 
-def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=1.):
+def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.1):
 
     swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
     min_y_distance_btw_foot = abs(nominal_lf_iso.translation[1] - nominal_rf_iso.translation[1])
@@ -267,7 +267,7 @@ def _do_generate_data(n_data,
                       nominal_rf_iso,
                       nominal_configuration,
                       side,
-                      min_step_length=1.,
+                      min_step_length=0.1,
                       rseed=None,
                       cpu_idx=0):
     if rseed is not None:
@@ -389,11 +389,11 @@ def _generate_data(arg_list):
 
 
 def generate_data(n_data, nominal_lf_iso, nominal_rf_iso, nominal_sensor_data,
-                  side, num_cpu):
+                  side, num_cpu, min_step_length=0.1):
     rollout_per_cpu = int(max(n_data // num_cpu, 1))
     args_list = [
         rollout_per_cpu, nominal_lf_iso, nominal_rf_iso, nominal_sensor_data,
-        side
+        side, min_step_length
     ]
     results = util.try_multiprocess(args_list, num_cpu, _generate_data)
 
@@ -606,24 +606,28 @@ if __name__ == "__main__":
         lfoot_contact_frame = viz.viewer["l_foot_contact"]
         meshcat_shapes.frame(lfoot_contact_frame)
 
-    CASE = 3
+    CASE = 5
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 5:
         # Generate Dataset
         print("-" * 80)
         print("Pressed 5: Train CRBI Regressor w/multiprocessing")
-        VISUALIZE = False   # can't do this with multiprocessing
+        VISUALIZE = False       # can't do this with multiprocessing
+        VIDEO_RECORD = False
+        min_step_length = 0.5
 
         nominal_configuration = q0
         l_data_x, l_data_y = generate_data(N_MOTION_PER_LEG,
                                            nominal_lf_iso, nominal_rf_iso,
                                            nominal_configuration, "left",
-                                           N_CPU_DATA_GEN)
+                                           N_CPU_DATA_GEN,
+                                           min_step_length)
         r_data_x, r_data_y = generate_data(N_MOTION_PER_LEG,
                                            nominal_lf_iso, nominal_rf_iso,
                                            nominal_configuration, "right",
-                                           N_CPU_DATA_GEN)
+                                           N_CPU_DATA_GEN,
+                                           min_step_length)
         data_x = l_data_x + r_data_x
         data_y = l_data_y + r_data_y
 
