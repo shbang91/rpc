@@ -662,21 +662,21 @@ if __name__ == "__main__":
         orientation_cost=1.0,
     )
     posture_task = PostureTask(
-        cost=1e-1,  # [cost] / [rad]
+        cost=1e-2,  # [cost] / [rad]
     )
 
     # Joint coupling task
     r_knee_holonomic_task = JointCouplingTask(
         ["r_knee_fe_jp", "r_knee_fe_jd"],
         [1.0, -1.0],
-        100.0,
+        1000.0,
         configuration,
         lm_damping=1e-7,
     )
     l_knee_holonomic_task = JointCouplingTask(
         ["l_knee_fe_jp", "l_knee_fe_jd"],
         [1.0, -1.0],
-        100.0,
+        1000.0,
         configuration,
         lm_damping=1e-7,
     )
