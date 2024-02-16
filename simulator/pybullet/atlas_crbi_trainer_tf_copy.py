@@ -38,8 +38,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 ## Configs
-VISUALIZE = False
-VIDEO_RECORD = False
+VISUALIZE = True
+VIDEO_RECORD = True
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
@@ -65,6 +65,7 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 N_CPU_DATA_GEN = 5
 N_MOTION_PER_LEG = 1e3
 N_DATA_PER_MOTION = 15
+N_TURN_STEPS = 10
 
 N_LAYER_OUTPUT = [64, 64]
 LR = 0.01
@@ -105,7 +106,7 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.
 
     swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
     min_y_distance_btw_foot = abs(nominal_lf_iso.translation[1] - nominal_rf_iso.translation[1])
-    # TODO add swing height
+    # TODO remove samples with self-collisions?
     if side == "left":
         # Sample rfoot config
         rfoot_ini_iso = np.copy(nominal_rf_iso)
@@ -222,6 +223,107 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.
         base_fin_pos[2] = np.random.uniform(BASE_HEIGHT_LB, BASE_HEIGHT_UB)
         base_fin_rot = util.euler_to_rot(
             np.array([0., 0., rfoot_fin_ea[2] / 2.]))
+        base_fin_iso = liegroup.RpToTrans(base_fin_rot, base_fin_pos)
+
+    else:
+        raise ValueError
+
+    return swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso
+
+
+def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing_leg="right_leg"):
+
+    swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
+    if cw_or_ccw == "cw":
+        # Sample rfoot config
+        raise NotImplementedError
+
+    elif cw_or_ccw == "ccw":
+        if swing_leg == "right_leg":
+            # Keep old (left) stance leg config
+            lfoot_ini_iso = np.copy(prev_lf_iso)
+            lfoot_mid_iso = np.copy(prev_lf_iso)
+            lfoot_fin_iso = np.copy(prev_lf_iso)
+
+            lfoot_mid_vel = (lfoot_ini_iso[0:3, 3] -
+                             lfoot_ini_iso[0:3, 3]) / swing_time
+            lfoot_mid_vel[2] = 0.
+
+            # Keep initial (rfoot) swing (x,y)-pos config same as nominal
+            rfoot_ini_iso = np.copy(prev_rf_iso)
+            rfoot_ini_pos = rfoot_ini_iso[-1, :3]
+
+            # Sample (rfoot) swing final config (currently not avoiding self-collisions)
+            w_R_lf = lfoot_ini_iso[0:3, 0:3]
+            rfoot_fin_pos = np.copy(lfoot_ini_iso[:3, 3]) + w_R_lf @ np.random.uniform(
+                RFOOT_POS_LB, RFOOT_POS_UB)
+
+            # TODO add foot/leg self-collision check
+
+            stance_foot_rpy = util.rot_to_rpy(lfoot_ini_iso[0:3, 0:3])
+            rfoot_fin_ea = np.random.uniform(0.5, FOOT_EA_UB)
+            rfoot_fin_rot = util.euler_to_rot([0, 0, stance_foot_rpy[2] + rfoot_fin_ea[2]])
+            rfoot_fin_iso = liegroup.RpToTrans(rfoot_fin_rot, rfoot_fin_pos)
+            rfoot_mid_iso = interpolation.iso_interpolate(rfoot_ini_iso,
+                                                          rfoot_fin_iso, 0.5)
+            rfoot_mid_iso[2, 3] = (rfoot_ini_pos[2] +
+                                   rfoot_fin_pos[2]) / 2.0 + np.random.uniform(
+                SWING_HEIGHT_LB, SWING_HEIGHT_UB)
+
+            rfoot_mid_vel = (rfoot_fin_pos - rfoot_ini_pos) / swing_time
+            rfoot_mid_vel[2] = 0.
+
+        else:
+            # Keep old (right) stance leg config
+            rfoot_ini_iso = np.copy(prev_rf_iso)
+            rfoot_mid_iso = np.copy(prev_rf_iso)
+            rfoot_fin_iso = np.copy(prev_rf_iso)
+
+            rfoot_mid_vel = (rfoot_ini_iso[0:3, 3] -
+                             rfoot_ini_iso[0:3, 3]) / swing_time
+            rfoot_mid_vel[2] = 0.
+
+            # Keep initial (lfoot) swing (x,y)-pos config same as nominal
+            lfoot_ini_iso = np.copy(prev_lf_iso)
+            lfoot_ini_pos = lfoot_ini_iso[-1, :3]
+
+            # Sample (lfoot) swing final config (currently not avoiding self-collisions)
+            w_R_rf = rfoot_ini_iso[0:3, 0:3]
+            lfoot_fin_pos = np.copy(rfoot_ini_iso[:3, 3]) + w_R_rf @ np.random.uniform(
+                LFOOT_POS_LB, LFOOT_POS_UB)
+
+            # TODO add foot/leg self-collision check
+
+            stance_foot_rpy = util.rot_to_rpy(rfoot_ini_iso[0:3, 0:3])
+            lfoot_fin_ea = np.random.uniform(0., FOOT_EA_UB)
+            lfoot_fin_rot = util.euler_to_rot([0, 0, stance_foot_rpy[2] + lfoot_fin_ea[2]])
+            lfoot_fin_iso = liegroup.RpToTrans(lfoot_fin_rot, lfoot_fin_pos)
+            lfoot_mid_iso = interpolation.iso_interpolate(lfoot_ini_iso,
+                                                          lfoot_fin_iso, 0.5)
+            lfoot_mid_iso[2, 3] = (lfoot_ini_pos[2] +
+                                   lfoot_fin_pos[2]) / 2.0 + np.random.uniform(
+                SWING_HEIGHT_LB, SWING_HEIGHT_UB)
+
+            lfoot_mid_vel = (lfoot_fin_pos - lfoot_ini_pos) / swing_time
+            lfoot_mid_vel[2] = 0.
+
+        # Sample base config
+        base_ini_iso = np.copy(prev_base_iso)
+        base_fin_pos = (rfoot_fin_iso[:3, 3] + lfoot_fin_iso[:3, 3]) / 2.0
+        base_fin_pos[2] = np.random.uniform(BASE_HEIGHT_LB, BASE_HEIGHT_UB)
+
+        # wrap rotations in positive direction
+        l_foot_yaw = util.rot_to_rpy(lfoot_fin_iso[:3, :3])[2]
+        if l_foot_yaw < 0:
+            l_foot_yaw += 2 * np.pi
+        r_foot_yaw = util.rot_to_rpy(rfoot_fin_iso[:3, :3])[2]
+        if r_foot_yaw < 0:
+            r_foot_yaw += 2 * np.pi
+        # wrap around if around zero yaw crossing
+        if np.abs(l_foot_yaw - r_foot_yaw) > np.pi:
+            r_foot_yaw += 2 * np.pi
+        base_yaw = (l_foot_yaw + r_foot_yaw) / 2.
+        base_fin_rot = util.euler_to_rot(np.array([0., 0., base_yaw]))
         base_fin_iso = liegroup.RpToTrans(base_fin_rot, base_fin_pos)
 
     else:
@@ -606,13 +708,18 @@ if __name__ == "__main__":
         lfoot_contact_frame = viz.viewer["l_foot_contact"]
         meshcat_shapes.frame(lfoot_contact_frame)
 
-    CASE = 5
+    # Options:
+    # Case 0: Train CRBI Regressor w/multiprocessing
+    # Case 1: Load Pre-trained CRBI Model
+    # Case 2: Sample Motions - long footsteps (left side)
+    # Case 3: Sample Motions - long CCW turns
+    CASE = 3
 
     # Set base_pos, base_quat, joint_pos here for visualization
-    if CASE == 5:
+    if CASE == 0:
         # Generate Dataset
         print("-" * 80)
-        print("Pressed 5: Train CRBI Regressor w/multiprocessing")
+        print("Case 0: Train CRBI Regressor w/multiprocessing")
         VISUALIZE = False       # can't do this with multiprocessing
         VIDEO_RECORD = False
         min_step_length = 0.5
@@ -792,9 +899,9 @@ if __name__ == "__main__":
 
         exit(0)
 
-    elif CASE == 4:
+    elif CASE == 1:
         print("-" * 80)
-        print("Pressed 4: Load Pre-trained CRBI Model")
+        print("Case 1: Load Pre-trained CRBI Model")
         crbi_model = torch.load('experiment_data/pytorch_model/draco3_crbi_tf_copy.pth')
         model_path = 'experiment_data/pytorch_model/draco3_crbi'
         with open(model_path + '/data_stat.yaml', 'r') as f:
@@ -806,10 +913,10 @@ if __name__ == "__main__":
 
         b_regressor_trained = True
 
-    elif CASE == 3:
+    elif CASE == 2:
         # Left Foot Swing, Right Foot Stance
         print("-" * 80)
-        print("Pressed 3: Sample Motions - long footsteps (left side)")
+        print("Case 2: Sample Motions - long footsteps (left side)")
 
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation(default_framerate=1/DT)  # TODO fix rate
@@ -818,13 +925,123 @@ if __name__ == "__main__":
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
 
-    elif CASE == 2:
+    elif CASE == 3:
         # Left Foot Stance, Right Foot Swing
         print("-" * 80)
-        print("Pressed 2: Sample Motion for Right Foot Swing")
+        print("Case 3: Sample Motions - long CCW turns")
 
-        swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-            nominal_lf_iso, nominal_rf_iso, "right")
-        s = 0.
-        b_ik = True
+        # Turning only in yaw
+        FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), -np.pi / 2.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
 
+        # Reduce stepping outwards (relative to stance leg, in stance coordinates)
+        RFOOT_POS_LB = np.array([0.1, -0.3, 0.])
+        RFOOT_POS_UB = np.array([0.2, -0.1, 0.])
+        LFOOT_POS_LB = np.array([-0.15, 0.1, 0.])
+        LFOOT_POS_UB = np.array([0.05, 0.25, 0.])
+
+        # no need to lift leg as high
+        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.20
+        SWING_TIME_LB, SWING_TIME_UB = 0.8, 1.5
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.8, 0.85
+
+        # place base above ankles
+        nominal_base_iso.translation[1] = np.array([
+            nominal_lf_iso.translation[1] + nominal_rf_iso.translation[1]]) / 2.0
+
+        if VIDEO_RECORD:
+            anim = meshcat.animation.Animation()
+
+        swing_leg = "right_leg"
+        frame_idx = int(0)
+        for n_turn in range(N_TURN_STEPS):
+            # Update posture task?
+
+            swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
+                nominal_base_iso, nominal_lf_iso, nominal_rf_iso, "ccw", swing_leg)
+
+            lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
+                lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
+                rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
+                base_ini_iso, base_fin_iso)
+
+            t = 0.
+            rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
+            dt = rate.period
+            if VIDEO_RECORD:    # update frame rate
+                anim.default_framerate = int(1 / dt)
+            for s in np.linspace(0, 1, N_DATA_PER_MOTION):
+                base_pos = base_pos_curve.evaluate(s)
+                base_quat = base_quat_curve.evaluate(s)
+
+                if s <= 0.5:
+                    sprime = 2.0 * s
+                    lf_pos = lfoot_pos_curve_ini_to_mid.evaluate(sprime)
+                    rf_pos = rfoot_pos_curve_ini_to_mid.evaluate(sprime)
+                else:
+                    sprime = 2.0 * (s - 0.5)
+                    lf_pos = lfoot_pos_curve_mid_to_fin.evaluate(sprime)
+                    rf_pos = rfoot_pos_curve_mid_to_fin.evaluate(sprime)
+                lf_quat = lfoot_quat_curve.evaluate(s)
+                rf_quat = rfoot_quat_curve.evaluate(s)
+
+                # set desired task
+                des_base_iso = pin.SE3(util.quat_to_rot(base_quat), base_pos)
+                task_dict['torso_task'].set_target(des_base_iso)
+
+                des_rfoot_iso = pin.SE3(util.quat_to_rot(rf_quat), rf_pos)
+                task_dict['rfoot_task'].set_target(des_rfoot_iso)
+
+                des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
+                task_dict['lfoot_task'].set_target(des_lfoot_iso)
+
+                #TODO: or set from configuration
+                task_dict['posture_task'].set_target(q0)
+
+                # update meshcat visualizer
+                if VISUALIZE:
+                    #### base
+                    T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
+                                                  base_pos)
+                    #### right foot
+                    T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
+
+                    #### left foot
+                    T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
+
+                    lfoot_contact_frame.set_transform(T_w_lf)
+                    rfoot_contact_frame.set_transform(T_w_rf)
+                    if VIDEO_RECORD:
+                        with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
+                            frame.set_transform(T_w_lf)
+                        with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
+                            frame.set_transform(T_w_rf)
+
+                # solve ik
+                # Compute velocity and integrate it into next configuration
+                velocity = solve_ik(configuration, tasks, dt, solver=solver)
+                configuration.integrate_inplace(velocity, dt)
+
+                # Visualize result at fixed FPS
+                if VISUALIZE:
+                    viz.display(configuration.q)
+                    if VIDEO_RECORD:
+                        with anim.at_frame(viz.viewer, frame_idx) as frame:
+                            display_visualizer_frames(viz, frame)
+                    rate.sleep()
+                t += dt
+                frame_idx += 1
+
+            # update nominal poses
+            nominal_lf_iso = pin.SE3(lfoot_fin_iso)
+            nominal_rf_iso = pin.SE3(rfoot_fin_iso)
+            nominal_base_iso = pin.SE3(base_fin_iso)
+
+            # switch stance leg
+            if swing_leg == "right_leg":
+                swing_leg = "left_leg"
+            else:
+                swing_leg = "right_leg"
+
+        if VIDEO_RECORD:
+            viz.viewer.set_animation(anim, play=False)

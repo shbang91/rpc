@@ -68,6 +68,9 @@ def rot_to_quat(rot):
     return np.copy(R.from_matrix(rot).as_quat())
 
 
+def rot_to_rpy(rot):
+    return R.from_matrix(rot).as_euler('xyz')
+
 def QuatToExp(quat):
     img_vec = np.array([quat[0], quat[1], quat[2]])
     w = quat[3]
