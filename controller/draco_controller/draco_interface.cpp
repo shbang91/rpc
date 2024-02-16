@@ -62,8 +62,12 @@ DracoInterface::DracoInterface()
   }
 
   robot_ =
-      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco_modified.urdf",
+      // new PinocchioRobotSystem(THIS_COM
+      // "robot_model/draco/draco_modified.urdf", THIS_COM "robot_model/draco",
+      // false, false);
+      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco3_old.urdf",
                                THIS_COM "robot_model/draco", false, false);
+
   // set locomotion control point
   robot_->SetFeetControlPoint("l_foot_contact", "r_foot_contact");
 
