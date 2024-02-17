@@ -43,7 +43,7 @@ VIDEO_RECORD = True
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
-INITIAL_POS_WORLD_TO_BASEJOINT = [0, 0, 1.5 - 0.761]
+INITIAL_POS_WORLD_TO_BASEJOINT = [0, 0, 1.5 - 0.761]    # 0.761, 0.681
 INITIAL_QUAT_WORLD_TO_BASEJOINT = [0., 0., 0., 1.]
 
 ## Motion Boundaries
@@ -64,7 +64,7 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 ## Dataset Generation
 N_CPU_DATA_GEN = 5
 N_MOTION_PER_LEG = 1e3
-N_DATA_PER_MOTION = 15
+N_DATA_PER_MOTION = 30
 N_TURN_STEPS = 10
 
 N_LAYER_OUTPUT = [64, 64]
@@ -435,13 +435,17 @@ def _do_generate_data(n_data,
 
                     lfoot_contact_frame.set_transform(T_w_lf)
                     rfoot_contact_frame.set_transform(T_w_rf)
+                    torso_frame.set_transform(T_w_base)
                     if VIDEO_RECORD:
                         with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
                             frame.set_transform(T_w_lf)
                         with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
                             frame.set_transform(T_w_rf)
+                        with anim.at_frame(torso_frame, frame_idx) as frame:
+                            frame.set_transform(T_w_base)
 
-                # solve ik
+
+            # solve ik
                 # Compute velocity and integrate it into next configuration
                 velocity = solve_ik(configuration, tasks, dt, solver=solver)
                 configuration.integrate_inplace(velocity, dt)
@@ -708,6 +712,9 @@ if __name__ == "__main__":
         lfoot_contact_frame = viz.viewer["l_foot_contact"]
         meshcat_shapes.frame(lfoot_contact_frame)
 
+        torso_frame = viz.viewer["torso_link"]
+        meshcat_shapes.frame(torso_frame)
+
     # Options:
     # Case 0: Train CRBI Regressor w/multiprocessing
     # Case 1: Load Pre-trained CRBI Model
@@ -935,19 +942,28 @@ if __name__ == "__main__":
         FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
 
         # Reduce stepping outwards (relative to stance leg, in stance coordinates)
-        RFOOT_POS_LB = np.array([0.1, -0.3, 0.])
-        RFOOT_POS_UB = np.array([0.2, -0.1, 0.])
+        RFOOT_POS_LB = np.array([0.1, -0.25, 0.])
+        RFOOT_POS_UB = np.array([0.2, -0.15, 0.])
         LFOOT_POS_LB = np.array([-0.15, 0.1, 0.])
-        LFOOT_POS_UB = np.array([0.05, 0.25, 0.])
+        LFOOT_POS_UB = np.array([0.15, 0.25, 0.])
 
         # no need to lift leg as high
-        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.20
-        SWING_TIME_LB, SWING_TIME_UB = 0.8, 1.5
-        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.8, 0.85
+        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
+        SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
 
         # place base above ankles
-        nominal_base_iso.translation[1] = np.array([
-            nominal_lf_iso.translation[1] + nominal_rf_iso.translation[1]]) / 2.0
+        nominal_base_iso.translation[0] = np.array([
+            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+
+        # PInk costs optimized for turning motion
+        torso_task.set_position_cost(10.)
+        torso_task.set_orientation_cost(5.0)
+        posture_task.cost = 1e-8
+        l_knee_holonomic_task.cost = 1e3
+        l_knee_holonomic_task.lm_damping = 5e-7
+        r_knee_holonomic_task.cost = 1e3
+        r_knee_holonomic_task.lm_damping = 5e-7
 
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation()
@@ -955,8 +971,6 @@ if __name__ == "__main__":
         swing_leg = "right_leg"
         frame_idx = int(0)
         for n_turn in range(N_TURN_STEPS):
-            # Update posture task?
-
             swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
                 nominal_base_iso, nominal_lf_iso, nominal_rf_iso, "ccw", swing_leg)
 
@@ -1011,11 +1025,14 @@ if __name__ == "__main__":
 
                     lfoot_contact_frame.set_transform(T_w_lf)
                     rfoot_contact_frame.set_transform(T_w_rf)
+                    torso_frame.set_transform(T_w_base)
                     if VIDEO_RECORD:
                         with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
                             frame.set_transform(T_w_lf)
                         with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
                             frame.set_transform(T_w_rf)
+                        with anim.at_frame(torso_frame, frame_idx) as frame:
+                            frame.set_transform(T_w_base)
 
                 # solve ik
                 # Compute velocity and integrate it into next configuration
@@ -1028,7 +1045,10 @@ if __name__ == "__main__":
                     if VIDEO_RECORD:
                         with anim.at_frame(viz.viewer, frame_idx) as frame:
                             display_visualizer_frames(viz, frame)
-                    rate.sleep()
+
+                # update nominal configuration for next iteration
+                q0 = configuration.q
+                rate.sleep()
                 t += dt
                 frame_idx += 1
 
