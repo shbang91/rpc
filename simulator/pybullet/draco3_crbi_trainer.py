@@ -88,18 +88,33 @@ class NetWork(torch.nn.Module):
         return self.layers(x)
 
 
-def display_visualizer_frames(meshcat_visualizer, frame):
-    for visual in meshcat_visualizer.visual_model.geometryObjects:
+def display_visualizer_frames(meshcat_visualizer, frame, pin_geom_type=None):
+    # assume visual mode, if unspecified
+    if pin_geom_type is None:
+        pin_geom_type = pin.GeometryType.VISUAL
+        meshcat_model = meshcat_visualizer.visual_model
+    elif pin_geom_type == pin.GeometryType.VISUAL:
+        meshcat_model = meshcat_visualizer.visual_model
+    elif pin_geom_type == pin.GeometryType.COLLISION:
+        meshcat_model = meshcat_visualizer.collision_model
+    else:
+        raise ValueError("Invalid pinocchio GeometryType")
+
+    for visual in meshcat_model.geometryObjects:
         # Get mesh pose.
-        M = meshcat_visualizer.visual_data.oMg[
-            meshcat_visualizer.visual_model.getGeometryId(visual.name)]
+        if pin_geom_type == pin.GeometryType.VISUAL:
+            M = meshcat_visualizer.visual_data.oMg[
+                meshcat_model.getGeometryId(visual.name)]
+        else:
+            M = meshcat_visualizer.collision_data.oMg[
+                meshcat_model.getGeometryId(visual.name)]
         # Manage scaling
         scale = np.asarray(visual.meshScale).flatten()
         S = np.diag(np.concatenate((scale, [1.0])))
         T = np.array(M.homogeneous).dot(S)
         # Update viewer configuration.
         frame[meshcat_visualizer.getViewerNodeName(
-            visual, pin.GeometryType.VISUAL)].set_transform(T)
+            visual, pin_geom_type)].set_transform(T)
 
 
 def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.1):
@@ -605,18 +620,34 @@ if __name__ == "__main__":
     NUM_FLOATING_BASE = 5   # pinocchio model
 
     # initialize robot model
+    urdf_path = '/robot_model/draco/draco3_modified_collisions.urdf'
+    srdf_path = '/robot_model/draco/srdf/draco3_modified_collisions.srdf'
     robot = pin.RobotWrapper.BuildFromURDF(
-        cwd + '/robot_model/draco/draco_modified.urdf',
+        cwd + urdf_path,
         cwd + '/robot_model/draco',
         root_joint=pin.JointModelFreeFlyer())
 
+    # load collision geometries
+    geom_model = pin.buildGeomFromUrdf(robot.model,
+                                       cwd + urdf_path,
+                                       cwd + '/robot_model/draco',
+                                       pin.GeometryType.COLLISION)
+
+    # add collision pairs and remove those listed in SRDF
+    geom_model.addAllCollisionPairs()
+    pin.removeCollisionPairs(robot.model, geom_model, cwd + srdf_path)
+
+    # create data structure for collisions
+    geom_data = pin.GeometryData(geom_model)
+
     # Initialize meschcat visualizer
     if VISUALIZE:
-        viz = pin.visualize.MeshcatVisualizer(robot.model, robot.collision_model,
+        viz = pin.visualize.MeshcatVisualizer(robot.model, geom_model,
                                               robot.visual_model)
         robot.setVisualizer(viz, init=False)
         viz.initViewer(open=True)
         viz.loadViewerModel()
+        viz.display_collisions = True
 
     # Set initial robot configuration
     q0 = robot.q0.copy()
@@ -1044,7 +1075,8 @@ if __name__ == "__main__":
                     viz.display(configuration.q)
                     if VIDEO_RECORD:
                         with anim.at_frame(viz.viewer, frame_idx) as frame:
-                            display_visualizer_frames(viz, frame)
+                            display_visualizer_frames(viz, frame, pin.GeometryType.VISUAL)
+                            display_visualizer_frames(viz, frame, pin.GeometryType.COLLISION)
 
                 # update nominal configuration for next iteration
                 q0 = configuration.q
