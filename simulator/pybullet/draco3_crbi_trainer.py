@@ -21,6 +21,7 @@ from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import interpolation
 from util.python_utils import liegroup
+from enum import Enum
 
 # kinematics tools
 import qpsolvers
@@ -65,13 +66,18 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 N_CPU_DATA_GEN = 5
 N_MOTION_PER_LEG = 1e3
 N_DATA_PER_MOTION = 30
-N_TURN_STEPS = 10
+N_TURN_STEPS = 4
 
 N_LAYER_OUTPUT = [64, 64]
 LR = 0.01
 MOMENTUM = 0.
 N_EPOCH = 20
 BATCH_SIZE = 32
+
+
+class MotionType(Enum):
+    STEP = 1
+    TURN = 2
 
 
 ## 2-hidden layer Neural Network
@@ -398,8 +404,12 @@ def _do_generate_data(n_data,
               position=cpu_idx + 1) as pbar:
         for i in range(n_data):
 
-            swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-                nominal_lf_iso, nominal_rf_iso, side, min_step_length)
+            if MOTION_TYPE == MotionType.STEP:
+                swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
+                    nominal_lf_iso, nominal_rf_iso, side, min_step_length)
+            elif MOTION_TYPE == MotionType.TURN:
+                swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
+                    nominal_lf_iso, nominal_rf_iso, side, min_step_length)
 
             lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
                 lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
@@ -615,8 +625,19 @@ def evaluate_crbi_model_using_tf(tf_model, b, l, r, input_mean, input_std,
     return d_output, output
 
 
-if __name__ == "__main__":
+def load_turn_pink_config():
+    # PInk costs optimized for turning motion
+    torso_task.set_position_cost(10.)
+    torso_task.set_orientation_cost(5.0)
+    posture_task.cost = 1e-8
+    l_knee_holonomic_task.cost = 1e3
+    l_knee_holonomic_task.lm_damping = 5e-7
+    r_knee_holonomic_task.cost = 1e3
+    r_knee_holonomic_task.lm_damping = 5e-7
 
+
+if __name__ == "__main__":
+    MOTION_TYPE = MotionType.STEP       # consider step by default
     NUM_FLOATING_BASE = 5   # pinocchio model
 
     # initialize robot model
@@ -751,6 +772,7 @@ if __name__ == "__main__":
     # Case 1: Load Pre-trained CRBI Model
     # Case 2: Sample Motions - long footsteps (left side)
     # Case 3: Sample Motions - long CCW turns
+    # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
     CASE = 3
 
     # Set base_pos, base_quat, joint_pos here for visualization
@@ -968,6 +990,13 @@ if __name__ == "__main__":
         print("-" * 80)
         print("Case 3: Sample Motions - long CCW turns")
 
+        # place base above ankles
+        nominal_base_iso.translation[0] = np.array([
+            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+
+        load_turn_pink_config()
+        MOTION_TYPE = MotionType.TURN
+
         # Turning only in yaw
         FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), -np.pi / 2.])
         FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
@@ -982,19 +1011,6 @@ if __name__ == "__main__":
         SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
         SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
         BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
-
-        # place base above ankles
-        nominal_base_iso.translation[0] = np.array([
-            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
-
-        # PInk costs optimized for turning motion
-        torso_task.set_position_cost(10.)
-        torso_task.set_orientation_cost(5.0)
-        posture_task.cost = 1e-8
-        l_knee_holonomic_task.cost = 1e3
-        l_knee_holonomic_task.lm_damping = 5e-7
-        r_knee_holonomic_task.cost = 1e3
-        r_knee_holonomic_task.lm_damping = 5e-7
 
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation()
