@@ -42,7 +42,7 @@ DracoWBOTask::DracoWBOTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
   jac_f_output_ = new double *[jac_Q_xyz_func_n_out()];
   for (int i = 0; i < jac_Q_xyz_func_n_out(); ++i) {
     jac_f_output_[i] =
-        new double[num_input_ * dim_per_output_ * dim_per_output_];
+        new double[num_input_ * dim_per_input_ * dim_per_output_];
   }
 
   actuated_joint_idx_ = {draco_joint::l_hip_ie,      draco_joint::l_hip_aa,
@@ -66,16 +66,12 @@ DracoWBOTask::~DracoWBOTask() {
 
   for (int i = 0; i < jac_Q_xyz_func_n_in(); ++i) {
     delete[] jac_f_input_[i];
-    std::cout << "jac_f_input_ des: " << i << std::endl;
   }
   delete[] jac_f_input_;
-  std::cout << "jac_f_input_ des complete " << std::endl;
   for (int i = 0; i < jac_Q_xyz_func_n_out(); ++i) {
     delete[] jac_f_output_[i];
-    std::cout << "jac_f_output_ des: " << i << std::endl;
   }
   delete[] jac_f_output_;
-  std::cout << "jac_f_output_ des complete " << std::endl;
 }
 
 void DracoWBOTask::UpdateOpCommand() {}
@@ -109,8 +105,6 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   Eigen::MatrixXd M_q = Ag.block<3, 27>(0, 6);
   local_wbo_ang_vel_gt_ = M_B.inverse() * M_q * robot_->GetJointVel();
 
-  sp_->wbo_ang_vel_est_ = local_wbo_ang_vel_est_;
-  sp_->wbo_ang_vel_gt_ = local_wbo_ang_vel_gt_;
   // std::cout <<
   // "---------------------------------------------------------------"
   //"--------------------------------------------------"
@@ -191,7 +185,6 @@ DracoWBOTask::_WboQuatXYZJacobian(const Eigen::VectorXd &joint_pos) {
   casadi_real jac_f_w[jac_f_sz_w_];
   jac_Q_xyz_func(const_cast<const double **>(jac_f_input_), jac_f_output_,
                  jac_f_iw, jac_f_w, jac_Q_xyz_func_checkout());
-  //_ComputeQxyzJacobian(jac_f_input_, jac_f_output_);
 
   Eigen::MatrixXd jac_f_output_ph =
       Eigen::MatrixXd::Zero(dim_per_output_, num_input_ * dim_per_input_);
@@ -201,13 +194,6 @@ DracoWBOTask::_WboQuatXYZJacobian(const Eigen::VectorXd &joint_pos) {
   return jac_f_output_ph;
 }
 
-void DracoWBOTask::_ComputeQxyzJacobian(double **jac_f_input,
-                                        double **jac_f_output) {
-  casadi_int jac_f_iw[jac_f_sz_iw_];
-  casadi_real jac_f_w[jac_f_sz_w_];
-  jac_Q_xyz_func(const_cast<const double **>(jac_f_input), jac_f_output,
-                 jac_f_iw, jac_f_w, jac_Q_xyz_func_checkout());
-}
 void DracoWBOTask::_CopyEigenMatrixToDoubleArray(const Eigen::MatrixXd &mat,
                                                  double **array_2d) {
   for (int i = 0; i < mat.rows(); i++) {

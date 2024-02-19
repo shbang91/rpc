@@ -37,7 +37,6 @@ private:
                                      const int block_row, const int block_col);
 
   // misc
-  void _ComputeQxyzJacobian(double **jac_f_input, double **jac_f_output);
   Eigen::Matrix<double, 3, 4> _QuatRateToAngVel(const Eigen::Quaterniond &quat);
   Eigen::Matrix<double, 4, 3> _QuatMiscFunc(const Eigen::Quaterniond &quat);
 
