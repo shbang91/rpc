@@ -15,7 +15,8 @@ DracoWBOTask::DracoWBOTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
   pos_.setZero();
 
   num_input_ = Q_xyz_func_n_in();
-  dim_per_input_ = 18;
+  dim_per_input_ = 18; // reduced joint config space
+  // dim_per_input_ = 27;
   num_output_ = Q_xyz_func_n_out();
   dim_per_output_ = 3;
 
@@ -54,6 +55,14 @@ DracoWBOTask::DracoWBOTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
                          draco_joint::r_knee_fe_jp,  draco_joint::r_knee_fe_jd,
                          draco_joint::r_shoulder_fe, draco_joint::r_shoulder_aa,
                          draco_joint::r_shoulder_ie, draco_joint::r_elbow_fe};
+
+  ignored_joint_idx_ = {draco_joint::l_hip_ie,     draco_joint::l_hip_aa,
+                        draco_joint::l_hip_fe,     draco_joint::l_knee_fe_jp,
+                        draco_joint::l_knee_fe_jd, draco_joint::r_hip_ie,
+                        draco_joint::r_hip_aa,     draco_joint::r_hip_fe,
+                        draco_joint::r_knee_fe_jp, draco_joint::r_knee_fe_jd};
+
+  wbo_local_jacobian_ = Eigen::MatrixXd::Zero(3, dim_per_input_);
 }
 
 DracoWBOTask::~DracoWBOTask() {
@@ -74,9 +83,44 @@ DracoWBOTask::~DracoWBOTask() {
   delete[] jac_f_output_;
 }
 
-void DracoWBOTask::UpdateOpCommand() {}
+void DracoWBOTask::UpdateOpCommand() {
+  // full joint config space
+  Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
+                              des_pos_[2]);
+
+  Eigen::VectorXd q_a = robot_->GetJointPos();
+  Eigen::Vector3d base_Q_WBO_xyz = _LocalWboQuatXYZ(q_a);
+  double w = sqrt(fmax(0, 1 - base_Q_WBO_xyz.dot(base_Q_WBO_xyz)));
+  Eigen::Quaterniond base_Q_WBO(w, base_Q_WBO_xyz.x(), base_Q_WBO_xyz.y(),
+                                base_Q_WBO_xyz.z());
+  base_Q_WBO = base_Q_WBO.normalized();
+  world_R_base_ = robot_->GetLinkIsometry(robot_->GetRootFrameName()).linear();
+  Eigen::Quaterniond world_Q_base(world_R_base_);
+  Eigen::Quaterniond world_Q_WBO = world_Q_base.normalized() * base_Q_WBO;
+
+  pos_ << world_Q_WBO.coeffs();
+
+  // TEST:: compute local angular velocity
+  Eigen::Matrix3d T_Q = Eigen::Matrix3d::Zero();
+  T_Q = base_Q_WBO.toRotationMatrix() * _QuatRateToAngVel(base_Q_WBO) *
+        _QuatMiscFunc(base_Q_WBO);
+  local_wbo_ang_vel_est_ =
+      T_Q * _WboQuatXYZJacobian(q_a) * robot_->GetJointVel();
+
+  Eigen::MatrixXd Ag = robot_->GetAg();
+  Eigen::Matrix3d M_B = Ag.block<3, 3>(0, 3);
+  Eigen::MatrixXd M_q = Ag.block<3, 27>(0, 6);
+  local_wbo_ang_vel_gt_ = M_B.inverse() * M_q * robot_->GetJointVel();
+
+  // compute centroidal angular momentum
+  Eigen::Vector3d base_ang_vel = robot_->GetQdot().segment<3>(3);
+  centroidal_ang_mom_est_ = M_B * (base_ang_vel + local_wbo_ang_vel_est_);
+  centroidal_ang_mom_gt_ = M_B * (base_ang_vel + local_wbo_ang_vel_gt_);
+  // TEST
+}
 
 void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+  // reduced joint config space
 
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
@@ -86,50 +130,71 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   double w = sqrt(fmax(0, 1 - base_Q_WBO_xyz.dot(base_Q_WBO_xyz)));
   Eigen::Quaterniond base_Q_WBO(w, base_Q_WBO_xyz.x(), base_Q_WBO_xyz.y(),
                                 base_Q_WBO_xyz.z());
-  Eigen::Matrix3d world_R_base =
-      robot_->GetLinkIsometry(robot_->GetRootFrameName()).linear();
-  Eigen::Quaterniond world_Q_base(world_R_base);
-  Eigen::Quaterniond world_Q_WBO = world_Q_base * base_Q_WBO;
+  base_Q_WBO = base_Q_WBO.normalized();
+  world_R_base_ = robot_->GetLinkIsometry(robot_->GetRootFrameName()).linear();
+  Eigen::Quaterniond world_Q_base(world_R_base_);
+  Eigen::Quaterniond world_Q_WBO = world_Q_base.normalized() * base_Q_WBO;
 
-  pos_ << world_Q_WBO.coeffs();
-
+  //===================================================================
   // TEST:: compute local angular velocity
   Eigen::Matrix3d T_Q = Eigen::Matrix3d::Zero();
   T_Q = base_Q_WBO.toRotationMatrix() * _QuatRateToAngVel(base_Q_WBO) *
         _QuatMiscFunc(base_Q_WBO);
-  local_wbo_ang_vel_est_ =
-      T_Q * _WboQuatXYZJacobian(q_a) * _GetJointVelReduced();
+  wbo_local_jacobian_ = T_Q * _WboQuatXYZJacobian(q_a);
+  local_wbo_ang_vel_est_ = wbo_local_jacobian_ * _GetJointVelReduced();
 
   Eigen::MatrixXd Ag = robot_->GetAg();
   Eigen::Matrix3d M_B = Ag.block<3, 3>(0, 3);
   Eigen::MatrixXd M_q = Ag.block<3, 27>(0, 6);
   local_wbo_ang_vel_gt_ = M_B.inverse() * M_q * robot_->GetJointVel();
 
-  // std::cout <<
-  // "---------------------------------------------------------------"
-  //"--------------------------------------------------"
-  //<< std::endl;
-  // std::cout << "est: " << std::endl;
-  // std::cout << local_wbo_ang_vel_est_.transpose() << std::endl;
-  // std::cout << "gt:" << std::endl;
-  // std::cout << local_wbo_ang_vel_gt_.transpose() << std::endl;
-  // std::cout << "error: " << std::endl;
-  // Eigen::Vector3d err = local_wbo_ang_vel_est_ - local_wbo_ang_vel_gt_;
-  // std::cout << err.transpose() << std::endl;
-
+  // compute centroidal angular momentum
   Eigen::Vector3d base_ang_vel = robot_->GetQdot().segment<3>(3);
-  Eigen::Vector3d est = M_B * (base_ang_vel + local_wbo_ang_vel_est_);
-  Eigen::Vector3d gt = M_B * (base_ang_vel + local_wbo_ang_vel_gt_);
-  Eigen::Vector3d err_H = est - gt;
-  // std::cout << "est: " << est.transpose() << std::endl;
-  // std::cout << "gt: " << gt.transpose() << std::endl;
-  // std::cout << "error: " << err_H.transpose() << std::endl;
+  centroidal_ang_mom_est_ = M_B * (base_ang_vel + local_wbo_ang_vel_est_);
+  centroidal_ang_mom_gt_ = M_B * (base_ang_vel + local_wbo_ang_vel_gt_);
   // TEST
+  //===================================================================
+
+  // util::AvoidQuatJump(des_quat, world_Q_WBO);
+  util::AvoidQuatJump(des_quat, base_Q_WBO);
+
+  // pos_ << world_Q_WBO.normalized().coeffs();
+  pos_ << base_Q_WBO.normalized().coeffs();
+
+  // Eigen::Quaterniond quat_err = des_quat * world_Q_WBO.inverse();
+  Eigen::Quaterniond quat_err = des_quat * base_Q_WBO.inverse();
+  Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
+  so3 *= Eigen::AngleAxisd(quat_err).angle();
+  for (int i = 0; i < 3; ++i) {
+    pos_err_[i] = so3[i];
+  }
+
+  Eigen::VectorXd avg_vel = robot_->GetIg().inverse() * robot_->GetHg();
+  // vel_ = avg_vel.head<3>();
+  vel_ = world_R_base_.transpose() * avg_vel.head<3>();
+  vel_err_ = des_vel_ - vel_;
+
+  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
-void DracoWBOTask::UpdateJacobian() {}
+void DracoWBOTask::UpdateJacobian() {
+  int num_float = robot_->NumFloatDof();
 
-void DracoWBOTask::UpdateJacobianDotQdot() {}
+  // for (int i = 0; i < actuated_joint_idx_.size(); ++i) {
+  // jacobian_.col(num_float + actuated_joint_idx_[i]) =
+  // world_R_base_ * wbo_local_jacobian_.col(i);
+  //}
+  for (int i = 0; i < actuated_joint_idx_.size(); ++i) {
+    jacobian_.col(num_float + actuated_joint_idx_[i]) =
+        wbo_local_jacobian_.col(i);
+  }
+  ModifyJacobian(ignored_joint_idx_, num_float);
+}
+
+// TODO: what is the drift term?
+void DracoWBOTask::UpdateJacobianDotQdot() {
+  jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
+}
 
 Eigen::Vector3d
 DracoWBOTask::_LocalWboQuatXYZ(const Eigen::VectorXd &joint_pos) {

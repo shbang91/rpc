@@ -20,6 +20,8 @@ public:
 
   Eigen::Vector3d local_wbo_ang_vel_est_ = Eigen::Vector3d::Zero();
   Eigen::Vector3d local_wbo_ang_vel_gt_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d centroidal_ang_mom_est_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d centroidal_ang_mom_gt_ = Eigen::Vector3d::Zero();
 
 private:
   DracoStateProvider *sp_;
@@ -64,4 +66,8 @@ private:
   int dim_per_output_;
 
   std::vector<int> actuated_joint_idx_;
+  std::vector<int> ignored_joint_idx_;
+
+  Eigen::Matrix3d world_R_base_ = Eigen::Matrix3d::Identity();
+  Eigen::MatrixXd wbo_local_jacobian_;
 };
