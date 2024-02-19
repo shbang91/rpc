@@ -41,6 +41,14 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
   // double robot_total_weight = robot_->GetTotalWeight();
   // des_lf_wrench_[5] = robot_total_weight / 2.;
   // des_rf_wrench_[5] = robot_total_weight / 2.;
+
+#if B_USE_MATLOGGER
+// logger_ = XBot::MatLogger2::MakeLogger("/tmp/convex_mpc");
+// logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
+// appender_ = XBot::MatAppender::MakeInstance();
+// appender_->add_logger(logger_);
+// appender_->start_flush_thread();
+#endif
 }
 
 void ConvexMPCLocomotion::Initialize(const GaitCommand &gait_command,
@@ -353,6 +361,11 @@ void ConvexMPCLocomotion::Solve() {
 
   // mpc iteration counter
   iteration_counter_++;
+// TEST
+#if B_USE_MATLOGGER
+
+#endif
+  // TEST
 }
 
 void ConvexMPCLocomotion::_InitializeConvexMPC() {

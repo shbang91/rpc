@@ -51,6 +51,6 @@ private:
   Eigen::Vector2d icp_integral_ = Eigen::Vector2d::Zero();
 
 #if B_USE_MATLOGGER
-  XBot::MatLogger2::Ptr logger_;
+  // XBot::MatLogger2::Ptr logger_;
 #endif
 };

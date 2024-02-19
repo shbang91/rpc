@@ -4,6 +4,7 @@
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
+#include <matlogger2/utils/mat_appender.h>
 #endif
 
 class PinocchioRobotSystem;
@@ -52,5 +53,6 @@ private:
 
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
+  XBot::MatAppender::Ptr appender_;
 #endif
 };

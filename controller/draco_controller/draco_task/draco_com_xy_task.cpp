@@ -22,7 +22,7 @@ DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
   sp_ = DracoStateProvider::GetStateProvider();
 
 #if B_USE_MATLOGGER
-  logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_icp_data");
+  // logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_icp_data");
 #endif
 }
 
@@ -143,14 +143,14 @@ void DracoCoMXYTask::UpdateOpCommand() {
 #endif
 
 #if B_USE_MATLOGGER
-    if (sp_->count_ % sp_->data_save_freq_ == 0) {
-      logger_->add("des_icp", des_icp);
-      // logger_->add("act_icp", icp); same as the "est_icp" in state estimator
-      logger_->add("local_des_icp", local_des_icp);
-      logger_->add("local_act_icp", local_icp);
-      logger_->add("icp_error_raw", icp_err);
-      logger_->add("icp_avg_err", icp_avg_err); // used for feedback control
-    }
+    // if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    // logger_->add("des_icp", des_icp);
+    // logger_->add("act_icp", icp); same as the "est_icp" in state estimator
+    // logger_->add("local_des_icp", local_des_icp);
+    // logger_->add("local_act_icp", local_icp);
+    // logger_->add("icp_error_raw", icp_err);
+    // logger_->add("icp_avg_err", icp_avg_err); // used for feedback control
+    //}
 #endif
   }
 }
@@ -264,14 +264,14 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 #endif
 
 #if B_USE_MATLOGGER
-    if (sp_->count_ % sp_->data_save_freq_ == 0) {
-      logger_->add("des_icp", des_icp);
-      // logger_->add("act_icp", icp); same as the "est_icp" in state estimator
-      logger_->add("local_des_icp", local_des_icp);
-      logger_->add("local_act_icp", local_icp);
-      logger_->add("icp_error_raw", icp_err);
-      logger_->add("icp_avg_err", icp_avg_err); // used for feedback control
-    }
+    // if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    // logger_->add("des_icp", des_icp);
+    // logger_->add("act_icp", icp); same as the "est_icp" in state estimator
+    // logger_->add("local_des_icp", local_des_icp);
+    // logger_->add("local_act_icp", local_icp);
+    // logger_->add("icp_error_raw", icp_err);
+    // logger_->add("icp_avg_err", icp_avg_err); // used for feedback control
+    //}
 #endif
   }
 }

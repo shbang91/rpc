@@ -32,6 +32,10 @@ SOFTWARE.
 #include "convex_mpc/mpc.hpp"
 #include "util/interpolation.hpp"
 
+#if B_USE_MATLOGGER
+#include <matlogger2/matlogger2.h>
+#include <matlogger2/utils/mat_appender.h>
+#endif
 /**
  * Input: Gait schedule, Gait command
  * Output: Locomotion policy (footstep, reaction wrench, centroidal states)
@@ -142,6 +146,10 @@ private:
   HermiteQuaternionCurve2 foot_swing_ori_trajectory_[2];
   double swing_time_[2];
   double swing_time_remaining_[2];
+#if B_USE_MATLOGGER
+  XBot::MatLogger2::Ptr logger_;
+  XBot::MatAppender::Ptr appender_;
+#endif
 };
 
 #endif // CONVEX_MPC_CONVEX_MPC_LOCOMOTION_HPP_

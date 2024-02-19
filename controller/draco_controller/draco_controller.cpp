@@ -36,6 +36,10 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
 #if B_USE_MATLOGGER
   logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_controller_data");
+  logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
+  appender_ = XBot::MatAppender::MakeInstance();
+  appender_->add_logger(logger_);
+  appender_->start_flush_thread();
 #endif
 
   // set virtual & actuated selection matrix

@@ -87,6 +87,6 @@ protected:
   bool b_request_offset_reset;
 
 #if B_USE_MATLOGGER
-  XBot::MatLogger2::Ptr logger_;
+  // XBot::MatLogger2::Ptr logger_;
 #endif
 };
