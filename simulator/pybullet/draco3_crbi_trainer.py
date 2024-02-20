@@ -470,7 +470,7 @@ def _do_generate_data(n_data,
                             frame.set_transform(T_w_base)
 
 
-            # solve ik
+                # solve ik
                 # Compute velocity and integrate it into next configuration
                 velocity = solve_ik(configuration, tasks, dt, solver=solver)
                 configuration.integrate_inplace(velocity, dt)
@@ -492,10 +492,17 @@ def _do_generate_data(n_data,
                 rot_w_base = util.quat_to_rot(base_quat)
                 rot_inertia_in_body = np.dot(np.dot(rot_w_base.transpose(), rot_inertia_in_world), rot_w_base)
 
+                # get rotations of feet w.r.t. base
+                base_rpy_lf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(lf_quat)))
+                base_rpy_rf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(rf_quat)))
+
                 # append data (end-effector SE3 & body inertia pair)
                 data_x.append(
                     np.concatenate([
-                        lf_pos - base_pos, rf_pos - base_pos,
+                        lf_pos - base_pos,
+                        rf_pos - base_pos,
+                        base_rpy_lf,
+                        base_rpy_rf
                         ],
                         axis=0))
                 data_y.append(
@@ -562,11 +569,11 @@ def generate_casadi_func(pytorch_model,
                          output_mean,
                          output_std,
                          generate_c_code=True):
-    c_code_path = cwd + "/data/tf_model/atlas_crbi"
+    c_code_path = cwd + "/data/pytorch_model/draco3_crbi"
     ## Computational Graph
-    b = MX.sym('b', 3)
-    l = MX.sym('l', 3)
-    r = MX.sym('r', 3)
+    b = MX.sym('b', 6)
+    l = MX.sym('l', 6)
+    r = MX.sym('r', 6)
     # Input
     l_minus_b = l - b
     r_minus_b = r - b
@@ -785,7 +792,7 @@ if __name__ == "__main__":
     # Case 2: Sample Motions - long footsteps (left side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
-    CASE = 3
+    CASE = 0
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 0:
@@ -810,7 +817,7 @@ if __name__ == "__main__":
         data_x = l_data_x + r_data_x
         data_y = l_data_y + r_data_y
 
-        log_dir = "experiment_data/tensorboard/draco3_crbi_tf_copy"
+        log_dir = "experiment_data/tensorboard/draco3_crbi_por_ori"
         if os.path.exists(log_dir):
             shutil.rmtree(log_dir)
         writer = SummaryWriter(log_dir)
@@ -846,7 +853,7 @@ if __name__ == "__main__":
                                              num_workers=4)
 
         # Create NN model
-        crbi_model = NetWork(6, 64, 64, 6)
+        crbi_model = NetWork(12, 64, 64, 6)
         optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR, momentum=0.)
         loss_function = torch.nn.MSELoss()
 
@@ -942,7 +949,7 @@ if __name__ == "__main__":
         plt.show()
 
         # save model
-        model_path = 'experiment_data/pytorch_model/draco3_crbi_tf_copy.pth'
+        model_path = 'experiment_data/pytorch_model/draco3_crbi_pos_ori.pth'
         if os.path.exists(model_path):
             os.remove(model_path)
         torch.save(crbi_model, model_path)
@@ -974,7 +981,7 @@ if __name__ == "__main__":
     elif CASE == 1:
         print("-" * 80)
         print("Case 1: Load Pre-trained CRBI Model")
-        crbi_model = torch.load('experiment_data/pytorch_model/draco3_crbi_tf_copy.pth')
+        crbi_model = torch.load('experiment_data/pytorch_model/draco3_crbi_pos_ori.pth')
         model_path = 'experiment_data/pytorch_model/draco3_crbi'
         with open(model_path + '/data_stat.yaml', 'r') as f:
             yml = YAML().load(f)
