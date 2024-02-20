@@ -674,6 +674,14 @@ if __name__ == "__main__":
     q0 = robot.q0.copy()
     q0[0:3] = np.array(INITIAL_POS_WORLD_TO_BASEJOINT)
     q0[3:7] = np.array(INITIAL_QUAT_WORLD_TO_BASEJOINT)
+    lhip_aa_idx = robot.index("l_hip_aa")
+    q0[NUM_FLOATING_BASE + lhip_aa_idx] = 0.04
+    rhip_aa_idx = robot.index("r_hip_aa")
+    q0[NUM_FLOATING_BASE + rhip_aa_idx] = -0.04
+    lankle_ie_idx = robot.index("l_ankle_ie")
+    q0[NUM_FLOATING_BASE + lankle_ie_idx] = -0.04
+    rankle_ie_idx = robot.index("r_ankle_ie")
+    q0[NUM_FLOATING_BASE + rankle_ie_idx] = 0.04
     lknee_jp_idx = robot.index("l_knee_fe_jp")
     q0[NUM_FLOATING_BASE + lknee_jp_idx] = np.pi / 4
     lknee_jd_idx = robot.index("l_knee_fe_jd")
@@ -690,10 +698,14 @@ if __name__ == "__main__":
     q0[NUM_FLOATING_BASE + l_ankle_fe_idx] = -np.pi / 4
     r_ankle_fe_idx = robot.index("r_ankle_fe")
     q0[NUM_FLOATING_BASE + r_ankle_fe_idx] = -np.pi / 4
-    # l_shoulder_aa_idx = robot.index("l_shldr_ie")
-    # q0[NUM_FLOATING_BASE + l_shoulder_aa_idx] = np.pi / 2
-    # r_shoulder_aa_idx = robot.index("r_shldr_ie")
-    # q0[NUM_FLOATING_BASE + r_shoulder_aa_idx] = np.pi / 2
+    l_shoulder_aa_idx = robot.index("l_shoulder_aa")
+    q0[NUM_FLOATING_BASE + l_shoulder_aa_idx] = 0.523
+    r_shoulder_aa_idx = robot.index("r_shoulder_aa")
+    q0[NUM_FLOATING_BASE + r_shoulder_aa_idx] = -0.523
+    l_elbow_fe_idx = robot.index("l_elbow_fe")
+    q0[NUM_FLOATING_BASE + l_elbow_fe_idx] = -np.pi / 2
+    r_elbow_fe_idx = robot.index("r_elbow_fe")
+    q0[NUM_FLOATING_BASE + r_elbow_fe_idx] = -np.pi / 2
     ## avoid joint violation
     configuration = pink.Configuration(robot.model, robot.data, q0)
     v0 = np.zeros(len(q0) - 1)
