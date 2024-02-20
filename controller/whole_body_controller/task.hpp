@@ -74,9 +74,10 @@ public:
     }
   }
 
-  void ModifyJacobian(const std::vector<int> joint_idx) {
+  void ModifyJacobian(const std::vector<int> joint_idx,
+                      const int num_float = 0) {
     for (int i(0); i < joint_idx.size(); i++)
-      jacobian_.col(joint_idx[i]).setZero();
+      jacobian_.col(num_float + joint_idx[i]).setZero();
   }
 
   // getter function

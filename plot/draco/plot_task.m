@@ -23,15 +23,20 @@ dd = dir(sprintf("%s/draco_state_estimator_data*.mat", exp_data_location));
 fprintf('loading %s \n', dd(i).name)
 load(dd(i).name, 'joint_pos_act')
 load(dd(i).name, 'joint_vel_act')
-load(dd(i).name, 'icp_est')
+%load(dd(i).name, 'icp_est')
 
-ddd = dir(sprintf("%s/draco_icp_data*.mat", exp_data_location));
-[tmp, i] = max([ddd.datenum]);
-fprintf('loading %s \n', ddd(i).name)
-load(ddd(i).name, 'des_icp')
+% ddd = dir(sprintf("%s/draco_icp_data*.mat", exp_data_location));
+% [tmp, i] = max([ddd.datenum]);
+% fprintf('loading %s \n', ddd(i).name)
+% load(ddd(i).name, 'des_icp')
 % load(ddd(i).name, 'act_icp')
-load(ddd(i).name, 'local_des_icp')
-load(ddd(i).name, 'local_act_icp')
+% load(ddd(i).name, 'local_des_icp')
+% load(ddd(i).name, 'local_act_icp')
+
+% dddd = dir(sprintf("%s/convex_mpc*.mat", exp_data_location));
+% [tmp, i] = max([dddd.datenum]);
+% fprintf('loading %s \n', dddd(i).name)
+% load(dddd(i).name)
 
 %%
 load_draco_label_names
@@ -1209,95 +1214,95 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint position
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-k = 0;
-for i = 1:14
-    ax(i) = subplot(7,2,i);
-    if mod(i,2) == 1
-        j = j + 1;
-        plot(time, joint_pos_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
-        grid on
-        hold on
-        plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-        min_val = min([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
-        max_val = max([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-    %   set_fig_opt()
-        plot_phase(time, state, min_val, max_val, phase_color)
-        xlabel('time')
-        ylabel(draco_lf_label(j))
-        if j == 1
-            title('left foot jpos data', 'FontSize',30)
-        end
-    else
-        k = k + 1;
-        plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
-        grid on
-        hold on
-        plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-        min_val = min([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
-        max_val = max([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-    %   set_fig_opt()
-        plot_phase(time, state, min_val, max_val, phase_color)
-        xlabel('time')
-        ylabel(draco_rf_label(k))
-         if j == 1
-            title('right foot jpos data', 'FontSize', 30)
-        end
-    end
-end
-linkaxes(ax, 'x')
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% j = 0;
+% k = 0;
+% for i = 1:14
+%     ax(i) = subplot(7,2,i);
+%     if mod(i,2) == 1
+%         j = j + 1;
+%         plot(time, joint_pos_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
+%         min_val = min([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
+%         max_val = max([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
+%         min_val = min_val - 0.1 * (max_val - min_val);
+%         max_val = max_val + 0.1 *(max_val - min_val);
+%     %   set_fig_opt()
+%         plot_phase(time, state, min_val, max_val, phase_color)
+%         xlabel('time')
+%         ylabel(draco_lf_label(j))
+%         if j == 1
+%             title('left foot jpos data', 'FontSize',30)
+%         end
+%     else
+%         k = k + 1;
+%         plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
+%         min_val = min([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
+%         max_val = max([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
+%         min_val = min_val - 0.1 * (max_val - min_val);
+%         max_val = max_val + 0.1 *(max_val - min_val);
+%     %   set_fig_opt()
+%         plot_phase(time, state, min_val, max_val, phase_color)
+%         xlabel('time')
+%         ylabel(draco_rf_label(k))
+%          if j == 1
+%             title('right foot jpos data', 'FontSize', 30)
+%         end
+%     end
+% end
+% linkaxes(ax, 'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(num_fig)
-num_fig = num_fig + 1;
-j = 0;
-k = 0;
-for i = 1:14
-    ax(i) = subplot(7,2,i);
-    if mod(i,2) == 1
-        j = j + 1;
-        plot(time, joint_vel_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
-        grid on
-        hold on
-        plot(time, joint_vel_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-        min_val = min([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
-        max_val = max([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-    %   set_fig_opt()
-        plot_phase(time, state, min_val, max_val, phase_color)
-        xlabel('time')
-        ylabel(draco_lf_label(j))
-        if j == 1
-            title('left foot jvel data', 'FontSize',30)
-        end
-    else
-        k = k + 1;
-        plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
-        grid on
-        hold on
-        plot(time, joint_vel_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-        min_val = min([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
-        max_val = max([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
-        min_val = min_val - 0.1 * (max_val - min_val);
-        max_val = max_val + 0.1 *(max_val - min_val);
-    %   set_fig_opt()
-        plot_phase(time, state, min_val, max_val, phase_color)
-        xlabel('time')
-        ylabel(draco_rf_label(k))
-         if j == 1
-            title('right foot jvel data', 'FontSize', 30)
-        end
-    end
-end
-linkaxes(ax,'x')
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% j = 0;
+% k = 0;
+% for i = 1:14
+%     ax(i) = subplot(7,2,i);
+%     if mod(i,2) == 1
+%         j = j + 1;
+%         plot(time, joint_vel_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(time, joint_vel_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
+%         min_val = min([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
+%         max_val = max([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
+%         min_val = min_val - 0.1 * (max_val - min_val);
+%         max_val = max_val + 0.1 *(max_val - min_val);
+%     %   set_fig_opt()
+%         plot_phase(time, state, min_val, max_val, phase_color)
+%         xlabel('time')
+%         ylabel(draco_lf_label(j))
+%         if j == 1
+%             title('left foot jvel data', 'FontSize',30)
+%         end
+%     else
+%         k = k + 1;
+%         plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(time, joint_vel_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
+%         min_val = min([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
+%         max_val = max([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
+%         min_val = min_val - 0.1 * (max_val - min_val);
+%         max_val = max_val + 0.1 *(max_val - min_val);
+%     %   set_fig_opt()
+%         plot_phase(time, state, min_val, max_val, phase_color)
+%         xlabel('time')
+%         ylabel(draco_rf_label(k))
+%          if j == 1
+%             title('right foot jvel data', 'FontSize', 30)
+%         end
+%     end
+% end
+% linkaxes(ax,'x')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % contact constraint
@@ -1348,37 +1353,224 @@ linkaxes(ax,'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % QP cost
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% for i = 1:3
+%     ax(i) = subplot(1,3,i);
+%     if i == 1
+%         plot(wbc_time, delta_qddot_cost, 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         min_val = min(delta_qddot_cost);
+%         max_val = max(delta_qddot_cost);
+%         plot_phase(time, state, min_val, max_val, phase_color);
+%         xlabel('time')
+%         title('delta qddot cost', 'FontSize', 30)
+%     elseif i == 2
+%         plot(wbc_time, delta_rf_cost, 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         min_val = min(delta_rf_cost);
+%         max_val = max(delta_rf_cost);
+%         plot_phase(time, state, min_val, max_val, phase_color);
+%         xlabel('time')
+%         title('delta rf cost', 'FontSize', 30)
+%     elseif i ==3
+%         plot(wbc_time, xc_ddot_cost, 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         min_val = min(xc_ddot_cost);
+%         max_val = max(xc_ddot_cost);
+%         plot_phase(time, state, min_val, max_val, phase_color);
+%         xlabel('time')
+%         title('xc ddot cost', 'FontSize', 30) 
+%     end
+% end
+% linkaxes(ax,'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inertia related variables
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% for i = 1:3
+%     ax(i) = subplot(3,1,i);
+%     if i == 1
+%         plot(I_base(i, :), 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(I_com(i, :), 'r', 'LineWidth', 3);
+%         min_val = min(I_base(i));
+%         max_val = max(I_base(i));
+%         xlabel('time')
+%         title('Inertia x', 'FontSize', 30)
+%     elseif i == 2
+%         plot(I_base(i, :), 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(I_com(i, :), 'r', 'LineWidth', 3);
+%         min_val = min(I_base(i));
+%         max_val = max(I_base(i));
+%         xlabel('time')
+%         title('Inertia y', 'FontSize', 30)
+%     elseif i ==3
+%        plot(I_base(i, :), 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(I_com(i, :), 'r', 'LineWidth', 3);
+%         min_val = min(I_base(i));
+%         max_val = max(I_base(i));
+%         xlabel('time')
+%         title('Inertia z', 'FontSize', 30)
+%     end
+% end
+% linkaxes(ax,'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Centroidal Angular Momentum
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure(num_fig)
+% num_fig = num_fig + 1;
+% for i = 1:3
+%     ax(i) = subplot(3,1,i);
+%     if i == 1
+%         plot(approx_cam(i, :), 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(act_cam(i, :), 'r', 'LineWidth', 3);
+%         xlabel('time')
+%         title('CAM x', 'FontSize', 30)
+%     elseif i == 2
+%         plot(approx_cam(i, :), 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(act_cam(i, :), 'r', 'LineWidth', 3);
+%         xlabel('time')
+%         title('CAM y', 'FontSize', 30)
+%     elseif i ==3 
+%         plot(approx_cam(i, :), 'b', 'LineWidth', 3);
+%         grid on
+%         hold on
+%         plot(act_cam(i, :), 'r', 'LineWidth', 3);
+%         xlabel('time')
+%         title('CAM z', 'FontSize', 30)
+%     end
+% end
+% linkaxes(ax,'x')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WBO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
 num_fig = num_fig + 1;
 for i = 1:3
-    ax(i) = subplot(1,3,i);
+    ax(i) = subplot(3,1,i);
     if i == 1
-        plot(wbc_time, delta_qddot_cost, 'b', 'LineWidth', 3);
+        plot(wbo_ang_vel_est(i, :), 'b', 'LineWidth', 3);
         grid on
         hold on
-        min_val = min(delta_qddot_cost);
-        max_val = max(delta_qddot_cost);
-        plot_phase(time, state, min_val, max_val, phase_color);
+        plot(wbo_ang_vel_gt(i, :), 'r', 'LineWidth', 3);
         xlabel('time')
-        title('delta qddot cost', 'FontSize', 30)
+        title('local ang vel x', 'FontSize', 30)
     elseif i == 2
-        plot(wbc_time, delta_rf_cost, 'b', 'LineWidth', 3);
+        plot(wbo_ang_vel_est(i, :), 'b', 'LineWidth', 3);
         grid on
         hold on
-        min_val = min(delta_rf_cost);
-        max_val = max(delta_rf_cost);
-        plot_phase(time, state, min_val, max_val, phase_color);
+        plot(wbo_ang_vel_gt(i, :), 'r', 'LineWidth', 3);
         xlabel('time')
-        title('delta rf cost', 'FontSize', 30)
-    elseif i ==3
-        plot(wbc_time, xc_ddot_cost, 'b', 'LineWidth', 3);
+        title('local ang vel y', 'FontSize', 30)
+    elseif i ==3 
+        plot(wbo_ang_vel_est(i, :), 'b', 'LineWidth', 3);
         grid on
         hold on
-        min_val = min(xc_ddot_cost);
-        max_val = max(xc_ddot_cost);
-        plot_phase(time, state, min_val, max_val, phase_color);
+        plot(wbo_ang_vel_gt(i, :), 'r', 'LineWidth', 3);
         xlabel('time')
-        title('xc ddot cost', 'FontSize', 30) 
+        title('local ang vel z', 'FontSize', 30)
     end
 end
 linkaxes(ax,'x')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WBO Task
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(3,1,i);
+    if i == 1
+        plot(centroidal_ang_mom_est(i, :), 'b', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(centroidal_ang_mom_gt(i, :), 'r', 'LineWidth', 3);
+        xlabel('time')
+        title('centroidal ang mom x', 'FontSize', 30)
+    elseif i == 2
+        plot(centroidal_ang_mom_est(i, :), 'b', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(centroidal_ang_mom_gt(i, :), 'r', 'LineWidth', 3);
+        xlabel('time')
+        title('centroidal ang mom y', 'FontSize', 30)
+    elseif i ==3 
+        plot(centroidal_ang_mom_est(i, :), 'b', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(centroidal_ang_mom_gt(i, :), 'r', 'LineWidth', 3);
+        xlabel('time')
+        title('centroidal ang mom z', 'FontSize', 30)
+    end
+end
+linkaxes(ax,'x')
+
+[row, col] = size(local_des_wbo);
+local_des_wbo_quat = zeros(row, col);
+local_des_wbo_quat(1, :) = local_des_wbo(4, :);
+local_des_wbo_quat(2:4, :) = local_des_wbo(1:3, :);
+
+local_act_wbo_quat = zeros(row, col);
+local_act_wbo_quat(1, :) = local_act_wbo(4, :);
+local_act_wbo_quat(2:4, :) = local_act_wbo(1:3, :);
+
+local_des_wbo_euler_xyz = zeros(3, col);
+local_act_wbo_euler_xyz = zeros(3, col);
+for i = 1: col
+    local_des_wbo_euler_xyz(:, i) = quat2eul(local_des_wbo_quat(:, i).', 'xyz');
+    local_act_wbo_euler_xyz(:, i) = quat2eul(local_act_wbo_quat(:, i).', 'xyz');
+end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:6
+    subplot(3,2,i);
+    if mod(i, 2) == 1
+        j = j + 1;
+        plot(wbc_time, local_des_wbo_euler_xyz(j, :), 'r', 'LineWidth', 3);
+        hold on
+        plot(wbc_time, local_act_wbo_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_wbo_euler_xyz(j,:), local_act_wbo_euler_xyz(j,:)]);
+        max_val = max([local_des_wbo_euler_xyz(j,:), local_act_wbo_euler_xyz(j,:)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(rpy_label(j))
+    else
+        k = k + 1;
+        plot(wbc_time, local_des_wbo_ang(k, :), 'r', 'LineWidth', 3);
+         hold on
+        plot(wbc_time, local_act_wbo_ang(k, :), 'b', 'LineWidth', 2);
+        grid on
+        min_val = min([local_des_wbo_ang(j,:), local_act_wbo_ang(j,:)]);
+        max_val = max([local_des_wbo_ang(j,:), local_act_wbo_ang(j,:)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+        set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(xyz_dot_label(k))
+    end
+    sgtitle('WBO task in LOCAL', 'FontSize', 30)
+end

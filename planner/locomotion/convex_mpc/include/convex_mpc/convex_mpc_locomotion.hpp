@@ -36,6 +36,7 @@ SOFTWARE.
 #include <matlogger2/matlogger2.h>
 #include <matlogger2/utils/mat_appender.h>
 #endif
+
 /**
  * Input: Gait schedule, Gait command
  * Output: Locomotion policy (footstep, reaction wrench, centroidal states)
@@ -146,6 +147,9 @@ private:
   HermiteQuaternionCurve2 foot_swing_ori_trajectory_[2];
   double swing_time_[2];
   double swing_time_remaining_[2];
+
+  // TEST
+  Eigen::Matrix3d I_global_ = Eigen::Matrix3d::Identity();
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
   XBot::MatAppender::Ptr appender_;

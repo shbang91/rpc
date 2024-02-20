@@ -3,7 +3,7 @@ servo_dt: 0.00125
 ip_address: "tcp://127.0.0.1:5557"
 
 data_save_freq: 1
-#data_save_freq: 10
+#data_save_freq: 20
 
 stance_foot: 0 # 0: left_foot 1: right_foot
 
@@ -123,7 +123,7 @@ wbc:
       sim_com_kd : [30.]
 
       sim_base_kp : [500.]
-      sim_base_kd : [100.] # x, y will be ignored
+      sim_base_kd : [30.] # x, y will be ignored
 
       sim_kp_ik : [1.0]
       ########################################################################
@@ -148,6 +148,24 @@ wbc:
       ########################################################################
       exp_kd : [0., 0., 0.]
 
+    wbo_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_kp : [0.0, 0.0, 0.1]
+      sim_kd : [0.0, 0.0, 0.0]
+      #sim_kp : [0.0, 0.0, 0.0]
+      #sim_kd : [0.0, 0.0, 0.0]
+      sim_kp_ik : [0., 0., 1]
+
+      ########################################################################
+      ## exp params
+      ########################################################################
+      exp_kp : [0., 0., 0.]
+      exp_kd : [0., 0., 0.]
+      exp_kp_ik : [1.0, 1.0, 1.0]
+
+
     torso_ori_task:
       ########################################################################
       ## sim params
@@ -155,6 +173,10 @@ wbc:
       sim_kp : [100., 100., 100.]
       sim_kd : [20., 20., 20.]
       sim_kp_ik : [1.0, 1.0, 1.0]
+      #
+      #sim_kp : [100., 100., 100.]
+      #sim_kd : [20., 20., 20.]
+      #sim_kp_ik : [1.0, 1.0, 1.0]
 
       ########################################################################
       ## exp params
@@ -172,7 +194,7 @@ wbc:
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
       #sim_kp : [10., 10., 10., 10.,10., 10., 10., 10., 10., 10., 10., 10., 10.]
       #sim_kp : [20., 20., 20., 14., 10., 10., 10., 20., 20., 20., 14., 10., 10.]
-      sim_kp : [100., 100., 100., 70., 50., 50., 50., 100., 100., 100., 70., 50., 50.]
+      sim_kp : [100., 100., 100., 70., 100., 100., 50., 100., 100., 100., 70., 100., 100.]
       sim_kd : [10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10., 10.]
 
       #sim_kp_ik : [0.01, 0.01, 0.01,1., 1., 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 1., 1.]
@@ -260,27 +282,30 @@ wbc:
   qp:
     W_delta_qddot: 1e5 #1e5
 
-    #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    ## for DCM Walking
+    W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_left_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_right_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_left_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
     #W_delta_rf_right_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
-    #W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    W_delta_rf_left_foot_in_contact: [100, 100, 100, 100, 100, 100]
-    W_delta_rf_right_foot_in_contact: [100, 100, 100, 100, 100, 100]
+    #W_delta_rf_left_foot_in_contact: [100, 100, 100, 100, 100, 100]
+    #W_delta_rf_right_foot_in_contact: [100, 100, 100, 100, 100, 100]
 
+    ## for MPC walking
     #W_delta_rf_left_foot_in_contact_mpc: [1, 1, 1, 1000, 1000, 1000]
     #W_delta_rf_right_foot_in_contact_mpc: [1, 1, 1, 1000, 1000, 1000]
-    W_delta_rf_left_foot_in_contact_mpc: [1000, 1000, 100000, 1000, 1000, 1000]
-    W_delta_rf_right_foot_in_contact_mpc: [1000, 1000, 100000, 1000, 1000, 1000]
-    #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
-    #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
+    #W_delta_rf_left_foot_in_contact_mpc: [1000, 1000, 100000, 1000, 1000, 1000]
+    #W_delta_rf_right_foot_in_contact_mpc: [1000, 1000, 100000, 1000, 1000, 1000]
+    W_delta_rf_left_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
+    W_delta_rf_right_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
+
+    W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
+    W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
-    W_delta_rf_left_foot_in_swing: [5, 5, 5, 5, 5, 5]
-    W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
+    #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5, 5, 5]
+    #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
 
     #W_xc_ddot_in_contact: 1e7
     #W_xc_ddot_in_swing: 1e-3
@@ -322,7 +347,7 @@ state_machine:
       rf_z_max_interp_duration: 0.1
 
     single_support_swing:
-      swing_height: 0.04
+      swing_height: 0.10
 
     com_swaying:
       #amplitude: [0., 0.03, 0.] # [m]
@@ -337,7 +362,7 @@ state_machine:
 dcm_walking:
   t_additional_init_trans: 0.
   t_contact_trans: 0.3
-  t_swing: 0.6
+  t_swing: 0.5
   percentage_settle: 0.9
   alpha_ds: 0.5
 
@@ -360,11 +385,11 @@ dcm_walking:
   #alpha_ds: 0.5
 
   nominal_footwidth: 0.2025
-  nominal_forward_step: 0.1
+  nominal_forward_step: 0.4
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.05
-  n_steps: 1
+  n_steps: 2
   first_swing_leg: 1 ## 0: left leg ## 1: right leg
 
 

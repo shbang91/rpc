@@ -1,11 +1,20 @@
-file(GLOB_RECURSE sources "*.cpp")
+file(GLOB_RECURSE sources "*.cpp" "*.c")
 file(GLOB controller_headers "*.hpp")
 file(GLOB state_machines_headers "draco_state_machines/*.hpp")
-file(GLOB draco_task_headers "draco_task/*.hpp")
+file(GLOB draco_task_headers "draco_task/*.hpp" "draco_task/*.h")
 
 list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
 list(REMOVE_ITEM controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
 
+#list(REMOVE_ITEM sources
+    #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.cpp")
+#list(REMOVE_ITEM controller_headers
+    #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.hpp")
+
+#file(GLOB wbo_source
+    #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.cpp")
+#file(GLOB wbo_header
+    #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.hpp")
 if(BUILD_WITH_ZMQ_PROTOBUF)
     list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
     list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
@@ -18,6 +27,7 @@ endif()
 add_library(rpc-draco-controller SHARED ${sources} ${controller_headers}
     ${state_machines_headers} ${draco_task_headers})
 
+
 target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-wbc
                                            PUBLIC rpc-util
@@ -25,7 +35,8 @@ target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-lmpc-handler
                                            PUBLIC rpc-filter
                                            PUBLIC rpc-state-estimator
-                                           PUBLIC convex-mpc)
+                                           PUBLIC convex-mpc
+                                           )
 
 if(BUILD_WITH_ZMQ_PROTOBUF)
     target_link_libraries(rpc-draco-controller PUBLIC ${Protobuf_LIBRARIES}

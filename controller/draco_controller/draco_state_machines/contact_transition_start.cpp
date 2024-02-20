@@ -106,8 +106,9 @@ void ContactTransitionStart::FirstVisit() {
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
   task_vector.clear();
   task_vector.push_back(task_map["com_z_task"]);
-  task_vector.push_back(task_map["torso_ori_task"]);
   task_vector.push_back(task_map["com_xy_task"]);
+  task_vector.push_back(task_map["torso_ori_task"]);
+  task_vector.push_back(task_map["wbo_task"]);
   task_vector.push_back(task_map["upper_body_task"]);
   // ctrl_arch_->tci_container_->contact_vector_ = contact_vector_;
   // ctrl_arch_->tci_container_->task_vector_ = task_vector_;

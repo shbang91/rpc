@@ -1,7 +1,7 @@
 iterations_btw_mpc: 40
 
 gait:
-  x_vel_cmd: 0.4 ## 0.5
+  x_vel_cmd: 0.0 ## 0.5
   y_vel_cmd: 0.0
   yaw_rate_cmd: 0.0
 

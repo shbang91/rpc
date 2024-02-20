@@ -11,6 +11,8 @@
 
 #include <utility>
 
+#include "controller/draco_controller/draco_task/draco_wbo_task.hpp"
+
 DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
     : TCIContainer(robot) {
   util::PrettyConstructor(2, "DracoTCIContainer");
@@ -36,6 +38,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   rf_pos_task_ = new LinkPosTask(robot_, draco_link::r_foot_contact);
   lf_ori_task_ = new LinkOriTask(robot_, draco_link::l_foot_contact);
   rf_ori_task_ = new LinkOriTask(robot_, draco_link::r_foot_contact);
+  wbo_task_ = new DracoWBOTask(robot_);
 
   task_map_.clear();
   task_map_.insert(std::make_pair("joint_task", jpos_task_));
@@ -48,12 +51,14 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.insert(std::make_pair("rf_pos_task", rf_pos_task_));
   task_map_.insert(std::make_pair("lf_ori_task", lf_ori_task_));
   task_map_.insert(std::make_pair("rf_ori_task", rf_ori_task_));
+  task_map_.insert(std::make_pair("wbo_task", wbo_task_));
 
   // wbc task list for inverse kinematics
   task_vector_.clear();
   task_vector_.push_back(com_z_task_);
   task_vector_.push_back(torso_ori_task_);
   task_vector_.push_back(com_xy_task_);
+  // task_vector_.push_back(wbo_task_);
   task_vector_.push_back(upper_body_task_);
   // task_vector_.push_back(cam_task_);
   task_vector_.push_back(lf_pos_task_);
@@ -131,6 +136,7 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete rf_pos_task_;
   delete lf_ori_task_;
   delete rf_ori_task_;
+  delete wbo_task_;
   // contact
   delete lf_contact_;
   delete rf_contact_;
@@ -148,9 +154,11 @@ void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
   com_xy_task_->SetParameters(cfg_["wbc"]["task"]["com_xy_task"], b_sim);
   com_z_task_->SetParameters(cfg_["wbc"]["task"]["com_z_task"], b_sim);
   cam_task_->SetParameters(cfg_["wbc"]["task"]["cam_task"], b_sim);
+  wbo_task_->SetParameters(cfg_["wbc"]["task"]["wbo_task"], b_sim);
   torso_ori_task_->SetParameters(cfg_["wbc"]["task"]["torso_ori_task"], b_sim);
   upper_body_task_->SetParameters(cfg_["wbc"]["task"]["upper_body_task"],
                                   b_sim);
+
   lf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
   rf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
   lf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);

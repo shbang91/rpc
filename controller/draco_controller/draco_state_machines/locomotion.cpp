@@ -87,38 +87,6 @@ void Locomotion::OneStep() {
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
   task_vector.clear();
 
-  task_vector.push_back(task_map["com_z_task"]);
-  task_vector.push_back(task_map["torso_ori_task"]);
-  task_vector.push_back(task_map["com_xy_task"]);
-  task_vector.push_back(task_map["upper_body_task"]); // des task set up outside
-
-  // update desired task
-  // centroidal task
-  Eigen::Vector3d zero_vec = Eigen::Vector3d::Zero();
-  tci_container->task_map_["com_z_task"]->UpdateDesired(
-      mpc_interface->des_body_pos_.tail<1>(),
-      mpc_interface->des_body_vel_.tail<1>(), zero_vec.tail<1>());
-  tci_container->task_map_["com_xy_task"]->UpdateDesired(
-      mpc_interface->des_body_pos_.head<2>(),
-      mpc_interface->des_body_vel_.head<2>(), Eigen::Vector2d::Zero());
-  Eigen::Quaterniond des_body_quat = util::EulerZYXtoQuat(
-      mpc_interface->des_body_rpy_[0], mpc_interface->des_body_rpy_[1],
-      mpc_interface->des_body_rpy_[2]);
-  Eigen::VectorXd des_body_quat_vec(4);
-  des_body_quat_vec << des_body_quat.x(), des_body_quat.y(), des_body_quat.z(),
-      des_body_quat.w();
-  tci_container->task_map_["torso_ori_task"]->UpdateDesired(
-      des_body_quat_vec, mpc_interface->des_body_ang_vel_,
-      Eigen::Vector3d::Zero());
-  // std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
-  //<< std::endl;
-  // std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
-  //<< std::endl;
-  // std::cout << "lfoot rf: " << mpc_interface->des_lf_wrench_.transpose()
-  //<< std::endl;
-  // std::cout << "rfoot rf: " << mpc_interface->des_rf_wrench_.transpose()
-  //<< std::endl;
-
   // TODO:update contact state for controller
   for (int leg = 0; leg < 2; leg++) {
     if (mpc_interface->contact_state_[leg] > 0.0) // in contact
@@ -130,7 +98,7 @@ void Locomotion::OneStep() {
             true; // TODO(change this):timing based contact switch
         tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_lf_wrench_);
-        tci_container->contact_map_["lf_contact"]->SetMaxFz(500.0);
+        tci_container->contact_map_["lf_contact"]->SetMaxFz(600.0);
 
         // task
         // task_vector.push_back(task_map["lf_pos_task"]);
@@ -144,7 +112,7 @@ void Locomotion::OneStep() {
             true; // TODO(change this):timing based contact switch
         tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_rf_wrench_);
-        tci_container->contact_map_["rf_contact"]->SetMaxFz(500.0);
+        tci_container->contact_map_["rf_contact"]->SetMaxFz(600.0);
         // task
         // task_vector.push_back(task_map["rf_pos_task"]);
         // task_vector.push_back(task_map["rf_ori_task"]);
@@ -191,6 +159,40 @@ void Locomotion::OneStep() {
       }
     }
   }
+
+  task_vector.push_back(task_map["com_z_task"]);
+  task_vector.push_back(task_map["com_xy_task"]);
+  task_vector.push_back(task_map["torso_ori_task"]);
+  // task_vector.push_back(task_map["wbo_task"]);
+  task_vector.push_back(task_map["upper_body_task"]); // des task set up outside
+
+  // update desired task
+  // centroidal task
+  Eigen::Vector3d zero_vec = Eigen::Vector3d::Zero();
+  tci_container->task_map_["com_z_task"]->UpdateDesired(
+      mpc_interface->des_body_pos_.tail<1>(),
+      mpc_interface->des_body_vel_.tail<1>(), zero_vec.tail<1>());
+  tci_container->task_map_["com_xy_task"]->UpdateDesired(
+      mpc_interface->des_body_pos_.head<2>(),
+      mpc_interface->des_body_vel_.head<2>(), Eigen::Vector2d::Zero());
+  Eigen::Quaterniond des_body_quat = util::EulerZYXtoQuat(
+      mpc_interface->des_body_rpy_[0], mpc_interface->des_body_rpy_[1],
+      mpc_interface->des_body_rpy_[2]);
+  Eigen::VectorXd des_body_quat_vec(4);
+  des_body_quat_vec << des_body_quat.x(), des_body_quat.y(), des_body_quat.z(),
+      des_body_quat.w();
+  tci_container->task_map_["torso_ori_task"]->UpdateDesired(
+      des_body_quat_vec, mpc_interface->des_body_ang_vel_,
+      Eigen::Vector3d::Zero());
+  // std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
+  //<< std::endl;
+  // std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
+  //<< std::endl;
+  // std::cout << "lfoot rf: " << mpc_interface->des_lf_wrench_.transpose()
+  //<< std::endl;
+  // std::cout << "rfoot rf: " << mpc_interface->des_rf_wrench_.transpose()
+  //<< std::endl;
+
   // TEST
   // std::cout << "===================================================="
   //<< std::endl;

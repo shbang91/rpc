@@ -18,6 +18,8 @@
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
+#include "controller/draco_controller/draco_task/draco_wbo_task.hpp"
+
 DracoController::DracoController(DracoTCIContainer *tci_container,
                                  PinocchioRobotSystem *robot)
     : tci_container_(tci_container), robot_(robot),
@@ -497,6 +499,32 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->DesiredLocalVel());
     logger_->add("local_act_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->CurrentLocalVel());
+
+    // ========================================================================
+    // wbo task test
+    // ========================================================================
+    logger_->add("local_des_wbo",
+                 tci_container_->task_map_["wbo_task"]->DesiredLocalPos());
+    logger_->add("local_act_wbo",
+                 tci_container_->task_map_["wbo_task"]->CurrentLocalPos());
+    logger_->add("local_des_wbo_ang",
+                 tci_container_->task_map_["wbo_task"]->DesiredLocalVel());
+    logger_->add("local_act_wbo_ang",
+                 tci_container_->task_map_["wbo_task"]->CurrentLocalVel());
+    logger_->add("wbo_ang_vel_gt", static_cast<DracoWBOTask *>(
+                                       tci_container_->task_map_["wbo_task"])
+                                       ->local_wbo_ang_vel_gt_);
+    logger_->add("wbo_ang_vel_est", static_cast<DracoWBOTask *>(
+                                        tci_container_->task_map_["wbo_task"])
+                                        ->local_wbo_ang_vel_est_);
+    logger_->add(
+        "centroidal_ang_mom_gt",
+        static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
+            ->centroidal_ang_mom_gt_);
+    logger_->add(
+        "centroidal_ang_mom_est",
+        static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
+            ->centroidal_ang_mom_est_);
   }
 
 #endif

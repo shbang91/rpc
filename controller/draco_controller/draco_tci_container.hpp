@@ -23,6 +23,8 @@ private:
   Task *lf_ori_task_;
   Task *rf_ori_task_;
 
+  Task *wbo_task_;
+
   Contact *lf_contact_;
   Contact *rf_contact_;
 

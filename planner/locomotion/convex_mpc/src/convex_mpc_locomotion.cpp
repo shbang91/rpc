@@ -138,11 +138,11 @@ void ConvexMPCLocomotion::Solve() {
   if (b_first_visit_) {
     // for body pos task
     des_body_pos_in_world_[0] =
-        // robot_->GetBodyPos()[0]; // TODO: com xy vs body com xy
-        robot_->GetRobotComPos()[0]; // TODO: com xy vs body com xy
+        robot_->GetBodyPos()[0]; // TODO: com xy vs body com xy
+    // robot_->GetRobotComPos()[0]; // TODO: com xy vs body com xy
     des_body_pos_in_world_[1] =
-        // robot_->GetBodyPos()[1]; // TODO: com xy vs body com xy
-        robot_->GetRobotComPos()[1]; // TODO: com xy vs body com xy
+        robot_->GetBodyPos()[1]; // TODO: com xy vs body com xy
+    // robot_->GetRobotComPos()[1]; // TODO: com xy vs body com xy
 
     for (int i = 0; i < 2; ++i) {
       // initialize swing foot trajectory
@@ -243,16 +243,16 @@ void ConvexMPCLocomotion::Solve() {
     double swing_state = swing_states[foot];
 
     // TODO:clean this mess
-    if (b_first_visit_) {
-      if (foot == 0) {
-        contact_state = 0.5;
-        swing_state = 0.0;
-      } else {
-        contact_state = 0.0;
-        swing_state = 0.001;
-        b_first_visit_ = false;
-      }
-    }
+    // if (b_first_visit_) {
+    // if (foot == 0) {
+    // contact_state = 0.5;
+    // swing_state = 0.0;
+    //} else {
+    // contact_state = 0.0;
+    // swing_state = 0.001;
+    // b_first_visit_ = false;
+    //}
+    //}
 
     if (swing_state > 0) {
       // foot is in swing
@@ -361,8 +361,34 @@ void ConvexMPCLocomotion::Solve() {
 
   // mpc iteration counter
   iteration_counter_++;
+
 // TEST
 #if B_USE_MATLOGGER
+  Eigen::Vector3d actual_cam = robot_->GetHg().head<3>();
+  Eigen::Vector3d approx_cam =
+      I_global_ *
+      robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).head<3>();
+  Eigen::Vector3d cam_diff = actual_cam - approx_cam;
+  Eigen::Vector3d diff_percent = cam_diff.array() / approx_cam.array();
+  // std::cout << "======================================================"
+  //<< std::endl;
+  // std::cout << "actual cam: " << actual_cam.transpose() << std::endl;
+  // std::cout << "approx cam: " << approx_cam.transpose() << std::endl;
+  // std::cout << "cam diff percent: " << diff_percent.transpose() << std::endl;
+  // std::cout << "Ag matrix: " << robot_->GetAg() << std::endl;
+
+  Eigen::Matrix3d I_base = robot_->GetAg().block<3, 3>(0, 3);
+  Eigen::Matrix3d I_com = robot_->GetIg().block<3, 3>(0, 0);
+  // std::cout << "======================================" << std::endl;
+  // std::cout << "I_base: " << std::endl;
+  // std::cout << I_base << std::endl;
+  // std::cout << "I_com: " << std::endl;
+  // std::cout << I_com << std::endl;
+
+  // logger_->add("act_cam", actual_cam);
+  // logger_->add("approx_cam", approx_cam);
+  // logger_->add("I_base", I_base.diagonal());
+  // logger_->add("I_com", I_com.diagonal());
 
 #endif
   // TEST
@@ -376,16 +402,16 @@ void ConvexMPCLocomotion::_InitializeConvexMPC() {
   Eigen::MatrixXd Qvv = Eigen::MatrixXd::Zero(6, 6);
   Eigen::MatrixXd Quu = Eigen::MatrixXd::Zero(6, 6);
 
-  Qqq(0, 0) = 1000;    // roll
-  Qqq(1, 1) = 1000;    // pitch
-  Qqq(2, 2) = 1000;    // yaw
-  Qqq(3, 3) = 1000;    // x
-  Qqq(4, 4) = 1000;    // y
-  Qqq(5, 5) = 1000000; // z
+  Qqq(0, 0) = 1000;      // roll
+  Qqq(1, 1) = 1000;      // pitch
+  Qqq(2, 2) = 100000;    // yaw
+  Qqq(3, 3) = 1000;      // x
+  Qqq(4, 4) = 1000;      // y
+  Qqq(5, 5) = 100000000; // z
 
   Qvv(0, 0) = 10;
   Qvv(1, 1) = 10;
-  Qvv(2, 2) = 10;
+  Qvv(2, 2) = 100;
   Qvv(3, 3) = 10;
   Qvv(4, 4) = 10;
   Qvv(5, 5) = 1000;
@@ -395,7 +421,7 @@ void ConvexMPCLocomotion::_InitializeConvexMPC() {
   Quu(2, 2) = 5e-6;
   Quu(3, 3) = 1e-6;
   Quu(4, 4) = 1e-6;
-  Quu(5, 5) = 1e-6;
+  Quu(5, 5) = 1e-7;
 
   cost_function_ =
       std::make_shared<CostFunction>(Qqq, Qvv, Quu); // TODO: make yaml
@@ -412,7 +438,7 @@ void ConvexMPCLocomotion::_InitializeConvexMPC() {
   // wrnech cone constraint (TODO: this params should be set outside)
   double mu = 0.5;
   double fz_min = 20.0;
-  double fz_max = 500.0;
+  double fz_max = 600.0;
   double foot_half_length = 0.08;
   double foot_half_width = 0.04;
   friction_cone_ = std::make_shared<FrictionCone>(
@@ -435,6 +461,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   //=====================================================
   // set body inertia
   Eigen::Matrix3d I_global = robot_->GetIg().topLeftCorner<3, 3>();
+  I_global_ = I_global;
   Eigen::Matrix3d global_R_local = robot_->GetBodyOriRot();
   Eigen::Matrix3d I_local =
       global_R_local.transpose() * I_global * global_R_local;
@@ -463,8 +490,8 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     // when not standing
 
     // initial state compensation strategy
-    // Eigen::Vector3d curr_body_pos_in_world = robot_->GetBodyPos();
-    Eigen::Vector3d curr_body_pos_in_world = robot_->GetRobotComPos();
+    Eigen::Vector3d curr_body_pos_in_world = robot_->GetBodyPos();
+    // Eigen::Vector3d curr_body_pos_in_world = robot_->GetRobotComPos();
 
     const double max_pos_error = 0.1;
     double x_start = des_body_pos_in_world_[0];
@@ -488,7 +515,10 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     initial_state.head<3>() =
         Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1], yaw_des_);
     initial_state.segment<3>(3) =
-        Eigen::Vector3d(x_start, y_start, des_body_height_);
+        // Eigen::Vector3d(x_start, y_start, des_body_height_);
+        Eigen::Vector3d(x_start, y_start, curr_body_pos_in_world[2]);
+    // std::cout << "-=------------------------------------------" << std::endl;
+    // std::cout << "des body height: " << des_body_height_ << std::endl;
     initial_state.segment<3>(6) = Eigen::Vector3d(0.0, 0.0, yaw_rate_cmd_);
     initial_state.segment<3>(9) = Eigen::Vector3d(
         des_body_vel_in_world_[0], des_body_vel_in_world_[1], 0.0);
@@ -496,6 +526,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     for (int i = 0; i < n_horizon_ + 1; ++i) {
       // roll out desired trajectory
       des_state_traj[i] = initial_state;
+      des_state_traj[i][5] = des_body_height_;
 
       if (i == 0) {
         // start at current position
@@ -527,8 +558,8 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   Eigen::Vector3d com_pos = robot_->GetRobotComPos();
   com_pos[2] = des_body_height_;
   for (int leg(0); leg < 2; leg++) {
-    // feet_pos_relative_to_body[leg] = foot_pos_[leg] - robot_->GetBodyPos();
-    feet_pos_relative_to_body[leg] = foot_pos_[leg] - com_pos;
+    feet_pos_relative_to_body[leg] = foot_pos_[leg] - robot_->GetBodyPos();
+    // feet_pos_relative_to_body[leg] = foot_pos_[leg] - com_pos;
   }
 
   // set initial state // TODO: check this is correct

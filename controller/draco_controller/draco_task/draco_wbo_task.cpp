@@ -3,7 +3,7 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_task/draco_wbo_task.hpp"
 
-DracoWBOTask::DracoWBOTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
+DracoWBOTask::DracoWBOTask(PinocchioRobotSystem *robot) : Task(robot, 1) {
 
   util::PrettyConstructor(3, "DracoWBOTask");
 
@@ -11,8 +11,31 @@ DracoWBOTask::DracoWBOTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
 
   des_pos_.resize(4);
   des_pos_.setZero();
+  des_vel_.resize(3);
+  des_vel_.setZero();
   pos_.resize(4);
   pos_.setZero();
+  vel_.resize(3);
+  vel_.setZero();
+
+  pos_err_.resize(3);
+  pos_err_.setZero();
+  vel_err_.resize(3);
+  vel_err_.setZero();
+
+  local_des_pos_.resize(4);
+  local_des_pos_.setZero();
+  local_des_vel_.resize(3);
+  local_des_vel_.setZero();
+  local_pos_.resize(4);
+  local_pos_.setZero();
+  local_vel_.resize(3);
+  local_vel_.setZero();
+
+  local_pos_err_.resize(dim_);
+  local_pos_err_.setZero();
+  local_vel_err_.resize(dim_);
+  local_vel_err_.setZero();
 
   num_input_ = Q_xyz_func_n_in();
   dim_per_input_ = 18; // reduced joint config space
@@ -124,6 +147,8 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
+  local_des_pos_ << des_quat.coeffs();
+  local_des_vel_ = des_vel_;
 
   Eigen::VectorXd q_a = _GetJointPosReduced();
   Eigen::Vector3d base_Q_WBO_xyz = _LocalWboQuatXYZ(q_a);
@@ -161,6 +186,8 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   // pos_ << world_Q_WBO.normalized().coeffs();
   pos_ << base_Q_WBO.normalized().coeffs();
 
+  local_pos_ = pos_;
+
   // Eigen::Quaterniond quat_err = des_quat * world_Q_WBO.inverse();
   Eigen::Quaterniond quat_err = des_quat * base_Q_WBO.inverse();
   Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
@@ -174,7 +201,21 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   vel_ = world_R_base_.transpose() * avg_vel.head<3>();
   vel_err_ = des_vel_ - vel_;
 
-  op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+  local_vel_ = vel_;
+
+  // yaw error
+  local_pos_err_[0] = pos_err_[2];
+
+  Eigen::Vector3d op_cmd =
+      kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
+
+  // std::cout << "----------------------------------" << std::endl;
+  // std::cout << "wbo pos err: " << pos_err_.transpose() << std::endl;
+  // std::cout << "wbo vel err: " << vel_err_.transpose() << std::endl;
+  // std::cout << "wbo op cmd: " << op_cmd.transpose() << std::endl;
+
+  // yaw command
+  op_cmd_[0] = op_cmd[2];
 }
 
 void DracoWBOTask::UpdateJacobian() {
@@ -185,10 +226,12 @@ void DracoWBOTask::UpdateJacobian() {
   // world_R_base_ * wbo_local_jacobian_.col(i);
   //}
   for (int i = 0; i < actuated_joint_idx_.size(); ++i) {
-    jacobian_.col(num_float + actuated_joint_idx_[i]) =
-        wbo_local_jacobian_.col(i);
+    // jacobian_.col(num_float + actuated_joint_idx_[i]) =
+    // wbo_local_jacobian_.col(i);
+    jacobian_(0, num_float + actuated_joint_idx_[i]) =
+        wbo_local_jacobian_(2, i);
   }
-  ModifyJacobian(ignored_joint_idx_, num_float);
+  // ModifyJacobian(ignored_joint_idx_, num_float);
 }
 
 // TODO: what is the drift term?
