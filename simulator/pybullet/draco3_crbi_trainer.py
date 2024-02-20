@@ -62,6 +62,9 @@ SWING_TIME_LB, SWING_TIME_UB = 0.35, 0.75
 
 BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 
+# Thresholds
+MAX_HOL_ERROR = 0.1     # [rad] discrepancy between proximal and distal joints
+
 ## Dataset Generation
 N_CPU_DATA_GEN = 5
 N_MOTION_PER_LEG = 1e3
@@ -279,8 +282,6 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
             rfoot_fin_pos = np.copy(lfoot_ini_iso[:3, 3]) + w_R_lf @ np.random.uniform(
                 RFOOT_POS_LB, RFOOT_POS_UB)
 
-            # TODO add foot/leg self-collision check
-
             stance_foot_rpy = util.rot_to_rpy(lfoot_ini_iso[0:3, 0:3])
             rfoot_fin_ea = np.random.uniform(0.5, FOOT_EA_UB)
             rfoot_fin_rot = util.euler_to_rot([0, 0, stance_foot_rpy[2] + rfoot_fin_ea[2]])
@@ -312,8 +313,6 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
             w_R_rf = rfoot_ini_iso[0:3, 0:3]
             lfoot_fin_pos = np.copy(rfoot_ini_iso[:3, 3]) + w_R_rf @ np.random.uniform(
                 LFOOT_POS_LB, LFOOT_POS_UB)
-
-            # TODO add foot/leg self-collision check
 
             stance_foot_rpy = util.rot_to_rpy(rfoot_ini_iso[0:3, 0:3])
             lfoot_fin_ea = np.random.uniform(0., FOOT_EA_UB)
@@ -444,7 +443,7 @@ def _do_generate_data(n_data,
                 des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
                 task_dict['lfoot_task'].set_target(des_lfoot_iso)
 
-                #TODO: or set from configuration
+                # TODO: or set from configuration
                 task_dict['posture_task'].set_target(nominal_configuration)
 
                 # update meshcat visualizer
@@ -469,11 +468,21 @@ def _do_generate_data(n_data,
                         with anim.at_frame(torso_frame, frame_idx) as frame:
                             frame.set_transform(T_w_base)
 
-
                 # solve ik
                 # Compute velocity and integrate it into next configuration
                 velocity = solve_ik(configuration, tasks, dt, solver=solver)
                 configuration.integrate_inplace(velocity, dt)
+
+                # Compute all the collisions
+                pin.computeCollisions(robot.model, robot.data, geom_model, geom_data,
+                                      configuration.q, False)
+
+                # Print the status of collision for all collision pairs
+                for k in range(len(geom_model.collisionPairs)):
+                    cr = geom_data.collisionResults[k]
+                    cp = geom_model.collisionPairs[k]
+                    print("collision pair:", cp.first, ",", cp.second, "- collision:",
+                          "Yes" if cr.isCollision() else "No")
 
                 # Visualize result at fixed FPS
                 if VISUALIZE:
@@ -792,7 +801,7 @@ if __name__ == "__main__":
     # Case 2: Sample Motions - long footsteps (left side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
-    CASE = 0
+    CASE = 3
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 0:
@@ -1008,6 +1017,7 @@ if __name__ == "__main__":
         # Left Foot Stance, Right Foot Swing
         print("-" * 80)
         print("Case 3: Sample Motions - long CCW turns")
+        q_prev_step = q0.copy()
 
         # place base above ankles
         nominal_base_iso.translation[0] = np.array([
@@ -1021,7 +1031,7 @@ if __name__ == "__main__":
         FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
 
         # Reduce stepping outwards (relative to stance leg, in stance coordinates)
-        RFOOT_POS_LB = np.array([0.1, -0.25, 0.])
+        RFOOT_POS_LB = np.array([0.1, -0.3, 0.])
         RFOOT_POS_UB = np.array([0.2, -0.15, 0.])
         LFOOT_POS_LB = np.array([-0.15, 0.1, 0.])
         LFOOT_POS_UB = np.array([0.15, 0.25, 0.])
@@ -1036,7 +1046,9 @@ if __name__ == "__main__":
 
         swing_leg = "right_leg"
         frame_idx = int(0)
-        for n_turn in range(N_TURN_STEPS):
+
+        n_turn = int(0)
+        while n_turn < N_TURN_STEPS:
             swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
                 nominal_base_iso, nominal_lf_iso, nominal_rf_iso, "ccw", swing_leg)
 
@@ -1050,7 +1062,10 @@ if __name__ == "__main__":
             dt = rate.period
             if VIDEO_RECORD:    # update frame rate
                 anim.default_framerate = int(1 / dt)
-            for s in np.linspace(0, 1, N_DATA_PER_MOTION):
+
+            s = 0.
+            b_terminate = False
+            while s < 1.:
                 base_pos = base_pos_curve.evaluate(s)
                 base_quat = base_quat_curve.evaluate(s)
 
@@ -1078,8 +1093,43 @@ if __name__ == "__main__":
                 #TODO: or set from configuration
                 task_dict['posture_task'].set_target(q0)
 
-                # update meshcat visualizer
+                # solve ik
+                # Compute velocity and integrate it into next configuration
+                velocity = solve_ik(configuration, tasks, dt, solver=solver)
+                configuration.integrate_inplace(velocity, dt)
+
+                # Compute all the collisions
+                pin.computeCollisions(robot.model, robot.data, geom_model, geom_data,
+                                      configuration.q, False)
+
+                # Check for collisions at each time step
+                for k in range(len(geom_model.collisionPairs)):
+                    cr = geom_data.collisionResults[k]
+                    cp = geom_model.collisionPairs[k]
+                    if cr.isCollision():
+                        print("Collision between:",
+                              geom_model.geometryObjects[cp.first].name, ",",
+                              geom_model.geometryObjects[cp.second].name,
+                              ". Resampling step.")
+                        b_terminate = True
+                        break
+
+                # check that rolling contact joint constraint hasn't been violated
+                lk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + lknee_jp_idx] -
+                                     configuration.q[NUM_FLOATING_BASE + lknee_jd_idx]) > MAX_HOL_ERROR
+                rk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + rknee_jp_idx] -
+                                           configuration.q[NUM_FLOATING_BASE + rknee_jd_idx]) > MAX_HOL_ERROR
+                if lk_cnstr_violated or rk_cnstr_violated:
+                    print("Rolling contact joint constraint violated. Resampling step.")
+                    b_terminate = True
+
+                if b_terminate:
+                    break
+
+                # Visualize result at fixed FPS
                 if VISUALIZE:
+                    viz.display(configuration.q)
+
                     #### base
                     T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
                                                   base_pos)
@@ -1093,6 +1143,7 @@ if __name__ == "__main__":
                     rfoot_contact_frame.set_transform(T_w_rf)
                     torso_frame.set_transform(T_w_base)
                     if VIDEO_RECORD:
+                        # update visualized frames
                         with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
                             frame.set_transform(T_w_lf)
                         with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
@@ -1100,15 +1151,7 @@ if __name__ == "__main__":
                         with anim.at_frame(torso_frame, frame_idx) as frame:
                             frame.set_transform(T_w_base)
 
-                # solve ik
-                # Compute velocity and integrate it into next configuration
-                velocity = solve_ik(configuration, tasks, dt, solver=solver)
-                configuration.integrate_inplace(velocity, dt)
-
-                # Visualize result at fixed FPS
-                if VISUALIZE:
-                    viz.display(configuration.q)
-                    if VIDEO_RECORD:
+                        # update robot configuration
                         with anim.at_frame(viz.viewer, frame_idx) as frame:
                             display_visualizer_frames(viz, frame, pin.GeometryType.VISUAL)
                             display_visualizer_frames(viz, frame, pin.GeometryType.COLLISION)
@@ -1117,12 +1160,20 @@ if __name__ == "__main__":
                 q0 = configuration.q
                 rate.sleep()
                 t += dt
+                s += 1. / N_DATA_PER_MOTION
                 frame_idx += 1
+
+            if b_terminate:
+                b_terminate = False
+                configuration.q = q_prev_step
+                q0 = q_prev_step
+                continue
 
             # update nominal poses
             nominal_lf_iso = pin.SE3(lfoot_fin_iso)
             nominal_rf_iso = pin.SE3(rfoot_fin_iso)
             nominal_base_iso = pin.SE3(base_fin_iso)
+            q_prev_step = configuration.q
 
             # switch stance leg
             if swing_leg == "right_leg":
@@ -1130,5 +1181,10 @@ if __name__ == "__main__":
             else:
                 swing_leg = "right_leg"
 
+            # successful turning step without collision, continue to next step
+            n_turn += 1
+
+        if VIDEO_RECORD:
+            viz.viewer.set_animation(anim, play=False)
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)

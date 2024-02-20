@@ -64,6 +64,7 @@
     <passive_joint name="r_knee_fe_jp" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="l_ankle_fe_link" link2="l_ankle_ie_link" reason="Adjacent" />
+    <disable_collisions link1="l_knee_fe_ld" link2="l_ankle_ie_link" reason="Adjacent" />
     <disable_collisions link1="l_ankle_fe_link" link2="l_camera" reason="Never" />
     <disable_collisions link1="l_ankle_fe_link" link2="l_hip_aa_link" reason="Never" />
     <disable_collisions link1="l_ankle_fe_link" link2="l_hip_fe_link" reason="Never" />
@@ -321,6 +322,7 @@
     <disable_collisions link1="neck_pitch_link" link2="r_shoulder_fe_link" reason="Never" />
     <disable_collisions link1="neck_pitch_link" link2="torso_link" reason="Adjacent" />
     <disable_collisions link1="r_ankle_fe_link" link2="r_ankle_ie_link" reason="Adjacent" />
+    <disable_collisions link1="r_knee_fe_ld" link2="r_ankle_ie_link" reason="Adjacent" />
     <disable_collisions link1="r_ankle_fe_link" link2="r_hip_aa_link" reason="Never" />
     <disable_collisions link1="r_ankle_fe_link" link2="r_hip_fe_link" reason="Never" />
     <disable_collisions link1="r_ankle_fe_link" link2="r_hip_ie_link" reason="Never" />
