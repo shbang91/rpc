@@ -11,6 +11,7 @@ import copy
 import shutil
 import matplotlib.pyplot as plt
 import numpy as np
+
 np.set_printoptions(precision=3)
 
 from tqdm import tqdm
@@ -37,14 +38,13 @@ import torch
 import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
-
 ## Configs
 VISUALIZE = True
 VIDEO_RECORD = True
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
-INITIAL_POS_WORLD_TO_BASEJOINT = [0, 0, 1.5 - 0.761]    # 0.761, 0.681
+INITIAL_POS_WORLD_TO_BASEJOINT = [0, 0, 1.5 - 0.761]  # 0.761, 0.681
 INITIAL_QUAT_WORLD_TO_BASEJOINT = [0., 0., 0., 1.]
 
 ## Motion Boundaries
@@ -127,7 +127,6 @@ def display_visualizer_frames(meshcat_visualizer, frame, pin_geom_type=None):
 
 
 def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.1):
-
     swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
     min_y_distance_btw_foot = abs(nominal_lf_iso.translation[1] - nominal_rf_iso.translation[1])
     # TODO remove samples with self-collisions?
@@ -256,7 +255,6 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.
 
 
 def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing_leg="right_leg"):
-
     swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
     if cw_or_ccw == "cw":
         # Sample rfoot config
@@ -512,11 +510,12 @@ def _do_generate_data(n_data,
                         rf_pos - base_pos,
                         base_rpy_lf,
                         base_rpy_rf
-                        ],
+                    ],
                         axis=0))
                 data_y.append(
                     np.array([
-                        rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1], rot_inertia_in_body[2, 2], rot_inertia_in_body[0, 1],
+                        rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1], rot_inertia_in_body[2, 2],
+                        rot_inertia_in_body[0, 1],
                         rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
                     ]))
                 pbar.update(1)
@@ -560,7 +559,7 @@ def save_weights_to_yaml(pytorch_model, path):
             mlp_model['w' + str(l_id)] = l.weight.tolist()
             mlp_model['b' + str(l_id)] = l.bias.reshape(
                 1, l.weight.shape[0]).tolist()
-        else:   # is activation function
+        else:  # is activation function
             # Activation Fn Idx: None: 0, Tanh: 1
             if l_id == (len(pytorch_model.layers) - 1):
                 mlp_model['act_fn' + str(l_id)] = 0
@@ -589,12 +588,12 @@ def generate_casadi_func(pytorch_model,
     inp = vertcat(l_minus_b, r_minus_b)
     normalized_inp = (inp - input_mean) / input_std  # (6, 1)
     # MLP (Somewhat manual)
-    w0 = pytorch_model.layers[0].weight.detach().numpy()        # (6, 64)
-    b0 = pytorch_model.layers[0].bias.detach().reshape(-1, 1).numpy()   # (1, 64)
-    w1 = pytorch_model.layers[2].weight.detach().numpy()        # (64, 64)
-    b1 = pytorch_model.layers[2].bias.detach().reshape(-1, 1).numpy()   # (1, 64)
-    w2 = pytorch_model.layers[4].weight.detach().numpy()        # (64, 6)
-    b2 = pytorch_model.layers[4].bias.detach().reshape(-1, 1).numpy()   # (6)
+    w0 = pytorch_model.layers[0].weight.detach().numpy()  # (6, 64)
+    b0 = pytorch_model.layers[0].bias.detach().reshape(-1, 1).numpy()  # (1, 64)
+    w1 = pytorch_model.layers[2].weight.detach().numpy()  # (64, 64)
+    b1 = pytorch_model.layers[2].bias.detach().reshape(-1, 1).numpy()  # (1, 64)
+    w2 = pytorch_model.layers[4].weight.detach().numpy()  # (64, 6)
+    b2 = pytorch_model.layers[4].bias.detach().reshape(-1, 1).numpy()  # (6)
 
     output = mtimes(
         w2, tanh(mtimes(w1, tanh(mtimes(w0, normalized_inp) + b0)) + b1)
@@ -653,8 +652,8 @@ def load_turn_pink_config():
 
 
 if __name__ == "__main__":
-    MOTION_TYPE = MotionType.STEP       # consider step by default
-    NUM_FLOATING_BASE = 5   # pinocchio model
+    MOTION_TYPE = MotionType.STEP  # consider step by default
+    NUM_FLOATING_BASE = 5  # pinocchio model
 
     # initialize robot model
     urdf_path = '/robot_model/draco/draco3_modified_collisions.urdf'
@@ -808,7 +807,7 @@ if __name__ == "__main__":
         # Generate Dataset
         print("-" * 80)
         print("Case 0: Train CRBI Regressor w/multiprocessing")
-        VISUALIZE = False       # can't do this with multiprocessing
+        VISUALIZE = False  # can't do this with multiprocessing
         VIDEO_RECORD = False
         min_step_length = 0.5
 
@@ -853,9 +852,9 @@ if __name__ == "__main__":
 
         # Load test / train data
         train_loader = torch_utils.DataLoader(dataset=train_dataset,
-                                             batch_size=BATCH_SIZE,
-                                             shuffle=True,
-                                             num_workers=4)
+                                              batch_size=BATCH_SIZE,
+                                              shuffle=True,
+                                              num_workers=4)
         test_loader = torch_utils.DataLoader(dataset=test_dataset,
                                              batch_size=BATCH_SIZE,
                                              shuffle=False,
@@ -946,7 +945,7 @@ if __name__ == "__main__":
                 ], 'b')
                 axes[i].grid(True)
             else:
-                axes[i] = plt.subplot(6, 1, i + 1, sharex=axes[i-1])
+                axes[i] = plt.subplot(6, 1, i + 1, sharex=axes[i - 1])
                 axes[i].plot(iter_list,
                              [gt_inertia[i] for gt_inertia in gt_inertia_list],
                              'r')
@@ -1007,7 +1006,7 @@ if __name__ == "__main__":
         print("Case 2: Sample Motions - long footsteps (left side)")
 
         if VIDEO_RECORD:
-            anim = meshcat.animation.Animation(default_framerate=1/DT)  # TODO fix rate
+            anim = meshcat.animation.Animation(default_framerate=1 / DT)  # TODO fix rate
         _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left", 0.5)
 
         if VIDEO_RECORD:
@@ -1060,7 +1059,7 @@ if __name__ == "__main__":
             t = 0.
             rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
             dt = rate.period
-            if VIDEO_RECORD:    # update frame rate
+            if VIDEO_RECORD:  # update frame rate
                 anim.default_framerate = int(1 / dt)
 
             s = 0.
@@ -1090,7 +1089,7 @@ if __name__ == "__main__":
                 des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
                 task_dict['lfoot_task'].set_target(des_lfoot_iso)
 
-                #TODO: or set from configuration
+                # TODO: or set from configuration
                 task_dict['posture_task'].set_target(q0)
 
                 # solve ik
