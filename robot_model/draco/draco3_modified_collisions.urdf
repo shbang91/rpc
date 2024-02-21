@@ -255,7 +255,7 @@
 
   <!--=============================== l_wrist_mount (l_sake_gripper_link) ===========================-->
   <joint name="l_wrist_mount" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 1.57079" xyz="0 0 0"/>
     <parent link="l_wrist_pitch_link"/>
     <child link="l_sake_gripper_link"/>
   </joint>
@@ -484,7 +484,7 @@
 
   <!--=============================== r_wrist_mount (r_sake_gripper_link) ===========================-->
   <joint name="r_wrist_mount" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="0 0 -1.57079" xyz="0 0 0"/>
     <parent link="r_wrist_pitch_link"/>
     <child link="r_sake_gripper_link"/>
   </joint>
