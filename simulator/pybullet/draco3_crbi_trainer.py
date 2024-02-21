@@ -3,6 +3,8 @@ import sys
 
 import meshcat
 
+from plot.data_saver import DataSaver
+
 cwd = os.getcwd()
 sys.path.append(cwd)
 import time
@@ -39,8 +41,8 @@ import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
-VISUALIZE = True
-VIDEO_RECORD = True
+VISUALIZE = False
+VIDEO_RECORD = False
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
@@ -67,8 +69,8 @@ MAX_HOL_ERROR = 0.1     # [rad] discrepancy between proximal and distal joints
 
 ## Dataset Generation
 N_CPU_DATA_GEN = 5
-N_MOTION_PER_LEG = 1e3
 N_DATA_PER_MOTION = 30
+N_MOTION_PER_LEG = 2100 / N_DATA_PER_MOTION
 N_TURN_STEPS = 4
 
 N_LAYER_OUTPUT = [64, 64]
@@ -77,6 +79,7 @@ MOMENTUM = 0.
 N_EPOCH = 20
 BATCH_SIZE = 32
 
+data_saver = DataSaver('draco3_crbi_fwd_step_joints.pkl')
 
 class MotionType(Enum):
     STEP = 1
@@ -142,7 +145,8 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.
 
         # Sample lfoot config
         lfoot_ini_pos = np.copy(nominal_lf_iso)[0:3, 3] + np.random.uniform(
-            LFOOT_POS_LB, LFOOT_POS_UB)
+            np.array([0., LFOOT_POS_LB[1], LFOOT_POS_LB[2]]),
+            np.array([0., LFOOT_POS_UB[1], LFOOT_POS_UB[2]]))
         lfoot_ini_ea = np.random.uniform(FOOT_EA_LB, FOOT_EA_UB)
         lfoot_ini_rot = util.euler_to_rot(lfoot_ini_ea)
         lfoot_ini_iso = liegroup.RpToTrans(lfoot_ini_rot, lfoot_ini_pos)
@@ -470,17 +474,19 @@ def _do_generate_data(n_data,
                 # Compute velocity and integrate it into next configuration
                 velocity = solve_ik(configuration, tasks, dt, solver=solver)
                 configuration.integrate_inplace(velocity, dt)
+                data_saver.add('q', configuration.q)
+                data_saver.advance()
 
                 # Compute all the collisions
                 pin.computeCollisions(robot.model, robot.data, geom_model, geom_data,
                                       configuration.q, False)
 
                 # Print the status of collision for all collision pairs
-                for k in range(len(geom_model.collisionPairs)):
-                    cr = geom_data.collisionResults[k]
-                    cp = geom_model.collisionPairs[k]
-                    print("collision pair:", cp.first, ",", cp.second, "- collision:",
-                          "Yes" if cr.isCollision() else "No")
+                # for k in range(len(geom_model.collisionPairs)):
+                #     cr = geom_data.collisionResults[k]
+                #     cp = geom_model.collisionPairs[k]
+                    # print("collision pair:", cp.first, ",", cp.second, "- collision:",
+                    #       "Yes" if cr.isCollision() else "No")
 
                 # Visualize result at fixed FPS
                 if VISUALIZE:
@@ -656,7 +662,7 @@ if __name__ == "__main__":
     NUM_FLOATING_BASE = 5  # pinocchio model
 
     # initialize robot model
-    urdf_path = '/robot_model/draco/draco3_modified_collisions.urdf'
+    urdf_path = '/robot_model/draco/draco3_old.urdf'
     srdf_path = '/robot_model/draco/srdf/draco3_modified_collisions.srdf'
     robot = pin.RobotWrapper.BuildFromURDF(
         cwd + urdf_path,
@@ -745,21 +751,21 @@ if __name__ == "__main__":
         orientation_cost=1.0,
     )
     posture_task = PostureTask(
-        cost=1e-2,  # [cost] / [rad]
+        cost=1e-3,  # [cost] / [rad]
     )
 
     # Joint coupling task
     r_knee_holonomic_task = JointCouplingTask(
         ["r_knee_fe_jp", "r_knee_fe_jd"],
         [1.0, -1.0],
-        1000.0,
+        5000.0,
         configuration,
         lm_damping=1e-7,
     )
     l_knee_holonomic_task = JointCouplingTask(
         ["l_knee_fe_jp", "l_knee_fe_jd"],
         [1.0, -1.0],
-        1000.0,
+        5000.0,
         configuration,
         lm_damping=1e-7,
     )
@@ -800,7 +806,7 @@ if __name__ == "__main__":
     # Case 2: Sample Motions - long footsteps (left side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
-    CASE = 3
+    CASE = 0
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 0:
@@ -809,7 +815,15 @@ if __name__ == "__main__":
         print("Case 0: Train CRBI Regressor w/multiprocessing")
         VISUALIZE = False  # can't do this with multiprocessing
         VIDEO_RECORD = False
-        min_step_length = 0.5
+        min_step_length = 0.0
+
+        FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
+
+        RFOOT_POS_LB = np.array([0., -0.1, -0.05])
+        RFOOT_POS_UB = np.array([0.5, 0.05, 0.05])
+        LFOOT_POS_LB = np.array([0., -0.05, -0.05])
+        LFOOT_POS_UB = np.array([0.5, 0.1, 0.05])
 
         nominal_configuration = q0
         l_data_x, l_data_y = generate_data(N_MOTION_PER_LEG,
@@ -1005,6 +1019,14 @@ if __name__ == "__main__":
         print("-" * 80)
         print("Case 2: Sample Motions - long footsteps (left side)")
 
+        FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
+
+        RFOOT_POS_LB = np.array([0., -0.1, -0.05])
+        RFOOT_POS_UB = np.array([0.5, 0.05, 0.05])
+        LFOOT_POS_LB = np.array([0., -0.05, -0.05])
+        LFOOT_POS_UB = np.array([0.5, 0.1, 0.05])
+
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation(default_framerate=1 / DT)  # TODO fix rate
         _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left", 0.5)
@@ -1187,3 +1209,5 @@ if __name__ == "__main__":
             viz.viewer.set_animation(anim, play=False)
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
+
+    # data_saver.close()
