@@ -81,7 +81,7 @@ void SingleSupportSwing::FirstVisit() {
     task_vector.push_back(task_map["com_z_task"]);
     task_vector.push_back(task_map["com_xy_task"]);
     task_vector.push_back(task_map["torso_ori_task"]);
-    task_vector.push_back(task_map["wbo_task"]);
+    // task_vector.push_back(task_map["wbo_task"]);
     task_vector.push_back(task_map["upper_body_task"]);
 
     Eigen::Isometry3d curr_lfoot_iso =
@@ -114,7 +114,6 @@ void SingleSupportSwing::FirstVisit() {
     task_vector.push_back(task_map["rf_pos_task"]);
     task_vector.push_back(task_map["rf_ori_task"]);
     task_vector.push_back(task_map["com_z_task"]);
-    // task_vector.push_back(task_map["torso_ori_task"]);
     task_vector.push_back(task_map["com_xy_task"]);
     task_vector.push_back(task_map["torso_ori_task"]);
     // task_vector.push_back(task_map["wbo_task"]);
