@@ -41,8 +41,8 @@ import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
-VISUALIZE = True
-VIDEO_RECORD = True
+VISUALIZE = False
+VIDEO_RECORD = False
 SAVE_DATA = False
 PRINT_FREQ = 10
 DT = 0.01
@@ -69,11 +69,11 @@ BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 MAX_HOL_ERROR = 0.2     # [rad] discrepancy between proximal and distal joints
 
 ## Dataset Generation
-N_CPU_DATA_GEN = 5
+N_CPU_DATA_GEN = 4
 N_DATA_PER_MOTION = 30
 N_MOTION_PER_LEG = 2100 / N_DATA_PER_MOTION     # number of (forward) steps per leg
 N_TURN_STEPS = 4
-N_TURN_ITERS = 30           # number of iterations of each turning sequence
+N_TURN_ITERS = 20           # number of iterations of each turning sequence
 
 N_LAYER_OUTPUT = [64, 64]
 LR = 0.01
@@ -275,8 +275,34 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
         lfoot_mid_vel[2] = 0.
 
         if cw_or_ccw == "cw":
-            # Sample lfoot config
-            raise NotImplementedError
+            # our ref. frame is stance foot, so local y-axis bounds change sign
+            T_SGN = np.array([1., -1., 1.])
+
+            # Keep initial (rfoot) swing (x,y)-pos config same as nominal
+            rfoot_ini_iso = np.copy(prev_rf_iso)
+            rfoot_ini_pos = rfoot_ini_iso[-1, :3]
+
+            # Sample (lfoot) swing final config (currently not avoiding self-collisions)
+            w_R_lf = lfoot_ini_iso[0:3, 0:3]
+            rfoot_fin_pos = np.copy(lfoot_ini_iso[:3, 3]) + w_R_lf @ np.random.uniform(
+                T_SGN * TURN_STANCE_POS_LB, T_SGN * TURN_STANCE_POS_UB)
+
+            stance_foot_rpy = util.rot_to_rpy(lfoot_ini_iso[0:3, 0:3])
+            rfoot_fin_ea = np.random.uniform(np.array([-FOOT_EA_UB[0], -FOOT_EA_UB[1], -FOOT_EA_UB[2]]),
+                                             np.array([-FOOT_EA_LB[0], -FOOT_EA_LB[0], 0.]))
+            rfoot_fin_rot = util.euler_to_rot([rfoot_fin_ea[0], rfoot_fin_ea[1],
+                                               stance_foot_rpy[2] + rfoot_fin_ea[2]])
+            rfoot_fin_iso = liegroup.RpToTrans(rfoot_fin_rot, rfoot_fin_pos)
+            rfoot_mid_iso = interpolation.iso_interpolate(rfoot_ini_iso,
+                                                          rfoot_fin_iso, 0.5)
+            rfoot_mid_iso[2, 3] = (rfoot_ini_pos[2] +
+                                   rfoot_fin_pos[2]) / 2.0 + np.random.uniform(
+                SWING_HEIGHT_LB, SWING_HEIGHT_UB)
+
+            rfoot_mid_vel = (rfoot_fin_pos - rfoot_ini_pos) / swing_time
+            rfoot_mid_vel[2] = 0.
+
+
         else:
             # Keep initial (rfoot) swing (x,y)-pos config same as nominal
             rfoot_ini_iso = np.copy(prev_rf_iso)
@@ -285,7 +311,7 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
             # Sample (rfoot) swing final config (currently not avoiding self-collisions)
             w_R_lf = lfoot_ini_iso[0:3, 0:3]
             rfoot_fin_pos = np.copy(lfoot_ini_iso[:3, 3]) + w_R_lf @ np.random.uniform(
-                RFOOT_POS_LB, RFOOT_POS_UB)
+                TURN_SWING_POS_LB, TURN_SWING_POS_UB)
 
             stance_foot_rpy = util.rot_to_rpy(lfoot_ini_iso[0:3, 0:3])
             rfoot_fin_ea = np.random.uniform(np.array([FOOT_EA_LB[0], FOOT_EA_LB[1], 0.5]), FOOT_EA_UB)
@@ -312,9 +338,35 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
         rfoot_mid_vel[2] = 0.
 
         if cw_or_ccw == "cw":
+            # our ref. frame is stance foot, so local y-axis bounds change sign
+            T_SGN = np.array([1., -1., 1.])
+
             # Sample rfoot config
-            raise NotImplementedError
-        else:
+            # Keep initial (rfoot) swing (x,y)-pos config same as nominal
+            lfoot_ini_iso = np.copy(prev_lf_iso)
+            lfoot_ini_pos = lfoot_ini_iso[-1, :3]
+
+            # Sample (rfoot) swing final config (currently not avoiding self-collisions)
+            w_R_rf = rfoot_ini_iso[0:3, 0:3]
+            lfoot_fin_pos = np.copy(rfoot_ini_iso[:3, 3]) + w_R_rf @ np.random.uniform(
+                T_SGN * TURN_SWING_POS_LB, T_SGN * TURN_SWING_POS_UB)     # TODO check this
+
+            stance_foot_rpy = util.rot_to_rpy(rfoot_ini_iso[0:3, 0:3])
+            lfoot_fin_ea = np.random.uniform(np.array([-FOOT_EA_UB[0], -FOOT_EA_UB[1], -FOOT_EA_UB[2]]),
+                                             np.array([-FOOT_EA_LB[0], -FOOT_EA_LB[1], -0.5]))
+            lfoot_fin_rot = util.euler_to_rot([lfoot_fin_ea[0], lfoot_fin_ea[1],
+                                               stance_foot_rpy[2] + lfoot_fin_ea[2]])
+            lfoot_fin_iso = liegroup.RpToTrans(lfoot_fin_rot, lfoot_fin_pos)
+            lfoot_mid_iso = interpolation.iso_interpolate(lfoot_ini_iso,
+                                                          lfoot_fin_iso, 0.5)
+            lfoot_mid_iso[2, 3] = (lfoot_ini_pos[2] +
+                                   lfoot_fin_pos[2]) / 2.0 + np.random.uniform(
+                SWING_HEIGHT_LB, SWING_HEIGHT_UB)
+
+            lfoot_mid_vel = (lfoot_fin_pos - lfoot_ini_pos) / swing_time
+            lfoot_mid_vel[2] = 0.
+
+        else:       # left leg when turning counter-clockwise
             # Keep initial (lfoot) swing (x,y)-pos config same as nominal
             lfoot_ini_iso = np.copy(prev_lf_iso)
             lfoot_ini_pos = lfoot_ini_iso[-1, :3]
@@ -322,7 +374,7 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
             # Sample (lfoot) swing final config (currently not avoiding self-collisions)
             w_R_rf = rfoot_ini_iso[0:3, 0:3]
             lfoot_fin_pos = np.copy(rfoot_ini_iso[:3, 3]) + w_R_rf @ np.random.uniform(
-                LFOOT_POS_LB, LFOOT_POS_UB)
+                TURN_STANCE_POS_LB, TURN_STANCE_POS_UB)
 
             stance_foot_rpy = util.rot_to_rpy(rfoot_ini_iso[0:3, 0:3])
             lfoot_fin_ea = np.random.uniform(np.array([FOOT_EA_LB[0], FOOT_EA_LB[1], 0.]), FOOT_EA_UB)
@@ -411,8 +463,8 @@ def _do_generate_data(n_data,
         np.random.seed(rseed)
 
     # initialize training / validation data size
-    data_x = [np.zeros(12,) for _ in range(n_data+1)]
-    data_y = [np.zeros(12,) for _ in range(n_data+1)]
+    data_x = [np.zeros(12,) for _ in range(n_data)]
+    data_y = [np.zeros(6,) for _ in range(n_data)]
     nominal_base_iso_init = configuration.get_transform_frame_to_world(
         "torso_link").copy()
 
@@ -565,20 +617,21 @@ def _do_generate_data(n_data,
                     base_rpy_rf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(rf_quat)))
 
                     # append data (end-effector SE3 & body inertia pair)
-                    if i > n_data:
-                        print("Index went out of bounds. Rewriting last data point.")
-                        i = n_data
-                    data_x[i] = np.concatenate([
-                            lf_pos - base_pos,
-                            rf_pos - base_pos,
-                            base_rpy_lf,
-                            base_rpy_rf
-                            ], axis=0)
-                    data_y[i] = np.array([
-                            rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1],
-                            rot_inertia_in_body[2, 2], rot_inertia_in_body[0, 1],
-                            rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
-                            ])
+                    if i < n_data:
+                        data_x[i] = np.concatenate([
+                                lf_pos - base_pos,
+                                rf_pos - base_pos,
+                                base_rpy_lf,
+                                base_rpy_rf
+                                ], axis=0)
+                        data_y[i] = np.array([
+                                rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1],
+                                rot_inertia_in_body[2, 2], rot_inertia_in_body[0, 1],
+                                rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
+                                ])
+                    else:
+                        print(f"Index {i} went out of bounds. Ignoring data point.")
+                        # i = n_data - 2
                     i += 1
 
                 # if in collision or violates RCJ, terminate and resample
@@ -734,10 +787,10 @@ def load_turn_pink_config():
     torso_task.set_orientation_cost(5.0)
     posture_task.cost = 1e-3
     l_knee_holonomic_task.cost = 1e2
-    l_knee_holonomic_task.gain = 0.1
+    l_knee_holonomic_task.gain = 0.05
     l_knee_holonomic_task.lm_damping = 5e-7
     r_knee_holonomic_task.cost = 1e2
-    r_knee_holonomic_task.gain = 0.1
+    r_knee_holonomic_task.gain = 0.05
     r_knee_holonomic_task.lm_damping = 5e-7
 
 def train_and_plot_crbi():
@@ -1334,9 +1387,9 @@ if __name__ == "__main__":
     elif CASE == 5:
         # CCW turning, right foot first
         print("-" * 80)
-        print("Case 5: Sample Motions w/ _do_generate_data - long footsteps (left side)")
-        VISUALIZE = True       # can't do this with multiprocessing
-        VIDEO_RECORD = True
+        print("Case 5: Train CRBI Regressor w/multiprocessing for long CCW turns")
+        VISUALIZE = False       # can't do this with multiprocessing
+        VIDEO_RECORD = False
 
         # place base above ankles
         nominal_base_iso.translation[0] = np.array([
@@ -1350,37 +1403,38 @@ if __name__ == "__main__":
         FOOT_EA_UB = np.array([np.deg2rad(0.1), np.deg2rad(0.1), np.pi / 2.])
 
         # Reduce stepping outwards (relative to stance leg, in stance coordinates)
-        RFOOT_POS_LB = np.array([0., -0.4, 0.])
-        RFOOT_POS_UB = np.array([0.3, -0.2, 0.])
-        LFOOT_POS_LB = np.array([-0.15, 0.15, 0.])
-        LFOOT_POS_UB = np.array([0.15, 0.3, 0.])
+        TURN_SWING_POS_LB = np.array([0., -0.4, 0.])
+        TURN_SWING_POS_UB = np.array([0.3, -0.2, 0.])
+        TURN_STANCE_POS_LB = np.array([-0.15, 0.15, 0.])
+        TURN_STANCE_POS_UB = np.array([0.15, 0.3, 0.])
 
         # no need to lift leg as high
         SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
         SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
         BASE_HEIGHT_LB, BASE_HEIGHT_UB = configuration.q[2]-0.02, configuration.q[2]+0.02
-        # BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
-
-        swing_leg = "right_leg"
 
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation()
 
-        # _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
-        #                   nominal_lf_iso, nominal_rf_iso, q0, swing_leg)
+        # l_data_x, l_data_y = _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+        #                   nominal_lf_iso, nominal_rf_iso, q0, "left_leg",
+        #                   cw_or_ccw='cw')
+        # r_data_x, r_data_y = _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+        #                   nominal_lf_iso, nominal_rf_iso, q0, "right_leg",
+        #                   cw_or_ccw='ccw')
 
         nominal_configuration = q0
         l_data_x, l_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
                                            nominal_lf_iso, nominal_rf_iso,
-                                           nominal_configuration, swing_leg,
-                                           N_CPU_DATA_GEN)
+                                           nominal_configuration, "left_leg",
+                                           N_CPU_DATA_GEN, cw_or_ccw='cw')
 
-        # r_data_x, r_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
-        #                                    nominal_lf_iso, nominal_rf_iso,
-        #                                    nominal_configuration, "left_leg",
-        #                                    N_CPU_DATA_GEN)
-        data_x = l_data_x       # + r_data_x
-        data_y = l_data_y       # + r_data_y
+        r_data_x, r_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "right_leg",
+                                           N_CPU_DATA_GEN, cw_or_ccw='ccw')
+        data_x = l_data_x + r_data_x
+        data_y = l_data_y + r_data_y
 
         train_and_plot_crbi()
 
