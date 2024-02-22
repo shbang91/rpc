@@ -904,7 +904,7 @@ if __name__ == "__main__":
     NUM_FLOATING_BASE = 5  # pinocchio model
 
     # initialize robot model
-    urdf_path = '/robot_model/draco/draco3_modified_collisions.urdf'
+    urdf_path = '/robot_model/draco/draco3_old.urdf'
     srdf_path = '/robot_model/draco/srdf/draco3_modified_collisions.srdf'
     robot = pin.RobotWrapper.BuildFromURDF(
         cwd + urdf_path,
