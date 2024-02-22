@@ -41,8 +41,8 @@ import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
-VISUALIZE = False
-VIDEO_RECORD = False
+VISUALIZE = True
+VIDEO_RECORD = True
 SAVE_DATA = False
 PRINT_FREQ = 10
 DT = 0.01
@@ -263,21 +263,21 @@ def sample_swing_config(nominal_lf_iso, nominal_rf_iso, side, min_step_length=0.
 
 def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing_leg="right_leg"):
     swing_time = np.random.uniform(SWING_TIME_LB, SWING_TIME_UB)
-    if cw_or_ccw == "cw":
-        # Sample rfoot config
-        raise NotImplementedError
 
-    elif cw_or_ccw == "ccw":
-        if swing_leg == "right_leg":
-            # Keep old (left) stance leg config
-            lfoot_ini_iso = np.copy(prev_lf_iso)
-            lfoot_mid_iso = np.copy(prev_lf_iso)
-            lfoot_fin_iso = np.copy(prev_lf_iso)
+    if swing_leg == "right_leg":
+        # Keep old (left) stance leg config
+        lfoot_ini_iso = np.copy(prev_lf_iso)
+        lfoot_mid_iso = np.copy(prev_lf_iso)
+        lfoot_fin_iso = np.copy(prev_lf_iso)
 
-            lfoot_mid_vel = (lfoot_ini_iso[0:3, 3] -
-                             lfoot_ini_iso[0:3, 3]) / swing_time
-            lfoot_mid_vel[2] = 0.
+        lfoot_mid_vel = (lfoot_ini_iso[0:3, 3] -
+                         lfoot_ini_iso[0:3, 3]) / swing_time
+        lfoot_mid_vel[2] = 0.
 
+        if cw_or_ccw == "cw":
+            # Sample lfoot config
+            raise NotImplementedError
+        else:
             # Keep initial (rfoot) swing (x,y)-pos config same as nominal
             rfoot_ini_iso = np.copy(prev_rf_iso)
             rfoot_ini_pos = rfoot_ini_iso[-1, :3]
@@ -301,16 +301,20 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
             rfoot_mid_vel = (rfoot_fin_pos - rfoot_ini_pos) / swing_time
             rfoot_mid_vel[2] = 0.
 
+    elif swing_leg == "left_leg":
+        # Keep old (right) stance leg config
+        rfoot_ini_iso = np.copy(prev_rf_iso)
+        rfoot_mid_iso = np.copy(prev_rf_iso)
+        rfoot_fin_iso = np.copy(prev_rf_iso)
+
+        rfoot_mid_vel = (rfoot_ini_iso[0:3, 3] -
+                         rfoot_ini_iso[0:3, 3]) / swing_time
+        rfoot_mid_vel[2] = 0.
+
+        if cw_or_ccw == "cw":
+            # Sample rfoot config
+            raise NotImplementedError
         else:
-            # Keep old (right) stance leg config
-            rfoot_ini_iso = np.copy(prev_rf_iso)
-            rfoot_mid_iso = np.copy(prev_rf_iso)
-            rfoot_fin_iso = np.copy(prev_rf_iso)
-
-            rfoot_mid_vel = (rfoot_ini_iso[0:3, 3] -
-                             rfoot_ini_iso[0:3, 3]) / swing_time
-            rfoot_mid_vel[2] = 0.
-
             # Keep initial (lfoot) swing (x,y)-pos config same as nominal
             lfoot_ini_iso = np.copy(prev_lf_iso)
             lfoot_ini_pos = lfoot_ini_iso[-1, :3]
@@ -333,28 +337,27 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
 
             lfoot_mid_vel = (lfoot_fin_pos - lfoot_ini_pos) / swing_time
             lfoot_mid_vel[2] = 0.
-
-        # Sample base config
-        base_ini_iso = np.copy(prev_base_iso)
-        base_fin_pos = (rfoot_fin_iso[:3, 3] + lfoot_fin_iso[:3, 3]) / 2.0
-        base_fin_pos[2] = np.random.uniform(BASE_HEIGHT_LB, BASE_HEIGHT_UB)
-
-        # wrap rotations in positive direction
-        l_foot_yaw = util.rot_to_rpy(lfoot_fin_iso[:3, :3])[2]
-        if l_foot_yaw < 0:
-            l_foot_yaw += 2 * np.pi
-        r_foot_yaw = util.rot_to_rpy(rfoot_fin_iso[:3, :3])[2]
-        if r_foot_yaw < 0:
-            r_foot_yaw += 2 * np.pi
-        # wrap around if around zero yaw crossing
-        if np.abs(l_foot_yaw - r_foot_yaw) > np.pi:
-            r_foot_yaw += 2 * np.pi
-        base_yaw = (l_foot_yaw + r_foot_yaw) / 2.
-        base_fin_rot = util.euler_to_rot(np.array([0., 0., base_yaw]))
-        base_fin_iso = liegroup.RpToTrans(base_fin_rot, base_fin_pos)
-
     else:
-        raise ValueError
+        raise ValueError(f"Invalid swing_leg: {swing_leg}")
+
+    # Sample base config
+    base_ini_iso = np.copy(prev_base_iso)
+    base_fin_pos = (rfoot_fin_iso[:3, 3] + lfoot_fin_iso[:3, 3]) / 2.0
+    base_fin_pos[2] = np.random.uniform(BASE_HEIGHT_LB, BASE_HEIGHT_UB)
+
+    # wrap rotations in positive direction
+    l_foot_yaw = util.rot_to_rpy(lfoot_fin_iso[:3, :3])[2]
+    if l_foot_yaw < 0:
+        l_foot_yaw += 2 * np.pi
+    r_foot_yaw = util.rot_to_rpy(rfoot_fin_iso[:3, :3])[2]
+    if r_foot_yaw < 0:
+        r_foot_yaw += 2 * np.pi
+    # wrap around if around zero yaw crossing
+    if np.abs(l_foot_yaw - r_foot_yaw) > np.pi:
+        r_foot_yaw += 2 * np.pi
+    base_yaw = (l_foot_yaw + r_foot_yaw) / 2.
+    base_fin_rot = util.euler_to_rot(np.array([0., 0., base_yaw]))
+    base_fin_iso = liegroup.RpToTrans(base_fin_rot, base_fin_pos)
 
     return swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso
 
@@ -1332,8 +1335,8 @@ if __name__ == "__main__":
         # CCW turning, right foot first
         print("-" * 80)
         print("Case 5: Sample Motions w/ _do_generate_data - long footsteps (left side)")
-        VISUALIZE = False       # can't do this with multiprocessing
-        VIDEO_RECORD = False
+        VISUALIZE = True       # can't do this with multiprocessing
+        VIDEO_RECORD = True
 
         # place base above ankles
         nominal_base_iso.translation[0] = np.array([
