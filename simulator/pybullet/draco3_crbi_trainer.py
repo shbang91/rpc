@@ -43,6 +43,7 @@ from torch.utils.tensorboard import SummaryWriter
 ## Configs
 VISUALIZE = False
 VIDEO_RECORD = False
+SAVE_DATA = False
 PRINT_FREQ = 10
 DT = 0.01
 PRINT_ROBOT_INFO = False
@@ -65,13 +66,14 @@ SWING_TIME_LB, SWING_TIME_UB = 0.35, 0.75
 BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.7, 0.8
 
 # Thresholds
-MAX_HOL_ERROR = 0.1     # [rad] discrepancy between proximal and distal joints
+MAX_HOL_ERROR = 0.2     # [rad] discrepancy between proximal and distal joints
 
 ## Dataset Generation
 N_CPU_DATA_GEN = 5
 N_DATA_PER_MOTION = 30
-N_MOTION_PER_LEG = 2100 / N_DATA_PER_MOTION
+N_MOTION_PER_LEG = 2100 / N_DATA_PER_MOTION     # number of (forward) steps per leg
 N_TURN_STEPS = 4
+N_TURN_ITERS = 30           # number of iterations of each turning sequence
 
 N_LAYER_OUTPUT = [64, 64]
 LR = 0.01
@@ -79,7 +81,8 @@ MOMENTUM = 0.
 N_EPOCH = 20
 BATCH_SIZE = 32
 
-data_saver = DataSaver('draco3_crbi_fwd_step_joints.pkl')
+if SAVE_DATA:
+    data_saver = DataSaver('draco3_crbi_fwd_step_joints.pkl')
 
 class MotionType(Enum):
     STEP = 1
@@ -285,8 +288,9 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
                 RFOOT_POS_LB, RFOOT_POS_UB)
 
             stance_foot_rpy = util.rot_to_rpy(lfoot_ini_iso[0:3, 0:3])
-            rfoot_fin_ea = np.random.uniform(0.5, FOOT_EA_UB)
-            rfoot_fin_rot = util.euler_to_rot([0, 0, stance_foot_rpy[2] + rfoot_fin_ea[2]])
+            rfoot_fin_ea = np.random.uniform(np.array([FOOT_EA_LB[0], FOOT_EA_LB[1], 0.5]), FOOT_EA_UB)
+            rfoot_fin_rot = util.euler_to_rot([rfoot_fin_ea[0], rfoot_fin_ea[1],
+                                               stance_foot_rpy[2] + rfoot_fin_ea[2]])
             rfoot_fin_iso = liegroup.RpToTrans(rfoot_fin_rot, rfoot_fin_pos)
             rfoot_mid_iso = interpolation.iso_interpolate(rfoot_ini_iso,
                                                           rfoot_fin_iso, 0.5)
@@ -317,8 +321,9 @@ def sample_turn_config(prev_base_iso, prev_lf_iso, prev_rf_iso, cw_or_ccw, swing
                 LFOOT_POS_LB, LFOOT_POS_UB)
 
             stance_foot_rpy = util.rot_to_rpy(rfoot_ini_iso[0:3, 0:3])
-            lfoot_fin_ea = np.random.uniform(0., FOOT_EA_UB)
-            lfoot_fin_rot = util.euler_to_rot([0, 0, stance_foot_rpy[2] + lfoot_fin_ea[2]])
+            lfoot_fin_ea = np.random.uniform(np.array([FOOT_EA_LB[0], FOOT_EA_LB[1], 0.]), FOOT_EA_UB)
+            lfoot_fin_rot = util.euler_to_rot([lfoot_fin_ea[0], lfoot_fin_ea[1],
+                                               stance_foot_rpy[2] + lfoot_fin_ea[2]])
             lfoot_fin_iso = liegroup.RpToTrans(lfoot_fin_rot, lfoot_fin_pos)
             lfoot_mid_iso = interpolation.iso_interpolate(lfoot_ini_iso,
                                                           lfoot_fin_iso, 0.5)
@@ -392,146 +397,217 @@ def _do_generate_data(n_data,
                       nominal_configuration,
                       side,
                       min_step_length=0.1,
+                      cw_or_ccw=None,
                       rseed=None,
                       cpu_idx=0):
+    # default to counter-clockwise if not specified
+    if cw_or_ccw is None:
+        cw_or_ccw = "ccw"
+
     if rseed is not None:
         np.random.seed(rseed)
-    data_x, data_y = [], []
+
+    # initialize training / validation data size
+    data_x = [np.zeros(12,) for _ in range(n_data+1)]
+    data_y = [np.zeros(12,) for _ in range(n_data+1)]
+    nominal_base_iso_init = configuration.get_transform_frame_to_world(
+        "torso_link").copy()
 
     frame_idx = int(0)
+    iter = 0
     text = "#" + "{}".format(cpu_idx).zfill(3)
     with tqdm(total=n_data,
               desc=text + ': Generating data',
               position=cpu_idx + 1) as pbar:
-        for i in range(n_data):
+        i = int(0)
+        while i < n_data:
+            # reset to home config
+            configuration.q = copy.deepcopy(nominal_configuration)
+            q_prev_step = copy.deepcopy(nominal_configuration)
+            q_nominal = copy.deepcopy(nominal_configuration)
+            # configuration.update()
+            nominal_lf_iso_step = copy.deepcopy(nominal_lf_iso)
+            nominal_rf_iso_step = copy.deepcopy(nominal_rf_iso)
+            nominal_base_iso = copy.deepcopy(nominal_base_iso_init)
+            n_turn = 0
+            while n_turn < N_TURN_STEPS:
 
-            if MOTION_TYPE == MotionType.STEP:
-                swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
-                    nominal_lf_iso, nominal_rf_iso, side, min_step_length)
-            elif MOTION_TYPE == MotionType.TURN:
-                swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
-                    nominal_lf_iso, nominal_rf_iso, side, min_step_length)
+                if MOTION_TYPE == MotionType.STEP:
+                    swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
+                        nominal_lf_iso_step, nominal_rf_iso_step, side, min_step_length)
+                elif MOTION_TYPE == MotionType.TURN:
+                    nominal_base_iso.translation[0] = np.array([
+                        nominal_lf_iso_step.translation[0] + nominal_rf_iso_step.translation[0]]) / 2.0
+                    swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
+                        nominal_base_iso, nominal_lf_iso_step, nominal_rf_iso_step, cw_or_ccw, side)
 
-            lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
-                lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
-                rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
-                base_ini_iso, base_fin_iso)
+                lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
+                    lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
+                    rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
+                    base_ini_iso, base_fin_iso)
 
-            t = 0.
-            rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
-            dt = rate.period
-            for s in np.linspace(0, 1, N_DATA_PER_MOTION):
-                base_pos = base_pos_curve.evaluate(s)
-                base_quat = base_quat_curve.evaluate(s)
+                rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
+                dt = rate.period
+                if VIDEO_RECORD:  # update frame rate
+                    anim.default_framerate = int(1 / dt)
 
-                if s <= 0.5:
-                    sprime = 2.0 * s
-                    lf_pos = lfoot_pos_curve_ini_to_mid.evaluate(sprime)
-                    rf_pos = rfoot_pos_curve_ini_to_mid.evaluate(sprime)
-                else:
-                    sprime = 2.0 * (s - 0.5)
-                    lf_pos = lfoot_pos_curve_mid_to_fin.evaluate(sprime)
-                    rf_pos = rfoot_pos_curve_mid_to_fin.evaluate(sprime)
-                lf_quat = lfoot_quat_curve.evaluate(s)
-                rf_quat = rfoot_quat_curve.evaluate(s)
+                s = 0.
+                b_terminate = False
+                while s < 1.:
+                    base_pos = base_pos_curve.evaluate(s)
+                    base_quat = base_quat_curve.evaluate(s)
 
-                # set desired task
-                des_base_iso = pin.SE3(util.quat_to_rot(base_quat), base_pos)
-                task_dict['torso_task'].set_target(des_base_iso)
+                    if s <= 0.5:
+                        sprime = 2.0 * s
+                        lf_pos = lfoot_pos_curve_ini_to_mid.evaluate(sprime)
+                        rf_pos = rfoot_pos_curve_ini_to_mid.evaluate(sprime)
+                    else:
+                        sprime = 2.0 * (s - 0.5)
+                        lf_pos = lfoot_pos_curve_mid_to_fin.evaluate(sprime)
+                        rf_pos = rfoot_pos_curve_mid_to_fin.evaluate(sprime)
+                    lf_quat = lfoot_quat_curve.evaluate(s)
+                    rf_quat = rfoot_quat_curve.evaluate(s)
 
-                des_rfoot_iso = pin.SE3(util.quat_to_rot(rf_quat), rf_pos)
-                task_dict['rfoot_task'].set_target(des_rfoot_iso)
+                    # set desired task
+                    des_base_iso = pin.SE3(util.quat_to_rot(base_quat), base_pos)
+                    task_dict['torso_task'].set_target(des_base_iso)
 
-                des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
-                task_dict['lfoot_task'].set_target(des_lfoot_iso)
+                    des_rfoot_iso = pin.SE3(util.quat_to_rot(rf_quat), rf_pos)
+                    task_dict['rfoot_task'].set_target(des_rfoot_iso)
 
-                # TODO: or set from configuration
-                task_dict['posture_task'].set_target(nominal_configuration)
+                    des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
+                    task_dict['lfoot_task'].set_target(des_lfoot_iso)
 
-                # update meshcat visualizer
-                if VISUALIZE:
-                    #### base
-                    T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
-                                                  base_pos)
-                    #### right foot
-                    T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
+                    # TODO: or set from configuration
+                    task_dict['posture_task'].set_target(q_nominal)
 
-                    #### left foot
-                    T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
+                    # solve ik
+                    # Compute velocity and integrate it into next configuration
+                    velocity = solve_ik(configuration, tasks, dt, solver=solver)
+                    configuration.integrate_inplace(velocity, dt)
 
-                    lfoot_contact_frame.set_transform(T_w_lf)
-                    rfoot_contact_frame.set_transform(T_w_rf)
-                    torso_frame.set_transform(T_w_base)
-                    if VIDEO_RECORD:
-                        with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
-                            frame.set_transform(T_w_lf)
-                        with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
-                            frame.set_transform(T_w_rf)
-                        with anim.at_frame(torso_frame, frame_idx) as frame:
-                            frame.set_transform(T_w_base)
+                    # Compute all the collisions
+                    pin.computeCollisions(robot.model, robot.data, geom_model, geom_data,
+                                          configuration.q, False)
 
-                # solve ik
-                # Compute velocity and integrate it into next configuration
-                velocity = solve_ik(configuration, tasks, dt, solver=solver)
-                configuration.integrate_inplace(velocity, dt)
-                data_saver.add('q', configuration.q)
-                data_saver.advance()
+                    # Check for collisions at each time step
+                    for k in range(len(geom_model.collisionPairs)):
+                        cr = geom_data.collisionResults[k]
+                        cp = geom_model.collisionPairs[k]
+                        if cr.isCollision():
+                            # print("Collision between:",
+                            #       geom_model.geometryObjects[cp.first].name, ",",
+                            #       geom_model.geometryObjects[cp.second].name,
+                            #       ". Resampling step.")
+                            b_terminate = True
+                            break
 
-                # Compute all the collisions
-                pin.computeCollisions(robot.model, robot.data, geom_model, geom_data,
-                                      configuration.q, False)
+                    # check that rolling contact joint constraint hasn't been violated
+                    lk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + lknee_jp_idx] -
+                                               configuration.q[NUM_FLOATING_BASE + lknee_jd_idx]) > MAX_HOL_ERROR
+                    rk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + rknee_jp_idx] -
+                                               configuration.q[NUM_FLOATING_BASE + rknee_jd_idx]) > MAX_HOL_ERROR
+                    if lk_cnstr_violated or rk_cnstr_violated:
+                        print("Rolling contact joint constraint violated. Resampling step.")
+                        b_terminate = True
+    
+                    if b_terminate:
+                        break
 
-                # Print the status of collision for all collision pairs
-                # for k in range(len(geom_model.collisionPairs)):
-                #     cr = geom_data.collisionResults[k]
-                #     cp = geom_model.collisionPairs[k]
-                    # print("collision pair:", cp.first, ",", cp.second, "- collision:",
-                    #       "Yes" if cr.isCollision() else "No")
+                    # Visualize result at fixed FPS
+                    if VISUALIZE:
+                        viz.display(configuration.q)
+    
+                        #### base
+                        T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
+                                                      base_pos)
+                        #### right foot
+                        T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
+    
+                        #### left foot
+                        T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
+    
+                        lfoot_contact_frame.set_transform(T_w_lf)
+                        rfoot_contact_frame.set_transform(T_w_rf)
+                        torso_frame.set_transform(T_w_base)                        
+                        if VIDEO_RECORD:
+                            # update visualized frames
+                            with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
+                                frame.set_transform(T_w_lf)
+                            with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
+                                frame.set_transform(T_w_rf)
+                            with anim.at_frame(torso_frame, frame_idx) as frame:
+                                frame.set_transform(T_w_base)
+    
+                            # update robot configuration
+                            with anim.at_frame(viz.viewer, frame_idx) as frame:
+                                display_visualizer_frames(viz, frame, pin.GeometryType.VISUAL)
+                                display_visualizer_frames(viz, frame, pin.GeometryType.COLLISION)
 
-                # Visualize result at fixed FPS
-                if VISUALIZE:
-                    viz.display(configuration.q)
-                    if VIDEO_RECORD:
-                        with anim.at_frame(viz.viewer, frame_idx) as frame:
-                            display_visualizer_frames(viz, frame)
-                    rate.sleep()
-                t += dt
-                frame_idx += 1
+                    # update nominal configuration for next iteration
+                    q_nominal = configuration.q
+                    # rate.sleep()
+                    s += 1. / N_DATA_PER_MOTION
+                    frame_idx += 1
 
-                # compute CRBI
-                _, _, centroidal_inertia = robot.centroidal(configuration.q, v0)
-                rot_inertia_in_world = np.copy(centroidal_inertia)[3:6, 3:6]
+                    # compute CRBI
+                    _, _, centroidal_inertia = robot.centroidal(configuration.q, v0)
+                    rot_inertia_in_world = np.copy(centroidal_inertia)[3:6, 3:6]
 
-                rot_w_base = util.quat_to_rot(base_quat)
-                rot_inertia_in_body = np.dot(np.dot(rot_w_base.transpose(), rot_inertia_in_world), rot_w_base)
+                    rot_w_base = util.quat_to_rot(base_quat)
+                    rot_inertia_in_body = np.dot(np.dot(rot_w_base.transpose(), rot_inertia_in_world), rot_w_base)
 
-                # get rotations of feet w.r.t. base
-                base_rpy_lf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(lf_quat)))
-                base_rpy_rf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(rf_quat)))
+                    # get rotations of feet w.r.t. base
+                    base_rpy_lf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(lf_quat)))
+                    base_rpy_rf = util.rot_to_rpy(np.dot(rot_w_base.transpose(), util.quat_to_rot(rf_quat)))
 
-                # append data (end-effector SE3 & body inertia pair)
-                data_x.append(
-                    np.concatenate([
-                        lf_pos - base_pos,
-                        rf_pos - base_pos,
-                        base_rpy_lf,
-                        base_rpy_rf
-                    ],
-                        axis=0))
-                data_y.append(
-                    np.array([
-                        rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1], rot_inertia_in_body[2, 2],
-                        rot_inertia_in_body[0, 1],
-                        rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
-                    ]))
-                pbar.update(1)
+                    # append data (end-effector SE3 & body inertia pair)
+                    if i > n_data:
+                        print("Index went out of bounds. Rewriting last data point.")
+                        i = n_data
+                    data_x[i] = np.concatenate([
+                            lf_pos - base_pos,
+                            rf_pos - base_pos,
+                            base_rpy_lf,
+                            base_rpy_rf
+                            ], axis=0)
+                    data_y[i] = np.array([
+                            rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1],
+                            rot_inertia_in_body[2, 2], rot_inertia_in_body[0, 1],
+                            rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
+                            ])
+                    i += 1
 
-            # reset config
-            configuration.q = q0
-            configuration.update()
+                # if in collision or violates RCJ, terminate and resample
+                if b_terminate:
+                    b_terminate = False
+                    configuration.q = q_prev_step
+                    q_nominal = q_prev_step
+                    i = iter * N_DATA_PER_MOTION * N_TURN_STEPS + n_turn * N_DATA_PER_MOTION
+                    continue
+
+                # update nominal poses
+                nominal_lf_iso_step = pin.SE3(lfoot_fin_iso)
+                nominal_rf_iso_step = pin.SE3(rfoot_fin_iso)
+                nominal_base_iso = pin.SE3(base_fin_iso)
+                q_prev_step = configuration.q
+                pbar.update(N_DATA_PER_MOTION)
+
+                if MOTION_TYPE == MotionType.TURN:
+                    # switch stance leg
+                    if side == "right_leg":
+                        side = "left_leg"
+                    else:
+                        side = "right_leg"
+
+                    # successful turning step without collision, continue to next step
+                    n_turn += 1
+
+            # increase iteration count
+            iter += 1
             if VISUALIZE:
                 viz.display(configuration.q)
-                rate.sleep()
+            # rate.sleep()
 
     return data_x, data_y
 
@@ -541,11 +617,14 @@ def _generate_data(arg_list):
 
 
 def generate_data(n_data, nominal_lf_iso, nominal_rf_iso, nominal_sensor_data,
-                  side, num_cpu, min_step_length=0.1):
+                  side, num_cpu, min_step_length=0.1, cw_or_ccw=None):
+    if cw_or_ccw is None:
+        cw_or_ccw = "ccw"
+
     rollout_per_cpu = int(max(n_data // num_cpu, 1))
     args_list = [
         rollout_per_cpu, nominal_lf_iso, nominal_rf_iso, nominal_sensor_data,
-        side, min_step_length
+        side, min_step_length, cw_or_ccw
     ]
     results = util.try_multiprocess(args_list, num_cpu, _generate_data)
 
@@ -650,11 +729,174 @@ def load_turn_pink_config():
     # PInk costs optimized for turning motion
     torso_task.set_position_cost(10.)
     torso_task.set_orientation_cost(5.0)
-    posture_task.cost = 1e-8
-    l_knee_holonomic_task.cost = 1e3
+    posture_task.cost = 1e-3
+    l_knee_holonomic_task.cost = 1e2
+    l_knee_holonomic_task.gain = 0.1
     l_knee_holonomic_task.lm_damping = 5e-7
-    r_knee_holonomic_task.cost = 1e3
+    r_knee_holonomic_task.cost = 1e2
+    r_knee_holonomic_task.gain = 0.1
     r_knee_holonomic_task.lm_damping = 5e-7
+
+def train_and_plot_crbi():
+    log_dir = "experiment_data/tensorboard/draco3_crbi_por_ori"
+    if os.path.exists(log_dir):
+        shutil.rmtree(log_dir)
+    writer = SummaryWriter(log_dir)
+
+    ## normalize training data
+    print("{} data is collected".format(len(data_x)))
+    input_mean, input_std, input_normalized_data = util.normalize_data(
+        data_x)
+    output_mean, output_std, output_normalized_data = util.normalize_data(
+        data_y)
+
+    # create Torch data set
+    x_data_torch, y_data_torch = torch.from_numpy(
+        np.array(input_normalized_data)).float(), torch.from_numpy(
+        np.array(output_normalized_data)).float()
+    torch_dataset = torch_utils.TensorDataset(x_data_torch,
+                                              y_data_torch)
+
+    # Split into train and test data sets
+    train_size = int(len(torch_dataset) * 0.9)
+    test_size = len(torch_dataset) - train_size
+    train_dataset, test_dataset = torch.utils.data.random_split(torch_dataset,
+                                                                [train_size, test_size])
+
+    # Load test / train data
+    train_loader = torch_utils.DataLoader(dataset=train_dataset,
+                                          batch_size=BATCH_SIZE,
+                                          shuffle=True,
+                                          num_workers=4)
+    test_loader = torch_utils.DataLoader(dataset=test_dataset,
+                                         batch_size=BATCH_SIZE,
+                                         shuffle=False,
+                                         num_workers=4)
+
+    # Create NN model
+    crbi_model = NetWork(12, 64, 64, 6)
+    optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR, momentum=0.)
+    loss_function = torch.nn.MSELoss()
+
+    # train
+    train_loss_per_epoch = 0.
+    val_loss_per_epoch = 0.
+    iter = 0
+    for epoch in range(N_EPOCH):
+        train_loss = 0.
+        train_batch_loss = 0.
+        crbi_model.train()
+        for step, (b_x, b_y) in enumerate(train_loader):
+            output = crbi_model(b_x)
+            loss = loss_function(output, b_y)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            train_batch_loss = loss.item()
+            train_loss += loss.item()
+            iter += 1
+            writer.add_scalar('batch loss', train_batch_loss, iter)
+        train_loss_per_epoch = train_loss / len(train_loader)
+
+    print('=' * 80)
+    print('CRBI training done')
+
+    # test
+    crbi_model.eval()
+    with torch.no_grad():
+        test_loss_per_epoch = 0.
+        for epoch in range(N_EPOCH):
+            test_loss = 0.
+            for i, (b_x, b_y) in enumerate(test_loader):
+                output = crbi_model(b_x)
+                loss = loss_function(output, b_y)
+                test_loss += loss.item()
+            test_loss_per_epoch = test_loss / len(test_loader)
+            writer.add_scalar('test loss vs epoch',
+                              test_loss_per_epoch, epoch + 1)
+
+    print('=' * 80)
+    print('CRBI test done')
+
+    #####################################################
+    '''plot centroidal inertia dim = 6'''
+    #####################################################
+    test_data_loader2 = torch_utils.DataLoader(
+        dataset=test_dataset,
+        batch_size=1,
+        shuffle=False,
+        num_workers=6)
+
+    crbi_model.eval()
+    gt_inertia_list, predict_inertia_list = [], []
+    iter_list = []
+    num_iter = 0
+    with torch.no_grad():
+        for i, (b_x, b_y) in enumerate(test_data_loader2):
+            output = crbi_model(b_x)
+            gt_denormalized_output = util.denormalize(
+                np.squeeze(b_y.numpy(), axis=0), output_mean,
+                output_std)
+            predict_denormalized_output = util.denormalize(
+                np.squeeze(output.numpy(), axis=0), output_mean,
+                output_std)
+            iter_list.append(num_iter)
+            gt_inertia_list.append(gt_denormalized_output)
+            predict_inertia_list.append(predict_denormalized_output)
+            num_iter += 1
+
+    ##plot
+    fig, axes = plt.subplots(6, 1)
+    for i in range(6):
+        if i == 0:
+            axes[i].plot(iter_list,
+                         [gt_inertia[i] for gt_inertia in gt_inertia_list],
+                         'r')
+            axes[i].plot(iter_list, [
+                predict_inertia[i]
+                for predict_inertia in predict_inertia_list
+            ], 'b')
+            axes[i].grid(True)
+        else:
+            axes[i] = plt.subplot(6, 1, i + 1, sharex=axes[i - 1])
+            axes[i].plot(iter_list,
+                         [gt_inertia[i] for gt_inertia in gt_inertia_list],
+                         'r')
+            axes[i].plot(iter_list, [
+                predict_inertia[i]
+                for predict_inertia in predict_inertia_list
+            ], 'b')
+            axes[i].grid(True)
+    plt.show()
+
+    # save model
+    model_path = 'experiment_data/pytorch_model/draco3_crbi_pos_ori.pth'
+    if os.path.exists(model_path):
+        os.remove(model_path)
+    torch.save(crbi_model, model_path)
+    print("==============================================")
+    print("Saved PyTorch Model State")
+    print("==============================================")
+
+    data_stats = {
+        'input_mean': input_mean.tolist(),
+        'input_std': input_std.tolist(),
+        'output_mean': output_mean.tolist(),
+        'output_std': output_std.tolist()
+    }
+
+    path = 'experiment_data/pytorch_model/draco3_crbi'
+    with open('experiment_data/pytorch_model' + '/data_stat.yaml', 'w') as f:
+        yml = YAML()
+        yml.dump(data_stats, f)
+    save_weights_to_yaml(crbi_model, path)
+    print('=' * 80)
+    print('Saved weights to yaml')
+
+    cas_func, cas_jac_func = generate_casadi_func(
+        crbi_model, input_mean, input_std, output_mean, output_std,
+        True)
+
 
 
 if __name__ == "__main__":
@@ -662,7 +904,7 @@ if __name__ == "__main__":
     NUM_FLOATING_BASE = 5  # pinocchio model
 
     # initialize robot model
-    urdf_path = '/robot_model/draco/draco3_old.urdf'
+    urdf_path = '/robot_model/draco/draco3_modified_collisions.urdf'
     srdf_path = '/robot_model/draco/srdf/draco3_modified_collisions.srdf'
     robot = pin.RobotWrapper.BuildFromURDF(
         cwd + urdf_path,
@@ -806,7 +1048,8 @@ if __name__ == "__main__":
     # Case 2: Sample Motions - long footsteps (left side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
-    CASE = 0
+    # Case 5: Sample Motions w/ _do_generate_data - long CCW turns
+    CASE = 5
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 0:
@@ -824,6 +1067,8 @@ if __name__ == "__main__":
         RFOOT_POS_UB = np.array([0.5, 0.05, 0.05])
         LFOOT_POS_LB = np.array([0., -0.05, -0.05])
         LFOOT_POS_UB = np.array([0.5, 0.1, 0.05])
+        min_step_length = 0.5
+        N_TURN_STEPS = 1        # added to comply with turning option
 
         nominal_configuration = q0
         l_data_x, l_data_y = generate_data(N_MOTION_PER_LEG,
@@ -839,164 +1084,7 @@ if __name__ == "__main__":
         data_x = l_data_x + r_data_x
         data_y = l_data_y + r_data_y
 
-        log_dir = "experiment_data/tensorboard/draco3_crbi_por_ori"
-        if os.path.exists(log_dir):
-            shutil.rmtree(log_dir)
-        writer = SummaryWriter(log_dir)
-
-        ## normalize training data
-        print("{} data is collected".format(len(data_x)))
-        input_mean, input_std, input_normalized_data = util.normalize_data(
-            data_x)
-        output_mean, output_std, output_normalized_data = util.normalize_data(
-            data_y)
-
-        # create Torch data set
-        x_data_torch, y_data_torch = torch.from_numpy(
-            np.array(input_normalized_data)).float(), torch.from_numpy(
-            np.array(output_normalized_data)).float()
-        torch_dataset = torch_utils.TensorDataset(x_data_torch,
-                                                  y_data_torch)
-
-        # Split into train and test data sets
-        train_size = int(len(torch_dataset) * 0.9)
-        test_size = len(torch_dataset) - train_size
-        train_dataset, test_dataset = torch.utils.data.random_split(torch_dataset,
-                                                                    [train_size, test_size])
-
-        # Load test / train data
-        train_loader = torch_utils.DataLoader(dataset=train_dataset,
-                                              batch_size=BATCH_SIZE,
-                                              shuffle=True,
-                                              num_workers=4)
-        test_loader = torch_utils.DataLoader(dataset=test_dataset,
-                                             batch_size=BATCH_SIZE,
-                                             shuffle=False,
-                                             num_workers=4)
-
-        # Create NN model
-        crbi_model = NetWork(12, 64, 64, 6)
-        optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR, momentum=0.)
-        loss_function = torch.nn.MSELoss()
-
-        # train
-        train_loss_per_epoch = 0.
-        val_loss_per_epoch = 0.
-        iter = 0
-        for epoch in range(N_EPOCH):
-            train_loss = 0.
-            train_batch_loss = 0.
-            crbi_model.train()
-            for step, (b_x, b_y) in enumerate(train_loader):
-                output = crbi_model(b_x)
-                loss = loss_function(output, b_y)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                train_batch_loss = loss.item()
-                train_loss += loss.item()
-                iter += 1
-                writer.add_scalar('batch loss', train_batch_loss, iter)
-            train_loss_per_epoch = train_loss / len(train_loader)
-
-        print('=' * 80)
-        print('CRBI training done')
-
-        # test
-        crbi_model.eval()
-        with torch.no_grad():
-            test_loss_per_epoch = 0.
-            for epoch in range(N_EPOCH):
-                test_loss = 0.
-                for i, (b_x, b_y) in enumerate(test_loader):
-                    output = crbi_model(b_x)
-                    loss = loss_function(output, b_y)
-                    test_loss += loss.item()
-                test_loss_per_epoch = test_loss / len(test_loader)
-                writer.add_scalar('test loss vs epoch',
-                                  test_loss_per_epoch, epoch + 1)
-
-        print('=' * 80)
-        print('CRBI test done')
-
-        #####################################################
-        '''plot centroidal inertia dim = 6'''
-        #####################################################
-        test_data_loader2 = torch_utils.DataLoader(
-            dataset=test_dataset,
-            batch_size=1,
-            shuffle=False,
-            num_workers=6)
-
-        crbi_model.eval()
-        gt_inertia_list, predict_inertia_list = [], []
-        iter_list = []
-        num_iter = 0
-        with torch.no_grad():
-            for i, (b_x, b_y) in enumerate(test_data_loader2):
-                output = crbi_model(b_x)
-                gt_denormalized_output = util.denormalize(
-                    np.squeeze(b_y.numpy(), axis=0), output_mean,
-                    output_std)
-                predict_denormalized_output = util.denormalize(
-                    np.squeeze(output.numpy(), axis=0), output_mean,
-                    output_std)
-                iter_list.append(num_iter)
-                gt_inertia_list.append(gt_denormalized_output)
-                predict_inertia_list.append(predict_denormalized_output)
-                num_iter += 1
-
-        ##plot
-        fig, axes = plt.subplots(6, 1)
-        for i in range(6):
-            if i == 0:
-                axes[i].plot(iter_list,
-                             [gt_inertia[i] for gt_inertia in gt_inertia_list],
-                             'r')
-                axes[i].plot(iter_list, [
-                    predict_inertia[i]
-                    for predict_inertia in predict_inertia_list
-                ], 'b')
-                axes[i].grid(True)
-            else:
-                axes[i] = plt.subplot(6, 1, i + 1, sharex=axes[i - 1])
-                axes[i].plot(iter_list,
-                             [gt_inertia[i] for gt_inertia in gt_inertia_list],
-                             'r')
-                axes[i].plot(iter_list, [
-                    predict_inertia[i]
-                    for predict_inertia in predict_inertia_list
-                ], 'b')
-                axes[i].grid(True)
-        plt.show()
-
-        # save model
-        model_path = 'experiment_data/pytorch_model/draco3_crbi_pos_ori.pth'
-        if os.path.exists(model_path):
-            os.remove(model_path)
-        torch.save(crbi_model, model_path)
-        print("==============================================")
-        print("Saved PyTorch Model State")
-        print("==============================================")
-
-        data_stats = {
-            'input_mean': input_mean.tolist(),
-            'input_std': input_std.tolist(),
-            'output_mean': output_mean.tolist(),
-            'output_std': output_std.tolist()
-        }
-
-        path = 'experiment_data/pytorch_model/draco3_crbi'
-        with open('experiment_data/pytorch_model' + '/data_stat.yaml', 'w') as f:
-            yml = YAML()
-            yml.dump(data_stats, f)
-        save_weights_to_yaml(crbi_model, path)
-        print('=' * 80)
-        print('Saved weights to yaml')
-
-        cas_func, cas_jac_func = generate_casadi_func(
-            crbi_model, input_mean, input_std, output_mean, output_std,
-            True)
+        train_and_plot_crbi()
 
         exit(0)
 
@@ -1078,7 +1166,6 @@ if __name__ == "__main__":
                 rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
                 base_ini_iso, base_fin_iso)
 
-            t = 0.
             rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
             dt = rate.period
             if VIDEO_RECORD:  # update frame rate
@@ -1137,7 +1224,7 @@ if __name__ == "__main__":
 
                 # check that rolling contact joint constraint hasn't been violated
                 lk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + lknee_jp_idx] -
-                                     configuration.q[NUM_FLOATING_BASE + lknee_jd_idx]) > MAX_HOL_ERROR
+                                           configuration.q[NUM_FLOATING_BASE + lknee_jd_idx]) > MAX_HOL_ERROR
                 rk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + rknee_jp_idx] -
                                            configuration.q[NUM_FLOATING_BASE + rknee_jd_idx]) > MAX_HOL_ERROR
                 if lk_cnstr_violated or rk_cnstr_violated:
@@ -1180,7 +1267,6 @@ if __name__ == "__main__":
                 # update nominal configuration for next iteration
                 q0 = configuration.q
                 rate.sleep()
-                t += dt
                 s += 1. / N_DATA_PER_MOTION
                 frame_idx += 1
 
@@ -1207,7 +1293,96 @@ if __name__ == "__main__":
 
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
+
+    elif CASE == 4:
+        # Left Foot Stance, Right Foot Swing
+        print("-" * 80)
+        print("Case 4: CRBI Trainer - long CCW turns")
+
+        # place base above ankles
+        nominal_base_iso.translation[0] = np.array([
+            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+
+        load_turn_pink_config()
+        MOTION_TYPE = MotionType.TURN
+
+        # Turning only in yaw
+        FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), -np.pi / 2.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
+
+        # Reduce stepping outwards (relative to stance leg, in stance coordinates)
+        RFOOT_POS_LB = np.array([0.1, -0.25, 0.])
+        RFOOT_POS_UB = np.array([0.2, -0.15, 0.])
+        LFOOT_POS_LB = np.array([-0.15, 0.1, 0.])
+        LFOOT_POS_UB = np.array([0.15, 0.25, 0.])
+
+        # no need to lift leg as high
+        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
+        SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
+
+        if VIDEO_RECORD:
+            anim = meshcat.animation.Animation(default_framerate=1 / DT)  # TODO fix rate
+        _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left")
+
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
 
-    # data_saver.close()
+    elif CASE == 5:
+        # CCW turning, right foot first
+        print("-" * 80)
+        print("Case 5: Sample Motions w/ _do_generate_data - long footsteps (left side)")
+        VISUALIZE = False       # can't do this with multiprocessing
+        VIDEO_RECORD = False
+
+        # place base above ankles
+        nominal_base_iso.translation[0] = np.array([
+            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+
+        load_turn_pink_config()
+        MOTION_TYPE = MotionType.TURN
+
+        # Turning only in yaw
+        FOOT_EA_LB = np.array([np.deg2rad(-0.1), np.deg2rad(-0.1), -np.pi / 2.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.1), np.deg2rad(0.1), np.pi / 2.])
+
+        # Reduce stepping outwards (relative to stance leg, in stance coordinates)
+        RFOOT_POS_LB = np.array([0., -0.4, 0.])
+        RFOOT_POS_UB = np.array([0.3, -0.2, 0.])
+        LFOOT_POS_LB = np.array([-0.15, 0.15, 0.])
+        LFOOT_POS_UB = np.array([0.15, 0.3, 0.])
+
+        # no need to lift leg as high
+        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
+        SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = configuration.q[2]-0.02, configuration.q[2]+0.02
+        # BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
+
+        swing_leg = "right_leg"
+
+        if VIDEO_RECORD:
+            anim = meshcat.animation.Animation()
+
+        # _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+        #                   nominal_lf_iso, nominal_rf_iso, q0, swing_leg)
+
+        nominal_configuration = q0
+        l_data_x, l_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, swing_leg,
+                                           N_CPU_DATA_GEN)
+
+        # r_data_x, r_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+        #                                    nominal_lf_iso, nominal_rf_iso,
+        #                                    nominal_configuration, "left_leg",
+        #                                    N_CPU_DATA_GEN)
+        data_x = l_data_x       # + r_data_x
+        data_y = l_data_y       # + r_data_y
+
+        train_and_plot_crbi()
+
+        if VIDEO_RECORD:
+            viz.viewer.set_animation(anim, play=False)
+
+    if SAVE_DATA:
+        data_saver.close()
