@@ -21,6 +21,7 @@ import pinocchio as pin
 import json
 import argparse
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
 parser.add_argument("--visualizer", choices=['none', 'meshcat', 'foxglove'], default='none')
@@ -81,8 +82,9 @@ async def main():
         norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
+        steptest = await SceneChannel(True,"steptest", "json", "steptest", ["num_steps"]).add_chan(server)
 
-        #create all of the visual scenes
+    #create all of the visual scenes
         scenes = []
         norm_listener = FoxgloveShapeListener(normS_chan_id,"arrows",["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"],[.1,.1,.1,.2],{"lfoot_cmd":[1,0,1,1],"rfoot_cmd":[1,0,1,1],"lfoot_filt":[1,0,1,1],"rfoot_filt":[1,0,1,1]})
         scenes.append(norm_listener)
@@ -125,6 +127,10 @@ async def main():
                 {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
 
+            #send step data
+            await server.send_message(steptest, now, json.dumps(
+                {"num_steps": 6}).encode("utf8"))
+            #print(steptest[0])
 
 
             # update mesh positions
