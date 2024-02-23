@@ -44,7 +44,7 @@ void CostFunction::initQP(QPData &qp_data) {
   qp_data.qp_[qp_data.dim_.N].Q.template topLeftCorner<6, 6>() =
       std::pow(decay_rate_, qp_data.dim_.N) * Qqq_ * 10000;
   qp_data.qp_[qp_data.dim_.N].Q.template bottomRightCorner<6, 6>() =
-      std::pow(decay_rate_, qp_data.dim_.N) * Qvv_ * 10000;
+      std::pow(decay_rate_, qp_data.dim_.N) * Qvv_ * 5000;
 
   // base_pose_ref_ =
   // aligned_vector<Vector7d>(qp_data.dim_.N + 1, Vector7d::Zero());

@@ -6,17 +6,17 @@ mpc_params:
   mpc_cost:
     #Qqq: [1e3, 1e3, 1e5, 1e3, 1e3, 1e7] ## roll, pitch, yaw, x, y, z
     #Qvv: [1e1, 1e1, 1e2, 1e1, 1e1, 1e4] ## wx, wy, wz, xdot, ydot, zdot
-    #Quu: [1e-5, 1e-5, 5e-6, 1e-6, 1e-6, 1e-8] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #Quu: [1e-5, 1e-5, 5e-6, 1e-6, 1e-6, 1e-7] ## trq_x, trq_y, trq_z, fx, fy, fz
 
-    Qqq: [100, 100, 150, 200, 500, 10000] ## roll, pitch, yaw, x, y, z
-    Qvv: [1, 1, 10, 10, 50, 2000] ## wx, wy, wz, xdot, ydot, zdot
-    Quu: [5e-4, 5e-4, 6e-4, 1e-5, 1e-5, 1e-6] ## trq_x, trq_y, trq_z, fx, fy, fz
+    Qqq: [100, 100, 200, 300, 2000, 5000000] ## roll, pitch, yaw, x, y, z
+    Qvv: [200, 10, 20, 10, 500, 500000] ## wx, wy, wz, xdot, ydot, zdot
+    Quu: [1e-4, 1e-4, 5e-4, 1e-6, 1e-6, 1e-8] ## trq_x, trq_y, trq_z, fx, fy, fz
 
   nominal_inertia: [ 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
       -0.00292598, 0.885743, -0.00292598, 1.23588 ]
 
   contact_wrench_cone:
-    mu: 0.5
+    mu: 0.3
     fz_min: 20.0 #[N]
     fz_max: 600 #[N]
     foot_half_length: 0.08 #[m]
@@ -35,4 +35,4 @@ gait:
   gait_number: 1
 
 swing_foot:
-  height: 0.15
+  height: 0.10

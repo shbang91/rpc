@@ -59,6 +59,7 @@ void Locomotion::FirstVisit() {
   gait_command_->yaw_rate = yaw_rate_cmd_;
   ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
                                                  sp_->des_body_height_);
+  // sp_->des_com_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_number_);
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(swing_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
@@ -86,6 +87,11 @@ void Locomotion::OneStep() {
   auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
   task_vector.clear();
+
+  // std::cout << "-------------------------------------------------" <<
+  // std::endl; std::cout << "contact state: " <<
+  // mpc_interface->contact_state_.transpose()
+  //<< std::endl;
 
   // TODO:update contact state for controller
   for (int leg = 0; leg < 2; leg++) {
