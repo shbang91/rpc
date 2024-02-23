@@ -44,10 +44,33 @@ SOFTWARE.
 
 class PinocchioRobotSystem;
 
+struct MPCParams {
+public:
+  MPCParams() = default;
+  ~MPCParams() = default;
+
+  // cost penalizing term
+  Vector6d Qqq_;
+  Vector6d Qvv_;
+  Vector6d Quu_;
+
+  // nominal inertia
+  Vector9d nominal_inertia_;
+
+  // contact wrench cone constraints
+  double mu_;
+  double fz_min_;
+  double fz_max_;
+  double foot_half_length_;
+  double foot_half_width_;
+};
+
 class ConvexMPCLocomotion {
 public:
   ConvexMPCLocomotion(const double dt, const int iterations_btw_mpc,
-                      PinocchioRobotSystem *robot);
+                      PinocchioRobotSystem *robot,
+                      bool b_save_mpc_solution = false,
+                      MPCParams *mpc_params = nullptr);
   ConvexMPCLocomotion() = default;
   ~ConvexMPCLocomotion() = default;
 
@@ -96,6 +119,7 @@ private:
   int n_horizon_;
   double dt_mpc_;
 
+  void _InitializeConvexMPC(MPCParams *mpc_params);
   void _InitializeConvexMPC();
   void _SolveConvexMPC(int *contact_schedule_table);
 
@@ -107,6 +131,8 @@ private:
 
   bool b_first_visit_ = true;
   int iteration_counter_;
+
+  bool b_save_mpc_solution_;
 
   // gaits
   void _SetupBodyCommand();

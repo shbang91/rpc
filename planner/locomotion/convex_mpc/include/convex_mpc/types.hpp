@@ -20,6 +20,7 @@ using Vector3d = Eigen::Matrix<double, 3, 1>;
 using Vector4d = Eigen::Matrix<double, 3, 1>;
 using Vector6d = Eigen::Matrix<double, 6, 1>;
 using Vector7d = Eigen::Matrix<double, 7, 1>;
+using Vector9d = Eigen::Matrix<double, 9, 1>;
 using Vector12d = Eigen::Matrix<double, 12, 1>;
 using Vector19d = Eigen::Matrix<double, 19, 1>;
 using Vector18d = Eigen::Matrix<double, 18, 1>;

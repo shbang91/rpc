@@ -7,7 +7,9 @@
 
 ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
                                          const int iterations_btw_mpc,
-                                         PinocchioRobotSystem *robot)
+                                         PinocchioRobotSystem *robot,
+                                         bool b_save_mpc_solution,
+                                         MPCParams *mpc_params)
     : dt_(dt), iterations_btw_mpc_(iterations_btw_mpc), n_horizon_(10),
       robot_(robot), iteration_counter_(0),
       standing_(n_horizon_, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10),
@@ -20,7 +22,10 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
   rpy_comp_.setZero();
 
   // convex mpc formulation
-  _InitializeConvexMPC();
+  if (mpc_params)
+    _InitializeConvexMPC(mpc_params);
+  else
+    _InitializeConvexMPC();
 
   // swing foot
   foot_pos_.resize(2);
@@ -42,12 +47,16 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
   // des_lf_wrench_[5] = robot_total_weight / 2.;
   // des_rf_wrench_[5] = robot_total_weight / 2.;
 
+  b_save_mpc_solution_ = b_save_mpc_solution;
+
 #if B_USE_MATLOGGER
-// logger_ = XBot::MatLogger2::MakeLogger("/tmp/convex_mpc");
-// logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
-// appender_ = XBot::MatAppender::MakeInstance();
-// appender_->add_logger(logger_);
-// appender_->start_flush_thread();
+  if (b_save_mpc_solution_) {
+    logger_ = XBot::MatLogger2::MakeLogger("/tmp/convex_mpc");
+    logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
+    appender_ = XBot::MatAppender::MakeInstance();
+    appender_->add_logger(logger_);
+    appender_->start_flush_thread();
+  }
 #endif
 }
 
@@ -393,56 +402,28 @@ void ConvexMPCLocomotion::Solve() {
 #endif
   // TEST
 }
-
-void ConvexMPCLocomotion::_InitializeConvexMPC() {
+void ConvexMPCLocomotion::_InitializeConvexMPC(MPCParams *mpc_params) {
   dt_mpc_ = dt_ * iterations_btw_mpc_;
 
   // cost
-  Eigen::MatrixXd Qqq = Eigen::MatrixXd::Zero(6, 6);
-  Eigen::MatrixXd Qvv = Eigen::MatrixXd::Zero(6, 6);
-  Eigen::MatrixXd Quu = Eigen::MatrixXd::Zero(6, 6);
-
-  Qqq(0, 0) = 1000;      // roll
-  Qqq(1, 1) = 1000;      // pitch
-  Qqq(2, 2) = 100000;    // yaw
-  Qqq(3, 3) = 1000;      // x
-  Qqq(4, 4) = 1000;      // y
-  Qqq(5, 5) = 100000000; // z
-
-  Qvv(0, 0) = 10;
-  Qvv(1, 1) = 10;
-  Qvv(2, 2) = 100;
-  Qvv(3, 3) = 10;
-  Qvv(4, 4) = 10;
-  Qvv(5, 5) = 1000;
-
-  Quu(0, 0) = 1e-5;
-  Quu(1, 1) = 1e-5;
-  Quu(2, 2) = 5e-6;
-  Quu(3, 3) = 1e-6;
-  Quu(4, 4) = 1e-6;
-  Quu(5, 5) = 1e-7;
-
-  cost_function_ =
-      std::make_shared<CostFunction>(Qqq, Qvv, Quu); // TODO: make yaml
+  Eigen::MatrixXd Qqq = (mpc_params->Qqq_).asDiagonal();
+  Eigen::MatrixXd Qvv = (mpc_params->Qvv_).asDiagonal();
+  Eigen::MatrixXd Quu = (mpc_params->Quu_).asDiagonal();
+  cost_function_ = std::make_shared<CostFunction>(Qqq, Qvv, Quu);
 
   // state equation
-  Eigen::Matrix3d nominal_inertia; // TODO: this params should be set outside
-  nominal_inertia << 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
-      -0.00292598, 0.885743, -0.00292598, 1.23588;
+  // TODO: this params should be set outside
+  Eigen::Matrix3d nominal_inertia =
+      Eigen::Map<Eigen::Matrix3d>(mpc_params->nominal_inertia_.data(), 3, 3);
+
   state_equation_ = std::make_shared<StateEquation>(
       dt_mpc_, robot_->GetTotalMass(),
       nominal_inertia); // TODO:nominal inertia need to change for inertia
                         // roll-out
 
-  // wrnech cone constraint (TODO: this params should be set outside)
-  double mu = 0.5;
-  double fz_min = 20.0;
-  double fz_max = 600.0;
-  double foot_half_length = 0.08;
-  double foot_half_width = 0.04;
   friction_cone_ = std::make_shared<FrictionCone>(
-      mu, fz_min, fz_max, foot_half_length, foot_half_width);
+      mpc_params->mu_, mpc_params->fz_min_, mpc_params->fz_max_,
+      mpc_params->foot_half_length_, mpc_params->foot_half_width_);
 
   // set solver options
   solver_options_ = std::make_shared<SolverOptions>();
@@ -566,7 +547,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   convex_mpc_->setX0(
       des_state_traj[0].head<3>(), des_state_traj[0].segment<3>(3),
       des_state_traj[0].segment<3>(6), des_state_traj[0].tail<3>());
-  // set feet pos
+  // TODO: set feet pos (check this!!!!!)
   convex_mpc_->setFeetRelativeToBody(feet_pos_relative_to_body);
   // set desired trajectory
   convex_mpc_->setDesiredStateTrajectory(des_state_traj);
@@ -577,9 +558,34 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   convex_mpc_->solve();
 
   // TODO: get mpc solution
-  const auto solution = convex_mpc_->getSolution();
-  des_lf_wrench_ = solution.f()[0][0];
-  des_rf_wrench_ = solution.f()[0][1];
+  const auto mpc_solution = convex_mpc_->getSolution();
+  des_lf_wrench_ = mpc_solution.f()[0][0];
+  des_rf_wrench_ = mpc_solution.f()[0][1];
+
+  if (b_save_mpc_solution_) {
+    // save mpc solution data for prediction horizon
+    logger_->add("time", mpc_solution.time());
+    for (const auto &pos : mpc_solution.pos())
+      logger_->add("com_pos", pos);
+    for (const auto &euler_angle : mpc_solution.euler())
+      logger_->add("euler_ang", euler_angle);
+    for (const auto &com_vel : mpc_solution.v())
+      logger_->add("com_vel", com_vel);
+    for (const auto &ang_vel : mpc_solution.w())
+      logger_->add("ang_vel", ang_vel);
+    for (const auto &contact_wrench : mpc_solution.f()) {
+      logger_->add("force_LF", contact_wrench[0]);
+      logger_->add("force_RF", contact_wrench[1]);
+    }
+
+    // save desired state trajectory provided to the MPC
+    for (const auto &des_st : des_state_traj) {
+      logger_->add("des_euler_ang", des_st.segment<3>(0));
+      logger_->add("des_com_pos", des_st.segment<3>(3));
+      logger_->add("des_ang_vel", des_st.segment<3>(6));
+      logger_->add("des_com_vel", des_st.segment<3>(9));
+    }
+  }
 
   // std::cout << "=========================================================="
   //<< std::endl;
@@ -597,4 +603,64 @@ void ConvexMPCLocomotion::_SetupBodyCommand() {
   yaw_des_ = robot_->GetBodyOriYPR()[0] + yaw_rate_des_ * dt_;
   roll_des_ = 0.0;
   pitch_des_ = 0.0;
+}
+
+// should be deprecated
+void ConvexMPCLocomotion::_InitializeConvexMPC() {
+  dt_mpc_ = dt_ * iterations_btw_mpc_;
+
+  // cost
+  Eigen::MatrixXd Qqq = Eigen::MatrixXd::Zero(6, 6);
+  Eigen::MatrixXd Qvv = Eigen::MatrixXd::Zero(6, 6);
+  Eigen::MatrixXd Quu = Eigen::MatrixXd::Zero(6, 6);
+
+  Qqq(0, 0) = 100;  // roll
+  Qqq(1, 1) = 100;  // pitch
+  Qqq(2, 2) = 150;  // yaw
+  Qqq(3, 3) = 200;  // x
+  Qqq(4, 4) = 200;  // y
+  Qqq(5, 5) = 1000; // z
+
+  Qvv(0, 0) = 1;   // wx
+  Qvv(1, 1) = 1;   // wy
+  Qvv(2, 2) = 1;   // wz
+  Qvv(3, 3) = 1;   // xdot
+  Qvv(4, 4) = 1;   // ydot
+  Qvv(5, 5) = 100; // zdot
+
+  Quu(0, 0) = 1e-3;
+  Quu(1, 1) = 1e-3;
+  Quu(2, 2) = 1e-4;
+  Quu(3, 3) = 1e-5;
+  Quu(4, 4) = 1e-5;
+  Quu(5, 5) = 1e-5;
+
+  cost_function_ =
+      std::make_shared<CostFunction>(Qqq, Qvv, Quu); // TODO: make yaml
+
+  // state equation
+  Eigen::Matrix3d nominal_inertia; // TODO: this params should be set outside
+  nominal_inertia << 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
+      -0.00292598, 0.885743, -0.00292598, 1.23588;
+  state_equation_ = std::make_shared<StateEquation>(
+      dt_mpc_, robot_->GetTotalMass(),
+      nominal_inertia); // TODO:nominal inertia need to change for inertia
+                        // roll-out
+
+  // wrnech cone constraint (TODO: this params should be set outside)
+  double mu = 0.5;
+  double fz_min = 20.0;
+  double fz_max = 600.0;
+  double foot_half_length = 0.08;
+  double foot_half_width = 0.04;
+  friction_cone_ = std::make_shared<FrictionCone>(
+      mu, fz_min, fz_max, foot_half_length, foot_half_width);
+
+  // set solver options
+  solver_options_ = std::make_shared<SolverOptions>();
+
+  // convex mpc
+  convex_mpc_ =
+      std::make_shared<MPC>(n_horizon_, dt_mpc_, *state_equation_,
+                            *cost_function_, *friction_cone_, *solver_options_);
 }

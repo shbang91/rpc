@@ -60,8 +60,39 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
   double iterations_between_mpc =
       util::ReadParameter<double>(cfg_mpc, "iterations_btw_mpc");
+  bool b_save_mpc_solution =
+      util::ReadParameter<bool>(cfg_mpc, "b_save_mpc_solution");
+
+  mpc_params_ = new MPCParams();
+  Eigen::VectorXd temp_vec;
+  double temp_val;
+  util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "Qqq", temp_vec);
+  mpc_params_->Qqq_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "Qvv", temp_vec);
+  mpc_params_->Qvv_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "Quu", temp_vec);
+  mpc_params_->Quu_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"], "nominal_inertia", temp_vec);
+  mpc_params_->nominal_inertia_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"]["contact_wrench_cone"], "mu",
+                      temp_val);
+  mpc_params_->mu_ = temp_val;
+  util::ReadParameter(cfg_mpc["mpc_params"]["contact_wrench_cone"], "fz_min",
+                      temp_val);
+  mpc_params_->fz_min_ = temp_val;
+  util::ReadParameter(cfg_mpc["mpc_params"]["contact_wrench_cone"], "fz_max",
+                      temp_val);
+  mpc_params_->fz_max_ = temp_val;
+  util::ReadParameter(cfg_mpc["mpc_params"]["contact_wrench_cone"],
+                      "foot_half_length", temp_val);
+  mpc_params_->foot_half_length_ = temp_val;
+  util::ReadParameter(cfg_mpc["mpc_params"]["contact_wrench_cone"],
+                      "foot_half_width", temp_val);
+  mpc_params_->foot_half_width_ = temp_val;
+
   convex_mpc_locomotion_ =
-      new ConvexMPCLocomotion(sp_->servo_dt_, iterations_between_mpc, robot_);
+      new ConvexMPCLocomotion(sp_->servo_dt_, iterations_between_mpc, robot_,
+                              b_save_mpc_solution, mpc_params_);
 
   //=============================================================
   // trajectory Managers

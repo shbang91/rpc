@@ -27,6 +27,7 @@ class DracoStateProvider;
 class ForceTrajectoryManager;
 class QPParamsManager;
 class ConvexMPCLocomotion;
+class MPCParams;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
@@ -53,6 +54,7 @@ private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
+  MPCParams *mpc_params_;
 
   void _InitializeParameters() override;
 };
