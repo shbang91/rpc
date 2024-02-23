@@ -41,8 +41,8 @@ import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
-VISUALIZE = False
-VIDEO_RECORD = False
+VISUALIZE = True
+VIDEO_RECORD = True
 SAVE_DATA = False
 PRINT_FREQ = 10
 DT = 0.01
@@ -80,6 +80,8 @@ LR = 0.01
 MOMENTUM = 0.
 N_EPOCH = 20
 BATCH_SIZE = 32
+NN_INPUT_DIM = 12       # end-effector linear (xyz) and angular (rpy) position
+NN_OUTPUT_DIM = 6       # Ixx, Iyy, Izz, Ixy, Ixz, Iyz
 
 if SAVE_DATA:
     data_saver = DataSaver('draco3_crbi_fwd_step_joints.pkl')
@@ -463,8 +465,8 @@ def _do_generate_data(n_data,
         np.random.seed(rseed)
 
     # initialize training / validation data size
-    data_x = [np.zeros(12,) for _ in range(n_data)]
-    data_y = [np.zeros(6,) for _ in range(n_data)]
+    data_x = [np.zeros(NN_INPUT_DIM,) for _ in range(n_data)]
+    data_y = [np.zeros(NN_OUTPUT_DIM,) for _ in range(n_data)]
     nominal_base_iso_init = configuration.get_transform_frame_to_world(
         "torso_link").copy()
 
@@ -508,7 +510,7 @@ def _do_generate_data(n_data,
 
                 s = 0.
                 b_terminate = False
-                while s < 1.:
+                while s < 1.:       # should generate N_DATA_PER_MOTION data points
                     base_pos = base_pos_curve.evaluate(s)
                     base_quat = base_quat_curve.evaluate(s)
 
@@ -533,7 +535,6 @@ def _do_generate_data(n_data,
                     des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
                     task_dict['lfoot_task'].set_target(des_lfoot_iso)
 
-                    # TODO: or set from configuration
                     task_dict['posture_task'].set_target(q_nominal)
 
                     # solve ik
@@ -642,11 +643,12 @@ def _do_generate_data(n_data,
                     i = iter * N_DATA_PER_MOTION * N_TURN_STEPS + n_turn * N_DATA_PER_MOTION
                     continue
 
-                # update nominal poses
-                nominal_lf_iso_step = pin.SE3(lfoot_fin_iso)
-                nominal_rf_iso_step = pin.SE3(rfoot_fin_iso)
-                nominal_base_iso = pin.SE3(base_fin_iso)
-                q_prev_step = configuration.q
+                if MOTION_TYPE == MotionType.TURN:
+                    # update nominal poses
+                    nominal_lf_iso_step = pin.SE3(lfoot_fin_iso)
+                    nominal_rf_iso_step = pin.SE3(rfoot_fin_iso)
+                    nominal_base_iso = pin.SE3(base_fin_iso)
+                    q_prev_step = configuration.q
                 pbar.update(N_DATA_PER_MOTION)
 
                 if MOTION_TYPE == MotionType.TURN:
@@ -656,8 +658,8 @@ def _do_generate_data(n_data,
                     else:
                         side = "right_leg"
 
-                    # successful turning step without collision, continue to next step
-                    n_turn += 1
+                # successful turning step without collision, continue to next step
+                n_turn += 1
 
             # increase iteration count
             iter += 1
@@ -830,7 +832,7 @@ def train_and_plot_crbi():
                                          num_workers=4)
 
     # Create NN model
-    crbi_model = NetWork(12, 64, 64, 6)
+    crbi_model = NetWork(NN_INPUT_DIM, N_LAYER_OUTPUT[0], N_LAYER_OUTPUT[1], NN_OUTPUT_DIM)
     optimizer = torch.optim.SGD(crbi_model.parameters(), lr=LR, momentum=0.)
     loss_function = torch.nn.MSELoss()
 
@@ -1056,17 +1058,19 @@ if __name__ == "__main__":
     r_knee_holonomic_task = JointCouplingTask(
         ["r_knee_fe_jp", "r_knee_fe_jd"],
         [1.0, -1.0],
-        5000.0,
+        500.0,
         configuration,
         lm_damping=1e-7,
     )
+    r_knee_holonomic_task.gain = 0.1
     l_knee_holonomic_task = JointCouplingTask(
         ["l_knee_fe_jp", "l_knee_fe_jd"],
         [1.0, -1.0],
-        5000.0,
+        500.0,
         configuration,
         lm_damping=1e-7,
     )
+    l_knee_holonomic_task.gain = 0.1
 
     tasks = [left_foot_task, torso_task, right_foot_task, posture_task,
              l_knee_holonomic_task, r_knee_holonomic_task]
@@ -1101,11 +1105,11 @@ if __name__ == "__main__":
     # Options:
     # Case 0: Train CRBI Regressor w/multiprocessing
     # Case 1: Load Pre-trained CRBI Model
-    # Case 2: Sample Motions - long footsteps (left side)
+    # Case 2: Sample Motions - straight footsteps (left/right side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
     # Case 5: Sample Motions w/ _do_generate_data - long CCW turns
-    CASE = 5
+    CASE = 3
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 0:
@@ -1161,7 +1165,7 @@ if __name__ == "__main__":
     elif CASE == 2:
         # Left Foot Swing, Right Foot Stance
         print("-" * 80)
-        print("Case 2: Sample Motions - long footsteps (left side)")
+        print("Case 2: Sample Motions - straight footsteps (left/right side)")
 
         FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
         FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
@@ -1170,10 +1174,12 @@ if __name__ == "__main__":
         RFOOT_POS_UB = np.array([0.5, 0.05, 0.05])
         LFOOT_POS_LB = np.array([0., -0.05, -0.05])
         LFOOT_POS_UB = np.array([0.5, 0.1, 0.05])
+        N_TURN_STEPS = 1        # single step motion, repeated several times
 
         if VIDEO_RECORD:
-            anim = meshcat.animation.Animation(default_framerate=1 / DT)  # TODO fix rate
-        _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left", 0.5)
+            anim = meshcat.animation.Animation()
+        _do_generate_data(N_DATA_PER_MOTION * N_TURN_ITERS,
+                          nominal_lf_iso, nominal_rf_iso, q0, "right")
 
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
@@ -1192,160 +1198,28 @@ if __name__ == "__main__":
         MOTION_TYPE = MotionType.TURN
 
         # Turning only in yaw
-        FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), -np.pi / 2.])
-        FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
+        FOOT_EA_LB = np.array([np.deg2rad(-0.1), np.deg2rad(-0.1), -np.pi / 2.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.1), np.deg2rad(0.1), np.pi / 2.])
 
         # Reduce stepping outwards (relative to stance leg, in stance coordinates)
-        RFOOT_POS_LB = np.array([0.1, -0.3, 0.])
-        RFOOT_POS_UB = np.array([0.2, -0.15, 0.])
-        LFOOT_POS_LB = np.array([-0.15, 0.1, 0.])
-        LFOOT_POS_UB = np.array([0.15, 0.25, 0.])
+        TURN_SWING_POS_LB = np.array([0., -0.4, 0.])
+        TURN_SWING_POS_UB = np.array([0.3, -0.2, 0.])
+        TURN_STANCE_POS_LB = np.array([-0.15, 0.15, 0.])
+        TURN_STANCE_POS_UB = np.array([0.15, 0.3, 0.])
 
         # no need to lift leg as high
         SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
         SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
-        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = configuration.q[2]-0.02, configuration.q[2]+0.02
 
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation()
 
-        swing_leg = "right_leg"
-        frame_idx = int(0)
-
-        n_turn = int(0)
-        while n_turn < N_TURN_STEPS:
-            swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
-                nominal_base_iso, nominal_lf_iso, nominal_rf_iso, "ccw", swing_leg)
-
-            lfoot_pos_curve_ini_to_mid, lfoot_pos_curve_mid_to_fin, lfoot_quat_curve, rfoot_pos_curve_ini_to_mid, rfoot_pos_curve_mid_to_fin, rfoot_quat_curve, base_pos_curve, base_quat_curve = create_curves(
-                lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel,
-                rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel,
-                base_ini_iso, base_fin_iso)
-
-            rate = RateLimiter(frequency=N_DATA_PER_MOTION / swing_time)
-            dt = rate.period
-            if VIDEO_RECORD:  # update frame rate
-                anim.default_framerate = int(1 / dt)
-
-            s = 0.
-            b_terminate = False
-            while s < 1.:
-                base_pos = base_pos_curve.evaluate(s)
-                base_quat = base_quat_curve.evaluate(s)
-
-                if s <= 0.5:
-                    sprime = 2.0 * s
-                    lf_pos = lfoot_pos_curve_ini_to_mid.evaluate(sprime)
-                    rf_pos = rfoot_pos_curve_ini_to_mid.evaluate(sprime)
-                else:
-                    sprime = 2.0 * (s - 0.5)
-                    lf_pos = lfoot_pos_curve_mid_to_fin.evaluate(sprime)
-                    rf_pos = rfoot_pos_curve_mid_to_fin.evaluate(sprime)
-                lf_quat = lfoot_quat_curve.evaluate(s)
-                rf_quat = rfoot_quat_curve.evaluate(s)
-
-                # set desired task
-                des_base_iso = pin.SE3(util.quat_to_rot(base_quat), base_pos)
-                task_dict['torso_task'].set_target(des_base_iso)
-
-                des_rfoot_iso = pin.SE3(util.quat_to_rot(rf_quat), rf_pos)
-                task_dict['rfoot_task'].set_target(des_rfoot_iso)
-
-                des_lfoot_iso = pin.SE3(util.quat_to_rot(lf_quat), lf_pos)
-                task_dict['lfoot_task'].set_target(des_lfoot_iso)
-
-                # TODO: or set from configuration
-                task_dict['posture_task'].set_target(q0)
-
-                # solve ik
-                # Compute velocity and integrate it into next configuration
-                velocity = solve_ik(configuration, tasks, dt, solver=solver)
-                configuration.integrate_inplace(velocity, dt)
-
-                # Compute all the collisions
-                pin.computeCollisions(robot.model, robot.data, geom_model, geom_data,
-                                      configuration.q, False)
-
-                # Check for collisions at each time step
-                for k in range(len(geom_model.collisionPairs)):
-                    cr = geom_data.collisionResults[k]
-                    cp = geom_model.collisionPairs[k]
-                    if cr.isCollision():
-                        print("Collision between:",
-                              geom_model.geometryObjects[cp.first].name, ",",
-                              geom_model.geometryObjects[cp.second].name,
-                              ". Resampling step.")
-                        b_terminate = True
-                        break
-
-                # check that rolling contact joint constraint hasn't been violated
-                lk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + lknee_jp_idx] -
-                                           configuration.q[NUM_FLOATING_BASE + lknee_jd_idx]) > MAX_HOL_ERROR
-                rk_cnstr_violated = np.abs(configuration.q[NUM_FLOATING_BASE + rknee_jp_idx] -
-                                           configuration.q[NUM_FLOATING_BASE + rknee_jd_idx]) > MAX_HOL_ERROR
-                if lk_cnstr_violated or rk_cnstr_violated:
-                    print("Rolling contact joint constraint violated. Resampling step.")
-                    b_terminate = True
-
-                if b_terminate:
-                    break
-
-                # Visualize result at fixed FPS
-                if VISUALIZE:
-                    viz.display(configuration.q)
-
-                    #### base
-                    T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
-                                                  base_pos)
-                    #### right foot
-                    T_w_rf = liegroup.RpToTrans(util.quat_to_rot(rf_quat), rf_pos)
-
-                    #### left foot
-                    T_w_lf = liegroup.RpToTrans(util.quat_to_rot(lf_quat), lf_pos)
-
-                    lfoot_contact_frame.set_transform(T_w_lf)
-                    rfoot_contact_frame.set_transform(T_w_rf)
-                    torso_frame.set_transform(T_w_base)
-                    if VIDEO_RECORD:
-                        # update visualized frames
-                        with anim.at_frame(lfoot_contact_frame, frame_idx) as frame:
-                            frame.set_transform(T_w_lf)
-                        with anim.at_frame(rfoot_contact_frame, frame_idx) as frame:
-                            frame.set_transform(T_w_rf)
-                        with anim.at_frame(torso_frame, frame_idx) as frame:
-                            frame.set_transform(T_w_base)
-
-                        # update robot configuration
-                        with anim.at_frame(viz.viewer, frame_idx) as frame:
-                            display_visualizer_frames(viz, frame, pin.GeometryType.VISUAL)
-                            display_visualizer_frames(viz, frame, pin.GeometryType.COLLISION)
-
-                # update nominal configuration for next iteration
-                q0 = configuration.q
-                rate.sleep()
-                s += 1. / N_DATA_PER_MOTION
-                frame_idx += 1
-
-            if b_terminate:
-                b_terminate = False
-                configuration.q = q_prev_step
-                q0 = q_prev_step
-                continue
-
-            # update nominal poses
-            nominal_lf_iso = pin.SE3(lfoot_fin_iso)
-            nominal_rf_iso = pin.SE3(rfoot_fin_iso)
-            nominal_base_iso = pin.SE3(base_fin_iso)
-            q_prev_step = configuration.q
-
-            # switch stance leg
-            if swing_leg == "right_leg":
-                swing_leg = "left_leg"
-            else:
-                swing_leg = "right_leg"
-
-            # successful turning step without collision, continue to next step
-            n_turn += 1
+        num_iters = 3       # number of times the turning motion is repeated
+        first_swing_leg = "right_leg"
+        l_data_x, l_data_y = _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * num_iters,
+                          nominal_lf_iso, nominal_rf_iso, q0, first_swing_leg,
+                          cw_or_ccw='ccw')
 
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
@@ -1378,7 +1252,7 @@ if __name__ == "__main__":
         BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
 
         if VIDEO_RECORD:
-            anim = meshcat.animation.Animation(default_framerate=1 / DT)  # TODO fix rate
+            anim = meshcat.animation.Animation()
         _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left")
 
         if VIDEO_RECORD:
@@ -1415,13 +1289,6 @@ if __name__ == "__main__":
 
         if VIDEO_RECORD:
             anim = meshcat.animation.Animation()
-
-        # l_data_x, l_data_y = _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
-        #                   nominal_lf_iso, nominal_rf_iso, q0, "left_leg",
-        #                   cw_or_ccw='cw')
-        # r_data_x, r_data_y = _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
-        #                   nominal_lf_iso, nominal_rf_iso, q0, "right_leg",
-        #                   cw_or_ccw='ccw')
 
         nominal_configuration = q0
         l_data_x, l_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
