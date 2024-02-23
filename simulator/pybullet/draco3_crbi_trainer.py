@@ -1108,7 +1108,6 @@ if __name__ == "__main__":
     # Case 2: Sample Motions - straight footsteps (left/right side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
-    # Case 5: Sample Motions w/ _do_generate_data - long CCW turns
     CASE = 3
 
     # Set base_pos, base_quat, joint_pos here for visualization
@@ -1217,7 +1216,7 @@ if __name__ == "__main__":
 
         num_iters = 3       # number of times the turning motion is repeated
         first_swing_leg = "right_leg"
-        l_data_x, l_data_y = _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * num_iters,
+        _do_generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * num_iters,
                           nominal_lf_iso, nominal_rf_iso, q0, first_swing_leg,
                           cw_or_ccw='ccw')
 
@@ -1225,43 +1224,9 @@ if __name__ == "__main__":
             viz.viewer.set_animation(anim, play=False)
 
     elif CASE == 4:
-        # Left Foot Stance, Right Foot Swing
-        print("-" * 80)
-        print("Case 4: CRBI Trainer - long CCW turns")
-
-        # place base above ankles
-        nominal_base_iso.translation[0] = np.array([
-            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
-
-        load_turn_pink_config()
-        MOTION_TYPE = MotionType.TURN
-
-        # Turning only in yaw
-        FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), -np.pi / 2.])
-        FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), np.pi / 2.])
-
-        # Reduce stepping outwards (relative to stance leg, in stance coordinates)
-        RFOOT_POS_LB = np.array([0.1, -0.25, 0.])
-        RFOOT_POS_UB = np.array([0.2, -0.15, 0.])
-        LFOOT_POS_LB = np.array([-0.15, 0.1, 0.])
-        LFOOT_POS_UB = np.array([0.15, 0.25, 0.])
-
-        # no need to lift leg as high
-        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.15
-        SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
-        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.72, 0.76
-
-        if VIDEO_RECORD:
-            anim = meshcat.animation.Animation()
-        _do_generate_data(N_DATA_PER_MOTION, nominal_lf_iso, nominal_rf_iso, q0, "left")
-
-        if VIDEO_RECORD:
-            viz.viewer.set_animation(anim, play=False)
-
-    elif CASE == 5:
         # CCW turning, right foot first
         print("-" * 80)
-        print("Case 5: Train CRBI Regressor w/multiprocessing for long CCW turns")
+        print("Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns")
         VISUALIZE = False       # can't do this with multiprocessing
         VIDEO_RECORD = False
 
