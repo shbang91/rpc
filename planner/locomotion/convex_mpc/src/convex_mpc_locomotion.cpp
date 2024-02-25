@@ -467,17 +467,17 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
 
   // design desired state trajectory
   aligned_vector<Vector12d> des_state_traj(n_horizon_ + 1);
-  Vector12d state_traj_initial = Vector12d::Zero();
+  Vector12d des_state_traj_initial = Vector12d::Zero();
 
   if (current_gait_number_ == gait::kStand) {
     // initial state
-    state_traj_initial.head<3>() =
+    des_state_traj_initial.head<3>() =
         Eigen::Vector3d(roll_des_, pitch_des_, stand_traj_[2]); // rpy
-    state_traj_initial.segment<3>(3) =
+    des_state_traj_initial.segment<3>(3) =
         Eigen::Vector3d(stand_traj_[3], stand_traj_[4], stand_traj_[5]); // xyz
 
     // desired state trajectory
-    fill(des_state_traj.begin(), des_state_traj.end(), state_traj_initial);
+    fill(des_state_traj.begin(), des_state_traj.end(), des_state_traj_initial);
 
   } else {
     // when not standing
@@ -506,55 +506,62 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     des_body_pos_in_world_[1] = y_start;
 
     // initial state
-    state_traj_initial.head<3>() =
+    des_state_traj_initial.head<3>() =
         Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1],
                         yaw_des_); // TODO:TEST this (0., 0., yaw_des_)
-    state_traj_initial.segment<3>(3) =
+    des_state_traj_initial.segment<3>(3) =
         Eigen::Vector3d(x_start, y_start, des_body_height_);
 
-    // TODO: body ang vel
-    // Eigen::Vector3d torso_ang_vel =
-    // robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).head<3>();
-    // state_traj_initial.segment<3>(6) = torso_ang_vel;
-    state_traj_initial.segment<3>(6) << 0., 0., yaw_rate_cmd_;
-    state_traj_initial.segment<3>(9) = Eigen::Vector3d(
+    des_state_traj_initial.segment<3>(6) << 0., 0., yaw_rate_des_;
+    des_state_traj_initial.segment<3>(9) = Eigen::Vector3d(
         des_body_vel_in_world_[0], des_body_vel_in_world_[1], 0.0);
 
-    for (int i = 0; i < n_horizon_ + 1; ++i) {
-      // roll out desired trajectory
-      des_state_traj[i] = state_traj_initial;
-      des_state_traj[i][5] = des_body_height_;
+    // initial desired state traj
+    des_state_traj[0] = des_state_traj_initial;
+    des_state_traj[0][5] = des_body_height_;
 
-      if (i == 0) {
-        // start at current position
-        des_state_traj[i][0] = robot_->GetBodyOriYPR()[2];
-        des_state_traj[i][1] = robot_->GetBodyOriYPR()[1];
-        des_state_traj[i][2] = robot_->GetBodyOriYPR()[0];
-        des_state_traj[i][3] = robot_->GetRobotComPos()[0];
-        des_state_traj[i][4] = robot_->GetRobotComPos()[1];
-        des_state_traj[i][5] = robot_->GetBodyPos()[2];
-      } else {
-        // yaw
-        if (yaw_rate_des_ == 0.0)
-          des_state_traj[i][2] = stand_traj_[2];
-        else
-          des_state_traj[i][2] =
-              des_state_traj[i - 1][2] + dt_mpc_ * yaw_rate_cmd_;
-        // x
-        if (des_body_vel_in_world_[0] == 0.0)
-          des_state_traj[i][3] = stand_traj_[3];
-        else
-          des_state_traj[i][3] =
-              des_state_traj[i - 1][3] + dt_mpc_ * des_body_vel_in_world_[0];
+    for (int i = 1; i < n_horizon_ + 1; ++i) {
+      des_state_traj[i][0] = des_state_traj[i - 1][0]; // roll
+      des_state_traj[i][1] = des_state_traj[i - 1][1]; // pitch
+      // yaw
+      if (yaw_rate_des_ == 0.0)
+        des_state_traj[i][2] = stand_traj_[2];
+      else
+        des_state_traj[i][2] =
+            des_state_traj[i - 1][2] + dt_mpc_ * yaw_rate_des_;
+      // x
+      if (des_body_vel_in_world_[0] == 0.0)
+        des_state_traj[i][3] = stand_traj_[3];
+      else
+        des_state_traj[i][3] =
+            des_state_traj[i - 1][3] + dt_mpc_ * des_body_vel_in_world_[0];
+      // y
+      if (des_body_vel_in_world_[1] == 0.0)
+        des_state_traj[i][4] = stand_traj_[4];
+      else
+        des_state_traj[i][4] =
+            des_state_traj[i - 1][4] + dt_mpc_ * des_body_vel_in_world_[1];
 
-        // y
-        if (des_body_vel_in_world_[1] == 0.0)
-          des_state_traj[i][4] = stand_traj_[4];
-        else
-          des_state_traj[i][4] =
-              des_state_traj[i - 1][4] + dt_mpc_ * des_body_vel_in_world_[1];
-      }
+      // z
+      des_state_traj[i][5] = des_state_traj[i - 1][5];
+
+      // vel
+      des_state_traj[i].tail<6>() = des_state_traj[i - 1].tail<6>();
     }
+
+    // update with current states
+    des_state_traj[0][0] = robot_->GetBodyOriYPR()[2];
+    des_state_traj[0][1] = robot_->GetBodyOriYPR()[1];
+    des_state_traj[0][2] = robot_->GetBodyOriYPR()[0];
+    des_state_traj[0][3] = robot_->GetRobotComPos()[0];
+    des_state_traj[0][4] = robot_->GetRobotComPos()[1];
+    des_state_traj[0][5] = robot_->GetBodyPos()[2];
+    // TODO: what about initial vel?
+    Eigen::Vector3d torso_ang_vel =
+        robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).head<3>();
+    des_state_traj[0].segment<3>(6) = torso_ang_vel;
+    des_state_traj[0].segment<3>(9) = robot_->GetRobotComLinVel();
+    des_state_traj[0][11] = robot_->GetBodyVel()[2];
   }
 
   //=====================================================
