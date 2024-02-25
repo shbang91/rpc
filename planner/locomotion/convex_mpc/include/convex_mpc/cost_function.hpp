@@ -20,7 +20,9 @@ public:
   // const Matrix6d &Quu, const double decay_rate = 1.0);
 
   CostFunction(const Matrix6d &Qqq, const Matrix6d &Qvv, const Matrix6d &Quu,
-               const double decay_rate = 1.0);
+               const double decay_rate = 1.0,
+               const Matrix6d &Qqq_terminal = Matrix6d::Identity(),
+               const Matrix6d &Qvv_terminal = Matrix6d::Identity());
 
   CostFunction() = default;
 
@@ -42,6 +44,7 @@ public:
 private:
   double dt_;
   Matrix6d Qqq_, Qvv_;
+  Matrix6d Qqq_terminal_, Qvv_terminal_;
   Matrix12d Quu_;
   Vector6d v_command_, dq_command_; // vx, vy, vz, wx, wy, wz
   Vector7d base_pose_;

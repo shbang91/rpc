@@ -72,6 +72,15 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   mpc_params_->Qvv_ = temp_vec;
   util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "Quu", temp_vec);
   mpc_params_->Quu_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "Qqq_terminal",
+                      temp_vec);
+  mpc_params_->Qqq_terminal_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "Qvv_terminal",
+                      temp_vec);
+  mpc_params_->Qvv_terminal_ = temp_vec;
+  util::ReadParameter(cfg_mpc["mpc_params"]["mpc_cost"], "decay_rate",
+                      temp_val);
+  mpc_params_->decay_rate_ = temp_val;
   util::ReadParameter(cfg_mpc["mpc_params"], "nominal_inertia", temp_vec);
   mpc_params_->nominal_inertia_ = temp_vec;
   util::ReadParameter(cfg_mpc["mpc_params"]["contact_wrench_cone"], "mu",

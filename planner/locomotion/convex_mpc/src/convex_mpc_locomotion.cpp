@@ -429,7 +429,12 @@ void ConvexMPCLocomotion::_InitializeConvexMPC(MPCParams *mpc_params) {
   Eigen::MatrixXd Qqq = (mpc_params->Qqq_).asDiagonal();
   Eigen::MatrixXd Qvv = (mpc_params->Qvv_).asDiagonal();
   Eigen::MatrixXd Quu = (mpc_params->Quu_).asDiagonal();
-  cost_function_ = std::make_shared<CostFunction>(Qqq, Qvv, Quu);
+  double decay_rate = mpc_params->decay_rate_;
+  Eigen::MatrixXd Qqq_terminal = (mpc_params->Qqq_terminal_).asDiagonal();
+  Eigen::MatrixXd Qvv_terminal = (mpc_params->Qvv_terminal_).asDiagonal();
+
+  cost_function_ = std::make_shared<CostFunction>(Qqq, Qvv, Quu, decay_rate,
+                                                  Qqq_terminal, Qvv_terminal);
 
   // state equation
   // TODO: this params should be set outside
@@ -654,7 +659,9 @@ void ConvexMPCLocomotion::_SetupBodyCommand() {
   pitch_des_ = 0.0;
 }
 
+//===========================================================
 // should be deprecated
+//===========================================================
 void ConvexMPCLocomotion::_InitializeConvexMPC() {
   dt_mpc_ = dt_ * iterations_btw_mpc_;
 

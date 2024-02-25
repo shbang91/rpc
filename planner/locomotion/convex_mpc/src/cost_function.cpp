@@ -25,10 +25,13 @@
 //}
 
 CostFunction::CostFunction(const Matrix6d &Qqq, const Matrix6d &Qvv,
-                           const Matrix6d &Quu, const double decay_rate)
+                           const Matrix6d &Quu, const double decay_rate,
+                           const Matrix6d &Qqq_terminal,
+                           const Matrix6d &Qvv_terminal)
     : Qqq_(Qqq), Qvv_(Qvv), Quu_(Matrix12d::Zero()), decay_rate_(decay_rate),
       base_pose_(Vector7d::Zero()), base_pose_ref_(), qdiff_(Vector6d::Zero()),
-      Jqdiff_(Matrix6d::Zero()), JtQqq_(Matrix6d::Zero()) {
+      Jqdiff_(Matrix6d::Zero()), JtQqq_(Matrix6d::Zero()),
+      Qqq_terminal_(Qqq_terminal), Qvv_terminal_(Qvv_terminal) {
   for (int i = 0; i < 2; ++i) {
     Quu_.template block<6, 6>(6 * i, 6 * i) = Quu;
   }
@@ -42,9 +45,9 @@ void CostFunction::initQP(QPData &qp_data) {
         std::pow(decay_rate_, i) * Qvv_;
   }
   qp_data.qp_[qp_data.dim_.N].Q.template topLeftCorner<6, 6>() =
-      std::pow(decay_rate_, qp_data.dim_.N) * Qqq_ * 10000;
+      std::pow(decay_rate_, qp_data.dim_.N) * Qqq_ * Qqq_terminal_;
   qp_data.qp_[qp_data.dim_.N].Q.template bottomRightCorner<6, 6>() =
-      std::pow(decay_rate_, qp_data.dim_.N) * Qvv_ * 5000;
+      std::pow(decay_rate_, qp_data.dim_.N) * Qvv_ * Qvv_terminal_;
 
   // base_pose_ref_ =
   // aligned_vector<Vector7d>(qp_data.dim_.N + 1, Vector7d::Zero());

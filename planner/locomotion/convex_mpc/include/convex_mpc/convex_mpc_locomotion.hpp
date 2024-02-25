@@ -55,6 +55,11 @@ public:
   Vector6d Qvv_;
   Vector6d Quu_;
 
+  Vector6d Qqq_terminal_;
+  Vector6d Qvv_terminal_;
+
+  double decay_rate_;
+
   // nominal inertia
   Vector9d nominal_inertia_;
 
