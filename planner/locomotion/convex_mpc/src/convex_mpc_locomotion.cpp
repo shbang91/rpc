@@ -264,8 +264,11 @@ void ConvexMPCLocomotion::Solve() {
 
   // solve convex mpc with fixed control frequency
   // if (iteration_counter_ % iterations_btw_mpc_ == 0)
-  if (iteration_counter_ % 5 == 0)
+  if (iteration_counter_ % 5 == 0) {
+    clock_.Start();
     _SolveConvexMPC(contact_schedule_table);
+    clock_.Stop();
+  }
 
   // contact state for state estimator
   Eigen::Vector2d se_contact_state(0.0, 0.0);
@@ -628,6 +631,9 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
       logger_->add("des_ang_vel", des_st.segment<3>(6));
       logger_->add("des_com_vel", des_st.segment<3>(9));
     }
+
+    // save mpc solve time
+    logger_->add("mpc_solve_time", clock_.duration());
   }
 
   // std::cout << "=========================================================="
