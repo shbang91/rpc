@@ -30,6 +30,7 @@ SOFTWARE.
 #include "controller/whole_body_controller/managers/cubic_beizer_trajectory_manager.hpp"
 #include "convex_mpc/gait.hpp"
 #include "convex_mpc/mpc.hpp"
+#include "util/clock.hpp"
 #include "util/interpolation.hpp"
 
 #if B_USE_MATLOGGER
@@ -173,6 +174,9 @@ private:
   HermiteQuaternionCurve2 foot_swing_ori_trajectory_[2];
   double swing_time_[2];
   double swing_time_remaining_[2];
+
+  // clock
+  Clock clock_;
 
   // TEST
   Eigen::Matrix3d I_global_ = Eigen::Matrix3d::Identity();
