@@ -310,6 +310,21 @@ Eigen::Vector3d PinocchioRobotSystem::GetBodyPos() {
   return q_.head<3>() + world_R_body * base_local_com_pos_;
 }
 
+Eigen::Vector3d PinocchioRobotSystem::GetBodyVel() {
+  Eigen::Vector3d base_lin_vel_in_base = qdot_.head<3>();
+  Eigen::Vector3d base_ang_vel_in_base = qdot_.segment<3>(3);
+  Eigen::Vector3d base_com_lin_vel_in_base =
+      base_lin_vel_in_base - base_local_com_pos_.cross(base_ang_vel_in_base);
+
+  Eigen::Quaterniond world_Q_body;
+  world_Q_body.coeffs() = q_.segment<4>(3);
+  Eigen::Matrix3d world_R_body(world_Q_body.normalized());
+
+  Eigen::Vector3d base_com_lin_vel_in_world =
+      world_R_body * base_com_lin_vel_in_base;
+  return base_com_lin_vel_in_world;
+}
+
 Eigen::Matrix3d PinocchioRobotSystem::GetBodyYawRotationMatrix() {
   Eigen::Vector3d ypr = this->GetBodyOriYPR();
   return util::SO3FromRPY(0.0, 0.0, ypr(0));

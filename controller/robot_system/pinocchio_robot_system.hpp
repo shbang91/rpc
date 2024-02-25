@@ -74,7 +74,8 @@ public:
   // floating base
   Eigen::Matrix3d GetBodyOriRot();
   Eigen::Vector3d GetBodyOriYPR();
-  Eigen::Vector3d GetBodyPos();
+  Eigen::Vector3d GetBodyPos(); // base com x,y,z
+  Eigen::Vector3d GetBodyVel(); // base com wx, wy, wz in world frame
   Eigen::Matrix3d GetBodyYawRotationMatrix();
 
   Eigen::Isometry3d GetTransform(const std::string &ref_frame,
