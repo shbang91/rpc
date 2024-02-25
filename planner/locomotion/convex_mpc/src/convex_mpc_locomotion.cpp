@@ -108,7 +108,11 @@ void ConvexMPCLocomotion::Solve() {
   // TODO:integrate position setpoint
   Eigen::Vector3d des_body_vel_in_body(x_vel_des_, y_vel_des_,
                                        0.0); // in local body frame
-  des_body_vel_in_world_ = robot_->GetBodyOriRot() * des_body_vel_in_body;
+  // des_body_vel_in_world_ = robot_->GetBodyOriRot() * des_body_vel_in_body;
+  des_body_vel_in_world_ =
+      yaw_rate_des_ == 0.0
+          ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2]) * des_body_vel_in_body
+          : util::SO3FromRPY(0.0, 0.0, yaw_des_) * des_body_vel_in_body;
   Eigen::Vector3d body_vel_in_world =
       // robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).tail<3>();
       robot_->GetRobotComLinVel();
@@ -247,6 +251,7 @@ void ConvexMPCLocomotion::Solve() {
   // b_first_visit_ = false;
   //}
   //
+  // TODO: consider not doing this!!
   if (b_first_visit_) {
 
     contact_states << 1.0, 0.0;
@@ -270,24 +275,16 @@ void ConvexMPCLocomotion::Solve() {
     double contact_state = contact_states[foot];
     double swing_state = swing_states[foot];
 
-    // TODO:clean this mess
-    // if (b_first_visit_) {
-    // if (foot == 0) {
-    // contact_state = 0.5;
-    // swing_state = 0.0;
-    //} else {
-    // contact_state = 0.0;
-    // swing_state = 0.001;
-    // b_first_visit_ = false;
-    //}
-    //}
-
     if (swing_state > 0) {
       // foot is in swing
       if (b_first_swing_[foot]) {
         b_first_swing_[foot] = false;
         foot_swing_trajectory_[foot].SetInitialPosition(foot_pos_[foot]);
-        Eigen::Matrix3d world_R_body_yaw = robot_->GetBodyYawRotationMatrix();
+        // Eigen::Matrix3d world_R_body_yaw =
+        // robot_->GetBodyYawRotationMatrix();
+        Eigen::Matrix3d world_R_body_yaw =
+            yaw_rate_des_ == 0 ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2])
+                               : util::SO3FromRPY(0.0, 0.0, yaw_des_);
         Eigen::Matrix3d des_foot_ori =
             util::CoordinateRotation(
                 util::CoordinateAxis::Z,
