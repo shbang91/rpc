@@ -20,8 +20,13 @@ mpc_params:
     #Qvv: [500, 500, 500, 500, 500, 100000] ## wx, wy, wz, xdot, ydot, zdot
     #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
     #
+    #Qqq: [10, 10, 200, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [5, 5, 50, 20, 20, 100000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #
+    #
     Qqq: [10, 10, 200, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
-    Qvv: [5, 5, 50, 20, 20, 100000] ## wx, wy, wz, xdot, ydot, zdot
+    Qvv: [10, 10, 50, 30, 100, 10000] ## wx, wy, wz, xdot, ydot, zdot
     Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
   nominal_inertia: [ 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
       -0.00292598, 0.885743, -0.00292598, 1.23588 ]
@@ -36,7 +41,7 @@ mpc_params:
 
 
 gait:
-  x_vel_cmd: 0.2 ## 0.5
+  x_vel_cmd: 0.7 ## 0.5
   y_vel_cmd: 0.0
   yaw_rate_cmd: 0.0
 
@@ -46,4 +51,4 @@ gait:
   gait_number: 1
 
 swing_foot:
-  height: 0.15
+  height: 0.10

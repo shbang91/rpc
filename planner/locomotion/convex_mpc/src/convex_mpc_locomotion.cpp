@@ -458,12 +458,12 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   // set state trajectory
   //=====================================================
   // set body inertia (update every mpc loop)
-  // Eigen::Matrix3d I_global = robot_->GetIg().topLeftCorner<3, 3>();
-  // I_global_ = I_global;
-  // Eigen::Matrix3d global_R_local = robot_->GetBodyOriRot();
-  // Eigen::Matrix3d I_local =
-  // global_R_local.transpose() * I_global * global_R_local;
-  // state_equation_->setBodyInertia(I_local);
+  Eigen::Matrix3d I_global = robot_->GetIg().topLeftCorner<3, 3>();
+  I_global_ = I_global;
+  Eigen::Matrix3d global_R_local = robot_->GetBodyOriRot();
+  Eigen::Matrix3d I_local =
+      global_R_local.transpose() * I_global * global_R_local;
+  state_equation_->setBodyInertia(I_local);
 
   // design desired state trajectory
   aligned_vector<Vector12d> des_state_traj(n_horizon_ + 1);
