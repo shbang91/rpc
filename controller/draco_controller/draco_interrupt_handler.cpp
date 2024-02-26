@@ -1,6 +1,7 @@
 #include "controller/draco_controller/draco_interrupt_handler.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
+#include "controller/draco_controller/draco_state_machines/locomotion.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 
 DracoInterruptHandler::DracoInterruptHandler(
@@ -141,6 +142,51 @@ void DracoInterruptHandler::Process() {
           ->DoMPCWalking();
     } else
       std::cout << "Wait Until Balance State" << std::endl;
+  }
+
+  if (b_button_x) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button X pressed: Increase X vel command " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kLocomotion) {
+      static_cast<Locomotion *>(
+          ctrl_arch_->state_machine_container()[draco_states::kLocomotion])
+          ->b_increase_x_vel_ = true;
+    } else
+      std::cout << "Wait Until Locomotion State" << std::endl;
+  }
+  if (b_button_y) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button X pressed: Increase Y vel command " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kLocomotion) {
+      static_cast<Locomotion *>(
+          ctrl_arch_->state_machine_container()[draco_states::kLocomotion])
+          ->b_increase_y_vel_ = true;
+    } else
+      std::cout << "Wait Until Locomotion State" << std::endl;
+  }
+  if (b_button_z) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button X pressed: Increase Yaw vel command " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kLocomotion) {
+      static_cast<Locomotion *>(
+          ctrl_arch_->state_machine_container()[draco_states::kLocomotion])
+          ->b_increase_yaw_vel_ = true;
+    } else
+      std::cout << "Wait Until Locomotion State" << std::endl;
+  }
+  if (b_button_d) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "button D pressed: Decrease Yaw vel command " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kLocomotion) {
+      static_cast<Locomotion *>(
+          ctrl_arch_->state_machine_container()[draco_states::kLocomotion])
+          ->b_decrease_yaw_vel_ = true;
+    } else
+      std::cout << "Wait Until Locomotion State" << std::endl;
   }
 
   this->_ResetFlags();

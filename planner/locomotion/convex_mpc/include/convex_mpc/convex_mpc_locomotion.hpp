@@ -115,6 +115,10 @@ public:
   // from gait scheduler
   Eigen::Vector2d contact_state_;
 
+  double x_vel_cmd_; // from yaml
+  double y_vel_cmd_; // from yaml
+  double yaw_rate_cmd_;
+
 private:
   // robot states
   PinocchioRobotSystem *robot_;
@@ -148,10 +152,6 @@ private:
   double roll_des_ = 0.0;
   double pitch_des_ = 0.0;
   double yaw_des_ = 0.0;
-
-  double x_vel_cmd_; // from yaml
-  double y_vel_cmd_; // from yaml
-  double yaw_rate_cmd_;
 
   OffsetDurationGait standing_, walking_;
 

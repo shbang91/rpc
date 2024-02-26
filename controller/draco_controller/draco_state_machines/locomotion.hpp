@@ -21,6 +21,12 @@ public:
 
   void SetParameters(const YAML::Node &node) override;
 
+  // interrupt commands
+  bool b_increase_x_vel_ = false;
+  bool b_increase_y_vel_ = false;
+  bool b_increase_yaw_vel_ = false;
+  bool b_decrease_yaw_vel_ = false;
+
 private:
   DracoControlArchitecture *ctrl_arch_;
   DracoStateProvider *sp_;

@@ -77,6 +77,42 @@ void Locomotion::OneStep() {
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
   const auto &tci_container = ctrl_arch_->tci_container_;
 
+  //=========================================================================
+  // Gait command User Interrupt
+  //=========================================================================
+  if (b_increase_x_vel_) {
+    x_vel_cmd_ += 0.1;
+    mpc_interface->x_vel_cmd_ = x_vel_cmd_;
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "Desired X vel: " << x_vel_cmd_ << "m/s" << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    b_increase_x_vel_ = false;
+  }
+  if (b_increase_y_vel_) {
+    y_vel_cmd_ += 0.1;
+    mpc_interface->y_vel_cmd_ = y_vel_cmd_;
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "Desired Y vel: " << y_vel_cmd_ << "m/s" << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    b_increase_y_vel_ = false;
+  }
+  if (b_increase_yaw_vel_) {
+    yaw_rate_cmd_ += 0.1;
+    mpc_interface->yaw_rate_cmd_ = yaw_rate_cmd_;
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "Desired Yaw vel: " << yaw_rate_cmd_ << "rad/s" << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    b_increase_yaw_vel_ = false;
+  }
+  if (b_decrease_yaw_vel_) {
+    yaw_rate_cmd_ -= 0.1;
+    mpc_interface->yaw_rate_cmd_ = yaw_rate_cmd_;
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "Desired Yaw vel: " << yaw_rate_cmd_ << "rad/s" << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    b_decrease_yaw_vel_ = false;
+  }
+
   // solve convexMPC
   mpc_interface->Solve();
 
