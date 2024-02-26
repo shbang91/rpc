@@ -197,7 +197,9 @@ void ConvexMPCLocomotion::Solve() {
     Eigen::Vector3d foot_pos_from_body = base_to_hip_offset_[leg] + offset;
     Eigen::Vector3d foot_yaw_corrected =
         util::CoordinateRotation(util::CoordinateAxis::Z,
-                                 yaw_rate_des_ * stance_time / 2.) *
+                                 2.0 * yaw_rate_des_ * stance_time) *
+        // util::CoordinateRotation(util::CoordinateAxis::Z,
+        // yaw_rate_des_ * stance_time / 2.) *
         // util::CoordinateRotation(util::CoordinateAxis::Z,
         //-yaw_rate_des_ * stance_time / 2.) *
         foot_pos_from_body;
@@ -293,8 +295,12 @@ void ConvexMPCLocomotion::Solve() {
         Eigen::Matrix3d des_foot_ori =
             util::CoordinateRotation(
                 util::CoordinateAxis::Z,
-                yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot) / 2.0) *
+                2.0 * yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot)) *
             world_R_body_yaw;
+        // util::CoordinateRotation(
+        // util::CoordinateAxis::Z,
+        // yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot) / 2.0) *
+        // world_R_body_yaw;
         foot_swing_ori_trajectory_[foot].Initialize(
             Eigen::Quaterniond(foot_ori_[foot]).normalized(),
             Eigen::Vector3d::Zero(),
