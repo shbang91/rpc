@@ -112,7 +112,8 @@ void ConvexMPCLocomotion::Solve() {
   des_body_vel_in_world_ =
       yaw_rate_des_ == 0.0
           ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2]) * des_body_vel_in_body
-          : util::SO3FromRPY(0.0, 0.0, yaw_des_) * des_body_vel_in_body;
+          : util::SO3FromRPY(0.0, 0.0, robot_->GetBodyOriYPR()[0]) *
+                des_body_vel_in_body;
   Eigen::Vector3d body_vel_in_world =
       // robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).tail<3>();
       robot_->GetRobotComLinVel();
@@ -286,8 +287,9 @@ void ConvexMPCLocomotion::Solve() {
         // Eigen::Matrix3d world_R_body_yaw =
         // robot_->GetBodyYawRotationMatrix();
         Eigen::Matrix3d world_R_body_yaw =
-            yaw_rate_des_ == 0 ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2])
-                               : util::SO3FromRPY(0.0, 0.0, yaw_des_);
+            yaw_rate_des_ == 0
+                ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2])
+                : util::SO3FromRPY(0.0, 0.0, robot_->GetBodyOriYPR()[0]);
         Eigen::Matrix3d des_foot_ori =
             util::CoordinateRotation(
                 util::CoordinateAxis::Z,
@@ -514,9 +516,20 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     des_body_pos_in_world_[1] = y_start;
 
     // initial state
+    // des_state_traj_initial.head<3>() = Eigen::Vector3d(
+    // rpy_comp_[0], rpy_comp_[1],
+    // robot_->GetBodyOriYPR()[0]);
+    // des_state_traj_initial.head<3>() =
+    // yaw_rate_des_ == 0.0
+    //? Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1], stand_traj_[0])
+    //: Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1],
+    // robot_->GetBodyOriYPR()[0]); // TODO:TEST this
+    // (0., 0., yaw_des_)
     des_state_traj_initial.head<3>() =
-        Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1],
-                        yaw_des_); // TODO:TEST this (0., 0., yaw_des_)
+        yaw_rate_des_ == 0.0
+            ? Eigen::Vector3d(0.0, 0.0, stand_traj_[0])
+            : Eigen::Vector3d(0.0, 0.0,
+                              robot_->GetBodyOriYPR()[0]); // TODO:TEST this
     des_state_traj_initial.segment<3>(3) =
         Eigen::Vector3d(x_start, y_start, des_body_height_);
 
