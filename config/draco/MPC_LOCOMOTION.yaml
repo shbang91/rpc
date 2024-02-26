@@ -1,4 +1,4 @@
-b_save_mpc_solution: false
+b_save_mpc_solution: true
 
 iterations_btw_mpc: 40
 
@@ -46,9 +46,9 @@ mpc_params:
 
 
 gait:
-  x_vel_cmd: 0.5 ## 0.5
+  x_vel_cmd: 0.0 ## 0.5
   y_vel_cmd: 0.0
-  yaw_rate_cmd: 0.0
+  yaw_rate_cmd: 1.2
 
   ## TODO: making this as interrupt keystroke
   ## 0: standing
