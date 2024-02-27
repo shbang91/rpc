@@ -16,6 +16,7 @@ class Config(object):
 
     ##TODO:
     USE_MESHCAT = False
+    USE_FOXGLOVE = True
 
 
 class DracoLinkIdx(object):

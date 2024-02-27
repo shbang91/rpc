@@ -31,6 +31,19 @@ import draco_interface_py
 if Config.MEASURE_COMPUTATION_TIME:
     from pytictoc import TicToc
 
+if Config.USE_FOXGLOVE:
+    import UI.foxglove.control_widgets as foxglove_ctrl
+    import asyncio
+    import threading
+
+    # load parameters that can be controlled / changed
+    param_store = foxglove_ctrl.load_params_store()
+    step_listener = foxglove_ctrl.Listener(param_store)
+
+    # start the foxglove server on separate thread
+    x = threading.Thread(target=asyncio.run, args=([foxglove_ctrl.run(step_listener)]))
+    x.start()
+
 # Simulated noise characteristics
 imu_dvel_bias = np.array([0.0, 0.0, 0.0])
 l_contact_volt_noise = 0.001
@@ -476,6 +489,14 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressEight()
         elif pybullet_util.is_key_triggered(keys, '9'):
             rpc_draco_interface.interrupt_.PressNine()
+
+        # get FoxGlove events / commands
+        if Config.USE_FOXGLOVE:
+            if step_listener.has_been_modified():
+                if step_listener.is_cmd_triggered('n_steps'):
+                    new_steps_num = step_listener.get_val('n_steps')
+                    rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
+                    step_listener.reset()
 
         #get sensor data
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact, \
