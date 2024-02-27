@@ -1,12 +1,13 @@
 import os
 import sys
 
+cwd = os.getcwd()
+sys.path.append(cwd)
+
 import meshcat
 
 from plot.data_saver import DataSaver
 
-cwd = os.getcwd()
-sys.path.append(cwd)
 import time
 import math
 import copy
@@ -41,8 +42,8 @@ import torch.utils.data as torch_utils
 from torch.utils.tensorboard import SummaryWriter
 
 ## Configs
-VISUALIZE = True
-VIDEO_RECORD = True
+VISUALIZE = False
+VIDEO_RECORD = False
 SAVE_DATA = False
 PRINT_FREQ = 10
 DT = 0.01
@@ -73,7 +74,7 @@ N_CPU_DATA_GEN = 4
 N_DATA_PER_MOTION = 30
 N_MOTION_PER_LEG = 2100 / N_DATA_PER_MOTION     # number of (forward) steps per leg
 N_TURN_STEPS = 4
-N_TURN_ITERS = 20           # number of iterations of each turning sequence
+N_TURN_ITERS = 1e2           # number of iterations of each turning sequence
 
 N_LAYER_OUTPUT = [64, 64]
 LR = 0.01
@@ -552,9 +553,9 @@ def _do_generate_data(n_data,
                         cp = geom_model.collisionPairs[k]
                         if cr.isCollision():
                             # print("Collision between:",
-                            #       geom_model.geometryObjects[cp.first].name, ",",
-                            #       geom_model.geometryObjects[cp.second].name,
-                            #       ". Resampling step.")
+                                  # geom_model.geometryObjects[cp.first].name, ",",
+                                  # geom_model.geometryObjects[cp.second].name,
+                                  # ". Resampling step.")
                             b_terminate = True
                             break
 
@@ -573,6 +574,7 @@ def _do_generate_data(n_data,
                     # Visualize result at fixed FPS
                     if VISUALIZE:
                         viz.display(configuration.q)
+                        # rate.sleep()
     
                         #### base
                         T_w_base = liegroup.RpToTrans(util.quat_to_rot(base_quat),
@@ -602,7 +604,6 @@ def _do_generate_data(n_data,
 
                     # update nominal configuration for next iteration
                     q_nominal = configuration.q
-                    # rate.sleep()
                     s += 1. / N_DATA_PER_MOTION
                     frame_idx += 1
 
@@ -629,7 +630,7 @@ def _do_generate_data(n_data,
                                 rot_inertia_in_body[0, 0], rot_inertia_in_body[1, 1],
                                 rot_inertia_in_body[2, 2], rot_inertia_in_body[0, 1],
                                 rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
-                                ])
+                                ]) # I_xx, I_yy, I_zz, I_xy, I_xz, I_yz
                     else:
                         print(f"Index {i} went out of bounds. Ignoring data point.")
                         # i = n_data - 2
@@ -665,7 +666,7 @@ def _do_generate_data(n_data,
             iter += 1
             if VISUALIZE:
                 viz.display(configuration.q)
-            # rate.sleep()
+                # rate.sleep()
 
     return data_x, data_y
 
@@ -841,20 +842,21 @@ def train_and_plot_crbi():
     val_loss_per_epoch = 0.
     iter = 0
     for epoch in range(N_EPOCH):
-        train_loss = 0.
+        current_loss = 0.0
         train_batch_loss = 0.
         crbi_model.train()
         for step, (b_x, b_y) in enumerate(train_loader):
+            optimizer.zero_grad()
             output = crbi_model(b_x)
             loss = loss_function(output, b_y)
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             train_batch_loss = loss.item()
-            train_loss += loss.item()
+            current_loss += loss.item()
+            writer.add_scalar('Loss/Minibatches', train_batch_loss, iter)
             iter += 1
-            writer.add_scalar('batch loss', train_batch_loss, iter)
-        train_loss_per_epoch = train_loss / len(train_loader)
+        train_loss_per_epoch = current_loss / len(train_loader)
+        writer.add_scalar('Loss/Epochs', train_loss_per_epoch, epoch+1)
 
     print('=' * 80)
     print('CRBI training done')
@@ -870,11 +872,42 @@ def train_and_plot_crbi():
                 loss = loss_function(output, b_y)
                 test_loss += loss.item()
             test_loss_per_epoch = test_loss / len(test_loader)
-            writer.add_scalar('test loss vs epoch',
+            writer.add_scalar('TestLoss/Epochs',
                               test_loss_per_epoch, epoch + 1)
 
     print('=' * 80)
     print('CRBI test done')
+
+    #####################################################
+    # save model
+    #####################################################
+    model_path = 'experiment_data/pytorch_model/draco3_crbi_pos_ori.pth'
+    if os.path.exists(model_path):
+        os.remove(model_path)
+    torch.save(crbi_model, model_path)
+    print("==============================================")
+    print("Saved PyTorch Model State")
+    print("==============================================")
+
+    data_stats = {
+        'input_mean': input_mean.tolist(),
+        'input_std': input_std.tolist(),
+        'output_mean': output_mean.tolist(),
+        'output_std': output_std.tolist()
+    }
+
+    path = 'experiment_data/pytorch_model/draco3_crbi'
+    with open('experiment_data/pytorch_model' + '/data_stat.yaml', 'w') as f:
+        yml = YAML()
+        yml.dump(data_stats, f)
+    save_weights_to_yaml(crbi_model, path)
+    print('=' * 80)
+    print('Saved weights to yaml')
+
+    cas_func, cas_jac_func = generate_casadi_func(
+        crbi_model, input_mean, input_std, output_mean, output_std,
+        True)
+
 
     #####################################################
     '''plot centroidal inertia dim = 6'''
@@ -926,34 +959,6 @@ def train_and_plot_crbi():
             ], 'b')
             axes[i].grid(True)
     plt.show()
-
-    # save model
-    model_path = 'experiment_data/pytorch_model/draco3_crbi_pos_ori.pth'
-    if os.path.exists(model_path):
-        os.remove(model_path)
-    torch.save(crbi_model, model_path)
-    print("==============================================")
-    print("Saved PyTorch Model State")
-    print("==============================================")
-
-    data_stats = {
-        'input_mean': input_mean.tolist(),
-        'input_std': input_std.tolist(),
-        'output_mean': output_mean.tolist(),
-        'output_std': output_std.tolist()
-    }
-
-    path = 'experiment_data/pytorch_model/draco3_crbi'
-    with open('experiment_data/pytorch_model' + '/data_stat.yaml', 'w') as f:
-        yml = YAML()
-        yml.dump(data_stats, f)
-    save_weights_to_yaml(crbi_model, path)
-    print('=' * 80)
-    print('Saved weights to yaml')
-
-    cas_func, cas_jac_func = generate_casadi_func(
-        crbi_model, input_mean, input_std, output_mean, output_std,
-        True)
 
 
 
@@ -1102,13 +1107,16 @@ if __name__ == "__main__":
         torso_frame = viz.viewer["torso_link"]
         meshcat_shapes.frame(torso_frame)
 
+    #=========================================================================
     # Options:
     # Case 0: Train CRBI Regressor w/multiprocessing
     # Case 1: Load Pre-trained CRBI Model
     # Case 2: Sample Motions - straight footsteps (left/right side)
     # Case 3: Sample Motions - long CCW turns
     # Case 4: Train CRBI Regressor w/multiprocessing for long CCW turns
-    CASE = 3
+    # Case 5: Train CRBI Regressor w/multiprocessing for forward walking + long CCW turns
+    #=========================================================================
+    CASE = 5
 
     # Set base_pos, base_quat, joint_pos here for visualization
     if CASE == 0:
@@ -1268,10 +1276,107 @@ if __name__ == "__main__":
         data_x = l_data_x + r_data_x
         data_y = l_data_y + r_data_y
 
+        print("-------------------------------------------")
+        print("data_x len: ", len(data_x))
+        print("-------------------------------------------")
+
         train_and_plot_crbi()
 
         if VIDEO_RECORD:
             viz.viewer.set_animation(anim, play=False)
+
+    elif CASE == 5:
+        # CCW turning, right foot first
+        print("-" * 80)
+        print("Case 5: Train CRBI Regressor w/multiprocessing for forward walking + long CCW turns")
+        VISUALIZE = False       # can't do this with multiprocessing
+        VIDEO_RECORD = False
+
+
+        nominal_configuration = q0
+
+        ## =======================================================================
+        ## forward motions
+        ## =======================================================================
+        MOTION_TYPE = MotionType.STEP
+        N_DATA_PER_MOTION = 30
+        N_SWING_MOTIONS = 1e3
+        N_TURN_STEPS = 1        # single step motion, repeated several times
+
+        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.30
+        SWING_TIME_LB, SWING_TIME_UB = 0.35, 0.75
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.8, 0.9
+
+        FOOT_EA_LB = np.array([np.deg2rad(-5.), np.deg2rad(-15.), -np.pi / 3.])
+        FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.pi / 3.])
+        # FOOT_EA_LB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
+        # FOOT_EA_UB = np.array([np.deg2rad(0.), np.deg2rad(0.), 0.])
+
+        RFOOT_POS_LB = np.array([0., -0.1, -0.05])
+        RFOOT_POS_UB = np.array([0.5, 0.05, 0.05])
+        LFOOT_POS_LB = np.array([0., -0.05, -0.05])
+        LFOOT_POS_UB = np.array([0.5, 0.1, 0.05])
+
+        l_swing_data_x, l_swing_data_y = generate_data(N_DATA_PER_MOTION * N_SWING_MOTIONS,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "left",
+                                           N_CPU_DATA_GEN)
+        r_swing_data_x, r_swing_data_y = generate_data(N_DATA_PER_MOTION * N_SWING_MOTIONS,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "right",
+                                           N_CPU_DATA_GEN)
+
+        ## =======================================================================
+        ## turning motions
+        ## =======================================================================
+        MOTION_TYPE = MotionType.TURN
+        N_DATA_PER_MOTION = 30
+        N_TURN_STEPS = 4
+        N_TURN_ITERS = 1e2           # number of iterations of each turning sequence
+
+        # place base above ankles
+        nominal_base_iso.translation[0] = np.array([
+            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+
+        load_turn_pink_config()
+
+        # Turning only in yaw
+        FOOT_EA_LB = np.array([np.deg2rad(-0.1), np.deg2rad(-0.1), -np.pi / 2.])
+        FOOT_EA_UB = np.array([np.deg2rad(0.1), np.deg2rad(0.1), np.pi / 2.])
+
+        # Reduce stepping outwards (relative to stance leg, in stance coordinates)
+        TURN_SWING_POS_LB = np.array([0., -0.4, 0.])
+        TURN_SWING_POS_UB = np.array([0.3, -0.2, 0.])
+        TURN_STANCE_POS_LB = np.array([-0.15, 0.15, 0.])
+        TURN_STANCE_POS_UB = np.array([0.15, 0.3, 0.])
+
+        # no need to lift leg as high
+        SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.30
+        SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
+        # BASE_HEIGHT_LB, BASE_HEIGHT_UB = configuration.q[2]-0.02, configuration.q[2]+0.02
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.8, 0.9
+
+        l_turn_data_x, l_turn_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "left_leg",
+                                           N_CPU_DATA_GEN, cw_or_ccw='cw')
+
+        r_turn_data_x, r_turn_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
+                                           nominal_lf_iso, nominal_rf_iso,
+                                           nominal_configuration, "right_leg",
+                                           N_CPU_DATA_GEN, cw_or_ccw='ccw')
+        ## =======================================================================
+        ## train
+        ## =======================================================================
+
+        data_x = l_swing_data_x + r_swing_data_x + l_turn_data_x + r_turn_data_x
+        data_y = l_swing_data_y + r_swing_data_y + l_turn_data_y + r_turn_data_y
+
+        print("-------------------------------------------")
+        print("data_x len: ", len(data_x))
+        print("-------------------------------------------")
+
+        train_and_plot_crbi()
 
     if SAVE_DATA:
         data_saver.close()
