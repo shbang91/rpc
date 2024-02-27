@@ -7,6 +7,13 @@ DracoInterruptHandler::DracoInterruptHandler(
     DracoControlArchitecture *ctrl_arch)
     : InterruptHandler(), ctrl_arch_(ctrl_arch) {
   util::PrettyConstructor(1, "DracoInterruptHandler");
+  new_steps_num_ = 0;
+}
+
+void DracoInterruptHandler::RefreshStepNum(const int new_steps_num) {
+  new_steps_num_ = new_steps_num;
+  b_signal_received_ = true;
+  b_step_num = true;
 }
 
 void DracoInterruptHandler::Process() {
@@ -126,6 +133,16 @@ void DracoInterruptHandler::Process() {
           ctrl_arch_
               ->state_machine_container()[draco_states::kDoubleSupportBalance])
           ->DoDcmWalking();
+    } else
+      std::cout << "Wait Until Balance State" << std::endl;
+  }
+
+  if (b_step_num) {
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << "New n_step entered  " << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
+      ctrl_arch_->dcm_tm_->SetNumSteps(new_steps_num_);
     } else
       std::cout << "Wait Until Balance State" << std::endl;
   }
