@@ -76,6 +76,7 @@ frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToSt
 
 
 async def main():
+    print("entered")
     async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
         normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
@@ -83,6 +84,8 @@ async def main():
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
         steptest = await SceneChannel(True,"steptest", "json", "steptest", ["num_steps"]).add_chan(server)
+
+        print("established")
 
     #create all of the visual scenes
         scenes = []
@@ -94,6 +97,8 @@ async def main():
 
     # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
+
+        print("grounded")
 
         while True:
             #cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
@@ -381,6 +386,7 @@ def process_data_saver(visualize_type):
 
 
 while True:
+    asyncio.run(main())
     # receive msg through socket
     encoded_msg = socket.recv()
     msg.ParseFromString(encoded_msg)

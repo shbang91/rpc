@@ -100,12 +100,14 @@ frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToSt
 async def main():
 
     # get FoxGlove events / commands
-    if Config.USE_FOXGLOVE:
-        if step_listener.has_been_modified():
-            if step_listener.is_cmd_triggered('n_steps'):
-                new_steps_num = step_listener.get_val('n_steps')
-                rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
-                step_listener.reset()
+    #if Config.USE_FOXGLOVE:
+     #   if step_listener.has_been_modified():
+      #      if step_listener.is_cmd_triggered('n_steps'):
+       #         new_steps_num = step_listener.get_val('n_steps')
+        #        rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
+         #       step_listener.reset()
+
+    print("Thread Count:",threading.activeCount())
 
     async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
@@ -482,7 +484,10 @@ while True:
                 vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
-            asyncio.run(main())
+            print("foxentry")
+            y = threading.Thread(target=asyncio.run(main()), args=())
+            y.start()
+            #asyncio.run(main())
 
     else:   # if 'none' specified
         process_data_saver('none')

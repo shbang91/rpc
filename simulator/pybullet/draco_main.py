@@ -41,8 +41,8 @@ if Config.USE_FOXGLOVE:
     step_listener = foxglove_ctrl.Listener(param_store)
 
     # start the foxglove server on separate thread
-    x = threading.Thread(target=asyncio.run, args=([foxglove_ctrl.run(step_listener)]))
-    x.start()
+    #x = threading.Thread(target=asyncio.run, args=([foxglove_ctrl.run(step_listener)]))
+    #x.start()
 
 # Simulated noise characteristics
 imu_dvel_bias = np.array([0.0, 0.0, 0.0])
