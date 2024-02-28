@@ -1,8 +1,0 @@
-module foxglove {
-
-struct Time {
-  uint32 sec;
-  uint32 nsec;
-};
-
-};
