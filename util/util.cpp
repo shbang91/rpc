@@ -431,6 +431,11 @@ Eigen::Matrix3d SO3FromRPY(double r, double p, double y) {
   return q.normalized().toRotationMatrix();
 }
 
+/*!
+ * Compute rotation matrix for coordinate transformation. Note that
+ * coordinateRotation(CoordinateAxis:X, .1) * v will rotate v by -.1 radians
+ * this transforms into a frame rotated by .1 radians!.
+ */
 Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
                                    const double theta) {
   double s = std::sin(theta);

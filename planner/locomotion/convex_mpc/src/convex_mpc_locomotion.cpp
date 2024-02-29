@@ -198,8 +198,6 @@ void ConvexMPCLocomotion::Solve() {
     Eigen::Vector3d foot_yaw_corrected =
         // util::CoordinateRotation(util::CoordinateAxis::Z,
         //-2.0 * yaw_rate_des_ * stance_time) *
-        // util::CoordinateRotation(util::CoordinateAxis::Z,
-        // yaw_rate_des_ * stance_time / 2.) *
         util::CoordinateRotation(util::CoordinateAxis::Z,
                                  -yaw_rate_des_ * stance_time / 2.) *
         foot_pos_from_body;
@@ -214,7 +212,8 @@ void ConvexMPCLocomotion::Solve() {
         robot_->GetBodyOriRot() *
             (foot_yaw_corrected + des_vel * swing_time_remaining_[leg]);
 
-    double p_rel_max = 0.4;
+    // double p_rel_max = 0.4;
+    double p_rel_max = 1.0;
     // Using the estimated velocity is correct
     double pfx_rel =
         body_vel_in_world[0] * 0.5 * stance_time +
@@ -303,10 +302,6 @@ void ConvexMPCLocomotion::Solve() {
                 util::CoordinateAxis::Z,
                 yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot) / 2.0) *
             world_R_body_yaw;
-        // world_R_body_yaw *
-        // util::CoordinateRotation(
-        // util::CoordinateAxis::Z,
-        // 2 * yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot));
         foot_swing_ori_trajectory_[foot].Initialize(
             Eigen::Quaterniond(foot_ori_[foot]).normalized(),
             Eigen::Vector3d::Zero(),
