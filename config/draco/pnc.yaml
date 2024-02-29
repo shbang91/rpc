@@ -123,7 +123,7 @@ wbc:
       sim_com_kd : [100.]
 
       sim_base_kp : [1000.]
-      sim_base_kd : [100.]
+      sim_base_kd : [80.]
 
       sim_kp_ik : [1.0]
       ########################################################################
@@ -170,10 +170,10 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      #sim_kp : [500., 500., 300.]
-      #sim_kd : [70., 70., 50.]
-      sim_kp : [300., 300., 1500.]
-      sim_kd : [60., 60., 80.]
+      #sim_kp : [500., 500., 1500.]
+      #sim_kd : [50., 50., 200.]
+      sim_kp : [500., 500., 350.] ## issues when yaw ~ 90 degree
+      sim_kd : [50., 50., 40.]
       sim_kp_ik : [1.0, 1.0, 1.0]
       #
       #sim_kp : [100., 100., 100.]
@@ -296,8 +296,6 @@ wbc:
 
     ## for MPC walking
     #Old one
-    #W_delta_rf_left_foot_in_contact_mpc: [1, 1, 1, 1000, 1000, 1000]
-    #W_delta_rf_right_foot_in_contact_mpc: [1, 1, 1, 1000, 1000, 1000]
     #W_delta_rf_left_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
     #W_delta_rf_right_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
 
@@ -308,8 +306,10 @@ wbc:
     #W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 1000000, 50000, 50000, 1000]
     #W_delta_rf_left_foot_in_contact_mpc: [500000, 500000, 50000000, 500000, 500000, 5000]
     #W_delta_rf_right_foot_in_contact_mpc: [500000, 500000, 50000000, 500000, 500000, 5000]
-    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 5000000, 50000, 500000, 5000]
-    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 5000000, 50000, 500000, 5000]
+    #W_delta_rf_left_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
+    #W_delta_rf_right_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
+    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 50000, 10000, 10000, 10000]
+    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 50000, 10000, 10000, 10000]
 
     W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]

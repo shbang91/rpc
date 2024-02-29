@@ -25,8 +25,8 @@ mpc_params:
     #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
     #
     #
-    Qqq: [10, 10, 200, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
-    Qvv: [10, 10, 50, 30, 100, 10000] ## wx, wy, wz, xdot, ydot, zdot
+    Qqq: [50, 50, 300, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
+    Qvv: [20, 20, 150, 30, 30, 10000] ## wx, wy, wz, xdot, ydot, zdot
     Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
 
     Qqq_terminal: [10000, 10000, 10000, 10000, 10000, 10000]
@@ -48,7 +48,7 @@ mpc_params:
 gait:
   x_vel_cmd: 0.0 ## 0.5
   y_vel_cmd: 0.0
-  yaw_rate_cmd: 1.2
+  yaw_rate_cmd: 0.0
 
   ## TODO: making this as interrupt keystroke
   ## 0: standing
