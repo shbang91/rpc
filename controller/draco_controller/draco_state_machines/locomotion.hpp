@@ -31,10 +31,12 @@ private:
   DracoControlArchitecture *ctrl_arch_;
   DracoStateProvider *sp_;
 
+  // TODO: clean up this (no necessary)
   std::shared_ptr<GaitCommand> gait_command_;
   double x_vel_cmd_, y_vel_cmd_, yaw_rate_cmd_;
   int gait_number_;
   double swing_height_;
+  double raibert_gain_;
 
   // QP params yaml
   Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);

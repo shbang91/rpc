@@ -39,6 +39,8 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
   // TODO: use this in convex mpc locomotion class
   gait_number_ = util::ReadParameter<int>(mpc_cfg["gait"], "gait_number");
   swing_height_ = util::ReadParameter<double>(mpc_cfg["swing_foot"], "height");
+  raibert_gain_ =
+      util::ReadParameter<double>(mpc_cfg["swing_foot"], "raibert_gain");
 }
 
 void Locomotion::FirstVisit() {
@@ -64,6 +66,7 @@ void Locomotion::FirstVisit() {
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(swing_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
       robot_->GetBaseToFootXYOffset());
+  ctrl_arch_->convex_mpc_locomotion_->SetRaibertGain(raibert_gain_);
 
   // TODO: should be generated inside of convexmpclocomotion class
   // lf_ori_quat_ = Eigen::Quaterniond(
@@ -74,6 +77,7 @@ void Locomotion::FirstVisit() {
 
 void Locomotion::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
+
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
   const auto &tci_container = ctrl_arch_->tci_container_;
 
