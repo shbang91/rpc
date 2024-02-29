@@ -24,6 +24,7 @@ public:
 
   void setQP(const Vector12d &initial_state,
              const std::vector<ContactState> &contact_trajectory,
+             const aligned_vector<Vector12d> &des_state_trajectory,
              const aligned_vector<Eigen::Vector3d> &feet_pos, QPData &qp_data);
   void setBodyInertia(const Matrix3d &I_local) { I_local_ = I_local; }
 

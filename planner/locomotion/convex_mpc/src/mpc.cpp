@@ -40,8 +40,9 @@ void MPC::_init() {
 
 void MPC::solve() {
   qp_data_.resize(num_contacts_vec_);
-  state_equation_.setQP(initial_state_, contact_trajectory_, feet_pos_,
-                        qp_data_);
+  state_equation_.setQP(initial_state_, contact_trajectory_,
+                        des_state_trajectory_, feet_pos_,
+                        qp_data_); // baseline methods
   cost_function_.setQP(initial_state_, des_state_trajectory_, qp_data_);
   friction_cone_.setQP(qp_data_);
   qp_solver_.solve(initial_state_, qp_data_);

@@ -97,8 +97,56 @@ void StateEquation::setQP(const ContactSchedule &contact_schedule,
 
 void StateEquation::setQP(const Vector12d &initial_state,
                           const std::vector<ContactState> &contact_trajectory,
+                          const aligned_vector<Vector12d> &des_state_trajectory,
                           const aligned_vector<Eigen::Vector3d> &feet_pos,
                           QPData &qp_data) {
+
+  // TODO: check this!!! (orientation issue at 90 degrees)
+  // std::cout << "=======================" << std::endl;
+  for (int i = 0; i < qp_data.dim_.N; ++i) {
+    // rotation matrix
+    Eigen::Matrix3d Ryaw =
+        util::EulerZYXtoQuat(0.0, 0.0, des_state_trajectory[i][2])
+            .toRotationMatrix(); // yaw angle
+
+    // std::cout << "yaw des: " << des_state_trajectory[i + 1][2] << std::endl;
+    // inertia matrix
+    Eigen::Matrix3d I_world = Ryaw * I_local_ * Ryaw.transpose();
+    Eigen::Matrix3d I_world_inv = I_world.inverse();
+
+    for (int k = 0; k < 2; ++k) {
+      Eigen::Matrix3d r_skew;
+      pinocchio::skew(feet_pos[k], r_skew);
+      I_inv_r_skew_[k].noalias() = dt_ * I_world_inv * r_skew;
+    }
+
+    qp_data.qp_[i].A.template block<3, 3>(0, 6) = dt_ * Ryaw.transpose();
+    int nu = 0;
+    // point contact (4 legs)
+    // for (int j = 0; j < 4; ++j) {
+    // if (contact_schedule.isContactActive(contact_schedule.phase(i))[j]) {
+    // qp_data.qp_[i].B.template block<3, 3>(6, nu) = I_inv_r_skew_[j];
+    // qp_data.qp_[i].B.template block<3, 3>(9, nu) =
+    //(dt_ / m_) * Matrix3d::Identity();
+    // nu += 3;
+    //}
+    // surface contact (2 legs)
+    for (int j = 0; j < 2; ++j) {
+      if (contact_trajectory[i].contact[j]) {
+        // foot in contact
+        qp_data.qp_[i].B.template block<3, 3>(6, nu) = dt_ * I_world_inv;
+        qp_data.qp_[i].B.template block<3, 3>(9, nu) = Eigen::Matrix3d::Zero();
+        nu += 3;
+        qp_data.qp_[i].B.template block<3, 3>(6, nu) = I_inv_r_skew_[j];
+        qp_data.qp_[i].B.template block<3, 3>(9, nu) =
+            (dt_ / m_) * Eigen::Matrix3d::Identity();
+        nu += 3;
+      } else {
+        // when the foot is in swing motions
+      }
+    }
+  }
+}
   // rotation matrix
   Eigen::Matrix3d Ryaw = util::EulerZYXtoQuat(0.0, 0.0, initial_state[2])
                              .toRotationMatrix(); // yaw angle
