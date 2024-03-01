@@ -457,7 +457,8 @@ def _do_generate_data(n_data,
                       min_step_length=0.1,
                       cw_or_ccw=None,
                       rseed=None,
-                      cpu_idx=0):
+                      cpu_idx=0,
+                      MAX_RESAMPLE_ATTEMPTS=50):
     # default to counter-clockwise if not specified
     if cw_or_ccw is None:
         cw_or_ccw = "ccw"
@@ -488,14 +489,15 @@ def _do_generate_data(n_data,
             nominal_rf_iso_step = copy.deepcopy(nominal_rf_iso)
             nominal_base_iso = copy.deepcopy(nominal_base_iso_init)
             n_turn = 0
+            resample_attempt_num = int(0)
             while n_turn < N_TURN_STEPS:
 
                 if MOTION_TYPE == MotionType.STEP:
                     swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_swing_config(
                         nominal_lf_iso_step, nominal_rf_iso_step, side, min_step_length)
                 elif MOTION_TYPE == MotionType.TURN:
-                    nominal_base_iso.translation[0] = np.array([
-                        nominal_lf_iso_step.translation[0] + nominal_rf_iso_step.translation[0]]) / 2.0
+                    nominal_base_iso.translation[0] = (nominal_lf_iso_step.translation[0] +
+                                                        nominal_rf_iso_step.translation[0]) / 2.0
                     swing_time, lfoot_ini_iso, lfoot_mid_iso, lfoot_fin_iso, lfoot_mid_vel, rfoot_ini_iso, rfoot_mid_iso, rfoot_fin_iso, rfoot_mid_vel, base_ini_iso, base_fin_iso = sample_turn_config(
                         nominal_base_iso, nominal_lf_iso_step, nominal_rf_iso_step, cw_or_ccw, side)
 
@@ -556,6 +558,7 @@ def _do_generate_data(n_data,
                                   # geom_model.geometryObjects[cp.first].name, ",",
                                   # geom_model.geometryObjects[cp.second].name,
                                   # ". Resampling step.")
+                            resample_attempt_num += 1
                             b_terminate = True
                             break
 
@@ -632,7 +635,9 @@ def _do_generate_data(n_data,
                                 rot_inertia_in_body[0, 2], rot_inertia_in_body[1, 2]
                                 ]) # I_xx, I_yy, I_zz, I_xy, I_xz, I_yz
                     else:
+                        print("")
                         print(f"Index {i} went out of bounds. Ignoring data point.")
+                        break
                         # i = n_data - 2
                     i += 1
 
@@ -641,7 +646,24 @@ def _do_generate_data(n_data,
                     b_terminate = False
                     configuration.q = q_prev_step
                     q_nominal = q_prev_step
-                    i = iter * N_DATA_PER_MOTION * N_TURN_STEPS + n_turn * N_DATA_PER_MOTION
+                    if resample_attempt_num < MAX_RESAMPLE_ATTEMPTS:
+                        i = iter * N_DATA_PER_MOTION * N_TURN_STEPS + n_turn * N_DATA_PER_MOTION
+                    else:       # if really stuck
+                        # and if the robot has taken 2 steps or more already
+                        if n_turn > 1:
+                            # restart from home pose and reset indices accordingly
+                            configuration.q = copy.deepcopy(nominal_configuration)
+                            configuration.update()
+                            q_prev_step = copy.deepcopy(nominal_configuration)
+                            q_nominal = copy.deepcopy(nominal_configuration)
+                            nominal_lf_iso_step = copy.deepcopy(nominal_lf_iso)
+                            nominal_rf_iso_step = copy.deepcopy(nominal_rf_iso)
+                            nominal_base_iso = copy.deepcopy(nominal_base_iso_init)
+                            n_turn = 0
+                            resample_attempt_num = int(0)
+                            print("")
+                            print("Bad stuck. Re-starting from home config")
+                            i = iter * N_DATA_PER_MOTION * N_TURN_STEPS
                     continue
 
                 if MOTION_TYPE == MotionType.TURN:
@@ -1198,8 +1220,8 @@ if __name__ == "__main__":
         q_prev_step = q0.copy()
 
         # place base above ankles
-        nominal_base_iso.translation[0] = np.array([
-            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+        nominal_base_iso.translation[0] = (nominal_lf_iso.translation[0] +
+                                           nominal_rf_iso.translation[0]) / 2.0
 
         load_turn_pink_config()
         MOTION_TYPE = MotionType.TURN
@@ -1239,8 +1261,8 @@ if __name__ == "__main__":
         VIDEO_RECORD = False
 
         # place base above ankles
-        nominal_base_iso.translation[0] = np.array([
-            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+        nominal_base_iso.translation[0] = (nominal_lf_iso.translation[0] +
+                                           nominal_rf_iso.translation[0]) / 2.0
 
         load_turn_pink_config()
         MOTION_TYPE = MotionType.TURN
@@ -1335,8 +1357,8 @@ if __name__ == "__main__":
         N_TURN_ITERS = 1e2           # number of iterations of each turning sequence
 
         # place base above ankles
-        nominal_base_iso.translation[0] = np.array([
-            nominal_lf_iso.translation[0] + nominal_rf_iso.translation[0]]) / 2.0
+        nominal_base_iso.translation[0] = (nominal_lf_iso.translation[0] +
+                                           nominal_rf_iso.translation[0]) / 2.0
 
         load_turn_pink_config()
 
