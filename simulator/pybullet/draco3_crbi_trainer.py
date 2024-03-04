@@ -745,17 +745,22 @@ def generate_casadi_func(pytorch_model,
                          generate_c_code=True):
     c_code_path = cwd + "/data/pytorch_model/draco3_crbi"
     ## Computational Graph
-    b = MX.sym('b', 6)
-    l = MX.sym('l', 6)
-    r = MX.sym('r', 6)
+    b_pos = MX.sym('b_pos', 3)
+    l_pos = MX.sym('l_pos', 3)
+    r_pos = MX.sym('r_pos', 3)
+    b_ori = MX.sym('b_ori', 3)
+    l_ori = MX.sym('l_ori', 3)
+    r_ori = MX.sym('r_ori', 3)
     # Input
-    l_minus_b = l - b
-    r_minus_b = r - b
-    inp = vertcat(l_minus_b, r_minus_b)
-    normalized_inp = (inp - input_mean) / input_std  # (6, 1)
+    l_pos_minus_b_pos = l_pos - b_pos
+    r_pos_minus_b_pos = r_pos - b_pos
+    l_ori_minus_b_ori = l_ori - b_ori
+    r_ori_minus_b_ori = r_ori - b_ori
+    inp = vertcat(l_pos_minus_b_pos, r_pos_minus_b_pos, l_ori_minus_b_ori, r_ori_minus_b_ori)
+    normalized_inp = (inp - input_mean) / input_std  # (12, 1)
     # MLP (Somewhat manual)
-    w0 = pytorch_model.layers[0].weight.detach().numpy()  # (6, 64)
-    b0 = pytorch_model.layers[0].bias.detach().reshape(-1, 1).numpy()  # (1, 64)
+    w0 = pytorch_model.layers[0].weight.detach().numpy()  # (12, 64)
+    b0 = pytorch_model.layers[0].bias.detach().reshape(-1, 1).numpy()  # (12, 64)
     w1 = pytorch_model.layers[2].weight.detach().numpy()  # (64, 64)
     b1 = pytorch_model.layers[2].bias.detach().reshape(-1, 1).numpy()  # (1, 64)
     w2 = pytorch_model.layers[4].weight.detach().numpy()  # (64, 6)
@@ -767,7 +772,7 @@ def generate_casadi_func(pytorch_model,
     denormalized_output = (output.T @ output_std) + output_mean
 
     # Define casadi function
-    func = Function('draco3_crbi_helper', [b, l, r], [denormalized_output])
+    func = Function('draco3_crbi_helper', [b_pos, b_ori, l_pos, l_ori, r_pos, r_ori], [denormalized_output])
     jac_func = func.jacobian()
     print(func)
     print(jac_func)
@@ -1322,12 +1327,12 @@ if __name__ == "__main__":
         ## =======================================================================
         MOTION_TYPE = MotionType.STEP
         N_DATA_PER_MOTION = 30
-        N_SWING_MOTIONS = 1e3
+        N_SWING_MOTIONS = 4e3
         N_TURN_STEPS = 1        # single step motion, repeated several times
 
         SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.30
         SWING_TIME_LB, SWING_TIME_UB = 0.35, 0.75
-        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.8, 0.9
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.86, 0.95
 
         FOOT_EA_LB = np.array([np.deg2rad(-5.), np.deg2rad(-15.), -np.pi / 3.])
         FOOT_EA_UB = np.array([np.deg2rad(5.), np.deg2rad(15.), np.pi / 3.])
@@ -1354,7 +1359,7 @@ if __name__ == "__main__":
         MOTION_TYPE = MotionType.TURN
         N_DATA_PER_MOTION = 30
         N_TURN_STEPS = 4
-        N_TURN_ITERS = 1e2           # number of iterations of each turning sequence
+        N_TURN_ITERS = 1e3           # number of iterations of each turning sequence
 
         # place base above ankles
         nominal_base_iso.translation[0] = (nominal_lf_iso.translation[0] +
@@ -1376,7 +1381,7 @@ if __name__ == "__main__":
         SWING_HEIGHT_LB, SWING_HEIGHT_UB = 0.05, 0.30
         SWING_TIME_LB, SWING_TIME_UB = 1.5, 1.8
         # BASE_HEIGHT_LB, BASE_HEIGHT_UB = configuration.q[2]-0.02, configuration.q[2]+0.02
-        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.8, 0.9
+        BASE_HEIGHT_LB, BASE_HEIGHT_UB = 0.86, 0.95
 
         l_turn_data_x, l_turn_data_y = generate_data(N_DATA_PER_MOTION * N_TURN_STEPS * N_TURN_ITERS,
                                            nominal_lf_iso, nominal_rf_iso,
@@ -1393,6 +1398,8 @@ if __name__ == "__main__":
 
         data_x = l_swing_data_x + r_swing_data_x + l_turn_data_x + r_turn_data_x
         data_y = l_swing_data_y + r_swing_data_y + l_turn_data_y + r_turn_data_y
+        # data_x = l_swing_data_x + r_swing_data_x
+        # data_y = l_swing_data_y + r_swing_data_y
 
         print("-------------------------------------------")
         print("data_x len: ", len(data_x))
