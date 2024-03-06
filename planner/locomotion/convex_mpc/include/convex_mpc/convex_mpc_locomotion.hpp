@@ -195,6 +195,9 @@ private:
   double swing_time_[2];
   double swing_time_remaining_[2];
 
+  // for inertia traj
+  CubicBeizerTrajectoryManager<double> foot_swing_trajectory_for_inertia_[2];
+
   // clock
   Clock clock_;
 

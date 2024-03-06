@@ -14,6 +14,7 @@ public:
   }
 
   void ComputeSwingTrajectoryBezier(T phase, T swing_time);
+  void ComputeSwingTrajectoryBezier(T phase);
 
   // setter
   void SetInitialPosition(const Eigen::Matrix<T, 3, 1> &p0) { p0_ = p0; }
@@ -24,6 +25,9 @@ public:
   Eigen::Matrix<T, 3, 1> GetPosition() { return p_; }
   Eigen::Matrix<T, 3, 1> GetVelocity() { return v_; }
   Eigen::Matrix<T, 3, 1> GetAcceleration() { return a_; }
+
+  Eigen::Matrix<T, 3, 1> GetFinalPosition() { return pf_; }
+  Eigen::Matrix<T, 3, 1> GetInitialPosition() { return p0_; }
 
 private:
   Eigen::Matrix<T, 3, 1> p0_, pf_, p_, v_, a_;
