@@ -1,5 +1,6 @@
 #include "convex_mpc/convex_mpc_locomotion.hpp"
 #include "configuration.hpp"
+#include "controller/models/composite_rigid_body_inertia.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
 
@@ -9,7 +10,8 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
                                          const int iterations_btw_mpc,
                                          PinocchioRobotSystem *robot,
                                          bool b_save_mpc_solution,
-                                         MPCParams *mpc_params)
+                                         MPCParams *mpc_params,
+                                         CompositeRigidBodyInertia *crbi)
     : dt_(dt), iterations_btw_mpc_(iterations_btw_mpc), n_horizon_(10),
       robot_(robot), iteration_counter_(0),
       standing_(n_horizon_, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10),
@@ -20,12 +22,6 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
 
   rpy_int_.setZero();
   rpy_comp_.setZero();
-
-  // convex mpc formulation
-  if (mpc_params)
-    _InitializeConvexMPC(mpc_params);
-  else
-    _InitializeConvexMPC();
 
   // swing foot
   foot_pos_.resize(2);
@@ -48,6 +44,17 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
   // des_rf_wrench_[5] = robot_total_weight / 2.;
 
   b_save_mpc_solution_ = b_save_mpc_solution;
+
+  // convex mpc formulation
+  if (mpc_params)
+    _InitializeConvexMPC(mpc_params);
+  else
+    _InitializeConvexMPC();
+
+  // CRBI model
+  if (crbi) {
+    crbi_ = crbi;
+  }
 
 #if B_USE_MATLOGGER
   if (b_save_mpc_solution_) {

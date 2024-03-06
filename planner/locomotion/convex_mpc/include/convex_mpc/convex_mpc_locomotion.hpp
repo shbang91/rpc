@@ -44,6 +44,7 @@ SOFTWARE.
  */
 
 class PinocchioRobotSystem;
+class CompositeRigidBodyInertia;
 
 struct MPCParams {
 public:
@@ -76,7 +77,8 @@ public:
   ConvexMPCLocomotion(const double dt, const int iterations_btw_mpc,
                       PinocchioRobotSystem *robot,
                       bool b_save_mpc_solution = false,
-                      MPCParams *mpc_params = nullptr);
+                      MPCParams *mpc_params = nullptr,
+                      CompositeRigidBodyInertia *crbi = nullptr);
   ConvexMPCLocomotion() = default;
   ~ConvexMPCLocomotion() = default;
 
@@ -190,6 +192,9 @@ private:
 
   // clock
   Clock clock_;
+
+  // composite rigid body inertia
+  CompositeRigidBodyInertia *crbi_;
 
   // TEST
   Eigen::Matrix3d I_global_ = Eigen::Matrix3d::Identity();

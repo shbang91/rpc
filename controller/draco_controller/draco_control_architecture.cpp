@@ -102,10 +102,11 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
                       "foot_half_width", temp_val);
   mpc_params_->foot_half_width_ = temp_val;
 
-  convex_mpc_locomotion_ =
-      new ConvexMPCLocomotion(sp_->servo_dt_, iterations_between_mpc, robot_,
-                              b_save_mpc_solution, mpc_params_);
   draco_crbi_model_ = new DracoCompositeRigidBodyInertia();
+
+  convex_mpc_locomotion_ = new ConvexMPCLocomotion(
+      sp_->servo_dt_, iterations_between_mpc, robot_, b_save_mpc_solution,
+      mpc_params_, draco_crbi_model_);
 
   //=============================================================
   // trajectory Managers
