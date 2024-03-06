@@ -153,6 +153,7 @@ private:
   std::shared_ptr<MPC> convex_mpc_;
 
   bool b_first_visit_ = true;
+  bool b_first_visit_inertia_gen_ = true;
   int iteration_counter_;
 
   bool b_save_mpc_solution_;
@@ -167,6 +168,7 @@ private:
   double yaw_des_ = 0.0;
 
   OffsetDurationGait standing_, walking_;
+  OffsetDurationGait gait_for_inertia_;
 
   Eigen::Vector3d rpy_int_;
   Eigen::Vector3d rpy_comp_;
@@ -176,6 +178,10 @@ private:
 
   // state trajectory
   Vector6d stand_traj_;
+
+  // varying inertia calculation
+  Vector6d stand_base_traj_; // for base trajectory
+  Eigen::Vector3d des_base_com_pos_in_world_;
 
   // desired body states for WBC update
   Eigen::Vector3d des_body_pos_in_world_;
@@ -194,6 +200,8 @@ private:
   HermiteQuaternionCurve2 foot_swing_ori_trajectory_[2];
   double swing_time_[2];
   double swing_time_remaining_[2];
+  Eigen::Vector2d swing_states_;
+  Eigen::Vector2d contact_states_;
 
   // for inertia traj
   CubicBeizerTrajectoryManager<double> foot_swing_trajectory_for_inertia_[2];
