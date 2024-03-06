@@ -405,6 +405,18 @@ void ConvexMPCLocomotion::Solve() {
   // contact state
   // contact_state_ = gait->getContactState();
 
+  // mpc wrench command linear interpolation
+  // des_lf_wrench_ = mpc_lf_wrench_cmd_first_ +
+  //(mpc_lf_wrench_cmd_second_ - mpc_lf_wrench_cmd_first_) /
+  // iterations_btw_mpc_ *
+  //(iteration_counter_ % 5);
+  // des_rf_wrench_ = mpc_rf_wrench_cmd_first_ +
+  //(mpc_rf_wrench_cmd_second_ - mpc_rf_wrench_cmd_first_) /
+  // iterations_btw_mpc_ *
+  //(iteration_counter_ % 5);
+  des_lf_wrench_ = mpc_lf_wrench_cmd_first_;
+  des_rf_wrench_ = mpc_rf_wrench_cmd_first_;
+
   // mpc iteration counter
   iteration_counter_++;
 

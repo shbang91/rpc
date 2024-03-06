@@ -119,6 +119,11 @@ public:
   Vector6d des_lf_wrench_;
   Vector6d des_rf_wrench_;
 
+  Vector6d mpc_lf_wrench_cmd_first_;
+  Vector6d mpc_lf_wrench_cmd_second_;
+  Vector6d mpc_rf_wrench_cmd_first_;
+  Vector6d mpc_rf_wrench_cmd_second_;
+
   // contact variable
   // from gait scheduler
   Eigen::Vector2d contact_state_;
