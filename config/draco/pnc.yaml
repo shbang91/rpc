@@ -119,8 +119,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_com_kp : [500.]
-      sim_com_kd : [100.]
+      sim_com_kp : [1000.]
+      sim_com_kd : [500.]
 
       sim_base_kp : [1000.]
       sim_base_kd : [80.]
@@ -152,8 +152,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [0.0, 0.0, 0.1]
-      sim_kd : [0.0, 0.0, 0.0]
+      sim_kp : [0.0, 0.0, 1.0]
+      sim_kd : [0.0, 0.0, 2.0]
       #sim_kp : [0.0, 0.0, 0.0]
       #sim_kd : [0.0, 0.0, 0.0]
       sim_kp_ik : [0., 0., 1]
@@ -308,8 +308,10 @@ wbc:
     #W_delta_rf_right_foot_in_contact_mpc: [500000, 500000, 50000000, 500000, 500000, 5000]
     #W_delta_rf_left_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
     #W_delta_rf_right_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
-    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 50000, 10000, 10000, 10000]
-    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 50000, 10000, 10000, 10000]
+
+    #working params
+    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 10000]
+    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 10000]
 
     W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
@@ -318,9 +320,9 @@ wbc:
     #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5, 5, 5]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
 
-    #W_xc_ddot_in_contact: 1e7
+    W_xc_ddot_in_contact: 1e5
     #W_xc_ddot_in_swing: 1e-3
-    W_xc_ddot_in_contact: 0
+    #W_xc_ddot_in_contact: 0
     W_xc_ddot_in_swing: 0
 
 
@@ -353,7 +355,8 @@ state_machine:
     stand_up:
       standup_duration: 1.
       target_com_height: 0.658
-      target_base_height: 0.88
+      #target_base_height: 0.88
+      target_base_height: 0.93
 
       rf_z_max_interp_duration: 0.1
 
