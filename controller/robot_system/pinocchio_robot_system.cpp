@@ -341,17 +341,40 @@ PinocchioRobotSystem::GetTransform(const std::string &ref_frame,
 
 Eigen::Vector3d
 PinocchioRobotSystem::GetLocomotionControlPointsInBody(const int cp_idx) {
-  return GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx])
-             .translation() -
-         base_local_com_pos_;
+  // return GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx])
+  //.translation() -
+  // base_local_com_pos_;
+  Eigen::Isometry3d world_iso_root_frame = GetLinkIsometry(root_frame_name_);
+  Eigen::Isometry3d root_frame_iso_root_com_frame =
+      Eigen::Isometry3d::Identity();
+  root_frame_iso_root_com_frame.translation() = base_local_com_pos_;
+  Eigen::Isometry3d world_iso_root_com_frame =
+      world_iso_root_frame * root_frame_iso_root_com_frame;
+
+  Eigen::Isometry3d base_com_iso_cp =
+      world_iso_root_com_frame.inverse() *
+      GetLinkIsometry(foot_cp_string_vec_[cp_idx]);
+
+  return base_com_iso_cp.translation();
 }
 Eigen::Isometry3d
 PinocchioRobotSystem::GetLocomotionControlPointsIsometryInBody(
     const int cp_idx) {
-  Eigen::Isometry3d iso =
-      GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx]);
-  iso.translation() -= base_local_com_pos_;
-  return iso;
+  // Eigen::Isometry3d iso =
+  // GetTransform(root_frame_name_, foot_cp_string_vec_[cp_idx]);
+  // iso.translation() -= base_local_com_pos_;
+  Eigen::Isometry3d world_iso_root_frame = GetLinkIsometry(root_frame_name_);
+  Eigen::Isometry3d root_frame_iso_root_com_frame =
+      Eigen::Isometry3d::Identity();
+  root_frame_iso_root_com_frame.translation() = base_local_com_pos_;
+  Eigen::Isometry3d world_iso_root_com_frame =
+      world_iso_root_frame * root_frame_iso_root_com_frame;
+
+  Eigen::Isometry3d base_com_iso_cp =
+      world_iso_root_com_frame.inverse() *
+      GetLinkIsometry(foot_cp_string_vec_[cp_idx]);
+
+  return base_com_iso_cp;
 }
 
 std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
@@ -361,10 +384,11 @@ PinocchioRobotSystem::GetBaseToFootXYOffset() {
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>
       offset(NUM_FEET, Eigen::Vector3d::Zero());
   for (int i = 0; i < NUM_FEET; ++i) {
-    offset[i] = this->GetTransform(root_frame_name_, foot_cp_string_vec_[i])
-                    .translation() +
-                base_local_com_pos_;
-    // offset[i].coeff(2) = 0.0;
+    // offset[i] = this->GetTransform(root_frame_name_, foot_cp_string_vec_[i])
+    //.translation() +
+    // base_local_com_pos_;
+    // offset[i][2] = 0.0;
+    offset[i] = this->GetLocomotionControlPointsInBody(i);
     offset[i][2] = 0.0;
   }
 
