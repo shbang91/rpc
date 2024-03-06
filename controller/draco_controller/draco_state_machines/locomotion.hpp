@@ -37,6 +37,7 @@ private:
   int gait_number_;
   double swing_height_;
   double raibert_gain_;
+  double high_speed_turning_gain_;
 
   // QP params yaml
   Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);

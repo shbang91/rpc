@@ -41,6 +41,8 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
   swing_height_ = util::ReadParameter<double>(mpc_cfg["swing_foot"], "height");
   raibert_gain_ =
       util::ReadParameter<double>(mpc_cfg["swing_foot"], "raibert_gain");
+  high_speed_turning_gain_ = util::ReadParameter<double>(
+      mpc_cfg["swing_foot"], "high_speed_turning_gain");
 }
 
 void Locomotion::FirstVisit() {
@@ -67,6 +69,8 @@ void Locomotion::FirstVisit() {
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
       robot_->GetBaseToFootXYOffset());
   ctrl_arch_->convex_mpc_locomotion_->SetRaibertGain(raibert_gain_);
+  ctrl_arch_->convex_mpc_locomotion_->SetHighSpeedTurningGain(
+      high_speed_turning_gain_);
 
   // TODO: should be generated inside of convexmpclocomotion class
   // lf_ori_quat_ = Eigen::Quaterniond(

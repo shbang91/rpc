@@ -47,6 +47,7 @@ mpc_params:
 swing_foot:
   height: 0.10
   raibert_gain: 0.02
+  high_speed_turning_gain: 1.0
 
 gait:
   x_vel_cmd: 0.0 ## 0.5
