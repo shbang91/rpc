@@ -218,13 +218,15 @@ void ConvexMPCLocomotion::Solve() {
     double pfx_rel =
         body_vel_in_world[0] * 0.5 * stance_time +
         raibert_gain_ * (body_vel_in_world[0] - des_body_vel_in_world_[0]) +
-        (0.5 * robot_->GetBodyPos()[2] / 9.81) *
+        (high_speed_turning_gain_ * robot_->GetBodyPos()[2] / 9.81) *
+            //(1.0 * robot_->GetRobotComPos()[2] / 9.81) *
             (body_vel_in_world[1] * yaw_rate_des_);
 
     float pfy_rel =
         body_vel_in_world[1] * 0.5 * stance_time +
         raibert_gain_ * (body_vel_in_world[1] - des_body_vel_in_world_[1]) +
-        (0.5 * robot_->GetBodyPos()[2] / 9.81) *
+        (high_speed_turning_gain_ * robot_->GetBodyPos()[2] / 9.81) *
+            //(1.0 * robot_->GetRobotComPos()[2] / 9.81) *
             (-body_vel_in_world[0] * yaw_rate_des_);
     pfx_rel = fmin(fmax(pfx_rel, -p_rel_max), p_rel_max);
     pfy_rel = fmin(fmax(pfy_rel, -p_rel_max), p_rel_max);

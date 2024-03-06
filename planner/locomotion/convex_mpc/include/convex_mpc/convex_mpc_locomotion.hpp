@@ -93,6 +93,9 @@ public:
   void SetRaibertGain(const double raibert_gain) {
     raibert_gain_ = raibert_gain;
   }
+  void SetHighSpeedTurningGain(const double high_speed_turning_gain) {
+    high_speed_turning_gain_ = high_speed_turning_gain;
+  }
 
   // WBC task variables
   // from Raibert Heuristics
@@ -176,6 +179,7 @@ private:
   bool b_first_swing_[2];
   double swing_height_;
   double raibert_gain_;
+  double high_speed_turning_gain_;
   aligned_vector<Vector3d> foot_pos_;           // lfoot, rfoot order
   aligned_vector<Matrix3d> foot_ori_;           // lfoot, rfoot order
   aligned_vector<Vector3d> base_to_hip_offset_; // lfoot, rfoot order
