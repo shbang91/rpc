@@ -2,6 +2,7 @@
 
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
+#include "controller/draco_controller/draco_crbi/draco_composite_rigid_body_inertia.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
@@ -54,8 +55,10 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   tci_container_ = new DracoTCIContainer(robot_);
   controller_ = new DracoController(tci_container_, robot_);
 
+  // dcm planner
   dcm_planner_ = new DCMPlanner();
 
+  // convex mpc planner
   YAML::Node cfg_mpc =
       YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
   double iterations_between_mpc =
@@ -102,6 +105,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   convex_mpc_locomotion_ =
       new ConvexMPCLocomotion(sp_->servo_dt_, iterations_between_mpc, robot_,
                               b_save_mpc_solution, mpc_params_);
+  draco_crbi_model_ = new DracoCompositeRigidBodyInertia();
 
   //=============================================================
   // trajectory Managers
@@ -184,6 +188,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete controller_;
   delete dcm_planner_;
   delete convex_mpc_locomotion_;
+  delete draco_crbi_model_;
 
   // tm
   delete upper_body_tm_;

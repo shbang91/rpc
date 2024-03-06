@@ -4,6 +4,7 @@ add_subdirectory(whole_body_controller)
 add_subdirectory(model_predictive_controller)
 add_subdirectory(filter)
 add_subdirectory(state_estimator)
+add_subdirectory(models)
 
 
 file(GLOB rpc_headers "*.hpp")

@@ -28,6 +28,7 @@ class ForceTrajectoryManager;
 class QPParamsManager;
 class ConvexMPCLocomotion;
 class MPCParams;
+class CompositeRigidBodyInertia;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
@@ -49,6 +50,7 @@ public:
   ForceTrajectoryManager *rf_force_tm_;
   QPParamsManager *qp_pm_;
   ConvexMPCLocomotion *convex_mpc_locomotion_;
+  CompositeRigidBodyInertia *draco_crbi_model_;
 
 private:
   DracoController *controller_;
