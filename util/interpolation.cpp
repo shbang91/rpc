@@ -322,6 +322,24 @@ void HermiteQuaternionCurve2::Initialize(
   Initialize_data_structures();
 }
 
+void HermiteQuaternionCurve2::SetDesired(
+    const Eigen::Quaterniond &quat_end,
+    const Eigen::Vector3d &angular_velocity_end) {
+  qb = quat_end;
+  omega_b = angular_velocity_end;
+}
+
+void HermiteQuaternionCurve2::SetInitial(
+    const Eigen::Quaterniond &quat_start,
+    const Eigen::Vector3d &angular_velocity_start) {
+
+  qa = quat_start;
+  omega_a = angular_velocity_start;
+
+  s_ = 0.0;
+  Initialize_data_structures();
+}
+
 HermiteQuaternionCurve2::~HermiteQuaternionCurve2() {}
 
 void HermiteQuaternionCurve2::Initialize_data_structures() {

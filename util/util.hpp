@@ -108,9 +108,13 @@ Eigen::Quaternion<double> ExpToQuat(const Eigen::Vector3d &exp);
 // World Orientation is R = Rz*Ry*Rx
 Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
                                   const double yaw);
+Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy);
 
 // Quaternion to Euler ZYX
 Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in);
+
+// Quaternion to Euler XYZ
+Eigen::Vector3d QuatToEulerXYZ(const Eigen::Quaterniond &quat_in);
 
 // ZYX extrinsic rotation rates to world angular velocity
 // angular vel = [wx, wy, wz]

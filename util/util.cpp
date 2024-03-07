@@ -359,6 +359,14 @@ Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
   return q.normalized();
 }
 
+Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy) {
+  Eigen::AngleAxisd rollAngle(rpy[0], Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd pitchAngle(rpy[1], Eigen::Vector3d::UnitY());
+  Eigen::AngleAxisd yawAngle(rpy[2], Eigen::Vector3d::UnitZ());
+
+  Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
+  return q.normalized();
+}
 Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in) {
   // to match equation from:
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -393,6 +401,39 @@ Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in) {
   return Eigen::Vector3d(yaw, pitch, roll);
 }
 
+Eigen::Vector3d QuatToEulerXYZ(const Eigen::Quaterniond &quat_in) {
+  // to match equation from:
+  // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+  // roll (x-axis rotation)
+  double sinr_cosp =
+      2 * (quat_in.w() * quat_in.x() + quat_in.y() * quat_in.z());
+  double cosr_cosp =
+      1 - 2 * (quat_in.x() * quat_in.x() + quat_in.y() * quat_in.y());
+  double roll = std::atan2(sinr_cosp, cosr_cosp);
+
+  // pitch (y-axis rotation)
+  double sinp = 2 * (quat_in.w() * quat_in.y() - quat_in.z() * quat_in.x());
+  double pitch;
+  if (std::abs(sinp) >= 1)
+    pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+  else
+    pitch = std::asin(sinp);
+
+  // yaw rotation (z-axis rotation)
+  double siny_cosp =
+      2 * (quat_in.w() * quat_in.z() + quat_in.x() * quat_in.y());
+  double cosy_cosp =
+      1 - 2 * (quat_in.y() * quat_in.y() + quat_in.z() * quat_in.z());
+  double yaw = std::atan2(siny_cosp, cosy_cosp);
+
+  // The following is the Eigen library method. But it flips for a negative
+  // yaw..
+  // Eigen::Matrix3d mat = quat_in.toRotationMatrix();
+  // return mat.eulerAngles(2,1,0);
+
+  return Eigen::Vector3d(roll, pitch, yaw);
+}
 // ZYX extrinsic rotation rates to world angular velocity
 // angular vel = [wx, wy, wz]
 Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,

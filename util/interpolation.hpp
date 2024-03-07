@@ -179,10 +179,20 @@ public:
                   const Eigen::Quaterniond &quat_end,
                   const Eigen::Vector3d &angular_velocity_end);
 
+  // custom functions
+  void SetDesired(const Eigen::Quaterniond &quat_end,
+                  const Eigen::Vector3d &angular_velocity_end);
+
+  void SetInitial(const Eigen::Quaterniond &quat_start,
+                  const Eigen::Vector3d &angular_velocity_start);
+
   // All values are expressed in "world frame"
   Eigen::Quaterniond GetOrientation(const double &s_in);
   Eigen::Vector3d GetAngularVelocity(const double &s_in);
   Eigen::Vector3d GetAngularAcceleration(const double &s_in);
+
+  Eigen::Quaterniond GetInitialOri() { return qa; }
+  Eigen::Quaterniond GetFinalOri() { return qb; }
 
 private:
   Eigen::Quaterniond qa;   // Starting quaternion
