@@ -4,7 +4,7 @@ clc;
 
 addpath("/tmp")
 addpath("experiment_data")
-% addpath("plot")
+addpath("plot")
 addpath("plot/draco")
 
 % exp_data_location = 'experiment_data';
@@ -126,6 +126,7 @@ for i = 1:4
         plot(wbc_time, des_com_xy_pos(j, :), 'r', 'LineWidth', 3);
         hold on
         plot(wbc_time, act_com_xy_pos(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, base_com_pos(j, :), 'k', 'LineWidth', 2);
         grid on
         min_val = min([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
         max_val = max([des_com_xy_pos(j,:), act_com_xy_pos(j,:)]);
@@ -328,16 +329,19 @@ figure(num_fig)
 num_fig = num_fig + 1;
 j = 0;
 k = 0;
+p = 4;
 for i = 1:6
     subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
+        p = p - 1;
         plot(wbc_time, torso_ori_des_euler_xyz(j, :), 'r', 'LineWidth', 3);
         hold on
         plot(wbc_time, torso_ori_act_euler_xyz(j, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, wbo_ypr(p, :), 'k', 'LineWidth', 2);
         grid on
-        min_val = min([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
-        max_val = max([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:)]);
+        min_val = min([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:), wbo_ypr(p,:)]);
+        max_val = max([torso_ori_des_euler_xyz(j,:), torso_ori_act_euler_xyz(j,:), wbo_ypr(p,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -349,9 +353,10 @@ for i = 1:6
         plot(wbc_time, des_torso_ori_vel(k, :), 'r', 'LineWidth', 3);
         hold on
         plot(wbc_time, act_torso_ori_vel(k, :), 'b', 'LineWidth', 2);
+        plot(wbc_time, wbo_ang_vel(k, :), 'k', 'LineWidth', 2);
         grid on
-        min_val = min([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
-        max_val = max([des_torso_ori_vel(j,:), act_torso_ori_vel(j,:)]);
+        min_val = min([des_torso_ori_vel(k,:), act_torso_ori_vel(k,:), wbo_ang_vel(k, :)]);
+        max_val = max([des_torso_ori_vel(k,:), act_torso_ori_vel(k,:), wbo_ang_vel(k, :)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
         set_fig_opt()
@@ -1006,8 +1011,8 @@ for i = 1:12
         grid on
         hold on
         plot(wbc_time, des_rf_lfoot(j, :), 'k', 'LineWidth', 2);
-        min_val = min([lf_rf_cmd(j, :)]);
-        max_val = max([lf_rf_cmd(j, :)]);
+        min_val = min([lf_rf_cmd(j, :), des_rf_lfoot(j,:)]);
+        max_val = max([lf_rf_cmd(j, :), des_rf_lfoot(j,:)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
 %       set_fig_opt()
@@ -1023,8 +1028,8 @@ for i = 1:12
         grid on
         hold on
         plot(wbc_time, des_rf_rfoot(k, :), 'k', 'LineWidth', 2);
-        min_val = min([rf_rf_cmd(k, :)]);
-        max_val = max([rf_rf_cmd(k, :)]);
+        min_val = min([rf_rf_cmd(k, :), des_rf_rfoot(k, :)]);
+        max_val = max([rf_rf_cmd(k, :), des_rf_rfoot(k, :)]);
         min_val = min_val - 0.1 * (max_val - min_val);
         max_val = max_val + 0.1 *(max_val - min_val);
 %       set_fig_opt()
