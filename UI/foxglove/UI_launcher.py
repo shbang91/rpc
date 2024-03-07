@@ -21,7 +21,7 @@ import json
 import argparse
 
 if Config.USE_FOXGLOVE:
-    #from simulator.pybullet.draco_main import rpc_draco_interface
+    from simulator.pybullet.draco_main import *
     import UI.foxglove.control_widgets as foxglove_ctrl
     from foxglove_websocket.types import Parameter
     import asyncio
@@ -29,9 +29,6 @@ if Config.USE_FOXGLOVE:
     # load parameters that can be controlled / changed
     param_store = foxglove_ctrl.load_params_store()
     step_listener = foxglove_ctrl.Listener(param_store)
-
-    from subprocess import call
-    call(["python", "fox_draco_main.py"])
 
 
 parser = argparse.ArgumentParser()
@@ -117,7 +114,6 @@ async def main():
 
 
             if step_listener.has_been_modified():
-                  #from simulator.pybullet.draco_main import rpc_draco_interface
                   if step_listener.is_cmd_triggered('n_steps'):
                     new_steps_num = step_listener.get_val('n_steps')
                     rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)

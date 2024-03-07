@@ -384,6 +384,7 @@ if __name__ == "__main__":
 
     #pnc interface, sensor_data, command class
     rpc_draco_interface = draco_interface_py.DracoInterface()
+    #print("\nDONE REACHED\n")
     rpc_draco_sensor_data = draco_interface_py.DracoSensorData()
     rpc_draco_command = draco_interface_py.DracoCommand()
 
