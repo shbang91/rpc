@@ -208,6 +208,7 @@ private:
 
   // for inertia traj
   CubicBeizerTrajectoryManager<double> foot_swing_trajectory_for_inertia_[2];
+  HermiteQuaternionCurve2 foot_swing_ori_trajectory_for_inertia_[2];
 
   // clock
   Clock clock_;

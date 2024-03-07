@@ -317,6 +317,8 @@ void ConvexMPCLocomotion::Solve() {
 
     // swing foot for inertia
     foot_swing_trajectory_for_inertia_[leg].SetFinalPosition(des_foot_pos);
+    foot_swing_ori_trajectory_for_inertia_[leg].SetDesired(
+        Eigen::Quaterniond(des_foot_ori).normalized(), Eigen::Vector3d::Zero());
   }
 
   // calculate gait
@@ -366,6 +368,7 @@ void ConvexMPCLocomotion::Solve() {
         foot_swing_ori_trajectory_[foot].SetInitial(
             Eigen::Quaterniond(foot_ori_[foot]).normalized(),
             Eigen::Vector3d::Zero());
+        foot_swing_ori_trajectory_for_inertia_[foot].SetInitial(
             Eigen::Quaterniond(foot_ori_[foot]).normalized(),
             Eigen::Vector3d::Zero());
       }
@@ -774,9 +777,13 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     swing_states << 0.0, 0.0;
     swing_states_old << 0.0, 0.0;
 
-    for (int foot = 0; foot < 2; foot++)
+    for (int foot = 0; foot < 2; foot++) {
       foot_swing_trajectory_for_inertia_[foot].SetInitialPosition(
           foot_pos_[foot]);
+      foot_swing_ori_trajectory_for_inertia_[foot].SetInitial(
+          Eigen::Quaterniond(foot_ori_[foot]).normalized(),
+          Eigen::Vector3d::Zero());
+    }
 
     b_first_visit_inertia_gen_ = false;
   }
@@ -788,6 +795,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   for (int foot = 0; foot < 2; foot++) {
     int foot_swing_state_change_count(0);
     Eigen::Vector3d prev_contact_foot_pos = Eigen::Vector3d::Zero();
+    Eigen::Quaterniond prev_contact_foot_quat = Eigen::Quaterniond::Identity();
     // iterate over the prediction horizon
     for (int i = 1; i < n_horizon_; i++) {
       // gait phase calculation
@@ -798,7 +806,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
       // std::cout << "swing_states: " << swing_states.transpose() << std::endl;
 
       // TODO: assume orienation is constant (forward walking case)
-      des_foot_ori_traj[foot][i] = des_foot_ori_traj[foot][i - 1];
+      // des_foot_ori_traj[foot][i] = des_foot_ori_traj[foot][i - 1];
 
       // foot linear position prediction
       if (swing_states_old[foot] > 0.0 && swing_states[foot] > 0.0) {
@@ -808,11 +816,23 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
               swing_states[foot]);
           des_foot_pos_traj[foot][i] =
               foot_swing_trajectory_for_inertia_[foot].GetPosition();
+
+          // orientation
+          des_foot_ori_traj[foot][i] = util::QuatToEulerXYZ(
+              foot_swing_ori_trajectory_for_inertia_[foot].GetOrientation(
+                  swing_states[foot]));
+
         } else if (foot_swing_state_change_count == 1) {
           foot_swing_trajectory_for_inertia_[foot].ComputeSwingTrajectoryBezier(
               swing_states[foot]);
           des_foot_pos_traj[foot][i] =
               foot_swing_trajectory_for_inertia_[foot].GetPosition();
+
+          // orientation
+          des_foot_ori_traj[foot][i] = util::QuatToEulerXYZ(
+              foot_swing_ori_trajectory_for_inertia_[foot].GetOrientation(
+                  swing_states[foot]));
+
         } else if (foot_swing_state_change_count == 2) {
           // TODO:
           // des_foot_pos_traj[foot][i] = des_foot_pos_traj[foot][i - 1];
@@ -823,12 +843,27 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
               foot_swing_trajectory_for_inertia_[foot].GetPosition();
           des_foot_pos_traj[foot][i] -=
               foot_swing_trajectory_for_inertia_[foot].GetInitialPosition();
+
+          // Orientation
+          Eigen::Quaterniond delta_quat =
+              foot_swing_ori_trajectory_for_inertia_[foot].GetOrientation(
+                  swing_states[foot]) *
+              foot_swing_ori_trajectory_for_inertia_[foot]
+                  .GetInitialOri()
+                  .inverse();
+          Eigen::Quaterniond final_quat = prev_contact_foot_quat * delta_quat;
+          des_foot_ori_traj[foot][i] = util::QuatToEulerXYZ(final_quat);
         }
       } else if (swing_states_old[foot] > 0.0 && swing_states[foot] == 0) {
         // swing -> contact
         foot_swing_state_change_count++;
         des_foot_pos_traj[foot][i] =
             foot_swing_trajectory_for_inertia_[foot].GetFinalPosition();
+
+        // orientation
+        des_foot_ori_traj[foot][i] = util::QuatToEulerXYZ(
+            foot_swing_ori_trajectory_for_inertia_[foot].GetFinalOri());
+
       } else if (swing_states_old[foot] == 0.0 && swing_states[foot] > 0.0) {
         // contact -> swing
         foot_swing_state_change_count++;
@@ -839,8 +874,16 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
               swing_states[foot]);
           des_foot_pos_traj[foot][i] =
               foot_swing_trajectory_for_inertia_[foot].GetPosition();
+
+          // orientation
+          foot_swing_ori_trajectory_for_inertia_[foot].SetInitial(
+              util::EulerZYXtoQuat(des_foot_pos_traj[foot][i - 1]),
+              Eigen::Vector3d::Zero());
+          des_foot_ori_traj[foot][i] = util::QuatToEulerXYZ(
+              foot_swing_ori_trajectory_for_inertia_[foot].GetOrientation(
+                  swing_states[foot]));
+
         } else if (foot_swing_state_change_count == 2) {
-          // TODO:
           des_foot_pos_traj[foot][i] = des_foot_pos_traj[foot][i - 1];
           prev_contact_foot_pos = des_foot_pos_traj[foot][i - 1];
           foot_swing_trajectory_for_inertia_[foot].ComputeSwingTrajectoryBezier(
@@ -849,11 +892,24 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
               foot_swing_trajectory_for_inertia_[foot].GetPosition();
           des_foot_pos_traj[foot][i] -=
               foot_swing_trajectory_for_inertia_[foot].GetInitialPosition();
+
+          // orientation
+          prev_contact_foot_quat =
+              util::EulerZYXtoQuat(des_foot_pos_traj[foot][i - 1]);
+          Eigen::Quaterniond delta_quat =
+              foot_swing_ori_trajectory_for_inertia_[foot].GetOrientation(
+                  swing_states[foot]) *
+              foot_swing_ori_trajectory_for_inertia_[foot]
+                  .GetInitialOri()
+                  .inverse();
+          Eigen::Quaterniond final_quat = prev_contact_foot_quat * delta_quat;
+          des_foot_ori_traj[foot][i] = util::QuatToEulerXYZ(final_quat);
         }
 
       } else if (swing_states_old[foot] == 0.0 && swing_states[foot] == 0.0) {
         // contact -> contact
         des_foot_pos_traj[foot][i] = des_foot_pos_traj[foot][i - 1];
+        des_foot_ori_traj[foot][i] = des_foot_ori_traj[foot][i - 1];
       }
       // save the previous swing/contact states
       swing_states_old = swing_states;
@@ -932,8 +988,14 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
       logger_->add("des_lf_pos", des_lf_pos);
     for (const auto &des_rf_pos : des_foot_pos_traj[1])
       logger_->add("des_rf_pos", des_rf_pos);
+    for (const auto &des_lf_ori : des_foot_ori_traj[0])
+      logger_->add("des_lf_ori", des_lf_ori);
+    for (const auto &des_rf_ori : des_foot_ori_traj[1])
+      logger_->add("des_rf_ori", des_rf_ori);
     for (const auto &des_base_pos : des_base_pos_traj)
       logger_->add("des_base_pos", des_base_pos);
+    for (const auto &des_base_ori : des_base_ori_traj)
+      logger_->add("des_base_ori", des_base_ori);
 
     // save mpc solve time
     logger_->add("mpc_solve_time", clock_.duration());
