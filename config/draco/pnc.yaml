@@ -310,8 +310,10 @@ wbc:
     #W_delta_rf_right_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
 
     #working params
-    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 10000]
-    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 10000]
+    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 100000]
+    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 100000]
+    #W_delta_rf_left_foot_in_contact_mpc: [80000, 80000, 150000, 20000, 20000, 20000]
+    #W_delta_rf_right_foot_in_contact_mpc: [80000, 80000, 150000, 20000, 20000, 20000]
 
     W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
@@ -321,6 +323,7 @@ wbc:
     #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
 
     W_xc_ddot_in_contact: 1e5
+    #W_xc_ddot_in_contact: 5e4
     #W_xc_ddot_in_swing: 1e-3
     #W_xc_ddot_in_contact: 0
     W_xc_ddot_in_swing: 0
