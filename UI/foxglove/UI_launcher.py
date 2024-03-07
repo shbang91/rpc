@@ -1,48 +1,33 @@
 import os
-
 cwd = os.getcwd()
 import sys
-
 sys.path.append(cwd)
 sys.path.append(cwd + "/build/lib")  #include pybind module
-
 from config.draco.pybullet_simulation import *
-
 import zmq
 import sys
 import os
-
 import time
-
 import ruamel.yaml as yaml
 import numpy as np
-
 cwd = os.getcwd()
 sys.path.append(cwd + '/build')
 sys.path.append(cwd)
-
 from util.python_utils.util import rot_to_quat
-
 from messages.draco_pb2 import *
 from plot.data_saver import *
-
 import pinocchio as pin
-
 import json
 import argparse
 
 if Config.USE_FOXGLOVE:
     import UI.foxglove.control_widgets as foxglove_ctrl
+    from foxglove_websocket.types import Parameter
     import asyncio
     import threading
-
     # load parameters that can be controlled / changed
     param_store = foxglove_ctrl.load_params_store()
     step_listener = foxglove_ctrl.Listener(param_store)
-
-    # start the foxglove server on separate thread
-    x = threading.Thread(target=asyncio.run, args=([foxglove_ctrl.run(step_listener)]))
-    x.start()
 
 
 parser = argparse.ArgumentParser()
@@ -57,10 +42,8 @@ if args.visualizer == 'meshcat':
 elif args.visualizer == 'foxglove':
     import asyncio
     import math
-
     import numpy
     from base64 import b64encode
-
     # Foxglove dependencies
     from foxglove_schemas_protobuf.SpherePrimitive_pb2 import SpherePrimitive
     from foxglove_websocket import run_cancellable
@@ -68,7 +51,6 @@ elif args.visualizer == 'foxglove':
     from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
     from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
     from mcap_protobuf.schema import build_file_descriptor_set
-
     # local tools to manage Foxglove scenes
     from plot.foxglove_utils import FoxgloveShapeListener, SceneChannel
 
@@ -98,7 +80,6 @@ frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToSt
 
 
 async def main():
-
     # get FoxGlove events / commands
     #if Config.USE_FOXGLOVE:
      #   if step_listener.has_been_modified():
@@ -107,9 +88,7 @@ async def main():
         #        rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
          #       step_listener.reset()
 
-    print("Thread Count:",threading.activeCount())
-
-    async with (FoxgloveServer("0.0.0.0", 8765, "example server") as server):
+    async with (FoxgloveServer("0.0.0.0", 8765, "example server",capabilities=["parameters", "parametersSubscribe"]) as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
         normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]).add_chan(server)
@@ -123,14 +102,33 @@ async def main():
         scenes.append(norm_listener)
         icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], [.1,.1,.1], {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
         scenes.append(icp_listener)
+        scenes.append(step_listener)
         scenecount = len(scenes)-1
 
         # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
 
+        print("foxglove websocket initiated")
+
+        param_store = step_listener._param_store
+
         while True:
             #cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
             server.set_listener(scenes[scenecount])
+            #if the scene is the steplistener, we update the step parameter
+            if(scenecount == (len(scenes)-1)): server.update_parameters([Parameter(name="n_steps", value=param_store["n_steps"], type=None)])
+
+
+
+            if step_listener.has_been_modified():
+                  if step_listener.is_cmd_triggered('n_steps'):
+                     new_steps_num = step_listener.get_val('n_steps')
+                     rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
+                     step_listener.reset()
+                     print("exec update frro")
+
+
+
             scenecount = scenecount-1
             if(scenecount == -1): scenecount = (len(scenes)-1)
 
@@ -414,12 +412,14 @@ def process_data_saver(visualize_type):
 
 
 while True:
+    #print("\nFLAG_B1")
     # receive msg through socket
     encoded_msg = socket.recv()
     msg.ParseFromString(encoded_msg)
-
+    #print("FLAG_MSG")
     # if publishing raw messages, floating base estimates names are not important
     if args.visualizer != 'none':
+        #print("FLAG_VIS")
 
         check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
@@ -484,7 +484,7 @@ while True:
                 vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
-            print("foxentry")
+            #print("FLAG_FOXTRIG")
             y = threading.Thread(target=asyncio.run(main()), args=())
             y.start()
             #asyncio.run(main())

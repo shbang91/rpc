@@ -92,3 +92,10 @@ async def run(step_listener: Listener):
             await server.update_parameters(
                 [Parameter(name="n_steps", value=param_store["n_steps"], type=None)]
             )
+
+def paramtest(server,step_listener, param_store):
+    server.set_listener(step_listener)
+
+    server.update_parameters(
+        [Parameter(name="n_steps", value=param_store["n_steps"], type=None)]
+    )
