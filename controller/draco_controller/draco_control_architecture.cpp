@@ -106,7 +106,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   convex_mpc_locomotion_ = new ConvexMPCLocomotion(
       sp_->servo_dt_, iterations_between_mpc, robot_, b_save_mpc_solution,
-      mpc_params_, draco_crbi_model_);
+      mpc_params_, draco_crbi_model_, sp_);
 
   //=============================================================
   // trajectory Managers

@@ -46,6 +46,8 @@ SOFTWARE.
 class PinocchioRobotSystem;
 class CompositeRigidBodyInertia;
 
+class DracoStateProvider;
+
 struct MPCParams {
 public:
   MPCParams() = default;
@@ -78,7 +80,8 @@ public:
                       PinocchioRobotSystem *robot,
                       bool b_save_mpc_solution = false,
                       MPCParams *mpc_params = nullptr,
-                      CompositeRigidBodyInertia *crbi = nullptr);
+                      CompositeRigidBodyInertia *crbi = nullptr,
+                      void *state_provider = nullptr);
   ConvexMPCLocomotion() = default;
   ~ConvexMPCLocomotion() = default;
 
@@ -211,6 +214,9 @@ private:
 
   // composite rigid body inertia
   CompositeRigidBodyInertia *crbi_;
+
+  // draco state provider
+  DracoStateProvider *sp_;
 
   // TEST
   Eigen::Matrix3d I_global_ = Eigen::Matrix3d::Identity();

@@ -6,12 +6,12 @@
 
 #include <cmath>
 
-ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
-                                         const int iterations_btw_mpc,
-                                         PinocchioRobotSystem *robot,
-                                         bool b_save_mpc_solution,
-                                         MPCParams *mpc_params,
-                                         CompositeRigidBodyInertia *crbi)
+#include "controller/draco_controller/draco_state_provider.hpp"
+
+ConvexMPCLocomotion::ConvexMPCLocomotion(
+    const double dt, const int iterations_btw_mpc, PinocchioRobotSystem *robot,
+    bool b_save_mpc_solution, MPCParams *mpc_params,
+    CompositeRigidBodyInertia *crbi, void *state_provider)
     : dt_(dt), iterations_btw_mpc_(iterations_btw_mpc), n_horizon_(10),
       robot_(robot), iteration_counter_(0),
       standing_(n_horizon_, Eigen::Vector2i(0, 0), Eigen::Vector2i(10, 10),
@@ -56,6 +56,11 @@ ConvexMPCLocomotion::ConvexMPCLocomotion(const double dt,
   // CRBI model
   if (crbi) {
     crbi_ = crbi;
+  }
+
+  // state provider (TODO: make it general)
+  if (state_provider) {
+    sp_ = static_cast<DracoStateProvider *>(state_provider);
   }
 
 #if B_USE_MATLOGGER
