@@ -589,15 +589,15 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     // robot_->GetBodyOriYPR()[0]);
     // des_state_traj_initial.head<3>() =
     // yaw_rate_des_ == 0.0
-    //? Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1], stand_traj_[0])
+    //? Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1], stand_traj_[2])
     //: Eigen::Vector3d(rpy_comp_[0], rpy_comp_[1],
     // robot_->GetBodyOriYPR()[0]); // TODO:TEST this
     // (0., 0., yaw_des_)
     des_state_traj_initial.head<3>() =
         yaw_rate_des_ == 0.0
-            ? Eigen::Vector3d(0.0, 0.0, stand_traj_[0])
-            : Eigen::Vector3d(0.0, 0.0,
-                              robot_->GetBodyOriYPR()[0]); // TODO:TEST this
+            //? Eigen::Vector3d(0.0, 0.0, stand_traj_[2])
+            ? Eigen::Vector3d(stand_traj_[0], stand_traj_[1], stand_traj_[2])
+            : Eigen::Vector3d(0.0, 0.0, robot_->GetBodyOriYPR()[0]);
     des_state_traj_initial.segment<3>(3) =
         Eigen::Vector3d(x_start, y_start, des_body_height_);
 
@@ -689,7 +689,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
 
   des_base_ori_traj[0] =
       yaw_rate_des_ == 0.0
-          ? Eigen::Vector3d(0.0, 0.0, stand_base_traj_[0])
+          ? Eigen::Vector3d(0.0, 0.0, stand_base_traj_[2])
           : Eigen::Vector3d(0.0, 0.0, robot_->GetBodyOriYPR()[0]);
 
   // initial state compensation strategy
