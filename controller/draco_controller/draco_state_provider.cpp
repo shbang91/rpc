@@ -45,4 +45,8 @@ DracoStateProvider::DracoStateProvider() {
   floating_base_jidx_ = {0, 1, 2, 3, 4, 5};
 
   cam_est_ = Eigen::Vector3d::Zero();
+
+  wbo_ypr_ = Eigen::Vector3d::Zero();
+  wbo_ang_vel_ = Eigen::Vector3d::Zero();
+  wbo_des_ = Eigen::VectorXd::Zero(4);
 }

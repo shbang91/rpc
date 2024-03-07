@@ -209,6 +209,9 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   Eigen::Vector3d op_cmd =
       kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 
+  sp_->wbo_ypr_ = util::QuatToEulerZYX(world_Q_WBO);
+  sp_->wbo_ang_vel_ = avg_vel.head<3>();
+
   // std::cout << "----------------------------------" << std::endl;
   // std::cout << "wbo pos err: " << pos_err_.transpose() << std::endl;
   // std::cout << "wbo vel err: " << vel_err_.transpose() << std::endl;

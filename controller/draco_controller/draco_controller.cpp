@@ -525,6 +525,9 @@ void DracoController::_SaveData() {
         "centroidal_ang_mom_est",
         static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
             ->centroidal_ang_mom_est_);
+    // TEST for mpc update
+    logger_->add("wbo_ypr", sp_->wbo_ypr_);
+    logger_->add("wbo_ang_vel", sp_->wbo_ang_vel_);
   }
 
 #endif

@@ -47,6 +47,10 @@ public:
 
   Eigen::Vector3d cam_est_;
 
+  Eigen::Vector3d wbo_ypr_;
+  Eigen::Vector3d wbo_ang_vel_;
+  Eigen::VectorXd wbo_des_;
+
 private:
   DracoStateProvider();
 };

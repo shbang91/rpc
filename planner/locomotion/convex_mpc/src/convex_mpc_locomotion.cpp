@@ -97,9 +97,12 @@ void ConvexMPCLocomotion::Solve() {
   // check if transitioning to standing --> for later use
   if (gait_number_ == gait::kStand && current_gait_number_ != gait::kStand ||
       b_first_visit_) {
-    stand_traj_[0] = 0.0;                        // roll
-    stand_traj_[1] = 0.0;                        // pitch
+    // stand_traj_[0] = 0.0;                        // roll
+    // stand_traj_[1] = 0.0;                        // pitch
+    stand_traj_[0] = sp_->wbo_ypr_[2];           // roll
+    stand_traj_[1] = sp_->wbo_ypr_[1];           // pitch
     stand_traj_[2] = robot_->GetBodyOriYPR()[0]; // yaw
+    // stand_traj_[2] = sp_->wbo_ypr_[0]; // yaw
     // stand_traj_[3] = robot_->GetBodyPos()[0];    // TODO:base CoM x
     // stand_traj_[4] = robot_->GetBodyPos()[1];    // TODO:base CoM y
     stand_traj_[3] = robot_->GetRobotComPos()[0];
@@ -111,9 +114,10 @@ void ConvexMPCLocomotion::Solve() {
     des_body_pos_in_world_[1] = stand_traj_[4];
 
     // for inertia computation
-    stand_base_traj_[0] = 0.0;                         // roll
-    stand_base_traj_[1] = 0.0;                         // pitch
-    stand_base_traj_[2] = robot_->GetBodyOriYPR()[0];  // yaw
+    stand_base_traj_[0] = 0.0;                        // roll
+    stand_base_traj_[1] = 0.0;                        // pitch
+    stand_base_traj_[2] = robot_->GetBodyOriYPR()[0]; // yaw
+    // stand_base_traj_[2] = sp_->wbo_ypr_[0];            // yaw
     stand_base_traj_.tail<3>() = robot_->GetBodyPos(); // base com x,y,z
     des_base_com_pos_in_world_[0] = stand_base_traj_[3];
     des_base_com_pos_in_world_[1] = stand_base_traj_[4];
@@ -535,13 +539,6 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   //=====================================================
   // set state trajectory
   //=====================================================
-  // TODO: baseline methods-->>set body inertia (update every mpc loop)
-  Eigen::Matrix3d I_global = robot_->GetIg().topLeftCorner<3, 3>();
-  I_global_ = I_global;
-  Eigen::Matrix3d global_R_local = robot_->GetBodyOriRot();
-  Eigen::Matrix3d I_local =
-      global_R_local.transpose() * I_global * global_R_local;
-  convex_mpc_->setBodyInertia(I_local);
 
   // design desired state trajectory
   aligned_vector<Vector12d> des_state_traj(n_horizon_ + 1);
@@ -638,16 +635,19 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     }
 
     // update with current states
-    des_state_traj[0][0] = robot_->GetBodyOriYPR()[2];
-    des_state_traj[0][1] = robot_->GetBodyOriYPR()[1];
-    des_state_traj[0][2] = robot_->GetBodyOriYPR()[0];
+    // des_state_traj[0][0] = robot_->GetBodyOriYPR()[2];
+    // des_state_traj[0][1] = robot_->GetBodyOriYPR()[1];
+    // des_state_traj[0][2] = robot_->GetBodyOriYPR()[0];
+    des_state_traj[0].head<3>() = sp_->wbo_ypr_;
     des_state_traj[0][3] = robot_->GetRobotComPos()[0];
     des_state_traj[0][4] = robot_->GetRobotComPos()[1];
     des_state_traj[0][5] = robot_->GetBodyPos()[2];
-    // des_state_traj[0][5] = robot_->GetRobotComPos()[2];
+    // des_state_traj[0][5] = robot_->GetRobotComPos()[2]; //com height
     Eigen::Vector3d torso_ang_vel =
         robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).head<3>();
-    des_state_traj[0].segment<3>(6) = torso_ang_vel;
+    // des_state_traj[0].segment<3>(6) = torso_ang_vel;
+    // des_state_traj[0][8] = sp_->wbo_ang_vel_[2]; // wbo ang vel
+    des_state_traj[0].segment<3>(6) = sp_->wbo_ang_vel_;
     des_state_traj[0].segment<3>(9) = robot_->GetRobotComLinVel();
     des_state_traj[0][11] = robot_->GetBodyVel()[2];
   }
@@ -853,7 +853,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
       contact_states_old = contact_states;
     }
   }
-  // TODO: set inertia prediction
+  // set inertia prediction
   aligned_vector<Eigen::Matrix3d> crbi_traj(n_horizon_);
   for (int i = 0; i < n_horizon_; ++i) {
     crbi_traj[i] =
@@ -863,6 +863,14 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
   }
   convex_mpc_->setInertiaTrajectory(crbi_traj);
   // }
+
+  // TODO: baseline methods-->>set body inertia (update every mpc loop)
+  Eigen::Matrix3d I_global = robot_->GetIg().topLeftCorner<3, 3>();
+  I_global_ = I_global;
+  Eigen::Matrix3d global_R_local = robot_->GetBodyOriRot();
+  Eigen::Matrix3d I_local =
+      global_R_local.transpose() * I_global * global_R_local;
+  convex_mpc_->setBodyInertia(I_local);
 
   // set initial state // TODO: check this is correct
   convex_mpc_->setX0(
