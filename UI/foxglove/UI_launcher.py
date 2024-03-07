@@ -21,6 +21,7 @@ import json
 import argparse
 
 if Config.USE_FOXGLOVE:
+    #from simulator.pybullet.draco_main import rpc_draco_interface
     import UI.foxglove.control_widgets as foxglove_ctrl
     from foxglove_websocket.types import Parameter
     import asyncio
@@ -28,6 +29,9 @@ if Config.USE_FOXGLOVE:
     # load parameters that can be controlled / changed
     param_store = foxglove_ctrl.load_params_store()
     step_listener = foxglove_ctrl.Listener(param_store)
+
+    from subprocess import call
+    call(["python", "fox_draco_main.py"])
 
 
 parser = argparse.ArgumentParser()
@@ -80,14 +84,6 @@ frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToSt
 
 
 async def main():
-    # get FoxGlove events / commands
-    #if Config.USE_FOXGLOVE:
-     #   if step_listener.has_been_modified():
-      #      if step_listener.is_cmd_triggered('n_steps'):
-       #         new_steps_num = step_listener.get_val('n_steps')
-        #        rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
-         #       step_listener.reset()
-
     async with (FoxgloveServer("0.0.0.0", 8765, "example server",capabilities=["parameters", "parametersSubscribe"]) as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
         normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
@@ -121,11 +117,12 @@ async def main():
 
 
             if step_listener.has_been_modified():
+                  #from simulator.pybullet.draco_main import rpc_draco_interface
                   if step_listener.is_cmd_triggered('n_steps'):
-                     new_steps_num = step_listener.get_val('n_steps')
-                     rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
-                     step_listener.reset()
-                     print("exec update frro")
+                    new_steps_num = step_listener.get_val('n_steps')
+                    rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
+                    step_listener.reset()
+                    print("exec update frro")
 
 
 
