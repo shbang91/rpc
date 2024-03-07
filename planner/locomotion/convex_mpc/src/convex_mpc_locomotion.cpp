@@ -296,6 +296,25 @@ void ConvexMPCLocomotion::Solve() {
     des_foot_pos[2] = 0.0;
     foot_swing_trajectory_[leg].SetFinalPosition(des_foot_pos);
 
+    // Foot orienation desired design
+    // Eigen::Matrix3d world_R_body_yaw =
+    // robot_->GetBodyYawRotationMatrix();
+    Eigen::Matrix3d world_R_body_yaw =
+        yaw_rate_des_ == 0
+            ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2])
+            : util::SO3FromRPY(0.0, 0.0, robot_->GetBodyOriYPR()[0]);
+    Eigen::Matrix3d des_foot_ori =
+        // util::CoordinateRotation(
+        // util::CoordinateAxis::Z,
+        // yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot) / 2.0) *
+        // world_R_body_yaw;
+        util::CoordinateRotation(util::CoordinateAxis::Z,
+                                 yaw_rate_des_ * swing_time_remaining_[leg] /
+                                     2.0) *
+        world_R_body_yaw;
+    foot_swing_ori_trajectory_[leg].SetDesired(
+        Eigen::Quaterniond(des_foot_ori).normalized(), Eigen::Vector3d::Zero());
+
     // swing foot for inertia
     foot_swing_trajectory_for_inertia_[leg].SetFinalPosition(des_foot_pos);
   }
@@ -338,28 +357,16 @@ void ConvexMPCLocomotion::Solve() {
       // foot is in swing
       if (b_first_swing_[foot]) {
         b_first_swing_[foot] = false;
+        // swing foot pos
         foot_swing_trajectory_[foot].SetInitialPosition(foot_pos_[foot]);
         foot_swing_trajectory_for_inertia_[foot].SetInitialPosition(
             foot_pos_[foot]);
-        // Eigen::Matrix3d world_R_body_yaw =
-        // robot_->GetBodyYawRotationMatrix();
-        Eigen::Matrix3d world_R_body_yaw =
-            yaw_rate_des_ == 0
-                ? util::SO3FromRPY(0.0, 0.0, stand_traj_[2])
-                : util::SO3FromRPY(0.0, 0.0, robot_->GetBodyOriYPR()[0]);
-        Eigen::Matrix3d des_foot_ori =
-            // util::CoordinateRotation(
-            // util::CoordinateAxis::Z,
-            // 2.0 * yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot)) *
-            // world_R_body_yaw;
-            util::CoordinateRotation(
-                util::CoordinateAxis::Z,
-                yaw_rate_des_ * gait->getStanceDuration(dt_mpc_, foot) / 2.0) *
-            world_R_body_yaw;
-        foot_swing_ori_trajectory_[foot].Initialize(
+
+        // swing foot ori
+        foot_swing_ori_trajectory_[foot].SetInitial(
             Eigen::Quaterniond(foot_ori_[foot]).normalized(),
-            Eigen::Vector3d::Zero(),
-            Eigen::Quaterniond(des_foot_ori).normalized(),
+            Eigen::Vector3d::Zero());
+            Eigen::Quaterniond(foot_ori_[foot]).normalized(),
             Eigen::Vector3d::Zero());
       }
 
