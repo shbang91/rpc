@@ -62,7 +62,7 @@ state_estimator:
 controller:
   #exp_smoothing_command_duration: 0.2 ## this only used when b_sim: false
   exp_smoothing_command_duration: 3. ## this only used when b_sim: false
-  b_use_modified_swing_foot_jac: true
+  b_use_modified_swing_foot_jac: false
   b_use_filtered_torque: true
   alpha_cmd: 1.0
 
@@ -75,8 +75,8 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_kp : [250., 250.]
-      sim_kd : [50, 50]
+      sim_kp : [500., 500.]
+      sim_kd : [60, 60]
 
       sim_icp_kp : [2, 2]
       sim_icp_kd : [0., 0.] # x, y will be ignored
@@ -120,7 +120,7 @@ wbc:
       ## sim params
       ########################################################################
       sim_com_kp : [1000.]
-      sim_com_kd : [500.]
+      sim_com_kd : [100.]
 
       sim_base_kp : [1000.]
       sim_base_kd : [85.]
@@ -170,10 +170,10 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      #sim_kp : [1000., 1000., 1500.]
-      #sim_kd : [100., 100., 150.]
-      sim_kp : [500., 500., 350.] ## issues when yaw ~ 90 degree
-      sim_kd : [50., 50., 40.]
+      sim_kp : [500., 500., 500.]
+      sim_kd : [50., 50., 50.]
+      #sim_kp : [500., 500., 350.] ## issues when yaw ~ 90 degree
+      #sim_kd : [50., 50., 40.]
       sim_kp_ik : [1.0, 1.0, 1.0]
       #
       #sim_kp : [100., 100., 100.]
@@ -362,7 +362,8 @@ state_machine:
 
     stand_up:
       standup_duration: 1.
-      target_com_height: 0.658
+      #target_com_height: 0.658
+      target_com_height: 0.7
       #target_base_height: 0.88
       target_base_height: 0.93
 
