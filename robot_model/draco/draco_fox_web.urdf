@@ -28,7 +28,7 @@
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="package://meshes/torso_link.stl"/>-->
-        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/draco_modified.urdf"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/meshes/torso_link3.obj"/>
       </geometry>
       <!--<material name="white"/>-->
     </visual>
