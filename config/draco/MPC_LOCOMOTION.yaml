@@ -25,9 +25,13 @@ mpc_params:
     #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
     #
     #
-    Qqq: [50, 50, 300, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
-    Qvv: [20, 20, 150, 30, 30, 10000] ## wx, wy, wz, xdot, ydot, zdot
-    Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #Qqq: [50, 50, 300, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [20, 20, 150, 30, 30, 10000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    Qqq: [100, 100, 150, 200, 200, 1000000] ## roll, pitch, yaw, x, y, z
+    Qvv: [1, 1, 1, 1, 1, 500000] ## wx, wy, wz, xdot, ydot, zdot
+    Quu: [1e-2, 1e-2, 1e-2, 1e-4, 1e-4, 5e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
 
     Qqq_terminal: [10000, 10000, 10000, 10000, 10000, 10000]
     Qvv_terminal: [5000, 5000, 5000, 5000, 5000, 5000]
