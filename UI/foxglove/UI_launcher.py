@@ -412,7 +412,7 @@ while True:
     #print("FLAG_MSG")
     # if publishing raw messages, floating base estimates names are not important
     if args.visualizer != 'none':
-        #print("FLAG_VIS")
+        print("FLAG_VIS")
 
         check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
@@ -477,7 +477,7 @@ while True:
                 vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
-            #print("FLAG_FOXTRIG")
+            print("FLAG_FOXTRIG")
             y = threading.Thread(target=asyncio.run(main()), args=())
             y.start()
             #asyncio.run(main())
