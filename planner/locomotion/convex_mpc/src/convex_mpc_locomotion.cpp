@@ -687,8 +687,8 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     // update with current states
     des_state_traj[0][0] = robot_->GetBodyOriYPR()[2];
     des_state_traj[0][1] = robot_->GetBodyOriYPR()[1];
-    // des_state_traj[0][2] = robot_->GetBodyOriYPR()[0];
-    des_state_traj[0][2] = sp_->wbo_ypr_[0];
+    des_state_traj[0][2] = robot_->GetBodyOriYPR()[0];
+    // des_state_traj[0][2] = sp_->wbo_ypr_[0];
     // des_state_traj[0].head<3>() << sp_->wbo_ypr_[2], sp_->wbo_ypr_[1],
     // sp_->wbo_ypr_[0];
     des_state_traj[0][3] = robot_->GetRobotComPos()[0];
@@ -698,7 +698,7 @@ void ConvexMPCLocomotion::_SolveConvexMPC(int *contact_schedule_table) {
     Eigen::Vector3d torso_ang_vel =
         robot_->GetLinkSpatialVel(robot_->GetRootFrameName()).head<3>();
     des_state_traj[0].segment<3>(6) = torso_ang_vel;
-    des_state_traj[0][8] = sp_->wbo_ang_vel_[2]; // wbo ang vel
+    // des_state_traj[0][8] = sp_->wbo_ang_vel_[2]; // wbo ang vel
     // des_state_traj[0].segment<3>(6) = sp_->wbo_ang_vel_;
     des_state_traj[0].segment<3>(9) = robot_->GetRobotComLinVel();
     // des_state_traj[0][11] = robot_->GetBodyVel()[2];

@@ -228,10 +228,8 @@ void DracoControlArchitecture::GetCommand(void *command) {
   upper_body_tm_->UseNominalUpperBodyJointPos(
       sp_->nominal_jpos_); // state independent upper body traj setting
 
-  Eigen::VectorXd des_wbo_quat_vec(4);
-  des_wbo_quat_vec << 0., 0., 0., 1;
   tci_container_->task_map_["wbo_task"]->UpdateDesired(
-      des_wbo_quat_vec, Eigen::VectorXd::Zero(3), Eigen::VectorXd::Zero(3));
+      sp_->wbo_des_, Eigen::VectorXd::Zero(3), Eigen::VectorXd::Zero(3));
   controller_->GetCommand(command); // get control command
 
   if (state_machine_container_[state_]->EndOfState()) {

@@ -327,6 +327,43 @@ end
 
 figure(num_fig)
 num_fig = num_fig + 1;
+for i = 1:4
+    ax(i) = subplot(4,1,i);
+    plot(wbc_time, des_torso_ori_pos(i, :), 'r', 'LineWidth',3);
+    hold on
+    plot(wbc_time, act_torso_ori_pos(i, :), 'b', 'LineWidth',2);
+    grid on
+    min_val = min([des_torso_ori_pos(i,:), act_torso_ori_pos(i,:)]);
+    max_val = max([des_torso_ori_pos(i,:), act_torso_ori_pos(i,:)]);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(quat_label(i))
+end
+sgtitle('torso ori', 'FontSize', 30)
+linkaxes(ax,'x')
+
+
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(3,1,i);
+    plot(wbc_time, torso_ori_so3_err(i, :), 'k', 'LineWidth',3);
+    hold on
+    grid on
+    min_val = min([torso_ori_so3_err(i,:)]);
+    max_val = max([torso_ori_so3_err(i,:)]);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
+end
+sgtitle('torso so3 err', 'FontSize', 30)
+linkaxes(ax,'x')
+
+
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 p = 4;
@@ -713,6 +750,43 @@ end
 
 figure(num_fig)
 num_fig = num_fig + 1;
+for i = 1:4
+    ax(i) = subplot(4,1,i);
+    plot(wbc_time, des_lf_ori(i, :), 'r', 'LineWidth',3);
+    hold on
+    plot(wbc_time, act_lf_ori(i, :), 'b', 'LineWidth',2);
+    grid on
+    min_val = min([des_lf_ori(i,:), act_lf_ori(i,:)]);
+    max_val = max([des_lf_ori(i,:), act_lf_ori(i,:)]);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(quat_label(i))
+end
+sgtitle('left foot ori', 'FontSize', 30)
+linkaxes(ax,'x')
+
+
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(3,1,i);
+    plot(wbc_time, lf_ori_so3_err(i, :), 'k', 'LineWidth',3);
+    hold on
+    grid on
+    min_val = min([lf_ori_so3_err(i,:)]);
+    max_val = max([lf_ori_so3_err(i,:)]);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
+end
+sgtitle('lfoot so3 err', 'FontSize', 30)
+linkaxes(ax,'x')
+
+
+figure(num_fig)
+num_fig = num_fig + 1;
 j = 0;
 k = 0;
 for i = 1:6
@@ -900,6 +974,42 @@ for i = 1: col
     des_rf_ori_euler_xyz(:, i) = quat2eul(des_rf_quat(:, i).', 'xyz');
     act_rf_ori_euler_xyz(:, i) = quat2eul(act_rf_quat(:, i).', 'xyz');
 end
+
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:4
+    ax(i) = subplot(4,1,i);
+    plot(wbc_time, des_rf_ori(i, :), 'r', 'LineWidth',3);
+    hold on
+    plot(wbc_time, act_rf_ori(i, :), 'b', 'LineWidth',2);
+    grid on
+    min_val = min([des_rf_ori(i,:), act_rf_ori(i,:)]);
+    max_val = max([des_rf_ori(i,:), act_rf_ori(i,:)]);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(quat_label(i))
+end
+sgtitle('right foot ori', 'FontSize', 30)
+linkaxes(ax,'x')
+
+
+figure(num_fig)
+num_fig = num_fig + 1;
+for i = 1:3
+    ax(i) = subplot(3,1,i);
+    plot(wbc_time, rf_ori_so3_err(i, :), 'k', 'LineWidth',3);
+    hold on
+    grid on
+    min_val = min([rf_ori_so3_err(i,:)]);
+    max_val = max([rf_ori_so3_err(i,:)]);
+    set_fig_opt()
+    plot_phase(time, state, min_val, max_val, phase_color)
+    xlabel('time')
+    ylabel(xyz_label(i))
+end
+sgtitle('rfoot so3 err', 'FontSize', 30)
+linkaxes(ax,'x')
 
 figure(num_fig)
 num_fig = num_fig + 1;

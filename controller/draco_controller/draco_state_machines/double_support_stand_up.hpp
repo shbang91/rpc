@@ -34,7 +34,7 @@ private:
 
   // QP params yaml
   double W_delta_qddot_;
-  double W_xc_ddot_in_contact_;
+  Eigen::VectorXd W_xc_ddot_in_contact_;
   Eigen::VectorXd W_delta_rf_left_foot_in_contact_;
   Eigen::VectorXd W_delta_rf_right_foot_in_contact_;
   Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);

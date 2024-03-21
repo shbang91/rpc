@@ -106,7 +106,7 @@ DracoWBOTask::~DracoWBOTask() {
   delete[] jac_f_output_;
 }
 
-void DracoWBOTask::UpdateOpCommand() {
+void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   // full joint config space
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
                               des_pos_[2]);
@@ -142,7 +142,7 @@ void DracoWBOTask::UpdateOpCommand() {
   // TEST
 }
 
-void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+void DracoWBOTask::UpdateOpCommand() {
   // reduced joint config space
 
   Eigen::Quaterniond des_quat(des_pos_[3], des_pos_[0], des_pos_[1],
@@ -219,15 +219,22 @@ void DracoWBOTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 
   // yaw command
   op_cmd_[0] = op_cmd[2];
+  // op_cmd_ = op_cmd;
 }
 
 void DracoWBOTask::UpdateJacobian() {
   int num_float = robot_->NumFloatDof();
 
+  // Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(3, robot_->NumQdot());
+
   // for (int i = 0; i < actuated_joint_idx_.size(); ++i) {
-  // jacobian_.col(num_float + actuated_joint_idx_[i]) =
+  // jacobian.col(num_float + actuated_joint_idx_[i]) =
   // world_R_base_ * wbo_local_jacobian_.col(i);
   //}
+  // jacobian_ = jacobian.block(2, 0, 1, robot_->NumQdot());
+
+  // std::cout << "==============================" << std::endl;
+  // std::cout << jacobian_ << std::endl;
   for (int i = 0; i < actuated_joint_idx_.size(); ++i) {
     // jacobian_.col(num_float + actuated_joint_idx_[i]) =
     // wbo_local_jacobian_.col(i);

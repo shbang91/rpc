@@ -144,7 +144,15 @@ void DracoController::GetCommand(void *command) {
     for (const auto &[task_name, task_ptr] : tci_container_->task_map_) {
       task_ptr->UpdateJacobian();
       task_ptr->UpdateJacobianDotQdot();
-      task_ptr->UpdateOpCommand(sp_->rot_world_local_);
+      task_ptr->UpdateOpCommand();
+
+      // task_ptr->UpdateOpCommand(sp_->rot_world_local_);
+
+      // if (task_name == "torso_ori_task" || task_name == "lf_ori_task" ||
+      // task_name == "rf_ori_task")
+      // task_ptr->UpdateOpCommand();
+      // else
+      // task_ptr->UpdateOpCommand(sp_->rot_world_local_);
     }
 
     // modified jacobian for swing legs
@@ -385,6 +393,8 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["torso_ori_task"]->DesiredPos());
     logger_->add("act_torso_ori_pos",
                  tci_container_->task_map_["torso_ori_task"]->CurrentPos());
+    logger_->add("torso_ori_so3_err",
+                 tci_container_->task_map_["torso_ori_task"]->PosError());
     logger_->add("des_torso_ori_vel",
                  tci_container_->task_map_["torso_ori_task"]->DesiredVel());
     logger_->add("act_torso_ori_vel",
@@ -418,6 +428,8 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["lf_ori_task"]->DesiredPos());
     logger_->add("act_lf_ori",
                  tci_container_->task_map_["lf_ori_task"]->CurrentPos());
+    logger_->add("lf_ori_so3_err",
+                 tci_container_->task_map_["lf_ori_task"]->PosError());
     logger_->add("des_lf_ori_vel",
                  tci_container_->task_map_["lf_ori_task"]->DesiredVel());
     logger_->add("act_lf_ori_vel",
@@ -426,6 +438,8 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->DesiredPos());
     logger_->add("act_rf_ori",
                  tci_container_->task_map_["rf_ori_task"]->CurrentPos());
+    logger_->add("rf_ori_so3_err",
+                 tci_container_->task_map_["rf_ori_task"]->PosError());
     logger_->add("des_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->DesiredVel());
     logger_->add("act_rf_ori_vel",
@@ -525,6 +539,9 @@ void DracoController::_SaveData() {
         "centroidal_ang_mom_est",
         static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
             ->centroidal_ang_mom_est_);
+
+    logger_->add("base_com_pos", robot_->GetBodyPos());
+
     // TEST for mpc update
     logger_->add("wbo_ypr", sp_->wbo_ypr_);
     logger_->add("wbo_ang_vel", sp_->wbo_ang_vel_);

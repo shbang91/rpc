@@ -61,6 +61,12 @@ public:
   void setFeetRelativeToBody(const aligned_vector<Vector3d> &feet_pos) {
     feet_pos_ = feet_pos;
   }
+  void
+  setFeetRelativeToBodyTrajectory(const std::vector<aligned_vector<Vector3d>>
+                                      &feet_pos_relative_to_body_trajectory) {
+    feet_pos_relative_to_body_trajectory_ =
+        feet_pos_relative_to_body_trajectory;
+  }
   void setInertiaTrajectory(
       const aligned_vector<Eigen::Matrix3d> &des_inertia_traj) {
     des_inertia_trajectory_ = des_inertia_traj;
@@ -93,6 +99,8 @@ private:
   std::vector<ContactState> contact_trajectory_;
   aligned_vector<Vector12d> des_state_trajectory_;
   aligned_vector<Eigen::Matrix3d> des_inertia_trajectory_;
+  std::vector<aligned_vector<Eigen::Vector3d>>
+      feet_pos_relative_to_body_trajectory_;
 
   // intermediate variables
   std::vector<int> num_contacts_vec_;

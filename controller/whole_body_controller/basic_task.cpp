@@ -197,6 +197,7 @@ LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
   local_des_pos_.setZero();
   local_pos_.resize(4); // quaternion
   local_pos_.setZero();
+  des_quat_prev_.setIdentity();
 }
 
 void LinkOriTask::UpdateOpCommand() {
@@ -209,7 +210,17 @@ void LinkOriTask::UpdateOpCommand() {
   local_des_pos_ << local_des_quat.normalized().coeffs();
 
   Eigen::Quaterniond quat(robot_->GetLinkIsometry(target_idx_).linear());
+
+  // check desired quat
+  // util::AvoidQuatJump(des_quat_prev_, des_quat);
+
+  // if (des_quat.w() < 0.0)
+  // des_quat.w() *= -1.0;
+
+  // check actual quat
   util::AvoidQuatJump(des_quat, quat);
+
+  des_quat_prev_ = des_quat; // save prev quat
 
   pos_ << quat.normalized().coeffs();
 
@@ -218,6 +229,15 @@ void LinkOriTask::UpdateOpCommand() {
   local_pos_ << local_quat.normalized().coeffs();
 
   Eigen::Quaterniond quat_err = des_quat * quat.inverse();
+
+  // if (quat_err.w() < 0.0) {
+  // quat_err.w() *= -1.0;
+  // quat_err.x() *= -1.0;
+  // quat_err.y() *= -1.0;
+  // quat_err.z() *= -1.0;
+  //}
+  // std::cout << "================================" << std::endl;
+  // std::cout << "quat err scalar: " << quat_err.w() << std::endl;
 
   // Eigen::Vector3d so3 = util::QuatToExp(quat_err);
   Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();

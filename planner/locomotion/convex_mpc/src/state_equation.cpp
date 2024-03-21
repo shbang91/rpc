@@ -146,6 +146,7 @@ void StateEquation::setQP(const Vector12d &initial_state,
     }
   }
 }
+
 void StateEquation::setQP(
     const Vector12d &initial_state,
     const std::vector<ContactState> &contact_trajectory,
@@ -155,8 +156,12 @@ void StateEquation::setQP(
   for (int i = 0; i < qp_data.dim_.N; ++i) {
     // rotation matrix
     Eigen::Matrix3d Ryaw =
-        util::EulerZYXtoQuat(0.0, 0.0, des_state_trajectory[i][2])
-            .toRotationMatrix(); // yaw angle
+        // util::EulerZYXtoQuat(0.0, 0.0, des_state_trajectory[i][2])
+        //.toRotationMatrix(); // yaw angle
+        util::EulerZYXtoQuat(des_state_trajectory[i][0],
+                             des_state_trajectory[i][1],
+                             des_state_trajectory[i][2])
+            .toRotationMatrix(); // roll, pitch, yaw angle
 
     // inertia matrix
     Eigen::Matrix3d I_world = Ryaw * des_inertia_traj[i] * Ryaw.transpose();
@@ -165,6 +170,53 @@ void StateEquation::setQP(
     for (int k = 0; k < 2; ++k) {
       Eigen::Matrix3d r_skew;
       pinocchio::skew(feet_pos[k], r_skew);
+      I_inv_r_skew_[k].noalias() = dt_ * I_world_inv * r_skew;
+    }
+
+    qp_data.qp_[i].A.template block<3, 3>(0, 6) = dt_ * Ryaw.transpose();
+    int nu = 0;
+
+    // planer contact (2 legs)
+    for (int j = 0; j < 2; ++j) {
+      if (contact_trajectory[i].contact[j]) {
+        // foot in contact
+        qp_data.qp_[i].B.template block<3, 3>(6, nu) = dt_ * I_world_inv;
+        qp_data.qp_[i].B.template block<3, 3>(9, nu) = Eigen::Matrix3d::Zero();
+        nu += 3;
+        qp_data.qp_[i].B.template block<3, 3>(6, nu) = I_inv_r_skew_[j];
+        qp_data.qp_[i].B.template block<3, 3>(9, nu) =
+            (dt_ / m_) * Eigen::Matrix3d::Identity();
+        nu += 3;
+      } else {
+        // when the foot is in swing motions
+      }
+    }
+  }
+}
+void StateEquation::setQP(
+    const Vector12d &initial_state,
+    const std::vector<ContactState> &contact_trajectory,
+    const aligned_vector<Vector12d> &des_state_trajectory,
+    const aligned_vector<Eigen::Matrix3d> &des_inertia_traj,
+    const std::vector<aligned_vector<Eigen::Vector3d>> &feet_pos_traj,
+    QPData &qp_data) {
+  for (int i = 0; i < qp_data.dim_.N; ++i) {
+    // rotation matrix
+    Eigen::Matrix3d Ryaw =
+        util::EulerZYXtoQuat(0.0, 0.0, des_state_trajectory[i][2])
+            .toRotationMatrix(); // yaw angle
+    // util::EulerZYXtoQuat(des_state_trajectory[i][0],
+    // des_state_trajectory[i][1],
+    // des_state_trajectory[i][2])
+    //.toRotationMatrix(); // roll, pitch, yaw angle
+
+    // inertia matrix
+    Eigen::Matrix3d I_world = Ryaw * des_inertia_traj[i] * Ryaw.transpose();
+    Eigen::Matrix3d I_world_inv = I_world.inverse();
+
+    for (int k = 0; k < 2; ++k) {
+      Eigen::Matrix3d r_skew;
+      pinocchio::skew(feet_pos_traj[k][i], r_skew);
       I_inv_r_skew_[k].noalias() = dt_ * I_world_inv * r_skew;
     }
 

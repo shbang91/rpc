@@ -61,9 +61,10 @@ void Locomotion::FirstVisit() {
   gait_command_->vel_xy_des[0] = x_vel_cmd_;
   gait_command_->vel_xy_des[1] = y_vel_cmd_;
   gait_command_->yaw_rate = yaw_rate_cmd_;
+  // ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
+  // sp_->des_body_height_);
   ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
-                                                 sp_->des_body_height_);
-  // sp_->des_com_height_);
+                                                 sp_->des_com_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_number_);
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(swing_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
@@ -178,7 +179,6 @@ void Locomotion::OneStep() {
             mpc_interface->des_foot_pos_[leg],
             mpc_interface->des_foot_vel_[leg],
             mpc_interface->des_foot_acc_[leg]);
-        // Eigen::Vector3d::Zero());
         task_vector.push_back(task_map["lf_ori_task"]);
         tci_container->task_map_["lf_ori_task"]->UpdateDesired(
             mpc_interface->des_foot_ori_[leg].coeffs(),
@@ -196,7 +196,6 @@ void Locomotion::OneStep() {
             mpc_interface->des_foot_pos_[leg],
             mpc_interface->des_foot_vel_[leg],
             mpc_interface->des_foot_acc_[leg]);
-        // Eigen::Vector3d::Zero());
         task_vector.push_back(task_map["rf_ori_task"]);
         tci_container->task_map_["rf_ori_task"]->UpdateDesired(
             mpc_interface->des_foot_ori_[leg].coeffs(),
@@ -212,8 +211,8 @@ void Locomotion::OneStep() {
 
   task_vector.push_back(task_map["com_z_task"]);
   task_vector.push_back(task_map["com_xy_task"]);
-  task_vector.push_back(task_map["torso_ori_task"]);
   // task_vector.push_back(task_map["wbo_task"]);
+  task_vector.push_back(task_map["torso_ori_task"]);
   task_vector.push_back(task_map["upper_body_task"]); // des task set up outside
 
   // update desired task
@@ -225,6 +224,7 @@ void Locomotion::OneStep() {
   tci_container->task_map_["com_xy_task"]->UpdateDesired(
       mpc_interface->des_body_pos_.head<2>(),
       mpc_interface->des_body_vel_.head<2>(), Eigen::Vector2d::Zero());
+  // util::WrapYawToPi(mpc_interface->des_body_rpy_);
   Eigen::Quaterniond des_body_quat = util::EulerZYXtoQuat(
       mpc_interface->des_body_rpy_[0], mpc_interface->des_body_rpy_[1],
       mpc_interface->des_body_rpy_[2]);
@@ -234,6 +234,8 @@ void Locomotion::OneStep() {
   tci_container->task_map_["torso_ori_task"]->UpdateDesired(
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
+
+  iter_++;
   // std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
   //<< std::endl;
   // std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
@@ -265,9 +267,21 @@ void Locomotion::OneStep() {
   //<< tci_container->task_map_["rf_ori_task"]->PosError().transpose()
   //<< std::endl;
   // exit(0);
-  iter_++;
   // if (iter_ == 50)
   // exit(0);
+  // std::cout << "state machine" << std::endl;
+  // std::cout << "foot pos: "
+  //<< "LF: "
+  //<< tci_container->task_map_["lf_pos_task"]->CurrentPos().transpose()
+  //<< "RF: "
+  //<< tci_container->task_map_["rf_pos_task"]->CurrentPos().transpose()
+  //<< std::endl;
+  // std::cout << "foot ori: "
+  //<< "LF: "
+  //<< tci_container->task_map_["lf_ori_task"]->CurrentPos().transpose()
+  //<< "RF: "
+  //<< tci_container->task_map_["rf_ori_task"]->CurrentPos().transpose()
+  //<< std::endl;
 }
 
 bool Locomotion::EndOfState() { return false; }

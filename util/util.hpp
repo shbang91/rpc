@@ -132,6 +132,12 @@ Eigen::Matrix3d SO3FromRPY(double r, double p, double y);
 Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
                                    const double theta);
 
+Eigen::Matrix3d RotMatrixToYawMatrix(const Eigen::Matrix3d &rot);
+Eigen::Matrix3d QuaternionToYawMatrix(Eigen::Quaterniond &quat);
+double QuaternionToYaw(const Eigen::Quaterniond &quat);
+void WrapYawToPi(Eigen::Quaterniond &quat);
+void WrapYawToPi(Eigen::Vector3d &rpy);
+
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori);
 

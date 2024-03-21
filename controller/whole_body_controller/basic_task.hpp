@@ -66,6 +66,7 @@ public:
 
 private:
   int target_link_idx_;
+  Eigen::Quaterniond des_quat_prev_;
 };
 
 class ComTask : public Task {

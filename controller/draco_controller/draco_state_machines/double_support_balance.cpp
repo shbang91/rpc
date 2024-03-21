@@ -97,6 +97,8 @@ void DoubleSupportBalance::LastVisit() {
   // robot_->GetBodyOriRot();
   // std::cout << local_inertia << std::endl;
   // exit(0);
+  sp_->wbo_des_ =
+      ctrl_arch_->tci_container_->task_map_["wbo_task"]->CurrentPos();
 }
 
 StateId DoubleSupportBalance::GetNextState() {

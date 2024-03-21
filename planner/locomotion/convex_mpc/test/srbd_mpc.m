@@ -153,11 +153,11 @@ for i = 1:10:n-1
     endIndex = min(i+9, n);
     
     % Extract the current segment of the trajectory
-    segmentX = des_rf_pos(1, i:endIndex);
-    segmentY = des_rf_pos(2, i:endIndex);
-    segmentZ = des_rf_pos(3, i:endIndex);
+    segmentX = des_rf_ori(1, i:endIndex);
+    segmentY = des_rf_ori(2, i:endIndex);
+    segmentZ = des_rf_ori(3, i:endIndex);
 
-    segmentBaseX = des_base_pos(1, i:endIndex);
+    segmentBaseX = des_base_pos(2, i:endIndex);
     
     % Determining the color index
     colorIndex = ceil(i/10);
@@ -165,12 +165,13 @@ for i = 1:10:n-1
         colorIndex = mode(colorIndex, size(colors, 1)) + 1;
     end
 
-    plot(i:endIndex,segmentY, '-', 'LineWidth', 2, 'Color', colors(colorIndex, :));
+    plot(i:endIndex,segmentBaseX, '-', 'LineWidth', 2, 'Color', colors(colorIndex, :));
     % Plot the current segment
     % Use mod or another strategy to cycle through colors if there are more segments than colors
 %     plot3(segmentX, segmentY, segmentZ, '-', 'LineWidth', 2, 'Color',colors(colorIndex, :));
+%     plot(i:endIndex, segmentZ, '*', 'LineWidth',2, 'Color','r');
     hold on; % Keep the plot window open to overlay the next plots
-    plot(i:endIndex, segmentBaseY, '*', 'LineWidth',2, 'Color','k');
+%     plot(i:endIndex, segmentBaseX, '*', 'LineWidth',2, 'Color','k');
 end
 
 

@@ -349,24 +349,49 @@ Eigen::Quaternion<double> ExpToQuat(const Eigen::Vector3d &exp) {
 //     The equation is similar, but the values for fixed and body frame
 //     rotations are different.
 // World Orientation is R = Rz*Ry*Rx
-Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
-                                  const double yaw) {
-  Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
-  Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
-  Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
+// Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
+// const double yaw) {
+// Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
+// Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
+// Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
 
-  Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
-  return q.normalized();
+// Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
+// return q.normalized();
+//}
+
+// Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy) {
+// Eigen::AngleAxisd rollAngle(rpy[0], Eigen::Vector3d::UnitX());
+// Eigen::AngleAxisd pitchAngle(rpy[1], Eigen::Vector3d::UnitY());
+// Eigen::AngleAxisd yawAngle(rpy[2], Eigen::Vector3d::UnitZ());
+
+// Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
+// return q.normalized();
+//}
+Eigen::Quaterniond EulerZYXtoQuat(const double r, const double p,
+                                  const double y) {
+  double hy = y / 2.0;
+  double hp = p / 2.0;
+  double hr = r / 2.0;
+
+  double ys = sin(hy);
+  double yc = cos(hy);
+  double ps = sin(hp);
+  double pc = cos(hp);
+  double rs = sin(hr);
+  double rc = cos(hr);
+
+  Eigen::Quaterniond quat;
+  quat.w() = rc * pc * yc + rs * ps * ys;
+  quat.x() = rs * pc * yc - rc * ps * ys;
+  quat.y() = rc * ps * yc + rs * pc * ys;
+  quat.z() = rc * pc * ys - rs * ps * yc;
+  return quat;
 }
 
 Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy) {
-  Eigen::AngleAxisd rollAngle(rpy[0], Eigen::Vector3d::UnitX());
-  Eigen::AngleAxisd pitchAngle(rpy[1], Eigen::Vector3d::UnitY());
-  Eigen::AngleAxisd yawAngle(rpy[2], Eigen::Vector3d::UnitZ());
-
-  Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
-  return q.normalized();
+  return EulerZYXtoQuat(rpy(0), rpy(1), rpy(2));
 }
+
 Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in) {
   // to match equation from:
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -491,6 +516,42 @@ Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
     R << c, -s, 0, s, c, 0, 0, 0, 1;
 
   return R;
+}
+
+Eigen::Matrix3d RotMatrixToYawMatrix(const Eigen::Matrix3d &rot) {
+  Eigen::Matrix3d yaw_mat = rot;
+  yaw_mat.row(2).setZero();
+  yaw_mat.col(2).setZero();
+  yaw_mat.col(0).normalize();
+  yaw_mat.col(1).normalize();
+  yaw_mat(2, 2) = 1.0;
+
+  return yaw_mat;
+}
+
+Eigen::Matrix3d QuaternionToYawMatrix(const Eigen::Quaterniond &quat) {
+  return RotMatrixToYawMatrix(quat.toRotationMatrix());
+}
+
+double QuaternionToYaw(const Eigen::Quaterniond &quat) {
+  return RPYFromSO3(QuaternionToYawMatrix(quat))(2);
+}
+
+void WrapYawToPi(Eigen::Quaterniond &quat) {
+  double yaw = QuaternionToYaw(quat);
+  if (yaw > M_PI)
+    yaw -= 2.0 * M_PI;
+  else if (yaw < -M_PI)
+    yaw += 2.0 * M_PI;
+
+  quat = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) * quat;
+}
+
+void WrapYawToPi(Eigen::Vector3d &rpy) {
+  if (rpy(2) > M_PI)
+    rpy(2) -= 2.0 * M_PI;
+  else if (rpy(2) < -M_PI)
+    rpy(2) += 2.0 * M_PI;
 }
 
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,

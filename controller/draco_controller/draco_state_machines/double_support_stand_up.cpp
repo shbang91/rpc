@@ -18,7 +18,7 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
       rf_z_max_interp_duration_(0.), W_delta_qddot_(0.),
-      W_xc_ddot_in_contact_(0.),
+      W_xc_ddot_in_contact_(Eigen::VectorXd::Zero(6)),
       W_delta_rf_left_foot_in_contact_(Eigen::VectorXd::Zero(6)),
       W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6))
 // W_force_rate_of_change_left_foot_(Eigen::VectorXd::Zero(6)),
@@ -83,8 +83,8 @@ void DoubleSupportStandUp::FirstVisit() {
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_
       << W_delta_rf_left_foot_in_contact_,
       W_delta_rf_right_foot_in_contact_;
-  ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_ =
-      Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+  ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_ << W_xc_ddot_in_contact_,
+      W_xc_ddot_in_contact_;
   ctrl_arch_->tci_container_->qp_params_->W_force_rate_of_change_
       << W_force_rate_of_change_left_foot_,
       W_force_rate_of_change_right_foot_;

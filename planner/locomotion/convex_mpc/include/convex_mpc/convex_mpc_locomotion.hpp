@@ -186,6 +186,9 @@ private:
   Vector6d stand_base_traj_; // for base trajectory
   Eigen::Vector3d des_base_com_pos_in_world_;
 
+  // reference trajectory generation
+  Eigen::Vector3d des_body_vel_in_body_;
+
   // desired body states for WBC update
   Eigen::Vector3d des_body_pos_in_world_;
   Eigen::Vector3d des_body_vel_in_world_;
@@ -218,6 +221,12 @@ private:
 
   // draco state provider
   DracoStateProvider *sp_;
+
+  // utility function to avoid yaw wrap
+  double NormalizeYaw(double yaw) {
+    double twoPi = 2.0 * M_PI;
+    return fmod(fmod(yaw, twoPi) + twoPi, twoPi);
+  };
 
   // TEST
   Eigen::Matrix3d I_global_ = Eigen::Matrix3d::Identity();

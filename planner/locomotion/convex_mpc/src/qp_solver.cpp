@@ -33,6 +33,6 @@ void QPSolver::solve(const Vector12d &init_state, QPData &qp_data) {
     std::cout << hpipm::to_string(solver_status) << std::endl;
     const auto &stat = solver_->getSolverStatistics();
     std::cout << stat << std::endl;
-    std::exit(EXIT_FAILURE);
+    // std::exit(EXIT_FAILURE);
   }
 }

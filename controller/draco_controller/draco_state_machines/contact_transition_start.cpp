@@ -60,8 +60,8 @@ void ContactTransitionStart::FirstVisit() {
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     // change right foot contact acc QP params
-    Eigen::VectorXd target_W_xc_ddot =
-        Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Zero(12);
+    target_W_xc_ddot << W_xc_ddot_in_contact_, W_xc_ddot_in_contact_;
     ctrl_arch_->qp_pm_->InitializeWContactInterpolation(
         target_W_xc_ddot,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
@@ -86,8 +86,8 @@ void ContactTransitionStart::FirstVisit() {
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
 
     // change left foot contact acc QP params
-    Eigen::VectorXd target_W_xc_ddot =
-        Eigen::VectorXd::Constant(12, W_xc_ddot_in_contact_);
+    Eigen::VectorXd target_W_xc_ddot = Eigen::VectorXd::Zero(12);
+    target_W_xc_ddot << W_xc_ddot_in_contact_, W_xc_ddot_in_contact_;
     ctrl_arch_->qp_pm_->InitializeWContactInterpolation(
         target_W_xc_ddot,
         ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetNormalForceRampUpTime());
