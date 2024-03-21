@@ -568,7 +568,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.005 -0.1 0.47"/>
       <geometry>
-        <mesh https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_knee_fe_lp.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_knee_fe_lp.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
