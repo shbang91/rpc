@@ -27,7 +27,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <!--<mesh filename="package://meshes/torso_link.stl"/>-->
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/torso_link.stl"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/torso_link3.obj"/>
       </geometry>
       <!--<material name="white"/>-->
@@ -68,8 +68,8 @@
       <!--<origin rpy="0 0 0" xyz="0 0 0"/>-->
       <origin rpy="0 0 0" xyz="0 0 -0.35"/>
       <geometry>
-        <!--<mesh filename="package://meshes/neck_pitch_link.stl"/>-->
-        <mesh filename="package://meshes/neck_pitch_link3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/neck_pitch_link.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/neck_pitch_link3.obj"/>
       </geometry>
       <!--<material name="white"/>-->
     </visual>
@@ -93,7 +93,7 @@
     <visual>
       <origin rpy="-0.523599 0 0" xyz="0.05 -0.27 -0.15"/>
       <geometry>
-        <mesh filename="package://meshes/l_shoulder_fe_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_shoulder_fe_link.stl"/>
       </geometry>
       <!--<material name="dark_gray"/>-->
       <material name="black"/>
@@ -118,7 +118,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/l_shoulder_aa_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_shoulder_aa_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -142,8 +142,8 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.05 -0.15 -0.26"/>
       <geometry>
-        <!--<mesh filename="package://meshes/l_shoulder_ie_link.stl"/>-->
-        <mesh filename="package://meshes/l_shoulder_ie_link3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_shoulder_ie_link.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_shoulder_ie_link3.obj"/>
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
@@ -167,7 +167,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.055 -0.15 -0.01"/>
       <geometry>
-        <mesh filename="package://meshes/l_elbow_fe_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_elbow_fe_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -191,7 +191,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.05 -0.15 0"/>
       <geometry>
-        <mesh filename="package://meshes/l_wrist_ps_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_wrist_ps_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -229,7 +229,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.05 -0.15 0.17"/>
       <geometry>
-        <mesh filename="package://meshes/l_sake_gripper_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_sake_gripper_link.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -294,7 +294,7 @@
     <visual>
       <origin rpy="0.523599 0.0 0.0" xyz="0.05 0.27 -0.15"/>
       <geometry>
-        <mesh filename="package://meshes/r_shoulder_fe_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_shoulder_fe_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -318,7 +318,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/r_shoulder_aa_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_shoulder_aa_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -342,8 +342,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.05 0.15 -0.26"/>
       <geometry>
-        <!--<mesh filename="package://meshes/r_shoulder_ie_link.stl"/>-->
-        <mesh filename="package://meshes/r_shoulder_ie_link3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_shoulder_ie_link.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_shoulder_ie_link3.obj"/>
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
@@ -367,7 +367,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.055 0.15 -0.01"/>
       <geometry>
-        <mesh filename="package://meshes/r_elbow_fe_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_elbow_fe_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -391,7 +391,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.05 0.15 0"/>
       <geometry>
-        <mesh filename="package://meshes/r_wrist_ps_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_wrist_ps_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -429,7 +429,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.05 0.15 0.17"/>
       <geometry>
-        <mesh filename="package://meshes/r_sake_gripper_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_sake_gripper_link.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -494,7 +494,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/l_hip_ie_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_hip_ie_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -519,7 +519,7 @@
 <!--      <origin rpy="0 -0 0" xyz="0 0 0"/>-->
       <origin rpy="0 -0 0" xyz="0.0 -0.1 0.15"/>
       <geometry>
-        <mesh filename="package://meshes/l_hip_aa_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_hip_aa_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -543,8 +543,8 @@
     <visual>
       <origin rpy="0 0 0" xyz="0.0 -0.1 0.15"/>
       <geometry>
-        <!--<mesh filename="package://meshes/l_hip_fe_link.stl"/>-->
-        <mesh filename="package://meshes/l_hip_fe_link3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_hip_fe_link.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_hip_fe_link3.obj"/>
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
@@ -568,7 +568,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.005 -0.1 0.47"/>
       <geometry>
-        <mesh filename="package://meshes/l_knee_fe_lp.stl"/>
+        <mesh https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_knee_fe_lp.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -589,7 +589,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/l_knee_adj_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_knee_adj_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -614,8 +614,8 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 -0.1 0.59"/>
       <geometry>
-        <!--<mesh filename="package://meshes/l_knee_fe_ld.stl"/>-->
-        <mesh filename="package://meshes/l_knee_fe_ld3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_knee_fe_ld.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_knee_fe_ld3.obj"/>
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
@@ -641,7 +641,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 -0.101 0.834"/>
       <geometry>
-        <mesh filename="package://meshes/l_ankle_fe_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_ankle_fe_link.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -667,7 +667,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/l_ankle_ie_link_small_foot.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/l_ankle_ie_link_small_foot.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -716,7 +716,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/r_hip_ie_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_hip_ie_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -740,7 +740,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.0 0.1 0.15"/>
       <geometry>
-        <mesh filename="package://meshes/r_hip_aa_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_hip_aa_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -764,8 +764,8 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.0 0.1 0.15"/>
       <geometry>
-        <!--<mesh filename="package://meshes/r_hip_fe_link.stl"/>-->
-        <mesh filename="package://meshes/r_hip_fe_link3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_hip_fe_link.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_hip_fe_link3.obj"/>
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
@@ -789,7 +789,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0.005 0.1 0.47"/>
       <geometry>
-        <mesh filename="package://meshes/r_knee_fe_lp.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_knee_fe_lp.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -810,7 +810,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/r_knee_adj_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_knee_adj_link.stl"/>
       </geometry>
       <material name="black"/>
     </visual>
@@ -836,8 +836,8 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0.1 0.59"/>
       <geometry>
-        <!--<mesh filename="package://meshes/r_knee_fe_ld.stl"/>-->
-        <mesh filename="package://meshes/r_knee_fe_ld3.obj"/>
+        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_knee_fe_ld.stl"/>-->
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_knee_fe_ld3.obj"/>
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
@@ -863,7 +863,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0.101 0.834"/>
       <geometry>
-        <mesh filename="package://meshes/r_ankle_fe_link.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_ankle_fe_link.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -889,7 +889,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://meshes/r_ankle_ie_link_small_foot.stl"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/main/robot_model/draco/meshes/r_ankle_ie_link_small_foot.stl"/>
       </geometry>
       <material name="white"/>
     </visual>
