@@ -27,7 +27,6 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/torso_link.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/torso_link3.obj"/>
       </geometry>
       <!--<material name="white"/>-->
@@ -65,10 +64,8 @@
   </joint>
   <link name="neck_pitch_link">
     <visual>
-      <!--<origin rpy="0 0 0" xyz="0 0 0"/>-->
-      <origin rpy="0 0 0" xyz="0 0 -0.35"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/neck_pitch_link.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/neck_pitch_link3.obj"/>
       </geometry>
       <!--<material name="white"/>-->
@@ -91,7 +88,7 @@
   </joint>
   <link name="l_shoulder_fe_link">
     <visual>
-      <origin rpy="-0.523599 0 0" xyz="0.05 -0.27 -0.15"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_shoulder_fe_link.obj"/>
       </geometry>
@@ -140,7 +137,7 @@
   </joint>
   <link name="l_shoulder_ie_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.05 -0.15 -0.26"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_shoulder_ie_link.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_shoulder_ie_link3.obj"/>
@@ -165,7 +162,7 @@
   </joint>
   <link name="l_elbow_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.055 -0.15 -0.01"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_elbow_fe_link.obj"/>
       </geometry>
@@ -189,7 +186,7 @@
   </joint>
   <link name="l_wrist_ps_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0.05 -0.15 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_wrist_ps_link.obj"/>
       </geometry>
@@ -227,7 +224,7 @@
   </joint>
   <link name="l_sake_gripper_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0.05 -0.15 0.17"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_sake_gripper_link.obj"/>
       </geometry>
@@ -292,7 +289,7 @@
   </joint>
   <link name="r_shoulder_fe_link">
     <visual>
-      <origin rpy="0.523599 0.0 0.0" xyz="0.05 0.27 -0.15"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_shoulder_fe_link.obj"/>
       </geometry>
@@ -340,7 +337,7 @@
   </joint>
   <link name="r_shoulder_ie_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0.05 0.15 -0.26"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_shoulder_ie_link.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_shoulder_ie_link3.obj"/>
@@ -365,7 +362,7 @@
   </joint>
   <link name="r_elbow_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.055 0.15 -0.01"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_elbow_fe_link.obj"/>
       </geometry>
@@ -389,7 +386,7 @@
   </joint>
   <link name="r_wrist_ps_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.05 0.15 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_wrist_ps_link.obj"/>
       </geometry>
@@ -427,7 +424,7 @@
   </joint>
   <link name="r_sake_gripper_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0.05 0.15 0.17"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_sake_gripper_link.obj"/>
       </geometry>
@@ -516,8 +513,7 @@
   </joint>
   <link name="l_hip_aa_link">
     <visual>
-<!--      <origin rpy="0 -0 0" xyz="0 0 0"/>-->
-      <origin rpy="0 -0 0" xyz="0.0 -0.1 0.15"/>
+      <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_hip_aa_link.obj"/>
       </geometry>
@@ -541,7 +537,7 @@
   </joint>
   <link name="l_hip_fe_link">
     <visual>
-      <origin rpy="0 0 0" xyz="0.0 -0.1 0.15"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_hip_fe_link.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_hip_fe_link3.obj"/>
@@ -566,7 +562,7 @@
   </joint>
   <link name="l_knee_fe_lp">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.005 -0.1 0.47"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_knee_fe_lp.obj"/>
       </geometry>
@@ -612,7 +608,7 @@
   </joint>
   <link name="l_knee_fe_ld">
     <visual>
-      <origin rpy="0 -0 0" xyz="0 -0.1 0.59"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_knee_fe_ld.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_knee_fe_ld3.obj"/>
@@ -639,7 +635,7 @@
   </joint>
   <link name="l_ankle_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0 -0.101 0.834"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_ankle_fe_link.obj"/>
       </geometry>
@@ -738,7 +734,7 @@
   </joint>
   <link name="r_hip_aa_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.0 0.1 0.15"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_hip_aa_link.obj"/>
       </geometry>
@@ -762,7 +758,7 @@
   </joint>
   <link name="r_hip_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.0 0.1 0.15"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_hip_fe_link.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_hip_fe_link3.obj"/>
@@ -787,7 +783,7 @@
   </joint>
   <link name="r_knee_fe_lp">
     <visual>
-      <origin rpy="0 -0 0" xyz="0.005 0.1 0.47"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_knee_fe_lp.obj"/>
       </geometry>
@@ -834,7 +830,7 @@
   </joint>
   <link name="r_knee_fe_ld">
     <visual>
-      <origin rpy="0 -0 0" xyz="0 0.1 0.59"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <!--<mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_knee_fe_ld.obj"/>-->
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_knee_fe_ld3.obj"/>
@@ -861,7 +857,7 @@
   </joint>
   <link name="r_ankle_fe_link">
     <visual>
-      <origin rpy="0 -0 0" xyz="0 0.101 0.834"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_ankle_fe_link.obj"/>
       </geometry>
