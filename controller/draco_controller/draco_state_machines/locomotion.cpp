@@ -61,10 +61,10 @@ void Locomotion::FirstVisit() {
   gait_command_->vel_xy_des[0] = x_vel_cmd_;
   gait_command_->vel_xy_des[1] = y_vel_cmd_;
   gait_command_->yaw_rate = yaw_rate_cmd_;
-  // ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
-  // sp_->des_body_height_);
   ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
-                                                 sp_->des_com_height_);
+                                                 sp_->des_body_height_);
+  // ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
+  // sp_->des_com_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_number_);
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(swing_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(

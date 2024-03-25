@@ -368,7 +368,7 @@ j = 0;
 k = 0;
 p = 4;
 for i = 1:6
-    subplot(3,2,i);
+    ax(i)=subplot(3,2,i);
     if mod(i, 2) == 1
         j = j + 1;
         p = p - 1;
@@ -403,6 +403,8 @@ for i = 1:6
     end
     sgtitle('Torso ori task', 'FontSize', 30)
 end
+linkaxes(ax,'x')
+
 
 [row, col] = size(local_des_torso_ori_pos);
 local_torso_ori_des_quat = zeros(row, col);

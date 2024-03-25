@@ -40,13 +40,13 @@ void MPC::_init() {
 
 void MPC::solve() {
   qp_data_.resize(num_contacts_vec_);
-  state_equation_.setQP(initial_state_, contact_trajectory_,
-                        des_state_trajectory_, feet_pos_,
-                        qp_data_); // baseline methods
   // state_equation_.setQP(initial_state_, contact_trajectory_,
-  // des_state_trajectory_, des_inertia_trajectory_,
-  // feet_pos_,
-  // qp_data_); // proposed methods
+  // des_state_trajectory_, feet_pos_,
+  // qp_data_); // baseline methods
+  state_equation_.setQP(initial_state_, contact_trajectory_,
+                        des_state_trajectory_, des_inertia_trajectory_,
+                        feet_pos_,
+                        qp_data_); // proposed methods
   // state_equation_.setQP(initial_state_, contact_trajectory_,
   // des_state_trajectory_, des_inertia_trajectory_,
   // feet_pos_relative_to_body_trajectory_,
