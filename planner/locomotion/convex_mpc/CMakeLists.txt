@@ -57,4 +57,6 @@ endif() # end if (BUILD_TESTS)
 #############
 ## Install ##
 #############
-#TODO
+install(TARGETS ${PROJECT_NAME} DESTINATION "${INSTALL_LIB_DIR}")
+install(FILES ${${PROJECT_NAME}_HEADERS} DESTINATION
+    "${INSTALL_INCLUDE_DIR}/planner/locomotion/convex_mpc/include/convex_mpc")

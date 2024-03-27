@@ -23,8 +23,8 @@ void MPCSolution::update(const std::vector<ContactState> &contact_trajectory,
   for (int i = 0; i < N_ + 1; ++i) {
     time_[i] = i * mpc_dt_;
     twist_[i] = qp_data.qp_solution_[i].x.template tail<6>();
-    v_[i] = twist_[i].template tail<3>();
     w_[i] = twist_[i].template head<3>();
+    v_[i] = twist_[i].template tail<3>();
   }
   for (int i = 0; i < N_ + 1; ++i) {
     euler_xyz_[i] = qp_data.qp_solution_[i].x.template head<3>();
@@ -34,11 +34,6 @@ void MPCSolution::update(const std::vector<ContactState> &contact_trajectory,
         euler_xyz_[i][0], euler_xyz_[i][1], euler_xyz_[i][2]);
     pose_[i].template head<4>() = quat.normalized().coeffs();
   }
-  // pose_[0].template head<4>() = robot_state.pose().template tail<4>();
-  // pose_[0].template tail<3>() = robot_state.pose().template head<3>();
-  // for (int i = 0; i < N_; ++i) {
-  // single_rigid_body_.integrate(pose_[i], (dt * twist_[i]), pose_[i + 1]);
-  //}
   for (int i = 0; i < N_ + 1; ++i) {
     quat_[i].coeffs() = pose_[i].template head<4>();
     R_[i] = quat_[i].normalized().toRotationMatrix();
@@ -46,15 +41,6 @@ void MPCSolution::update(const std::vector<ContactState> &contact_trajectory,
   // contact_schedule
   for (int i = 0; i < N_; ++i) {
     int nu = 0;
-    // for (int j = 0; j < 4; ++j) {
-    // const int phase = contact_schedule.phase(i);
-    // if (contact_schedule.isContactActive(phase)[j]) {
-    // f_[i][j] = qp_data.qp_solution_[i].u.template segment<3>(nu);
-    // nu += 3;
-    //} else {
-    // f_[i][j].setZero();
-    //}
-    //}
     for (int j = 0; j < 2; ++j) {
       if (contact_trajectory[i].contact[j]) {
         f_[i][j] = qp_data.qp_solution_[i].u.template segment<6>(nu);

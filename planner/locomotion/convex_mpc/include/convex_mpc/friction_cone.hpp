@@ -8,12 +8,8 @@
 
 class FrictionCone {
 public:
-  FrictionCone(const double mu, const double fzmin = 0.0,
-               const double fzmax = std::numeric_limits<double>::infinity());
   FrictionCone(const double mu, const double fzmin, const double fzmax,
                const double x, const double y);
-
-  FrictionCone();
 
   ~FrictionCone() = default;
 
@@ -21,7 +17,7 @@ public:
 
 private:
   double mu_, fzmin_, fzmax_, x_, y_;
-  MatrixXd cone_;
+  MatrixXd wrench_cone_;
 };
 
 #endif // CONVEX_MPC_FRICTION_CONE_HPP_

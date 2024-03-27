@@ -11,7 +11,10 @@
 #include "convex_mpc/robot_state.hpp"
 
 // plotting
+#if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
+#include <matlogger2/utils/mat_appender.h>
+#endif
 
 class MPCTest : public ::testing::Test {
 protected:
@@ -54,7 +57,11 @@ protected:
     Quu(4, 4) = 1e-6;
     Quu(5, 5) = 1e-6;
 
-    logger_ = XBot::MatLogger2::MakeLogger("/tmp/srbd_draco_mpc");
+    logger_ = XBot::MatLogger2::MakeLogger("/tmp/srbd_draco_mpc_test");
+    logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
+    appender_ = XBot::MatAppender::MakeInstance();
+    appender_->add_logger(logger_);
+    appender_->start_flush_thread();
   }
 
   virtual void TearDown() {}
@@ -63,8 +70,10 @@ protected:
   std::vector<std::string> feet;
   double mu, fzmin, fzmax;
   Eigen::MatrixXd Qqq, Qvv, Quu;
-
+#if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
+  XBot::MatAppender::Ptr appender_;
+#endif
 };
 
 // gait test
@@ -323,6 +332,8 @@ TEST_F(MPCTest, testMPC) {
             << gait_command.vel_xy_des[1]
             << " yaw_rate: " << gait_command.yaw_rate << std::endl;
   std::cout << "======================" << std::endl;
+
+#if B_USE_MATLOGGER
   logger_->add("time", time);
   for (const auto &e : pos) {
     logger_->add("com_pos", e);
@@ -340,6 +351,7 @@ TEST_F(MPCTest, testMPC) {
     logger_->add("force_LF", e[0]);
     logger_->add("force_RF", e[1]);
   }
+#endif
 }
 
 int main(int argc, char **argv) {

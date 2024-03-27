@@ -2,7 +2,9 @@
 
 void QPData::init(const int horizon_length) {
   // Here, we allocate memory as the possible maximum size.
-  // initialize dim
+  // ###########################
+  // initialize QP variable size
+  // ###########################
   const int N = horizon_length;
   dim_.resize(N);
   const int nx = 12;
@@ -10,33 +12,17 @@ void QPData::init(const int horizon_length) {
   // fill vector
   std::fill(dim_.nx.begin(), dim_.nx.end(), nx);
   std::fill(dim_.nu.begin(), dim_.nu.end(), nu);
-  // std::fill(dim_.nbx.begin(), dim_.nbx.end(), 0);
-  // dim_.nbx[0] = nx;
-  // std::fill(dim_.nbu.begin(), dim_.nbu.end(),
-  // 4); // fz_min < fz < fz_max for 4 legs
-  // dim_.nbu[N] = 0;
-  // std::fill(dim_.ng.begin(), dim_.ng.end(),
-  // 16); // -inf < cone * [fx, fy, fz] < 0 for 4 legs
-  // dim_.ng[N] = 0;
-  std::fill(dim_.nbu.begin(), dim_.nbu.end(),
-            2); // fz_min < fz < fz_max for 4 legs
+  // fz_min < fz < fz_max for 2 legs
+  std::fill(dim_.nbu.begin(), dim_.nbu.end(), 2);
   dim_.nbu[N] = 0;
-  std::fill(dim_.ng.begin(), dim_.ng.end(),
-            32); // -inf < cone * [fx, fy, fz, mx, my, mz] < 0 for 2 legs
+  // -inf < cone * [mx, my, mz,fx, fy, fz,] < 0 for 2 legs
+  std::fill(dim_.ng.begin(), dim_.ng.end(), 32);
   dim_.ng[N] = 0;
 
-  // const auto dim_err_msg = dim_.checkSize();
-  // if (!dim_err_msg.empty()) {
-  // for (const auto &e : dim_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return;
-  //}
-  // dim_.createHpipmData();
-
-  // initialize qp
+  // ###########################
+  // initialize QP size
+  // ###########################
   qp_.resize(N + 1);
-
   // dynamics
   for (int i = 0; i < dim_.N; ++i) {
     qp_[i].A.resize(dim_.nx[i], dim_.nx[i]);
@@ -73,6 +59,7 @@ void QPData::init(const int horizon_length) {
     qp_[i].idxbu.clear();
     qp_[i].idxbu.resize(dim_.nbu[i]);
   }
+
   // inequality constraints
   for (int i = 0; i < dim_.N; ++i) {
     qp_[i].C.resize(dim_.ng[i], dim_.nx[i]);
@@ -85,60 +72,28 @@ void QPData::init(const int horizon_length) {
     qp_[i].ug.setZero();
     qp_[i].ug_mask.setZero(dim_.ng[i]);
   }
-  // qp_.lg_mask.resize(dim_.N + 1);
-  // qp_[0].lg_mask.resize(0);
-  // for (int i = 0; i < N; ++i) {
-  // qp_[i].lg_mask = Eigen::VectorXd::Zero(16);
-  //}
-  // const auto qp_err_msg = qp_.checkSize(dim_);
-  // if (!qp_err_msg.empty()) {
-  // for (const auto &e : qp_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return;
-  //}
-  // qp_.createHpipmData(dim_);
 
-  // initialize qp solution
+  // check qp dimension size
+  dim_.checkSize(qp_);
+
+  // ###########################
+  // initialize qp solution size
+  // ###########################
   qp_solution_.resize(N + 1);
-  // const auto sol_err_msg = qp_solution_.checkSize(dim_);
-  // if (!sol_err_msg.empty()) {
-  // for (const auto &e : sol_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return;
-  //}
-  // qp_solution_.createHpipmData(dim_);
-} // namespace convexmpc
-
-void QPData::resize(const std::vector<int> &num_contact_vec) {
-  // for (int i = 0; i < dim_.N; ++i) {
-  // dim_.nu[i] =
-  // 3 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
-  //}
-  // for (int i = 0; i < dim_.N; ++i) {
-  // dim_.nbu[i] =
-  // 1 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
-  //}
-  // for (int i = 0; i < dim_.N; ++i) {
-  // dim_.ng[i] =
-  // 4 * contact_schedule.numActiveContacts(contact_schedule.phase(i));
-  //}
-  // surface contat
   for (int i = 0; i < dim_.N; ++i) {
-    dim_.nu[i] = 6 * num_contact_vec[i];
-    dim_.nbu[i] = num_contact_vec[i];
-    dim_.ng[i] = 16 * num_contact_vec[i];
+    qp_solution_[i].x.resize(nx);
+    qp_solution_[i].u.resize(nu);
   }
-  // const auto dim_err_msg = dim_.checkSize();
-  // if (!dim_err_msg.empty()) {
-  // for (const auto &e : dim_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return;
-  //}
-  // dim_.createHpipmData();
+  qp_solution_[N].x.resize(nx);
+}
 
+void QPData::resize(const std::vector<int> &num_contact_over_horizon) {
+  // assume surface contact with wrench cone constraints
+  for (int i = 0; i < dim_.N; ++i) {
+    dim_.nu[i] = 6 * num_contact_over_horizon[i];
+    dim_.nbu[i] = num_contact_over_horizon[i];
+    dim_.ng[i] = 16 * num_contact_over_horizon[i];
+  }
   // dynamics
   for (int i = 0; i < dim_.N; ++i) {
     qp_[i].B.resize(dim_.nx[i], dim_.nu[i]);
@@ -161,11 +116,6 @@ void QPData::resize(const std::vector<int> &num_contact_vec) {
     qp_[i].ubu.setZero();
     qp_[i].idxbu.clear();
     qp_[i].idxbu.resize(dim_.nbu[i]);
-    // qp_[i].ubu_mask.resize(dim_.nbu[i]);
-    // qp_[i].ubu_mask.setZero();
-    // for (int j = 0; j < dim_.nbu[i]; ++j) {
-    // qp_[i].idxbu.push_back(j);
-    //}
   }
   for (int i = 0; i < dim_.N; ++i) {
     qp_[i].C.resize(dim_.ng[i], dim_.nx[i]);
@@ -176,55 +126,14 @@ void QPData::resize(const std::vector<int> &num_contact_vec) {
     qp_[i].lg.setZero();
     qp_[i].ug.resize(dim_.ng[i]);
     qp_[i].ug.setZero();
-    // qp_[i].lg_mask.setZero(dim_.ng[i]);
     qp_[i].ug_mask.setZero(dim_.ng[i]);
   }
-  // const auto qp_err_msg = qp_.checkSize(dim_);
-  // if (!qp_err_msg.empty()) {
-  // for (const auto &e : qp_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return;
-  //}
-  // qp_.createHpipmData(dim_);
 
+  // check qp dimension size
+  dim_.checkSize(qp_);
+
+  // qp solution size
   for (int i = 0; i < dim_.N; ++i) {
     qp_solution_[i].u.resize(dim_.nu[i]);
   }
-  // const auto sol_err_msg = qp_solution_.checkSize(dim_);
-  // if (!sol_err_msg.empty()) {
-  // for (const auto &e : sol_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return;
-  //}
-  // qp_solution_.createHpipmData(dim_);
-
-  // resize
-  // dim_.resize(qp_);
-}
-
-bool QPData::checkSize() const {
-  // const auto dim_err_msg = dim_.checkSize();
-  // if (!dim_err_msg.empty()) {
-  // for (const auto &e : dim_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return false;
-  //}
-  // const auto qp_err_msg = qp_.checkSize(dim_);
-  // if (!qp_err_msg.empty()) {
-  // for (const auto &e : qp_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return false;
-  //}
-  // const auto sol_err_msg = qp_solution_.checkSize(dim_);
-  // if (!sol_err_msg.empty()) {
-  // for (const auto &e : sol_err_msg) {
-  // std::cout << e << std::endl;
-  //}
-  // return false;
-  //}
-  return true;
 }

@@ -18,7 +18,6 @@ public:
   hpipm::OcpQpIpmSolverSettings settings;
 
 private:
-  // hpipm::OcpQpIpmSolver solver_;
   std::shared_ptr<hpipm::OcpQpIpmSolver> solver_;
 };
 

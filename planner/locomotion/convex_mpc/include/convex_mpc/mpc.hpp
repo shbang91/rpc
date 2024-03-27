@@ -8,7 +8,6 @@
 #include "convex_mpc/mpc_solution.hpp"
 #include "convex_mpc/qp_data.hpp"
 #include "convex_mpc/qp_solver.hpp"
-//#include "convex_mpc/robot_state.hpp"
 #include "convex_mpc/solver_options.hpp"
 #include "convex_mpc/state_equation.hpp"
 
@@ -42,7 +41,7 @@ public:
   void setContactTrajectory(ContactState *contacts,
                             const std::size_t horizon_length) {
     contact_trajectory_.resize(horizon_length);
-    num_contacts_vec_.resize(horizon_length);
+    num_contacts_over_horizon_.resize(horizon_length);
     for (std::size_t i(0); i < horizon_length; i++) {
       contact_trajectory_[i] = contacts[i];
       int num_contact = 0;
@@ -50,7 +49,7 @@ public:
         if (contact)
           num_contact++;
       }
-      num_contacts_vec_[i] = num_contact;
+      num_contacts_over_horizon_[i] = num_contact;
     }
   }
 
@@ -103,7 +102,7 @@ private:
       feet_pos_relative_to_body_trajectory_;
 
   // intermediate variables
-  std::vector<int> num_contacts_vec_;
+  std::vector<int> num_contacts_over_horizon_;
 };
 
 #endif // CONVEX_MPC_MPC_HPP_

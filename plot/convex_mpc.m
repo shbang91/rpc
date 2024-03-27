@@ -3,7 +3,6 @@ clear;
 clc;
 
 addpath("/tmp")
-addpath("plot")
 exp_data_location = '/tmp';
 
 d = dir(sprintf("%s/convex_mpc*.mat", exp_data_location));

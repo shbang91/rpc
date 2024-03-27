@@ -5,7 +5,6 @@
 
 #include "convex_mpc/contact_schedule.hpp"
 #include "convex_mpc/qp_data.hpp"
-//#include "convex_mpc/robot_state.hpp"
 #include "convex_mpc/types.hpp"
 
 class StateEquation {

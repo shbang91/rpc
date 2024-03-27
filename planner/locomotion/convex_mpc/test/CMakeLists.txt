@@ -22,8 +22,12 @@ macro(add_srbd_mpc_test TESTNAME)
     GTest::GTest
     GTest::GMock
     ${PROJECT_NAME}
-    matlogger2::matlogger2
   )
+
+  if (BUILD_WITH_MATLOGGER)
+      target_link_libraries(${TESTNAME} PRIVATE matlogger2::matlogger2)
+  endif()
+
   add_dependencies(
     ${TESTNAME} 
     googletest
@@ -33,13 +37,6 @@ macro(add_srbd_mpc_test TESTNAME)
     COMMAND $<TARGET_FILE:${TESTNAME}>
   )
 endmacro()
-
-# copy urdf files
-#configure_file(
-  #${PROJECT_SOURCE_DIR}/urdf/a1_description/urdf/a1.urdf
-  #${CMAKE_CURRENT_BINARY_DIR}/urdf/a1.urdf
-  #COPYONLY
-#)
 
 # add tests
 #add_srbd_mpc_test(contact_schedule_test)

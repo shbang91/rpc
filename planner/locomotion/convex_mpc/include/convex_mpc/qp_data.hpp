@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "convex_mpc/contact_schedule.hpp"
 #include "hpipm-cpp/hpipm-cpp.hpp"
 
 struct QPData {
@@ -16,8 +15,6 @@ public:
   void init(const int horizon_length);
 
   void resize(const std::vector<int> &num_contact_vec);
-
-  bool checkSize() const;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

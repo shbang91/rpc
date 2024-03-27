@@ -3,15 +3,10 @@
 
 #include <vector>
 
-#include "convex_mpc/contact_schedule.hpp"
-#include "convex_mpc/qp_data.hpp"
-//#include "convex_mpc/robot_state.hpp"
-#include "convex_mpc/types.hpp"
-
 struct SolverOptions {
   int iter_max = 50; // max iter
 
-  double alpha_min = 1e-12;
+  double alpha_min = 1e-8;
 
   double mu0 = 1.0e+02; // intial barrier parameter
 

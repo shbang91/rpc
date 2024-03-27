@@ -34,19 +34,18 @@ void MPC::_init() {
   qp_solver_.init(qp_data_);
   state_equation_.initQP(qp_data_);
   cost_function_.initQP(qp_data_);
-  // assert(qp_data_.checkSize());
   mpc_solution_.init(horizon_length_, mpc_dt_);
 }
 
 void MPC::solve() {
-  qp_data_.resize(num_contacts_vec_);
-  // state_equation_.setQP(initial_state_, contact_trajectory_,
-  // des_state_trajectory_, feet_pos_,
-  // qp_data_); // baseline methods
+  qp_data_.resize(num_contacts_over_horizon_);
   state_equation_.setQP(initial_state_, contact_trajectory_,
-                        des_state_trajectory_, des_inertia_trajectory_,
-                        feet_pos_,
-                        qp_data_); // proposed methods
+                        des_state_trajectory_, feet_pos_,
+                        qp_data_); // baseline methods
+  // state_equation_.setQP(initial_state_, contact_trajectory_,
+  // des_state_trajectory_, des_inertia_trajectory_,
+  // feet_pos_,
+  // qp_data_); // proposed methods
   // state_equation_.setQP(initial_state_, contact_trajectory_,
   // des_state_trajectory_, des_inertia_trajectory_,
   // feet_pos_relative_to_body_trajectory_,
@@ -54,6 +53,5 @@ void MPC::solve() {
   cost_function_.setQP(initial_state_, des_state_trajectory_, qp_data_);
   friction_cone_.setQP(qp_data_);
   qp_solver_.solve(initial_state_, qp_data_);
-  // assert(qp_data_.checkSize());
   mpc_solution_.update(contact_trajectory_, qp_data_);
 }
