@@ -115,7 +115,7 @@ wbc:
       exp_leaky_integrator_limit: [0.03, 0.03]
 
     com_z_task:
-      com_height_target_source: 1 # 0: com height / 1: base height
+      com_height_target_source: 0 # 0: com height / 1: base height
       ########################################################################
       ## sim params
       ########################################################################
@@ -310,12 +310,12 @@ wbc:
     #W_delta_rf_right_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
 
     #working params
-    W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 50000]
-    W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 50000]
+    #W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 50000]
+    #W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 50000]
     #W_delta_rf_left_foot_in_contact_mpc: [80000, 80000, 150000, 20000, 20000, 20000]
     #W_delta_rf_right_foot_in_contact_mpc: [80000, 80000, 150000, 20000, 20000, 20000]
-    #W_delta_rf_left_foot_in_contact_mpc: [100000, 100000, 100000, 100000, 100000, 100000]
-    #W_delta_rf_right_foot_in_contact_mpc: [100000, 100000, 100000, 100000, 100000, 100000]
+    W_delta_rf_left_foot_in_contact_mpc: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
+    W_delta_rf_right_foot_in_contact_mpc: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
 
     W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
     W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]

@@ -25,23 +25,23 @@ mpc_params:
     #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
     #
     #
-    Qqq: [50, 50, 300, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
-    Qvv: [20, 20, 150, 30, 30, 10000] ## wx, wy, wz, xdot, ydot, zdot
-    Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #Qqq: [50, 50, 300, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [20, 20, 150, 30, 30, 10000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
 
     ####### without inertia
-    #Qqq: [100, 100, 150, 200, 200, 10000] ## roll, pitch, yaw, x, y, z
-    #Qvv: [1, 1, 1, 1, 1, 5000] ## wx, wy, wz, xdot, ydot, zdot
-    #Quu: [1e-2, 1e-2, 1e-2, 1e-4, 1e-4, 5e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
+    Qqq: [100, 100, 150, 200, 200, 5000] ## roll, pitch, yaw, x, y, z
+    Qvv: [10, 10, 15, 20, 20, 50] ## wx, wy, wz, xdot, ydot, zdot
+    Quu: [1e-1, 1e-1, 1e-4, 1e-3, 1e-3, 1e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
 
     ####### with inertia
     #Qqq: [3000, 3000, 5000, 100, 100, 100000] ## roll, pitch, yaw, x, y, z
     #Qvv: [300, 300, 500, 1, 1, 50000] ## wx, wy, wz, xdot, ydot, zdot
     #Quu: [1e-2, 1e-2, 5e-4, 1e-4, 1e-4, 5e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
 
-    Qqq_terminal: [10000, 10000, 10000, 10000, 10000, 10000]
-    Qvv_terminal: [5000, 5000, 5000, 5000, 5000, 5000]
-    decay_rate: 1.0
+    Qqq_terminal: [10000, 10000, 15000, 20000, 20000, 500000]
+    Qvv_terminal: [100, 100, 100, 100, 100, 5000]
+    decay_rate: 0.98
 
   nominal_inertia: [ 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
       -0.00292598, 0.885743, -0.00292598, 1.23588 ]
