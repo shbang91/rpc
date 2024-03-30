@@ -7,6 +7,7 @@ dependencies:
   - ruamel.yaml=0.17.10
   - pip
   - pip:
+      - casadi
       - certifi==2021.5.30
       - imageio==2.9.0
       - ipdb==0.13.9
@@ -16,6 +17,7 @@ dependencies:
       - protobuf==3.17.3
       - pybullet==3.0.8
       - scipy==1.7.0
+      - torch
       - tqdm==4.61.1
       - wheel==0.36.2
       - zmq==0.0.0
