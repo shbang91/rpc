@@ -33,29 +33,14 @@ args = parser.parse_args()
 ##Misc
 ##==========================================================================
 des_com_traj_label = []
-for i in range(11):
-    label = "des_com_" + str(i)
-    des_com_traj_label.append(label)
 
 des_ori_traj_label = []
-for i in range(11):
-    label = "des_ori_" + str(i)
-    des_ori_traj_label.append(label)
 
 des_lf_pos_traj_label = []
-for i in range(10):
-    label = "des_lf_pos_" + str(i)
-    des_lf_pos_traj_label.append(label)
 
 des_rf_pos_traj_label = []
-for i in range(10):
-    label = "des_rf_pos_" + str(i)
-    des_rf_pos_traj_label.append(label)
 
 des_lf_ori_traj_label = []
-for i in range(10):
-    label = "des_lf_ori_" + str(i)
-    des_lf_ori_traj_label.append(label)
 
 des_rf_ori_traj_label = []
 for i in range(10):
@@ -143,37 +128,8 @@ if args.b_visualize:
                          opacity=1.0,
                          radius=0.01)
 
-    # add mpc desired trajectory
-    for name in des_com_traj_label:
-        meshcat_shapes.point(viz.viewer[name],
-                             color=vis_tools.Color.GREEN,
-                             opacity=0.8,
-                             radius=0.01)
-
-    for name in des_ori_traj_label:
-        meshcat_shapes.frame(viz.viewer[name],
-                             axis_length=0.1,
-                             axis_thickness=0.01,
-                             opacity=0.8,
-                             origin_radius=0.01)
-
-    for lf_name, rf_name in zip(des_lf_pos_traj_label, des_rf_pos_traj_label):
-        meshcat_shapes.point(viz.viewer[lf_name],
-                             color=vis_tools.Color.CYAN,
-                             opacity=0.8,
-                             radius=0.01)
-        meshcat_shapes.point(viz.viewer[rf_name],
-                             color=vis_tools.Color.YELLOW,
-                             opacity=0.8,
-                             radius=0.01)
-
     for lf_ori_name, rf_ori_name in zip(des_lf_ori_traj_label,
                                         des_rf_ori_traj_label):
-        meshcat_shapes.frame(viz.viewer[lf_ori_name],
-                             axis_length=0.1,
-                             axis_thickness=0.01,
-                             opacity=0.8,
-                             origin_radius=0.01)
         meshcat_shapes.frame(viz.viewer[rf_ori_name],
                              axis_length=0.1,
                              axis_thickness=0.01,
@@ -224,69 +180,130 @@ while True:
             [msg.des_com_pos[0], msg.des_com_pos[1], 0.0])
         viz.viewer["com_projected"].set_transform(trans)
 
-        ## visualize des CoM trajectory
-        for com, name in zip(msg.des_com_traj, des_com_traj_label):
-            trans = meshcat.transformations.translation_matrix(
-                [com.x, com.y, com.z])
-            viz.viewer[name].set_transform(trans)
-
-        ## visualize des orientation trajectory
-        for com, torso_ori, name in zip(msg.des_com_traj,
-                                        msg.des_torso_ori_traj,
-                                        des_ori_traj_label):
-            rotation = meshcat.transformations.euler_matrix(torso_ori.x,
-                                                            torso_ori.y,
-                                                            torso_ori.z,
-                                                            axes='sxyz')
-            trans = meshcat.transformations.translation_matrix(
-                [com.x, com.y, com.z])
-            # viz.viewer[name].set_transform(trans.dot(rotation))
-
-        ## visualize foot trajectory
-        for lf_pos, name in zip(msg.des_lf_pos_traj, des_lf_pos_traj_label):
-            trans = meshcat.transformations.translation_matrix(
-                [lf_pos.x, lf_pos.y, lf_pos.z])
-            viz.viewer[name].set_transform(trans)
-
-        for rf_pos, name in zip(msg.des_rf_pos_traj, des_rf_pos_traj_label):
-            trans = meshcat.transformations.translation_matrix(
-                [rf_pos.x, rf_pos.y, rf_pos.z])
-            viz.viewer[name].set_transform(trans)
-
-        # print(
-        # "==========lf pos================================================="
-        # )
-        for lf_pos, lf_ori, name in zip(msg.des_lf_pos_traj,
-                                        msg.des_lf_ori_traj,
-                                        des_lf_ori_traj_label):
-            rotation = meshcat.transformations.euler_matrix(lf_ori.x,
-                                                            lf_ori.y,
-                                                            lf_ori.z,
-                                                            axes='sxyz')
-            trans = meshcat.transformations.translation_matrix(
-                [lf_pos.x, lf_pos.y, lf_pos.z])
-
-            # print(lf_pos)
-            # viz.viewer[name].set_transform(trans.dot(rotation))
-
-        print(
-            "==========rf pos================================================="
-        )
-        for rf_pos, rf_ori, name in zip(msg.des_rf_pos_traj,
-                                        msg.des_rf_ori_traj,
-                                        des_rf_ori_traj_label):
-            rotation = meshcat.transformations.euler_matrix(rf_ori.x,
-                                                            rf_ori.y,
-                                                            rf_ori.z,
-                                                            axes='sxyz')
-            trans = meshcat.transformations.translation_matrix(
-                [rf_pos.x, rf_pos.y, rf_pos.z])
-            print(rf_pos)
-            # viz.viewer[name].set_transform(trans.dot(rotation))
-
         # visualize GRFs
         if msg.phase != 1:
             vis_tools.grf_display(viz.viewer["grf_lf"], msg.lfoot_pos,
                                   msg.lfoot_ori, msg.lfoot_rf_cmd)
             vis_tools.grf_display(viz.viewer["grf_rf"], msg.rfoot_pos,
                                   msg.rfoot_ori, msg.rfoot_rf_cmd)
+
+        ## visualize des CoM trajectory
+        if len(msg.des_com_traj) > 0:
+            if len(des_com_traj_label) == 0:
+                for i in range(len(msg.des_com_traj)):
+                    label = "des_com_" + str(i)
+                    des_com_traj_label.append(label)
+                for name in des_com_traj_label:
+                    meshcat_shapes.point(viz.viewer[name],
+                                         color=vis_tools.Color.GREEN,
+                                         opacity=0.8,
+                                         radius=0.01)
+            else:
+                for com, name in zip(msg.des_com_traj, des_com_traj_label):
+                    trans = meshcat.transformations.translation_matrix(
+                        [com.x, com.y, com.z])
+                    viz.viewer[name].set_transform(trans)
+
+        ## visualize des orientation trajectory
+        if len(msg.des_torso_ori_traj) > 0:
+            if len(des_ori_traj_label) == 0:
+                for i in range(len(msg.des_torso_ori_traj)):
+                    label = "des_ori_" + str(i)
+                    des_ori_traj_label.append(label)
+                for name in des_ori_traj_label:
+                    meshcat_shapes.frame(viz.viewer[name],
+                                         axis_length=0.1,
+                                         axis_thickness=0.01,
+                                         opacity=0.8,
+                                         origin_radius=0.01)
+            else:
+                for com, torso_ori, name in zip(msg.des_com_traj,
+                                                msg.des_torso_ori_traj,
+                                                des_ori_traj_label):
+                    rotation = meshcat.transformations.euler_matrix(
+                        torso_ori.x, torso_ori.y, torso_ori.z, axes='sxyz')
+                    trans = meshcat.transformations.translation_matrix(
+                        [com.x, com.y, com.z])
+                    # viz.viewer[name].set_transform(trans.dot(rotation))
+
+        ## visualize left foot position trajectory
+        if len(msg.des_lf_pos_traj) > 0:
+            if len(des_lf_pos_traj_label) == 0:
+                for i in range(len(msg.des_lf_pos_traj)):
+                    label = "des_lf_pos_" + str(i)
+                    des_lf_pos_traj_label.append(label)
+                for name in des_lf_pos_traj_label:
+                    meshcat_shapes.point(viz.viewer[name],
+                                         color=vis_tools.Color.CYAN,
+                                         opacity=0.8,
+                                         radius=0.01)
+            else:
+                for lf_pos, name in zip(msg.des_lf_pos_traj,
+                                        des_lf_pos_traj_label):
+                    trans = meshcat.transformations.translation_matrix(
+                        [lf_pos.x, lf_pos.y, lf_pos.z])
+                    viz.viewer[name].set_transform(trans)
+
+        ## visualize right foot position trajectory
+        if len(msg.des_rf_pos_traj) > 0:
+            if len(des_rf_pos_traj_label) == 0:
+                for i in range(len(msg.des_rf_pos_traj)):
+                    label = "des_rf_pos_" + str(i)
+                    des_rf_pos_traj_label.append(label)
+                for name in des_rf_pos_traj_label:
+                    meshcat_shapes.point(viz.viewer[name],
+                                         color=vis_tools.Color.YELLOW,
+                                         opacity=0.8,
+                                         radius=0.01)
+            else:
+                for rf_pos, name in zip(msg.des_rf_pos_traj,
+                                        des_rf_pos_traj_label):
+                    trans = meshcat.transformations.translation_matrix(
+                        [rf_pos.x, rf_pos.y, rf_pos.z])
+                    viz.viewer[name].set_transform(trans)
+
+        ## visualize left foot orientation trajectory
+        if len(msg.des_lf_ori_traj) > 0:
+            if len(des_lf_ori_traj_label) == 0:
+                for i in range(len(des_lf_ori_traj_label)):
+                    label = "des_lf_ori_" + str(i)
+                    des_lf_ori_traj_label.append(label)
+                for name in des_lf_ori_traj_label:
+                    meshcat_shapes.frame(viz.viewer[name],
+                                         axis_length=0.1,
+                                         axis_thickness=0.01,
+                                         opacity=0.8,
+                                         origin_radius=0.01)
+            else:
+                for lf_pos, lf_ori, name in zip(msg.des_lf_pos_traj,
+                                                msg.des_lf_ori_traj,
+                                                des_lf_ori_traj_label):
+                    rotation = meshcat.transformations.euler_matrix(
+                        lf_ori.x, lf_ori.y, lf_ori.z, axes='sxyz')
+                    trans = meshcat.transformations.translation_matrix(
+                        [lf_pos.x, lf_pos.y, lf_pos.z])
+
+                    # viz.viewer[name].set_transform(trans.dot(rotation))
+
+        ## visualize right foot orientation trajectory
+        if len(msg.des_rf_ori_traj) > 0:
+            if len(des_rf_ori_traj_label) == 0:
+                for i in range(len(des_rf_ori_traj_label)):
+                    label = "des_rf_ori_" + str(i)
+                    des_rf_ori_traj_label.append(label)
+                for name in des_rf_ori_traj_label:
+                    meshcat_shapes.frame(viz.viewer[name],
+                                         axis_length=0.1,
+                                         axis_thickness=0.01,
+                                         opacity=0.8,
+                                         origin_radius=0.01)
+            else:
+                for rf_pos, rf_ori, name in zip(msg.des_rf_pos_traj,
+                                                msg.des_rf_ori_traj,
+                                                des_rf_ori_traj_label):
+                    rotation = meshcat.transformations.euler_matrix(
+                        rf_ori.x, rf_ori.y, rf_ori.z, axes='sxyz')
+                    trans = meshcat.transformations.translation_matrix(
+                        [rf_pos.x, rf_pos.y, rf_pos.z])
+
+                    # viz.viewer[name].set_transform(trans.dot(rotation))
