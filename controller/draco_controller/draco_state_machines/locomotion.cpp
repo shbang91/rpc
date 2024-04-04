@@ -235,53 +235,7 @@ void Locomotion::OneStep() {
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
 
-  iter_++;
-  // std::cout << "Lfoot contact state: " << mpc_interface->contact_state_[0]
-  //<< std::endl;
-  // std::cout << "Rfoot contact state: " << mpc_interface->contact_state_[1]
-  //<< std::endl;
-  // std::cout << "lfoot rf: " << mpc_interface->des_lf_wrench_.transpose()
-  //<< std::endl;
-  // std::cout << "rfoot rf: " << mpc_interface->des_rf_wrench_.transpose()
-  //<< std::endl;
 
-  // TEST
-  // std::cout << "===================================================="
-  //<< std::endl;
-  // std::cout << "lf ori des: "
-  //<< tci_container->task_map_["lf_ori_task"]->DesiredPos().transpose()
-  //<< std::endl;
-  // std::cout << "lf ori act: "
-  //<< tci_container->task_map_["lf_ori_task"]->CurrentPos().transpose()
-  //<< std::endl;
-  // std::cout << "lf ori error: "
-  //<< tci_container->task_map_["lf_ori_task"]->PosError().transpose()
-  //<< std::endl;
-  // std::cout << "rf ori des: "
-  //<< tci_container->task_map_["rf_ori_task"]->DesiredPos().transpose()
-  //<< std::endl;
-  // std::cout << "rf ori act: "
-  //<< tci_container->task_map_["rf_ori_task"]->CurrentPos().transpose()
-  //<< std::endl;
-  // std::cout << "rf ori error: "
-  //<< tci_container->task_map_["rf_ori_task"]->PosError().transpose()
-  //<< std::endl;
-  // exit(0);
-  // if (iter_ == 50)
-  // exit(0);
-  // std::cout << "state machine" << std::endl;
-  // std::cout << "foot pos: "
-  //<< "LF: "
-  //<< tci_container->task_map_["lf_pos_task"]->CurrentPos().transpose()
-  //<< "RF: "
-  //<< tci_container->task_map_["rf_pos_task"]->CurrentPos().transpose()
-  //<< std::endl;
-  // std::cout << "foot ori: "
-  //<< "LF: "
-  //<< tci_container->task_map_["lf_ori_task"]->CurrentPos().transpose()
-  //<< "RF: "
-  //<< tci_container->task_map_["rf_ori_task"]->CurrentPos().transpose()
-  //<< std::endl;
 }
 
 bool Locomotion::EndOfState() { return false; }

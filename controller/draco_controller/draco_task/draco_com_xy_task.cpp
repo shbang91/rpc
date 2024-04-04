@@ -137,8 +137,8 @@ void DracoCoMXYTask::UpdateOpCommand() {
 #if B_USE_ZMQ
     if (sp_->count_ % sp_->data_save_freq_ == 0) {
       DracoDataManager *dm = DracoDataManager::GetDataManager();
-      dm->data_->des_icp = des_icp;
-      dm->data_->des_cmp = des_cmp;
+      dm->data_->des_icp_ = des_icp;
+      dm->data_->des_cmp_ = des_cmp;
     }
 #endif
 
@@ -258,8 +258,8 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 #if B_USE_ZMQ
     if (sp_->count_ % sp_->data_save_freq_ == 0) {
       DracoDataManager *dm = DracoDataManager::GetDataManager();
-      dm->data_->des_icp = des_icp;
-      dm->data_->des_cmp = des_cmp;
+      dm->data_->des_icp_ = des_icp;
+      dm->data_->des_cmp_ = des_cmp;
     }
 #endif
 

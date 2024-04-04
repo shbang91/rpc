@@ -23,47 +23,6 @@ message pnc_msg {
   repeated float lfoot_rf_cmd = 12;
   repeated float rfoot_rf_cmd = 13;
 
-  repeated float est_icp = 14;
-  repeated float des_icp = 15;
 
-  repeated float des_cmp = 16;
 
-  repeated float com_xy_kp = 17;
-  repeated float com_xy_kd = 18;
-  repeated float com_xy_ki = 19;
-
-  float com_z_kp = 20;
-  float com_z_kd = 21;
-
-  repeated float torso_ori_kp = 22;
-  repeated float torso_ori_kd = 23;
-
-  repeated float lf_pos_kp = 24;
-  repeated float lf_pos_kd = 25;
-
-  repeated float rf_pos_kp = 26;
-  repeated float rf_pos_kd = 27;
-
-  repeated float lf_ori_kp = 28;
-  repeated float lf_ori_kd = 29;
-
-  repeated float rf_ori_kp = 30;
-  repeated float rf_ori_kd = 31;
-
-  repeated float kf_base_joint_pos = 32;
-  repeated float kf_base_joint_ori = 33;
 }
-
-// TODO:
-// message msg_list {
-// optional float time = 1;
-// repeated fb_msg fb = 2;
-//}
-
-// message fb_msg {
-// message base_joint_pos { repeated float xyz = 1; }
-// message base_joint_ori { repeated float xyzw = 1; }
-
-// repeated base_joint_pos bjoint_pos = 1;
-// repeated base_joint_ori bjoint_ori = 2;
-//}

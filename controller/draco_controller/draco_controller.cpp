@@ -262,13 +262,6 @@ void DracoController::_SaveData() {
   dm->data_->rfoot_ori_ =
       tci_container_->task_map_["rf_ori_task"]->CurrentPos();
 
-  // Eigen::Quaterniond lf_ori_quat(
-  // dm->data_->lfoot_ori_[3], dm->data_->lfoot_ori_[0],
-  // dm->data_->lfoot_ori_[1], dm->data_->lfoot_ori_[2]);
-  // Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
-  // rot.topLeftCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
-  // rot.bottomRightCorner<3, 3>() = lf_ori_quat.toRotationMatrix();
-
   Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
   rot.topLeftCorner<3, 3>() =
       tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
@@ -277,41 +270,12 @@ void DracoController::_SaveData() {
   dm->data_->lfoot_rf_cmd_ =
       rot * wbic_data_->rf_cmd_.head<6>(); // global quantity
 
-  // Eigen::Quaterniond rf_ori_quat(
-  // dm->data_->rfoot_ori_[3], dm->data_->rfoot_ori_[0],
-  // dm->data_->rfoot_ori_[1], dm->data_->rfoot_ori_[2]);
-  // rot.topLeftCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
-  // rot.bottomRightCorner<3, 3>() = rf_ori_quat.toRotationMatrix();
-
   rot.topLeftCorner<3, 3>() =
       tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
   rot.bottomRightCorner<3, 3>() =
       tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
   dm->data_->rfoot_rf_cmd_ =
       rot * wbic_data_->rf_cmd_.tail<6>(); // global quantity
-
-  // task kp, kd, ki for plotting
-  dm->data_->com_xy_kp = tci_container_->task_map_["com_xy_task"]->Kp();
-  dm->data_->com_xy_kd = tci_container_->task_map_["com_xy_task"]->Kd();
-  dm->data_->com_xy_ki = tci_container_->task_map_["com_xy_task"]->Ki();
-
-  dm->data_->com_z_kp = tci_container_->task_map_["com_z_task"]->Kp()[0];
-  dm->data_->com_z_kd = tci_container_->task_map_["com_z_task"]->Kd()[0];
-
-  dm->data_->torso_ori_kp = tci_container_->task_map_["torso_ori_task"]->Kp();
-  dm->data_->torso_ori_kd = tci_container_->task_map_["torso_ori_task"]->Kd();
-
-  dm->data_->lf_pos_kp = tci_container_->task_map_["lf_pos_task"]->Kp();
-  dm->data_->lf_pos_kd = tci_container_->task_map_["lf_pos_task"]->Kd();
-
-  dm->data_->rf_pos_kp = tci_container_->task_map_["rf_pos_task"]->Kp();
-  dm->data_->rf_pos_kd = tci_container_->task_map_["rf_pos_task"]->Kd();
-
-  dm->data_->lf_ori_kp = tci_container_->task_map_["lf_ori_task"]->Kp();
-  dm->data_->lf_ori_kd = tci_container_->task_map_["lf_ori_task"]->Kd();
-
-  dm->data_->rf_ori_kp = tci_container_->task_map_["rf_ori_task"]->Kp();
-  dm->data_->rf_ori_kd = tci_container_->task_map_["rf_ori_task"]->Kd();
 
 #endif
 

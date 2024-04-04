@@ -57,42 +57,11 @@ void DracoDataManager::SendData() {
   for (int i(0); i < data_->rfoot_rf_cmd_.size(); i++)
     msg.add_rfoot_rf_cmd(data_->rfoot_rf_cmd_[i]);
 
-  for (int i(0); i < 2; i++) {
-    msg.add_est_icp(data_->est_icp[i]);
-    msg.add_des_icp(data_->des_icp[i]);
-    msg.add_des_cmp(data_->des_cmp[i]);
-    msg.add_com_xy_kp(data_->com_xy_kp[i]);
-    msg.add_com_xy_kd(data_->com_xy_kd[i]);
-    msg.add_com_xy_ki(data_->com_xy_ki[i]);
   }
 
-  msg.set_com_z_kp(data_->com_z_kp);
-  msg.set_com_z_kd(data_->com_z_kd);
 
-  for (int i(0); i < 3; i++) {
-    msg.add_torso_ori_kp(data_->torso_ori_kp[i]);
-    msg.add_torso_ori_kd(data_->torso_ori_kd[i]);
-
-    msg.add_lf_pos_kp(data_->lf_pos_kp[i]);
-    msg.add_lf_pos_kd(data_->lf_pos_kd[i]);
-
-    msg.add_rf_pos_kp(data_->rf_pos_kp[i]);
-    msg.add_rf_pos_kd(data_->rf_pos_kd[i]);
-
-    msg.add_lf_ori_kp(data_->lf_ori_kp[i]);
-    msg.add_lf_ori_kd(data_->lf_ori_kd[i]);
-
-    msg.add_rf_ori_kp(data_->rf_ori_kp[i]);
-    msg.add_rf_ori_kd(data_->rf_ori_kd[i]);
   }
 
-  // for (int i = 0; i < 3; ++i) {
-  // msg.add_base_joint_pos(data_->base_joint_pos_[i]);
-  // msg.add_base_joint_ori(data_->base_joint_ori_[i]);
-  // msg.add_base_joint_lin_vel(data_->base_joint_lin_vel_[i]);
-  // msg.add_base_joint_ang_vel(data_->base_joint_ang_vel_[i]);
-  //}
-  // msg.add_base_joint_ori(data_->base_joint_ori_[3]);
 
   // serialize msg in string type
   std::string encoded_msg;

@@ -48,6 +48,4 @@ private:
   // TODO remove this later
   Eigen::Quaterniond lf_ori_quat_ = Eigen::Quaterniond::Identity();
   Eigen::Quaterniond rf_ori_quat_ = Eigen::Quaterniond::Identity();
-
-  int iter_ = 0;
 };
