@@ -102,6 +102,11 @@ public:
     high_speed_turning_gain_ = high_speed_turning_gain;
   }
 
+  // MPC desired state trajectory
+  aligned_vector<Vector12d> des_state_traj_;
+  std::vector<aligned_vector<Eigen::Vector3d>> des_foot_pos_traj_;
+  std::vector<aligned_vector<Eigen::Vector3d>> des_foot_ori_traj_;
+
   // WBC task variables
   // from Raibert Heuristics
   Eigen::Vector3d des_foot_pos_[2]; // left, right order

@@ -110,7 +110,7 @@ if args.b_visualize:
 
     icp_viz, icp_model = vis_tools.add_sphere(viz.viewer,
                                               "icp",
-                                              color=vis_tools.violet)
+                                              color=vis_tools.Color.VIOLET)
     icp_viz_q = pin.neutral(icp_model)
 
     icp_des_viz, icp_des_model = vis_tools.add_sphere(viz.viewer,

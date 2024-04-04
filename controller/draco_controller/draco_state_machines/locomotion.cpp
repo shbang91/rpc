@@ -10,6 +10,10 @@
 #include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "convex_mpc/convex_mpc_locomotion.hpp"
 
+#if B_USE_ZMQ
+#include "controller/draco_controller/draco_data_manager.hpp"
+#endif
+
 Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
@@ -235,7 +239,32 @@ void Locomotion::OneStep() {
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
 
+#if B_USE_ZMQ
+  // for meshcat visualization
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
 
+    dm->data_->des_com_traj.clear();
+    dm->data_->des_torso_ori_traj.clear();
+    for (const auto &des_state : mpc_interface->des_state_traj_) {
+      dm->data_->des_com_traj.push_back(des_state.segment<3>(3));
+      dm->data_->des_torso_ori_traj.push_back(des_state.segment<3>(0));
+    }
+
+    dm->data_->des_lf_pos_traj.clear();
+    dm->data_->des_rf_pos_traj.clear();
+    dm->data_->des_lf_ori_traj.clear();
+    dm->data_->des_rf_ori_traj.clear();
+    for (const auto &lf_pos : mpc_interface->des_foot_pos_traj_[0])
+      dm->data_->des_lf_pos_traj.push_back(lf_pos);
+    for (const auto &rf_pos : mpc_interface->des_foot_pos_traj_[1])
+      dm->data_->des_rf_pos_traj.push_back(rf_pos);
+    for (const auto &lf_ori : mpc_interface->des_foot_ori_traj_[0])
+      dm->data_->des_lf_ori_traj.push_back(lf_ori);
+    for (const auto &rf_ori : mpc_interface->des_foot_ori_traj_[1])
+      dm->data_->des_rf_ori_traj.push_back(rf_ori);
+  }
+#endif
 }
 
 bool Locomotion::EndOfState() { return false; }

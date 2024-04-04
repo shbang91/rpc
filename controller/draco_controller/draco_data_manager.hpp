@@ -38,6 +38,14 @@ public:
   Eigen::Vector2d des_cmp_ = Eigen::Vector2d::Zero();
 
   Eigen::Vector2d est_icp_ = Eigen::Vector2d::Zero();
+
+  // mpc data
+  std::vector<Eigen::Vector3d> des_com_traj;
+  std::vector<Eigen::Vector3d> des_torso_ori_traj;
+  std::vector<Eigen::Vector3d> des_lf_pos_traj;
+  std::vector<Eigen::Vector3d> des_rf_pos_traj;
+  std::vector<Eigen::Vector3d> des_lf_ori_traj;
+  std::vector<Eigen::Vector3d> des_rf_ori_traj;
 };
 
 // Singleton class

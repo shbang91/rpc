@@ -9,6 +9,17 @@ import pinocchio as pin
 violet = [1., 0., 1., 0.3]
 
 
+class Color(object):
+    RED = 0xff0000
+    GREEN = 0x00ff00
+    BLUE = 0x0000ff
+    GREY = 0x888888
+    BLACK = 0x000000
+    CYAN = 0x00ffff
+    YELLOW = 0xffff00
+    VIOLET = 0x8f00ff
+
+
 def add_arrow(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
     arrow_shaft = g.Cylinder(height, 0.01)
     arrow_head = g.Cylinder(0.04, 0.04, radiusTop=0.001, radiusBottom=0.04)
@@ -20,7 +31,11 @@ def add_arrow(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
     meshcat_visualizer[obj_name]["head"].set_object(arrow_head, material)
 
 
-def add_footstep(meshcat_visualizer, obj_name, color=[1, 0, 0], foot_length=0.25, foot_width=0.15):
+def add_footstep(meshcat_visualizer,
+                 obj_name,
+                 color=[1, 0, 0],
+                 foot_length=0.25,
+                 foot_width=0.15):
     footstep = g.Box([foot_length, foot_width, 0.01])
     material = g.MeshPhongMaterial()
     material.color = int(color[0] * 255) * 256**2 + int(
@@ -28,6 +43,7 @@ def add_footstep(meshcat_visualizer, obj_name, color=[1, 0, 0], foot_length=0.25
     material.opacity = 0.4
 
     meshcat_visualizer[obj_name].set_object(footstep, material)
+
 
 def add_sphere(parent_visualizer,
                node_name="sphere",
