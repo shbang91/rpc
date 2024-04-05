@@ -33,19 +33,11 @@ args = parser.parse_args()
 ##Misc
 ##==========================================================================
 des_com_traj_label = []
-
 des_ori_traj_label = []
-
 des_lf_pos_traj_label = []
-
 des_rf_pos_traj_label = []
-
 des_lf_ori_traj_label = []
-
 des_rf_ori_traj_label = []
-for i in range(10):
-    label = "des_rf_ori_" + str(i)
-    des_rf_ori_traj_label.append(label)
 
 ##==========================================================================
 ##Socket initialize
@@ -128,14 +120,6 @@ if args.b_visualize:
                          opacity=1.0,
                          radius=0.01)
 
-    for lf_ori_name, rf_ori_name in zip(des_lf_ori_traj_label,
-                                        des_rf_ori_traj_label):
-        meshcat_shapes.frame(viz.viewer[rf_ori_name],
-                             axis_length=0.1,
-                             axis_thickness=0.01,
-                             opacity=0.8,
-                             origin_radius=0.01)
-
     # add arrows visualizers to viewer
     vis_tools.add_arrow(viz.viewer, "grf_lf", color=[0, 0, 1])  ## BLUE
     vis_tools.add_arrow(viz.viewer, "grf_rf", color=[1, 0, 0])  ## RED
@@ -213,7 +197,7 @@ while True:
                 for name in des_ori_traj_label:
                     meshcat_shapes.frame(viz.viewer[name],
                                          axis_length=0.1,
-                                         axis_thickness=0.01,
+                                         axis_thickness=0.005,
                                          opacity=0.8,
                                          origin_radius=0.01)
             else:
@@ -224,7 +208,7 @@ while True:
                         torso_ori.x, torso_ori.y, torso_ori.z, axes='sxyz')
                     trans = meshcat.transformations.translation_matrix(
                         [com.x, com.y, com.z])
-                    # viz.viewer[name].set_transform(trans.dot(rotation))
+                    viz.viewer[name].set_transform(trans.dot(rotation))
 
         ## visualize left foot position trajectory
         if len(msg.des_lf_pos_traj) > 0:
@@ -265,13 +249,13 @@ while True:
         ## visualize left foot orientation trajectory
         if len(msg.des_lf_ori_traj) > 0:
             if len(des_lf_ori_traj_label) == 0:
-                for i in range(len(des_lf_ori_traj_label)):
+                for i in range(len(msg.des_lf_ori_traj)):
                     label = "des_lf_ori_" + str(i)
                     des_lf_ori_traj_label.append(label)
                 for name in des_lf_ori_traj_label:
                     meshcat_shapes.frame(viz.viewer[name],
                                          axis_length=0.1,
-                                         axis_thickness=0.01,
+                                         axis_thickness=0.005,
                                          opacity=0.8,
                                          origin_radius=0.01)
             else:
@@ -282,19 +266,18 @@ while True:
                         lf_ori.x, lf_ori.y, lf_ori.z, axes='sxyz')
                     trans = meshcat.transformations.translation_matrix(
                         [lf_pos.x, lf_pos.y, lf_pos.z])
-
-                    # viz.viewer[name].set_transform(trans.dot(rotation))
+                    viz.viewer[name].set_transform(trans.dot(rotation))
 
         ## visualize right foot orientation trajectory
         if len(msg.des_rf_ori_traj) > 0:
             if len(des_rf_ori_traj_label) == 0:
-                for i in range(len(des_rf_ori_traj_label)):
+                for i in range(len(msg.des_rf_ori_traj)):
                     label = "des_rf_ori_" + str(i)
                     des_rf_ori_traj_label.append(label)
                 for name in des_rf_ori_traj_label:
                     meshcat_shapes.frame(viz.viewer[name],
                                          axis_length=0.1,
-                                         axis_thickness=0.01,
+                                         axis_thickness=0.005,
                                          opacity=0.8,
                                          origin_radius=0.01)
             else:
@@ -305,5 +288,4 @@ while True:
                         rf_ori.x, rf_ori.y, rf_ori.z, axes='sxyz')
                     trans = meshcat.transformations.translation_matrix(
                         [rf_pos.x, rf_pos.y, rf_pos.z])
-
-                    # viz.viewer[name].set_transform(trans.dot(rotation))
+                    viz.viewer[name].set_transform(trans.dot(rotation))
