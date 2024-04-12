@@ -21,6 +21,7 @@ import json
 import argparse
 
 if Config.USE_FOXGLOVE:
+    import webbrowser
     from simulator.pybullet.draco_main import *
     import UI.foxglove.control_widgets as foxglove_ctrl
     from foxglove_websocket.types import Parameter
@@ -150,6 +151,11 @@ async def main():
             await server.send_message(icp_chan_id, now, json.dumps(
                 {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
+
+            #send 2 pairs of l & r norm data as topics to foxglove
+            await server.send_message(norm_chan_id, now, json.dumps(
+                {"lfoot_cmd": msg.lfoot_rf_cmd, "rfoot_cmd": msg.rfoot_rf_cmd,
+                 "lfoot_filt": msg.lfoot_rf_normal_filt, "rfoot_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
 
             #send step data
             await server.send_message(steptest, now, json.dumps(
@@ -478,6 +484,7 @@ while True:
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
             print("FLAG_FOXTRIG")
+            webbrowser.open('https://app.foxglove.dev/speedway/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
             y = threading.Thread(target=asyncio.run(main()), args=())
             y.start()
             #asyncio.run(main())
