@@ -154,7 +154,7 @@ async def main():
 
             #send 2 pairs of l & r norm data as topics to foxglove
             await server.send_message(norm_chan_id, now, json.dumps(
-                {"lfoot_cmd": msg.lfoot_rf_cmd, "rfoot_cmd": msg.rfoot_rf_cmd,
+                {"lfoot_cmd": list(msg.lfoot_rf_cmd)[0], "rfoot_cmd": list(msg.rfoot_rf_cmd)[0],
                  "lfoot_filt": msg.lfoot_rf_normal_filt, "rfoot_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
 
             #send step data
