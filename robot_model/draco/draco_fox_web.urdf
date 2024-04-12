@@ -663,7 +663,7 @@
     <visual>
       <origin rpy="0 -0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_ankle_ie_link_small_foot.3ds"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_ankle_ie_link_small_foot.obj"/>
       </geometry>
       <material name="white"/>
     </visual>
