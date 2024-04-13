@@ -85,16 +85,16 @@ async def main():
     async with (FoxgloveServer("0.0.0.0", 8765, "example server",capabilities=["parameters", "parametersSubscribe"]) as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
         normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
-        norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]).add_chan(server)
+        norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
         steptest = await SceneChannel(True,"steptest", "json", "steptest", ["num_steps"]).add_chan(server)
 
         #create all of the visual scenes
         scenes = []
-        norm_listener = FoxgloveShapeListener(normS_chan_id,"arrows",["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"],[.1,.1,.1,.2],{"lfoot_cmd":[1,0,1,1],"rfoot_cmd":[1,0,1,1],"lfoot_filt":[1,0,1,1],"rfoot_filt":[1,0,1,1]})
+        norm_listener = FoxgloveShapeListener(normS_chan_id,"arrows",["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"],{"lfoot_rf_cmd":[.1,.1,.1,.2],"rfoot_rf_cmd":[.1,.1,.1,.2],"lfoot_rf_normal_filt":[.1,.1,.1,.2],"rfoot_rf_normal_filt":[.1,.1,.1,.2]},{"lfoot_rf_cmd":[1,0,1,1],"rfoot_rf_cmd":[1,0,1,1],"lfoot_rf_normal_filt":[1,0,1,1],"rfoot_rf_normal_filt":[1,0,1,1]})
         scenes.append(norm_listener)
-        icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], [.1,.1,.1], {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
+        icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], {"est_icp":[.1,.1,.1],"des_icp":[.1,.1,.1]}, {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
         scenes.append(icp_listener)
         scenes.append(step_listener)
         scenecount = len(scenes)-1
@@ -154,8 +154,8 @@ async def main():
 
             #send 2 pairs of l & r norm data as topics to foxglove
             await server.send_message(norm_chan_id, now, json.dumps(
-                {"lfoot_cmd": list(msg.lfoot_rf_cmd)[0], "rfoot_cmd": list(msg.rfoot_rf_cmd)[0],
-                 "lfoot_filt": msg.lfoot_rf_normal_filt, "rfoot_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
+                {"lfoot_rf_cmd": list(msg.lfoot_rf_cmd)[0], "rfoot_rf_cmd": list(msg.rfoot_rf_cmd)[0],
+                 "lfoot_rf_normal_filt": msg.lfoot_rf_normal_filt, "rfoot_rf_normal_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
 
             #send step data
             await server.send_message(steptest, now, json.dumps(
@@ -205,8 +205,19 @@ async def main():
                 transform.translation.y = list(getattr(msg, obj))[1]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
 
+            #for obj in ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]:
+                #transform.parent_frame_id = "world"
+                #transform.child_frame_id = obj
+                #transform.timestamp.FromNanoseconds(now)
+                #if(obj in ["lfoot_rf_cmd","rfoot_rf_cmd"]):
+                    #norm_listener.size[obj] = [list(getattr(msg, obj))[0],.1,.1,.2]
+                #else:
+                    #norm_listener.size[obj] = [2,.1,.1,.2]
+                #transform.translation.x = 2.5
+                #await server.send_message(tf_chan_id, now, transform.SerializeToString())
+
             count = 0
-            for obj in ["lfoot_cmd","rfoot_cmd","lfoot_filt","rfoot_filt"]:
+            for obj in ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]:
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
                 transform.timestamp.FromNanoseconds(now)

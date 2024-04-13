@@ -72,7 +72,7 @@ class FoxgloveShapeListener(FoxgloveServerListener):
                 entity.frame_locked = True
                 #shape_get = getattr(entity, self.shape)
                 #nodel = shape_get.add()
-                nodel = FormHandler(entity,self.shape,size)
+                nodel = FormHandler(entity,self.shape,size[x])
                 nodel.color.r = rgb[0]
                 nodel.color.g = rgb[1]
                 nodel.color.b = rgb[2]
