@@ -8,8 +8,6 @@ project(rpc)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS on)
 add_compile_options(-fPIC)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -25,6 +23,7 @@ set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 option(PYTHON_BINDING "use pybind11" ON)
 
 option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
+option(BUILD_WITH_MUJOCO "compile with mujoco" ON)
 option(BUILD_WITH_DART "compile with DART" OFF)
 
 option(BUILD_WITH_PROXQP "compile with ProxQP" OFF)
@@ -67,6 +66,15 @@ endif()
 if(BUILD_WITH_PINOCCHIO)
     find_package(pinocchio)
     include_directories(${pinocchio_INCLUDE_DIRS})
+endif()
+
+# Mujoco
+if(BUILD_WITH_MUJOCO)
+    find_package(Threads REQUIRED)
+    find_package(glfw3 REQUIRED)
+    find_library(mujoco_LIBRARIES mujoco HINTS mujoco/lib)
+    include_directories(${glfw3_INCLUDE_DIRS})
+    include_directories(mujoco/include)
 endif()
 
 # DART
@@ -117,6 +125,10 @@ add_subdirectory(planner)
 add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
+if(BUILD_WITH_MUJOCO)
+    add_subdirectory(mujoco)
+    add_subdirectory(simulator)
+endif()
 
 ##==================================================
 ## Configuration File
