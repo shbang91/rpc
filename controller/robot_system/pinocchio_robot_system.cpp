@@ -56,7 +56,10 @@ void PinocchioRobotSystem::_Initialize() {
     total_mass_ += model_.inertias[i].mass();
     std::string joint_name = model_.names[i];
     if (joint_name != "universe" && joint_name != "root_joint")
-      joint_idx_map_[i - 2] = joint_name; // joint map excluding fixed joint
+      if (b_fixed_base_)
+        joint_idx_map_[i - 1] = joint_name; // joint map excluding fixed joint
+      else
+        joint_idx_map_[i - 2] = joint_name; // joint map excluding fixed joint
   }
   assert(n_adof_ == joint_idx_map_.size());
 
@@ -291,7 +294,7 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
   std::cout << "Pinocchio robot info" << std::endl;
   std::cout << "=======================" << std::endl;
 
-  std::cout << "============ draco link ================" << std::endl;
+  std::cout << "============ link info ================" << std::endl;
   // for (pinocchio::FrameIndex i = 1;
   // i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
   // std::cout << "constexpr int " << model_.frames[i].name << " = "
@@ -301,7 +304,7 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
     std::cout << "constexpr int " << iter->second << " = " << iter->first << ";"
               << std::endl;
   }
-  std::cout << "============ draco joint ================" << std::endl;
+  std::cout << "============ joint info ================" << std::endl;
   // for (pinocchio::JointIndex i = 1;
   // i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
   // std::cout << "constexpr int " << model_.names[i] << " = "
@@ -313,13 +316,14 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
               << std::endl;
   }
 
-  std::cout << "============ draco ================" << std::endl;
+  std::cout << "============ robot ================" << std::endl;
   std::cout << "constexpr int n_qdot = " << qdot_.size() << ";" << std::endl;
   std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ << ";"
             << std::endl;
   exit(0);
 }
 
-void PinocchioRobotSystem::SetRobotComOffset(const Eigen::Vector3d &com_offset) {
+void PinocchioRobotSystem::SetRobotComOffset(
+    const Eigen::Vector3d &com_offset) {
   com_offset_ = com_offset;
 }

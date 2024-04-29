@@ -10,6 +10,9 @@ target_link_libraries(lmpc_handler_test rpc-lmpc-handler)
 add_executable(draco_interface_test rpc_interface.cpp)
 target_link_libraries(draco_interface_test rpc-draco-controller)
 
+add_executable(optimo_interface_test optimo_interface_test.cpp)
+target_link_libraries(optimo_interface_test rpc-optimo-controller)
+
 if(BUILD_WITH_MATLOGGER)
     add_executable(min_jerk_traj_test min_jerk_traj.cpp)
     target_link_libraries(min_jerk_traj_test matlogger2::matlogger2)
