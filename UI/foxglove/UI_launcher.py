@@ -1,18 +1,13 @@
 import os
-cwd = os.getcwd()
 import sys
+cwd = os.getcwd()
 sys.path.append(cwd)
-sys.path.append(cwd + "/build/lib")  #include pybind module
+sys.path.append(cwd + '/build')
 from config.draco.pybullet_simulation import *
 import zmq
-import sys
-import os
 import time
 import ruamel.yaml as yaml
 import numpy as np
-cwd = os.getcwd()
-sys.path.append(cwd + '/build')
-sys.path.append(cwd)
 from util.python_utils.util import rot_to_quat
 from messages.draco_pb2 import *
 from plot.data_saver import *
@@ -22,7 +17,6 @@ import argparse
 
 if Config.USE_FOXGLOVE:
     import webbrowser
-    from simulator.pybullet.draco_main import *
     import UI.foxglove.control_widgets as foxglove_ctrl
     from foxglove_websocket.types import Parameter
     import asyncio
@@ -30,7 +24,6 @@ if Config.USE_FOXGLOVE:
     # load parameters that can be controlled / changed
     param_store = foxglove_ctrl.load_params_store()
     step_listener = foxglove_ctrl.Listener(param_store)
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
@@ -56,6 +49,9 @@ elif args.visualizer == 'foxglove':
     # local tools to manage Foxglove scenes
     from plot.foxglove_utils import FoxgloveShapeListener, SceneChannel
 
+    scene_schema = b64encode(build_file_descriptor_set(SceneUpdate).SerializeToString()).decode("ascii")
+    frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToString()).decode("ascii")
+
 ##==========================================================================
 ##Socket initialize
 ##==========================================================================
@@ -76,9 +72,6 @@ def isMesh(geometry_object):
         return True
 
     return False
-
-scene_schema = b64encode(build_file_descriptor_set(SceneUpdate).SerializeToString()).decode("ascii")
-frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToString()).decode("ascii")
 
 
 async def main():
@@ -429,8 +422,6 @@ while True:
     #print("FLAG_MSG")
     # if publishing raw messages, floating base estimates names are not important
     if args.visualizer != 'none':
-        print("FLAG_VIS")
-
         check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
         if b_using_kf_estimator:
