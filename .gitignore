@@ -44,3 +44,8 @@ octave-workspace
 RLData
 *.json
 note.txt
+
+# IDE temp build files
+.idea/*
+cmake-build-debug/*
+.vscode/*
