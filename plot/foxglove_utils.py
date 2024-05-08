@@ -10,6 +10,37 @@ def SubtopicGen(names):
         subs[i] = {"type": "number"}
     return json.dumps({"type": "object","properties": subs})
 
+
+class ScalableArrowsScene:
+    def __init__(self):
+        self.arrows = {}
+
+    def add_arrow(self, name, color):
+        arrow_update = SceneUpdate()
+        arrow_entity = arrow_update.entities.add()
+        arrow_entity.id = name
+        arrow_entity.frame_id = name
+        arrow_model = arrow_entity.arrows.add()
+        arrow_model.color.r = color[0]
+        arrow_model.color.g = color[1]
+        arrow_model.color.b = color[2]
+        arrow_model.color.a = color[3]
+        arrow_model.shaft_diameter = .03
+        arrow_model.head_length = .1
+        arrow_model.head_diameter = .08
+        # update dictionary of arrows to visualize
+        self.arrows[name] = arrow_update
+
+    def update(self, name, force_direction, timestamp):
+        # update timestamp
+        self.arrows[name].entities[0].timestamp.FromNanoseconds(timestamp)
+
+        # update force scale
+        self.arrows[name].entities[0].arrows[0].shaft_length = force_direction[2]       # scale down
+
+    def serialized_msg(self, name):
+        return self.arrows[name].SerializeToString()
+
 class SceneChannel():
     def __init__(self, scdata, topic, encoding, schemaName, schema):
         self.data = scdata
@@ -40,11 +71,12 @@ def FormHandler(entity, shape, size):
         nodel.size.x = size[0]
         nodel.size.y = size[1]
         nodel.size.z = size[2]
-    if(shape == "arrows"):
-        nodel.shaft_length = size[0];
-        nodel.shaft_diameter = size[1];
-        nodel.head_length = size[2];
-        nodel.head_diameter = size[3];
+    # Currently, the arrows change length so are visualized differently
+    # if(shape == "arrows"):
+        # nodel.shaft_length = size[0]
+        # nodel.shaft_diameter = size[1]
+        # nodel.head_length = size[2]
+        # nodel.head_diameter = size[3]
     return nodel
 
 class FoxgloveShapeListener(FoxgloveServerListener):

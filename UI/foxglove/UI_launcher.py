@@ -1,5 +1,7 @@
 import os
 import sys
+
+
 cwd = os.getcwd()
 sys.path.append(cwd)
 sys.path.append(cwd + '/build')
@@ -14,6 +16,7 @@ from plot.data_saver import *
 import pinocchio as pin
 import json
 import argparse
+from scipy.spatial.transform import Rotation as R
 
 if Config.USE_FOXGLOVE:
     import webbrowser
@@ -47,7 +50,7 @@ elif args.visualizer == 'foxglove':
     from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
     from mcap_protobuf.schema import build_file_descriptor_set
     # local tools to manage Foxglove scenes
-    from plot.foxglove_utils import FoxgloveShapeListener, SceneChannel
+    from plot.foxglove_utils import FoxgloveShapeListener, SceneChannel, ScalableArrowsScene
 
     scene_schema = b64encode(build_file_descriptor_set(SceneUpdate).SerializeToString()).decode("ascii")
     frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToString()).decode("ascii")
@@ -90,6 +93,11 @@ async def main():
         icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], {"est_icp":[.1,.1,.1],"des_icp":[.1,.1,.1]}, {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
         scenes.append(icp_listener)
         scenes.append(step_listener)
+        arrows_scene = ScalableArrowsScene()
+        arrows_scene.add_arrow("lfoot_rf_cmd", [0, 0, 1, 0.5])                   # blue arrow
+        arrows_scene.add_arrow("rfoot_rf_cmd", [0, 0, 1, 0.5])                   # blue arrow
+        arrows_scene.add_arrow("lfoot_rf_normal_filt", [0.2, 0.2, 0.2, 0.5])     # grey arrow
+        arrows_scene.add_arrow("rfoot_rf_normal_filt", [0.2, 0.2, 0.2, 0.5])     # grey arrow
         scenecount = len(scenes)-1
 
         # Send the FrameTransform every frame to update the model's position
@@ -198,29 +206,38 @@ async def main():
                 transform.translation.y = list(getattr(msg, obj))[1]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
 
-            #for obj in ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]:
-                #transform.parent_frame_id = "world"
-                #transform.child_frame_id = obj
-                #transform.timestamp.FromNanoseconds(now)
-                #if(obj in ["lfoot_rf_cmd","rfoot_rf_cmd"]):
-                    #norm_listener.size[obj] = [list(getattr(msg, obj))[0],.1,.1,.2]
-                #else:
-                    #norm_listener.size[obj] = [2,.1,.1,.2]
-                #transform.translation.x = 2.5
-                #await server.send_message(tf_chan_id, now, transform.SerializeToString())
-
-            count = 0
-            for obj in ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]:
+            Ry = R.from_euler('y', -np.pi / 2).as_matrix()
+            # update GRF arrows
+            for obj in ["lfoot_rf_cmd", "rfoot_rf_cmd", "lfoot_rf_normal_filt", "rfoot_rf_normal_filt"]:
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
                 transform.timestamp.FromNanoseconds(now)
-                transform.translation.x = count
-                transform.translation.y = count
-                count = count + 0.5
+                # show aligned at the center of respective foot sole
+                if obj in ["lfoot_rf_cmd", "lfoot_rf_normal_filt"]:
+                    R_foot = R.from_quat(msg.lfoot_ori).as_matrix()
+                    transform.translation.x = msg.lfoot_pos[0]
+                    transform.translation.y = msg.lfoot_pos[1]
+                else:
+                    R_foot = R.from_quat(msg.rfoot_ori).as_matrix()
+                    transform.translation.x = msg.rfoot_pos[0]
+                    transform.translation.y = msg.rfoot_pos[1]
+
+                # rotate arrow since it points in +x direction
+                R_arrow = R_foot @ Ry
+                q_arrow = rot_to_quat(R_arrow)
+                transform.rotation.x = q_arrow[0]
+                transform.rotation.y = q_arrow[1]
+                transform.rotation.z = q_arrow[2]
+                transform.rotation.w = q_arrow[3]
+
+                if obj in ["lfoot_rf_cmd", "rfoot_rf_cmd"]:
+                    force_dir = np.array(list(getattr(msg, obj))[3:])
+                    force_dir /= 1200.        # scale down
+                    arrows_scene.update(obj, force_dir, now)
+                # else:
+                #     norm_listener.size_dict[obj] = [2,.1,.1,.2]
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
-
-
-
+                await server.send_message(normS_chan_id, now, arrows_scene.serialized_msg(obj))
 
 
 def check_if_kf_estimator(kf_pos, est_pos):
