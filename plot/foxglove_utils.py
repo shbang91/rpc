@@ -48,31 +48,31 @@ def FormHandler(entity, shape, size):
     return nodel
 
 class FoxgloveShapeListener(FoxgloveServerListener):
-    def __init__(self, scene_chanel_id, shape, name, size, color):
+    def __init__(self, scene_chanel_id, shape, msgs_list, size_dict, color_dict):
         self.scene_chan_id = scene_chanel_id
         self.shape = shape
-        self.name = name
-        self.size = size
-        self.color = color
+        self.msgs_list = msgs_list
+        self.size_dict = size_dict
+        self.color_dict = color_dict
 
     def on_subscribe(self, server, channel_id):
-        name = self.name
-        size = self.size
-        color = self.color
+        msgs_list = self.msgs_list
+        size_dict = self.size_dict
+        color_dict = self.color_dict
         scene_chan_id = self.scene_chan_id
         now = time.time_ns()
         if channel_id == scene_chan_id:
             scene_update = SceneUpdate()
-            for x in name:
-                rgb = color[x]
+            for msg in msgs_list:
+                rgb = color_dict[msg]
                 entity = scene_update.entities.add()
                 entity.timestamp.FromNanoseconds(now)
-                entity.id = x
-                entity.frame_id = x
+                entity.id = msg
+                entity.frame_id = msg
                 entity.frame_locked = True
                 #shape_get = getattr(entity, self.shape)
                 #nodel = shape_get.add()
-                nodel = FormHandler(entity,self.shape,size[x])
+                nodel = FormHandler(entity, self.shape, size_dict[msg])
                 nodel.color.r = rgb[0]
                 nodel.color.g = rgb[1]
                 nodel.color.b = rgb[2]
