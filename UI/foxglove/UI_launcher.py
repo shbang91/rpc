@@ -78,7 +78,7 @@ def isMesh(geometry_object):
 
 
 async def main():
-    async with (FoxgloveServer("0.0.0.0", 8765, "example server",capabilities=["parameters", "parametersSubscribe"]) as server):
+    async with (FoxgloveServer("0.0.0.0", 8765, "Visualization server",capabilities=["parameters", "parametersSubscribe"]) as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
         normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
@@ -113,16 +113,12 @@ async def main():
             #if the scene is the steplistener, we update the step parameter
             if(scenecount == (len(scenes)-1)): server.update_parameters([Parameter(name="n_steps", value=param_store["n_steps"], type=None)])
 
-
-
             if step_listener.has_been_modified():
-                  if step_listener.is_cmd_triggered('n_steps'):
+                if step_listener.is_cmd_triggered('n_steps'):
                     new_steps_num = step_listener.get_val('n_steps')
                     rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
                     step_listener.reset()
                     print("exec update frro")
-
-
 
             scenecount = scenecount-1
             if(scenecount == -1): scenecount = (len(scenes)-1)
