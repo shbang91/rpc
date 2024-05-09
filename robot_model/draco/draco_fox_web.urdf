@@ -226,7 +226,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_sake_gripper_link.obj"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/l_wrist_pitch_link.obj"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -426,7 +426,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_sake_gripper_link.obj"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_wrist_pitch_link.obj"/>
       </geometry>
       <material name="white"/>
     </visual>
@@ -885,7 +885,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_ankle_ie_link_small_foot.3ds"/>
+        <mesh filename="https://raw.githubusercontent.com/shbang91/rpc/feature/foxglove-ui/robot_model/draco/web_meshes/r_ankle_ie_link_small_foot.obj"/>
       </geometry>
       <material name="white"/>
     </visual>
