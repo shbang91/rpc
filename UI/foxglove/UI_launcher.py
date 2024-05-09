@@ -81,7 +81,10 @@ async def main():
     async with (FoxgloveServer("0.0.0.0", 8765, "Visualization server",capabilities=["parameters", "parametersSubscribe"]) as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
         normS_chan_id = await SceneChannel(False,"normal_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
-        norm_chan_id = await SceneChannel(True,"normal", "json", "normal", ["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
+        grfs_chan_id = await SceneChannel(True,"GRFs", "json", "normal", ["lfoot_rf_cmd_x", "rfoot_rf_cmd_x",
+                                                                            "lfoot_rf_cmd_y", "rfoot_rf_cmd_y",
+                                                                            "lfoot_rf_cmd_z", "rfoot_rf_cmd_z",
+                                                                            "lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
         steptest = await SceneChannel(True,"steptest", "json", "steptest", ["num_steps"]).add_chan(server)
@@ -151,8 +154,10 @@ async def main():
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
 
             #send 2 pairs of l & r norm data as topics to foxglove
-            await server.send_message(norm_chan_id, now, json.dumps(
-                {"lfoot_rf_cmd": list(msg.lfoot_rf_cmd)[5], "rfoot_rf_cmd": list(msg.rfoot_rf_cmd)[5],
+            await server.send_message(grfs_chan_id, now, json.dumps(
+                {"lfoot_rf_cmd_x": list(msg.lfoot_rf_cmd)[3], "rfoot_rf_cmd_x": list(msg.rfoot_rf_cmd)[3],
+                 "lfoot_rf_cmd_y": list(msg.lfoot_rf_cmd)[4], "rfoot_rf_cmd_y": list(msg.rfoot_rf_cmd)[4],
+                 "lfoot_rf_cmd_z": list(msg.lfoot_rf_cmd)[5], "rfoot_rf_cmd_z": list(msg.rfoot_rf_cmd)[5],
                  "lfoot_rf_normal_filt": msg.lfoot_rf_normal_filt, "rfoot_rf_normal_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
 
             #send step data
