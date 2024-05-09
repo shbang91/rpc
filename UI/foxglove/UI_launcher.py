@@ -88,7 +88,7 @@ async def main():
 
         #create all of the visual scenes
         scenes = []
-        norm_listener = FoxgloveShapeListener(normS_chan_id,"arrows",["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"],{"lfoot_rf_cmd":[.1,.1,.1,.2],"rfoot_rf_cmd":[.1,.1,.1,.2],"lfoot_rf_normal_filt":[.1,.1,.1,.2],"rfoot_rf_normal_filt":[.1,.1,.1,.2]},{"lfoot_rf_cmd":[1,0,1,1],"rfoot_rf_cmd":[1,0,1,1],"lfoot_rf_normal_filt":[1,0,1,1],"rfoot_rf_normal_filt":[1,0,1,1]})
+        norm_listener = FoxgloveShapeListener(normS_chan_id,"arrows",["lfoot_rf_cmd","rfoot_rf_cmd","lfoot_rf_normal_filt","rfoot_rf_normal_filt"],{"lfoot_rf_cmd":[1,.05,.05,.1],"rfoot_rf_cmd":[1,.05,.05,.1],"lfoot_rf_normal_filt":[.1,.1,.1,.2],"rfoot_rf_normal_filt":[.1,.1,.1,.2]},{"lfoot_rf_cmd":[1,0,1,1],"rfoot_rf_cmd":[1,0,1,1],"lfoot_rf_normal_filt":[1,0,1,1],"rfoot_rf_normal_filt":[1,0,1,1]})
         scenes.append(norm_listener)
         icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], {"est_icp":[.1,.1,.1],"des_icp":[.1,.1,.1]}, {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
         scenes.append(icp_listener)
@@ -106,6 +106,7 @@ async def main():
         print("foxglove websocket initiated")
 
         param_store = step_listener._param_store
+        r_foot,l_foot = [0,0,0],[0,0,0]
 
         while True:
             #cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
@@ -151,7 +152,7 @@ async def main():
 
             #send 2 pairs of l & r norm data as topics to foxglove
             await server.send_message(norm_chan_id, now, json.dumps(
-                {"lfoot_rf_cmd": list(msg.lfoot_rf_cmd)[0], "rfoot_rf_cmd": list(msg.rfoot_rf_cmd)[0],
+                {"lfoot_rf_cmd": list(msg.lfoot_rf_cmd)[5], "rfoot_rf_cmd": list(msg.rfoot_rf_cmd)[5],
                  "lfoot_rf_normal_filt": msg.lfoot_rf_normal_filt, "rfoot_rf_normal_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
 
             #send step data
@@ -180,6 +181,14 @@ async def main():
                 x = T[0][3]
                 y = T[1][3]
                 z = T[2][3]
+                if(visual.name == "l_ankle_ie_link_0"):
+                    l_foot[0] = x
+                    l_foot[1] = y
+                    l_foot[2] = z
+                if(visual.name == "r_ankle_ie_link_0"):
+                    r_foot[0] = x
+                    r_foot[1] = y
+                    r_foot[2] = z
                 transform.translation.x = x
                 transform.translation.y = y
                 transform.translation.z = z
@@ -499,7 +508,7 @@ while True:
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
             print("FLAG_FOXTRIG")
-            webbrowser.open('https://app.foxglove.dev/speedway/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
+            webbrowser.open('https://app.foxglove.dev/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
             y = threading.Thread(target=asyncio.run(main()), args=())
             y.start()
             #asyncio.run(main())
