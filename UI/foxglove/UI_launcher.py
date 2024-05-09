@@ -227,20 +227,43 @@ async def main():
                     transform.translation.x = msg.rfoot_pos[0]
                     transform.translation.y = msg.rfoot_pos[1]
 
-                # rotate arrow since it points in +x direction
-                R_arrow = R_foot @ Ry
-                q_arrow = rot_to_quat(R_arrow)
-                transform.rotation.x = q_arrow[0]
-                transform.rotation.y = q_arrow[1]
-                transform.rotation.z = q_arrow[2]
-                transform.rotation.w = q_arrow[3]
+                # rotate transform since arrow points in +x direction
+                q_cmd_arrow = rot_to_quat(Ry)
+                transform.rotation.x = q_cmd_arrow[0]
+                transform.rotation.y = q_cmd_arrow[1]
+                transform.rotation.z = q_cmd_arrow[2]
+                transform.rotation.w = q_cmd_arrow[3]
 
                 if obj in ["lfoot_rf_cmd", "rfoot_rf_cmd"]:
                     force_dir = np.array(list(getattr(msg, obj))[3:])
-                    force_dir /= 1200.        # scale down
-                    arrows_scene.update(obj, force_dir, now)
-                # else:
-                #     norm_listener.size_dict[obj] = [2,.1,.1,.2]
+                    force_norm = np.linalg.norm(force_dir)
+
+                    # compute axis and angle of rotation to align z with force direction
+                    force_dir /= force_norm
+                    rot_ang = np.arccos(force_dir.dot(np.array([0, 0, 1])))
+                    rot_ax = np.cross(force_dir, np.array([0, 0, 1]))
+                    rot_ax /= np.linalg.norm(rot_ax)
+                    ax_hat = np.array([[0, -rot_ax[2], rot_ax[1]],
+                                       [rot_ax[2], 0, -rot_ax[0]],
+                                       [-rot_ax[1], rot_ax[0], 0]])
+                    R_rot_force = np.eye(3) + np.sin(rot_ang) * ax_hat + (1 - np.cos(rot_ang)) * ax_hat @ ax_hat
+                    quat_force = rot_to_quat(R_rot_force)
+
+                    # force scale
+                    force_magnitude = force_norm / 1200.
+                else:
+                    force_magnitude = getattr(msg, obj)
+                    R_foot_arrow_up_local = R_foot @ Ry
+                    q_cmd_arrow = rot_to_quat(R_foot_arrow_up_local)
+                    transform.rotation.x = q_cmd_arrow[0]
+                    transform.rotation.y = q_cmd_arrow[1]
+                    transform.rotation.z = q_cmd_arrow[2]
+                    transform.rotation.w = q_cmd_arrow[3]
+                    quat_force = np.array([0, 0, 0, 1])     # we can only measure Fz for now
+
+                    # force scale
+                    force_magnitude = force_magnitude / 1200.
+                arrows_scene.update(obj, quat_force, force_magnitude, now)
                 await server.send_message(tf_chan_id, now, transform.SerializeToString())
                 await server.send_message(normS_chan_id, now, arrows_scene.serialized_msg(obj))
 

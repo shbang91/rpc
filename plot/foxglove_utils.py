@@ -31,12 +31,18 @@ class ScalableArrowsScene:
         # update dictionary of arrows to visualize
         self.arrows[name] = arrow_update
 
-    def update(self, name, force_direction, timestamp):
+    def update(self, name, quat_force, force_magnitude, timestamp):
         # update timestamp
         self.arrows[name].entities[0].timestamp.FromNanoseconds(timestamp)
 
+        # update force direction
+        self.arrows[name].entities[0].arrows[0].pose.orientation.x = quat_force[0]
+        self.arrows[name].entities[0].arrows[0].pose.orientation.y = quat_force[1]
+        self.arrows[name].entities[0].arrows[0].pose.orientation.z = quat_force[2]
+        self.arrows[name].entities[0].arrows[0].pose.orientation.w = quat_force[3]
+
         # update force scale
-        self.arrows[name].entities[0].arrows[0].shaft_length = force_direction[2]       # scale down
+        self.arrows[name].entities[0].arrows[0].shaft_length = force_magnitude       # scale down
 
     def serialized_msg(self, name):
         return self.arrows[name].SerializeToString()
