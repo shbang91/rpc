@@ -10,7 +10,7 @@ import zmq
 import time
 import ruamel.yaml as yaml
 import numpy as np
-from util.python_utils.util import rot_to_quat
+from util.python_utils.util import rot_to_quat, quat_to_rot
 from messages.draco_pb2 import *
 from plot.data_saver import *
 import pinocchio as pin
@@ -523,8 +523,10 @@ while True:
                                       msg.rfoot_ori, msg.rfoot_rf_cmd)
 
                 # add sensed normal force
-                lfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.lfoot_rf_normal_filt])
-                rfoot_rf_normal = np.array([0., 0., 0., 0., 0., msg.rfoot_rf_normal_filt])
+                l_force_local = quat_to_rot(msg.lfoot_ori) @ np.array([0., 0., msg.lfoot_rf_normal_filt])
+                r_force_local = quat_to_rot(msg.rfoot_ori) @ np.array([0., 0., msg.rfoot_rf_normal_filt])
+                lfoot_rf_normal = np.array([0., 0., 0., l_force_local[0], l_force_local[1], l_force_local[2]])
+                rfoot_rf_normal = np.array([0., 0., 0., r_force_local[0], r_force_local[1], r_force_local[2]])
                 vis_tools.grf_display(arrow_viz["grf_lf_normal"], msg.lfoot_pos,
                                       msg.lfoot_ori, lfoot_rf_normal)
                 vis_tools.grf_display(arrow_viz["grf_rf_normal"], msg.rfoot_pos,

@@ -1,0 +1,60 @@
+<?xml version="0.0" ?>
+<robot name="v_shaped_floor">
+  <link name="l_wedge">
+    <contact>
+      <lateral_friction value="1"/>
+    </contact>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="100."/>
+       <inertia ixx="1" ixy="0" ixz="-0.08" iyy="0.4" iyz="0" izz="1"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="v-shaped-surface.stl" scale="1 1 1"/>
+      </geometry>
+       <material name="brown">
+        <color rgba="0.396078431372549 0.21568627450980393 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+          <mesh filename="v-shaped-surface.stl" scale="1 1 1"/>
+      </geometry>
+    </collision>
+  </link>
+<!--  <link name="r_wedge">-->
+<!--    <contact>-->
+<!--      <lateral_friction value="1"/>-->
+<!--    </contact>-->
+<!--    <inertial>-->
+<!--      <origin rpy="0 0 -1.57079632679" xyz="0 0 0"/>-->
+<!--       <mass value="100."/>-->
+<!--       <inertia ixx="1" ixy="0" ixz="-0.08" iyy="0.4" iyz="0" izz="1"/>-->
+<!--    </inertial>-->
+<!--    <visual>-->
+<!--      <origin rpy="0 0 -1.57079632679 " xyz="0 0 0"/>-->
+<!--      <geometry>-->
+<!--        <mesh filename="v-shaped-surface.stl" scale="1 1 1"/>-->
+<!--      </geometry>-->
+<!--       <material name="blue">-->
+<!--        <color rgba="0 0 1 1"/>-->
+<!--      </material>-->
+<!--    </visual>-->
+<!--    <collision>-->
+<!--      <origin rpy="0 0 -1.57079632679 " xyz="0 0 0"/>-->
+<!--      <geometry>-->
+<!--          <mesh filename="v-shaped-surface.stl" scale="1 1 1"/>-->
+<!--      </geometry>-->
+<!--    </collision>-->
+<!--  </link>-->
+
+<!--  <joint name="mid_point" type="fixed">-->
+<!--      <origin rpy="0 0 0" xyz="0 0 0"/>-->
+<!--      <parent link="l_wedge"/>-->
+<!--      <child link="r_wedge"/>-->
+<!--  </joint>-->
+</robot>
+
