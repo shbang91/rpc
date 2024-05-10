@@ -4,12 +4,16 @@
 #include <memory>
 
 #include "controller/interface.hpp"
+#include "controller/optimo_controller/optimo_definition.hpp"
 
 class OptimoSensorData {
 public:
   OptimoSensorData() {
-    joint_pos_ = Eigen::VectorXd::Zero(7);
+    joint_pos_ =(Eigen::VectorXd::Zero(optimo::n_adof));
+    Eigen::VectorXd::Zero(7);
     joint_vel_ = Eigen::VectorXd::Zero(7);
+    joint_trq_ = Eigen::VectorXd::Zero(7); 
+    joint_spring_force_ = Eigen::VectorXd::Zero(7);
     base_joint_pos_ = Eigen::Vector3d::Zero();
     base_joint_quat_ = Eigen::Vector4d(0., 0., 0., 1.);
   }
@@ -17,7 +21,9 @@ public:
 
   Eigen::VectorXd joint_pos_;
   Eigen::VectorXd joint_vel_;
-
+  Eigen::VectorXd joint_trq_;
+  Eigen::VectorXd joint_spring_force_;
+  
   Eigen::Vector3d base_joint_pos_;
   Eigen::Vector4d base_joint_quat_;
 };

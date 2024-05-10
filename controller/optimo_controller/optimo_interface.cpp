@@ -13,7 +13,7 @@ OptimoInterface::OptimoInterface() : Interface() {
   util::ColorPrint(color::kBoldRed, border);
   util::PrettyConstructor(0, "OptimoInterface");
 
-  robot_ = new PinocchioRobotSystem(THIS_COM "robot_model/optimo/optimo.xacro",
+  robot_ = new PinocchioRobotSystem(THIS_COM "robot_model/optimo/optimo.urdf",
                                     THIS_COM "robot_model/optimo", true, false);
 }
 
