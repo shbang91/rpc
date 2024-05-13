@@ -12,5 +12,4 @@ public:
   void Process() override;
 private:
   DracoControlArchitecture *ctrl_arch_;
-  int new_steps_num_;
 };
