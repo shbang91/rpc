@@ -1,11 +1,9 @@
 import os
 import sys
 
-
 cwd = os.getcwd()
 sys.path.append(cwd)
 sys.path.append(cwd + '/build')
-from config.draco.pybullet_simulation import *
 import zmq
 import time
 import ruamel.yaml as yaml
@@ -18,16 +16,6 @@ import json
 import argparse
 from scipy.spatial.transform import Rotation as R
 
-if Config.USE_FOXGLOVE:
-    import webbrowser
-    import UI.foxglove.control_widgets as foxglove_ctrl
-    from foxglove_websocket.types import Parameter
-    import asyncio
-    import threading
-    # load parameters that can be controlled / changed
-    param_store = foxglove_ctrl.load_params_store()
-    step_listener = foxglove_ctrl.Listener(param_store)
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
 parser.add_argument("--visualizer", choices=['none', 'meshcat', 'foxglove'], default='none')
@@ -38,12 +26,13 @@ if args.visualizer == 'meshcat':
     import meshcat
     from plot import meshcat_utils as vis_tools
 elif args.visualizer == 'foxglove':
-    import asyncio
-    import math
-    import numpy
-    from base64 import b64encode
     # Foxglove dependencies
-    from foxglove_schemas_protobuf.SpherePrimitive_pb2 import SpherePrimitive
+    import webbrowser
+    import UI.foxglove.control_widgets as foxglove_ctrl
+    import asyncio
+    import threading
+    from base64 import b64encode
+    from foxglove_websocket.types import Parameter
     from foxglove_websocket import run_cancellable
     from foxglove_websocket.server import FoxgloveServer
     from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
@@ -51,6 +40,12 @@ elif args.visualizer == 'foxglove':
     from mcap_protobuf.schema import build_file_descriptor_set
     # local tools to manage Foxglove scenes
     from plot.foxglove_utils import FoxgloveShapeListener, SceneChannel, ScalableArrowsScene
+
+    # load parameters that can be controlled / changed and start Control Parameters server
+    param_store = foxglove_ctrl.load_params_store()
+    step_listener = foxglove_ctrl.Listener(param_store)
+    th_slow = threading.Thread(target=asyncio.run, args=([foxglove_ctrl.run(step_listener)]))
+    th_slow.start()
 
     scene_schema = b64encode(build_file_descriptor_set(SceneUpdate).SerializeToString()).decode("ascii")
     frame_schema = b64encode(build_file_descriptor_set(FrameTransform).SerializeToString()).decode("ascii")
@@ -87,7 +82,6 @@ async def main():
                                                                             "lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
-        steptest = await SceneChannel(True,"steptest", "json", "steptest", ["num_steps"]).add_chan(server)
 
         #create all of the visual scenes
         scenes = []
@@ -95,7 +89,6 @@ async def main():
         scenes.append(norm_listener)
         icp_listener = FoxgloveShapeListener(icpS_chan_id, "spheres", ["est_icp","des_icp"], {"est_icp":[.1,.1,.1],"des_icp":[.1,.1,.1]}, {"est_icp":[1,0,1,1],"des_icp":[0,1,0,1]})
         scenes.append(icp_listener)
-        scenes.append(step_listener)
         arrows_scene = ScalableArrowsScene()
         arrows_scene.add_arrow("lfoot_rf_cmd", [0, 0, 1, 0.5])                   # blue arrow
         arrows_scene.add_arrow("rfoot_rf_cmd", [0, 0, 1, 0.5])                   # blue arrow
@@ -107,22 +100,10 @@ async def main():
         transform = FrameTransform()
 
         print("foxglove websocket initiated")
-
-        param_store = step_listener._param_store
         r_foot,l_foot = [0,0,0],[0,0,0]
-
         while True:
             #cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
             server.set_listener(scenes[scenecount])
-            #if the scene is the steplistener, we update the step parameter
-            if(scenecount == (len(scenes)-1)): server.update_parameters([Parameter(name="n_steps", value=param_store["n_steps"], type=None)])
-
-            if step_listener.has_been_modified():
-                if step_listener.is_cmd_triggered('n_steps'):
-                    new_steps_num = step_listener.get_val('n_steps')
-                    rpc_draco_interface.interrupt_.PressStepNum(new_steps_num)
-                    step_listener.reset()
-                    print("exec update frro")
 
             scenecount = scenecount-1
             if(scenecount == -1): scenecount = (len(scenes)-1)
@@ -159,12 +140,6 @@ async def main():
                  "lfoot_rf_cmd_y": list(msg.lfoot_rf_cmd)[4], "rfoot_rf_cmd_y": list(msg.rfoot_rf_cmd)[4],
                  "lfoot_rf_cmd_z": list(msg.lfoot_rf_cmd)[5], "rfoot_rf_cmd_z": list(msg.rfoot_rf_cmd)[5],
                  "lfoot_rf_normal_filt": msg.lfoot_rf_normal_filt, "rfoot_rf_normal_filt": msg.rfoot_rf_normal_filt}).encode("utf8"))
-
-            #send step data
-            await server.send_message(steptest, now, json.dumps(
-                {"num_steps": 6}).encode("utf8"))
-            #print(steptest[0])
-
 
             # update mesh positions
             pp = "world"
@@ -539,8 +514,8 @@ while True:
         elif args.visualizer == 'foxglove':
             print("FLAG_FOXTRIG")
             webbrowser.open('https://app.foxglove.dev/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
-            y = threading.Thread(target=asyncio.run(main()), args=())
-            y.start()
+            th_fast = threading.Thread(target=asyncio.run(main()), args=())
+            th_fast.start()
             #asyncio.run(main())
 
     else:   # if 'none' specified

@@ -4,7 +4,7 @@ from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
 from foxglove_websocket.types import Parameter
 
 
-def load_params_store():
+def load_params_store() -> Dict[str, Any]:
     param_store: Dict[str, Any] = {
         "task_name": "com_xy_task",
         "weight": [1000., 1000.],
@@ -81,18 +81,27 @@ class Listener(FoxgloveServerListener):
 async def run(step_listener: Listener):
     async with FoxgloveServer(
             "0.0.0.0",
-            8765,
-            "example param server",
+            8766,
+            "Control param server",
             capabilities=["parameters", "parametersSubscribe"]) as server:
         param_store = step_listener._param_store
         server.set_listener(step_listener)
 
         while True:
+            # check every two seconds if the parameters have been modified
             await asyncio.sleep(2.0)
             await server.update_parameters(
                 [Parameter(name="n_steps", value=param_store["n_steps"], type=None)]
             )
 
+            if step_listener.has_been_modified():
+                print("Parameters have been modified")
+                print(f"Modified parameter: {step_listener.get_param_modified()}")
+                print(f"New value: {step_listener.get_val(step_listener.get_param_modified())}")
+                step_listener.reset()
+
+
+#TODO remove?
 def paramtest(server,step_listener, param_store):
     server.set_listener(step_listener)
 
