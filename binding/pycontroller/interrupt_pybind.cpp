@@ -14,6 +14,5 @@ PYBIND11_MODULE(interrupt_py, m) {
       .def("PressSix", &InterruptHandler::PressSix)
       .def("PressSeven", &InterruptHandler::PressSeven)
       .def("PressEight", &InterruptHandler::PressEight)
-      .def("PressNine", &InterruptHandler::PressNine)
-      .def("PressStepNum", &InterruptHandler::RefreshStepNum, py::arg("new_steps_num"));
+      .def("PressNine", &InterruptHandler::PressNine);
 }
