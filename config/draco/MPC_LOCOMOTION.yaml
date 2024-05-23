@@ -30,11 +30,11 @@ mpc_params:
     #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
 
     ####### without inertia
-    Qqq: [100, 100, 150, 200, 200, 5000] ## roll, pitch, yaw, x, y, z
-    Qvv: [10, 10, 15, 20, 20, 50] ## wx, wy, wz, xdot, ydot, zdot
-    Quu: [1e-1, 1e-1, 1e-4, 1e-3, 1e-3, 1e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
+    Qqq: [100, 100, 500, 200, 200, 5000] ## roll, pitch, yaw, x, y, z
+    Qvv: [10, 10, 30, 20, 20, 50] ## wx, wy, wz, xdot, ydot, zdot
+    Quu: [1e-1, 1e-1, 1e-1, 1e-3, 1e-3, 1e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
 
-    ####### with inertia
+    ####### with inertia (before)
     #Qqq: [3000, 3000, 5000, 100, 100, 100000] ## roll, pitch, yaw, x, y, z
     #Qvv: [300, 300, 500, 1, 1, 50000] ## wx, wy, wz, xdot, ydot, zdot
     #Quu: [1e-2, 1e-2, 5e-4, 1e-4, 1e-4, 5e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
@@ -42,6 +42,16 @@ mpc_params:
     Qqq_terminal: [10000, 10000, 15000, 20000, 20000, 500000]
     Qvv_terminal: [100, 100, 100, 100, 100, 5000]
     decay_rate: 0.98
+
+    ####### with inertia (After)
+    #Qqq: [1, 1, 20, 10, 10, 1000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [0.01, 0.01, 0.1, 0.1, 0.1, 10] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-2, 1e-2, 1e-7, 1e-5, 1e-5, 1e-10] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    #Qqq_terminal: [100, 100, 2000, 1000, 1000, 500000]
+    #Qvv_terminal: [1, 1, 10, 10, 10, 5000]
+    #decay_rate: 1.0
+
 
   nominal_inertia: [ 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
       -0.00292598, 0.885743, -0.00292598, 1.23588 ]
@@ -58,6 +68,7 @@ swing_foot:
   height: 0.10
   raibert_gain: 0.02
   high_speed_turning_gain: 1.0
+  landing_foot_offset: [0.0, 0.0, 0.0]
 
 gait:
   x_vel_cmd: 0.0 ## 0.5

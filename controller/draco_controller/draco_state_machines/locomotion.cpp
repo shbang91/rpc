@@ -21,32 +21,9 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
 
   sp_ = DracoStateProvider::GetStateProvider();
 
-  // TODO: check this wbc yaml
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_left_foot",
-                      W_force_rate_of_change_left_foot_);
-  util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_right_foot",
-                      W_force_rate_of_change_right_foot_);
-  util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_left_foot_in_contact_mpc",
-                      W_delta_rf_lfoot_);
-  util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact_mpc",
-                      W_delta_rf_rfoot_);
-  // mpc yaml
-  YAML::Node mpc_cfg =
-      YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
-
+  // mpc gait
+  gait_params_ = std::make_unique<GaitParams>();
   gait_command_ = std::make_shared<GaitCommand>();
-
-  x_vel_cmd_ = util::ReadParameter<double>(mpc_cfg["gait"], "x_vel_cmd");
-  y_vel_cmd_ = util::ReadParameter<double>(mpc_cfg["gait"], "y_vel_cmd");
-  yaw_rate_cmd_ = util::ReadParameter<double>(mpc_cfg["gait"], "yaw_rate_cmd");
-  // TODO: use this in convex mpc locomotion class
-  gait_number_ = util::ReadParameter<int>(mpc_cfg["gait"], "gait_number");
-  swing_height_ = util::ReadParameter<double>(mpc_cfg["swing_foot"], "height");
-  raibert_gain_ =
-      util::ReadParameter<double>(mpc_cfg["swing_foot"], "raibert_gain");
-  high_speed_turning_gain_ = util::ReadParameter<double>(
-      mpc_cfg["swing_foot"], "high_speed_turning_gain");
 }
 
 void Locomotion::FirstVisit() {
@@ -58,30 +35,30 @@ void Locomotion::FirstVisit() {
       << W_force_rate_of_change_left_foot_,
       W_force_rate_of_change_right_foot_;
 
+  // wbc reaction wrench tracking
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_ << W_delta_rf_lfoot_,
       W_delta_rf_rfoot_;
 
-  // TODO: initialize convexMPC
-  gait_command_->vel_xy_des[0] = x_vel_cmd_;
-  gait_command_->vel_xy_des[1] = y_vel_cmd_;
-  gait_command_->yaw_rate = yaw_rate_cmd_;
+  // initialize convexMPC
+  gait_command_->vel_xy_des[0] = gait_params_->x_vel_cmd_;
+  gait_command_->vel_xy_des[1] = gait_params_->y_vel_cmd_;
+  gait_command_->yaw_rate = gait_params_->yaw_rate_cmd_;
   // ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
   // sp_->des_body_height_);
   ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
                                                  sp_->des_com_height_);
-  ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_number_);
-  ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(swing_height_);
+  ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_params_->gait_number_);
+  ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(
+      gait_params_->swing_height_);
+  ctrl_arch_->convex_mpc_locomotion_->SetRaibertGain(
+      gait_params_->raibert_gain_);
+  ctrl_arch_->convex_mpc_locomotion_->SetHighSpeedTurningGain(
+      gait_params_->high_speed_turning_gain_);
+  ctrl_arch_->convex_mpc_locomotion_->SetFootLandingOffset(
+      gait_params_->landing_foot_offset_);
+  // TODO: check if this is true
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
       robot_->GetBaseToFootXYOffset());
-  ctrl_arch_->convex_mpc_locomotion_->SetRaibertGain(raibert_gain_);
-  ctrl_arch_->convex_mpc_locomotion_->SetHighSpeedTurningGain(
-      high_speed_turning_gain_);
-
-  // TODO: should be generated inside of convexmpclocomotion class
-  // lf_ori_quat_ = Eigen::Quaterniond(
-  // robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
-  // rf_ori_quat_ = Eigen::Quaterniond(
-  // robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
 }
 
 void Locomotion::OneStep() {
@@ -94,37 +71,44 @@ void Locomotion::OneStep() {
   // Gait command User Interrupt
   //=========================================================================
   if (b_increase_x_vel_) {
-    x_vel_cmd_ += 0.1;
-    mpc_interface->x_vel_cmd_ = x_vel_cmd_;
+    gait_params_->x_vel_cmd_ += 0.1;
+    mpc_interface->x_vel_cmd_ = gait_params_->x_vel_cmd_;
     std::cout << "-----------------------------------" << std::endl;
-    std::cout << "Desired X vel: " << x_vel_cmd_ << "m/s" << std::endl;
+    std::cout << "Desired X vel: " << mpc_interface->x_vel_cmd_ << "m/s"
+              << std::endl;
     std::cout << "-----------------------------------" << std::endl;
     b_increase_x_vel_ = false;
   }
   if (b_increase_y_vel_) {
-    y_vel_cmd_ += 0.1;
-    mpc_interface->y_vel_cmd_ = y_vel_cmd_;
+    gait_params_->y_vel_cmd_ += 0.1;
+    mpc_interface->y_vel_cmd_ = gait_params_->y_vel_cmd_;
     std::cout << "-----------------------------------" << std::endl;
-    std::cout << "Desired Y vel: " << y_vel_cmd_ << "m/s" << std::endl;
+    std::cout << "Desired Y vel: " << mpc_interface->y_vel_cmd_ << "m/s"
+              << std::endl;
     std::cout << "-----------------------------------" << std::endl;
     b_increase_y_vel_ = false;
   }
   if (b_increase_yaw_vel_) {
-    yaw_rate_cmd_ += 0.1;
-    mpc_interface->yaw_rate_cmd_ = yaw_rate_cmd_;
+    gait_params_->yaw_rate_cmd_ += 0.1;
+    mpc_interface->yaw_rate_cmd_ = gait_params_->yaw_rate_cmd_;
     std::cout << "-----------------------------------" << std::endl;
-    std::cout << "Desired Yaw vel: " << yaw_rate_cmd_ << "rad/s" << std::endl;
+    std::cout << "Desired Yaw vel: " << mpc_interface->yaw_rate_cmd_ << "rad/s"
+              << std::endl;
     std::cout << "-----------------------------------" << std::endl;
     b_increase_yaw_vel_ = false;
   }
   if (b_decrease_yaw_vel_) {
-    yaw_rate_cmd_ -= 0.1;
-    mpc_interface->yaw_rate_cmd_ = yaw_rate_cmd_;
+    gait_params_->yaw_rate_cmd_ -= 0.1;
+    mpc_interface->yaw_rate_cmd_ = gait_params_->yaw_rate_cmd_;
     std::cout << "-----------------------------------" << std::endl;
-    std::cout << "Desired Yaw vel: " << yaw_rate_cmd_ << "rad/s" << std::endl;
+    std::cout << "Desired Yaw vel: " << mpc_interface->yaw_rate_cmd_ << "rad/s"
+              << std::endl;
     std::cout << "-----------------------------------" << std::endl;
     b_decrease_yaw_vel_ = false;
   }
+
+  // set WBO & WBO ang vel
+  mpc_interface->UpdateWBO(sp_->wbo_ypr_, sp_->wbo_ang_vel_);
 
   // solve convexMPC
   mpc_interface->Solve();
@@ -142,32 +126,32 @@ void Locomotion::OneStep() {
   // mpc_interface->contact_state_.transpose()
   //<< std::endl;
 
-  // TODO:update contact state for controller
-  for (int leg = 0; leg < 2; leg++) {
-    if (mpc_interface->contact_state_[leg] > 0.0) // in contact
+  // update foot task & contact for WBC
+  for (int foot = 0; foot < foot_side::NumFoot; foot++) {
+    if (mpc_interface->contact_state_[foot] > 0.0) // in contact
     {
-      if (leg == 0) {
-        // contact
+      if (foot == foot_side::LFoot) {
+        // contact(timing based contact switch)
         contact_vector.push_back(contact_map["lf_contact"]);
-        sp_->b_lf_contact_ =
-            true; // TODO(change this):timing based contact switch
+        sp_->b_lf_contact_ = true;
         tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_lf_wrench_);
-        tci_container->contact_map_["lf_contact"]->SetMaxFz(600.0);
+        tci_container->contact_map_["lf_contact"]->SetMaxFz(
+            ctrl_arch_->mpc_params_->fz_max_);
 
         // task
         // task_vector.push_back(task_map["lf_pos_task"]);
         // task_vector.push_back(task_map["lf_ori_task"]);
         // lf_ori_quat_ = Eigen::Quaterniond(
         // robot_->GetLinkIsometry(draco_link::l_foot_contact).linear());
-      } else {
-        // contact
+      } else if (foot == foot_side::RFoot) {
+        // contact(timing based contact switch)
         contact_vector.push_back(contact_map["rf_contact"]);
-        sp_->b_rf_contact_ =
-            true; // TODO(change this):timing based contact switch
+        sp_->b_rf_contact_ = true;
         tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_rf_wrench_);
-        tci_container->contact_map_["rf_contact"]->SetMaxFz(600.0);
+        tci_container->contact_map_["rf_contact"]->SetMaxFz(
+            ctrl_arch_->mpc_params_->fz_max_);
         // task
         // task_vector.push_back(task_map["rf_pos_task"]);
         // task_vector.push_back(task_map["rf_ori_task"]);
@@ -176,51 +160,39 @@ void Locomotion::OneStep() {
       }
     } else {
       // in swing
-      if (leg == 0) {
-
-        task_vector.push_back(task_map["lf_pos_task"]);
-        tci_container->task_map_["lf_pos_task"]->UpdateDesired(
-            mpc_interface->des_foot_pos_[leg],
-            mpc_interface->des_foot_vel_[leg],
-            mpc_interface->des_foot_acc_[leg]);
-        task_vector.push_back(task_map["lf_ori_task"]);
-        tci_container->task_map_["lf_ori_task"]->UpdateDesired(
-            mpc_interface->des_foot_ori_[leg].coeffs(),
-            mpc_interface->des_foot_ang_vel_[leg],
-            mpc_interface->des_foot_ang_acc_[leg]);
-
+      if (foot == foot_side::LFoot) {
         // contact
         tci_container->contact_map_["lf_contact"]->SetMaxFz(0.01);
         tci_container->force_task_map_["lf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_lf_wrench_);
-      } else {
-
-        task_vector.push_back(task_map["rf_pos_task"]);
-        tci_container->task_map_["rf_pos_task"]->UpdateDesired(
-            mpc_interface->des_foot_pos_[leg],
-            mpc_interface->des_foot_vel_[leg],
-            mpc_interface->des_foot_acc_[leg]);
-        task_vector.push_back(task_map["rf_ori_task"]);
-        tci_container->task_map_["rf_ori_task"]->UpdateDesired(
-            mpc_interface->des_foot_ori_[leg].coeffs(),
-            mpc_interface->des_foot_ang_vel_[leg],
-            mpc_interface->des_foot_ang_acc_[leg]);
-
+        // task
+        tci_container->task_map_["lf_pos_task"]->UpdateDesired(
+            mpc_interface->des_foot_pos_[foot],
+            mpc_interface->des_foot_vel_[foot],
+            mpc_interface->des_foot_acc_[foot]);
+        tci_container->task_map_["lf_ori_task"]->UpdateDesired(
+            mpc_interface->des_foot_ori_[foot].coeffs(),
+            mpc_interface->des_foot_ang_vel_[foot],
+            mpc_interface->des_foot_ang_acc_[foot]);
+      } else if (foot == foot_side::RFoot) {
+        // contact
         tci_container->contact_map_["rf_contact"]->SetMaxFz(0.01);
         tci_container->force_task_map_["rf_force_task"]->UpdateDesiredToLocal(
             mpc_interface->des_rf_wrench_);
+        // task
+        tci_container->task_map_["rf_pos_task"]->UpdateDesired(
+            mpc_interface->des_foot_pos_[foot],
+            mpc_interface->des_foot_vel_[foot],
+            mpc_interface->des_foot_acc_[foot]);
+        tci_container->task_map_["rf_ori_task"]->UpdateDesired(
+            mpc_interface->des_foot_ori_[foot].coeffs(),
+            mpc_interface->des_foot_ang_vel_[foot],
+            mpc_interface->des_foot_ang_acc_[foot]);
       }
     }
   }
 
-  task_vector.push_back(task_map["com_z_task"]);
-  task_vector.push_back(task_map["com_xy_task"]);
-  // task_vector.push_back(task_map["wbo_task"]);
-  task_vector.push_back(task_map["torso_ori_task"]);
-  task_vector.push_back(task_map["upper_body_task"]); // des task set up outside
-
-  // update desired task
-  // centroidal task
+  // update centroidal task
   Eigen::Vector3d zero_vec = Eigen::Vector3d::Zero();
   tci_container->task_map_["com_z_task"]->UpdateDesired(
       mpc_interface->des_body_pos_.tail<1>(),
@@ -239,22 +211,50 @@ void Locomotion::OneStep() {
       des_body_quat_vec, mpc_interface->des_body_ang_vel_,
       Eigen::Vector3d::Zero());
 
+  // WBC task hierarchy
+  if (mpc_interface->swing_state_[foot_side::LFoot] > 0) {
+    task_vector.push_back(task_map["lf_pos_task"]);
+    task_vector.push_back(task_map["lf_ori_task"]);
+  }
+  if (mpc_interface->swing_state_[foot_side::RFoot] > 0) {
+    task_vector.push_back(task_map["rf_pos_task"]);
+    task_vector.push_back(task_map["rf_ori_task"]);
+  }
+  task_vector.push_back(task_map["com_z_task"]);
+  task_vector.push_back(task_map["com_xy_task"]);
+  task_vector.push_back(task_map["torso_ori_task"]);
+  // task_vector.push_back(task_map["wbo_task"]);
+  task_vector.push_back(task_map["upper_body_task"]);
+
 #if B_USE_ZMQ
-  // for meshcat visualization
+  // for meshcat visualization (only visualize desired base & foot trajectories
+  // for computing variable inertia calculation)
+  // TODO: visualize chaning target footstep location
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
     DracoDataManager *dm = DracoDataManager::GetDataManager();
 
     dm->data_->des_com_traj.clear();
     dm->data_->des_torso_ori_traj.clear();
+    dm->data_->des_com_traj.reserve(mpc_interface->des_state_traj_.size());
+    dm->data_->des_torso_ori_traj.reserve(
+        mpc_interface->des_state_traj_.size());
     for (const auto &des_state : mpc_interface->des_state_traj_) {
       dm->data_->des_com_traj.push_back(des_state.segment<3>(3));
       dm->data_->des_torso_ori_traj.push_back(des_state.segment<3>(0));
     }
 
     dm->data_->des_lf_pos_traj.clear();
+    dm->data_->des_lf_pos_traj.reserve(
+        mpc_interface->des_foot_pos_traj_[0].size());
     dm->data_->des_rf_pos_traj.clear();
+    dm->data_->des_rf_pos_traj.reserve(
+        mpc_interface->des_foot_pos_traj_[1].size());
     dm->data_->des_lf_ori_traj.clear();
+    dm->data_->des_lf_ori_traj.reserve(
+        mpc_interface->des_foot_ori_traj_[0].size());
     dm->data_->des_rf_ori_traj.clear();
+    dm->data_->des_rf_ori_traj.reserve(
+        mpc_interface->des_foot_ori_traj_[1].size());
     for (const auto &lf_pos : mpc_interface->des_foot_pos_traj_[0])
       dm->data_->des_lf_pos_traj.push_back(lf_pos);
     for (const auto &rf_pos : mpc_interface->des_foot_pos_traj_[1])
@@ -275,8 +275,35 @@ StateId Locomotion::GetNextState() {}
 
 void Locomotion::SetParameters(const YAML::Node &node) {
   try {
-    // util::ReadParameter(node, "amplitude", amp_);
-    // util::ReadParameter(node, "frequency", freq_);
+    // wbc params setting
+    util::ReadParameter(node["wbc"]["qp"], "W_force_rate_of_change_left_foot",
+                        W_force_rate_of_change_left_foot_);
+    util::ReadParameter(node["wbc"]["qp"], "W_force_rate_of_change_right_foot",
+                        W_force_rate_of_change_right_foot_);
+    util::ReadParameter(node["wbc"]["qp"],
+                        "W_delta_rf_left_foot_in_contact_mpc",
+                        W_delta_rf_lfoot_);
+    util::ReadParameter(node["wbc"]["qp"],
+                        "W_delta_rf_right_foot_in_contact_mpc",
+                        W_delta_rf_rfoot_);
+    YAML::Node mpc_cfg =
+        YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
+    gait_params_->x_vel_cmd_ =
+        util::ReadParameter<double>(mpc_cfg["gait"], "x_vel_cmd");
+    gait_params_->y_vel_cmd_ =
+        util::ReadParameter<double>(mpc_cfg["gait"], "y_vel_cmd");
+    gait_params_->yaw_rate_cmd_ =
+        util::ReadParameter<double>(mpc_cfg["gait"], "yaw_rate_cmd");
+    gait_params_->gait_number_ =
+        util::ReadParameter<int>(mpc_cfg["gait"], "gait_number");
+    gait_params_->swing_height_ =
+        util::ReadParameter<double>(mpc_cfg["swing_foot"], "height");
+    gait_params_->raibert_gain_ =
+        util::ReadParameter<double>(mpc_cfg["swing_foot"], "raibert_gain");
+    gait_params_->high_speed_turning_gain_ = util::ReadParameter<double>(
+        mpc_cfg["swing_foot"], "high_speed_turning_gain");
+    gait_params_->landing_foot_offset_ = util::ReadParameter<Eigen::Vector3d>(
+        mpc_cfg["swing_foot"], "landing_foot_offset");
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [ " << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

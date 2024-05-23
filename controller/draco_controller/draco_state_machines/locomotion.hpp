@@ -4,6 +4,7 @@
 class PinocchioRobotSystem;
 class DracoControlArchitecture;
 class DracoStateProvider;
+class GaitParams;
 class GaitCommand;
 
 class Locomotion : public StateMachine {
@@ -31,21 +32,13 @@ private:
   DracoControlArchitecture *ctrl_arch_;
   DracoStateProvider *sp_;
 
-  // TODO: clean up this (no necessary)
+  // gait
   std::shared_ptr<GaitCommand> gait_command_;
-  double x_vel_cmd_, y_vel_cmd_, yaw_rate_cmd_;
-  int gait_number_;
-  double swing_height_;
-  double raibert_gain_;
-  double high_speed_turning_gain_;
+  std::unique_ptr<GaitParams> gait_params_;
 
-  // QP params yaml
+  // WBC QP params yaml
   Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd W_force_rate_of_change_right_foot_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd W_delta_rf_lfoot_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd W_delta_rf_rfoot_ = Eigen::VectorXd::Zero(6);
-
-  // TODO remove this later
-  Eigen::Quaterniond lf_ori_quat_ = Eigen::Quaterniond::Identity();
-  Eigen::Quaterniond rf_ori_quat_ = Eigen::Quaterniond::Identity();
 };
