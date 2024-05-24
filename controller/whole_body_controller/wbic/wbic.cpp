@@ -72,6 +72,7 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
   Eigen::MatrixXd Jt, JtPre, JtPre_dyn, JtPre_pinv, JtPre_bar, N_nx, N_nx_dyn;
 
   // qddot_0_cmd for contact constraints
+  // TODO: xc_ddot_des = pd controller instead of using current
   qddot_cmd = JcNi_bar * (-JcDotQdot);
 
   // std::cout << "======================================================="

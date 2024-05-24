@@ -262,7 +262,7 @@ wbc:
     ########################################################################
     ## sim params
     ########################################################################
-    sim_max_rf_z: 400.
+    sim_max_rf_z: 600.
 
     sim_mu: 0.3
     sim_foot_half_length: 0.08
@@ -408,7 +408,7 @@ dcm_walking:
   #alpha_ds: 0.5
 
   nominal_footwidth: 0.2025
-  nominal_forward_step: 0.4
+  nominal_forward_step: 0.3
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.05

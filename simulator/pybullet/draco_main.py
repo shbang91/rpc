@@ -616,6 +616,7 @@ if __name__ == "__main__":
     count = 0
     jpg_count = 0
 
+
     ## simulation options
     if Config.MEASURE_COMPUTATION_TIME:
         timer = TicToc()
@@ -630,6 +631,8 @@ if __name__ == "__main__":
     previous_torso_velocity = np.array([0., 0., 0.])
 
     rate = RateLimiter(frequency=1. / dt)
+
+    perturb = pb.addUserDebugParameter("External Force", -1000, 1000, 0)
     while (True):
 
         ###############################################################################
@@ -703,6 +706,12 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressZ()
         elif pybullet_util.is_key_triggered(keys, 'd'):
             rpc_draco_interface.interrupt_.PressD()
+        elif pybullet_util.is_key_triggered(keys, 'p'):
+            pos = [0.0, 0.0, 0.0]
+            force = [ 0.0, pb.readUserDebugParameter(perturb), 0.0]
+            pb.applyExternalForce(draco_humanoid, DracoLinkIdx.torso_com_link, force, pos,
+                                  pb.WORLD_FRAME)
+            print(f"=================force: {force}=================")
 
         #get sensor data
         imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(

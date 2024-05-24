@@ -51,12 +51,12 @@ public:
   QPParamsManager *qp_pm_;
   ConvexMPCLocomotion *convex_mpc_locomotion_;
   CompositeRigidBodyInertia *draco_crbi_model_;
+  MPCParams *mpc_params_;
 
 private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
-  MPCParams *mpc_params_;
 
   void _InitializeParameters() override;
 };

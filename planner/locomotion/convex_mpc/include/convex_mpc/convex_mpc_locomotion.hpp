@@ -38,15 +38,24 @@ SOFTWARE.
 #include <matlogger2/utils/mat_appender.h>
 #endif
 
-/**
- * Input: Gait schedule, Gait command
- * Output: Locomotion policy (footstep, reaction wrench, centroidal states)
- */
+/*****************************************************************************
+ * Input
+ * - Gait schedule
+ * - Gait command (v_x, v_y, w_z)
+ * Output: Locomotion policy
+ * - Footstep
+ * - Reaction Wrench
+ * - Centroidal States
+ *****************************************************************************/
 
 class PinocchioRobotSystem;
 class CompositeRigidBodyInertia;
 
-class DracoStateProvider;
+namespace foot_side {
+constexpr int LFoot = 0;
+constexpr int RFoot = 1;
+constexpr int NumFoot = 2;
+} // namespace foot_side
 
 struct MPCParams {
 public:
@@ -74,14 +83,31 @@ public:
   double foot_half_width_;
 };
 
+struct GaitParams {
+public:
+  GaitParams() = default;
+  ~GaitParams() = default;
+
+  // high level commands
+  int gait_number_;
+  double x_vel_cmd_;
+  double y_vel_cmd_;
+  double yaw_rate_cmd_;
+
+  // swing foot
+  double swing_height_;
+  double raibert_gain_;
+  double high_speed_turning_gain_;
+  Eigen::Vector3d landing_foot_offset_;
+};
+
 class ConvexMPCLocomotion {
 public:
   ConvexMPCLocomotion(const double dt, const int iterations_btw_mpc,
                       PinocchioRobotSystem *robot,
                       bool b_save_mpc_solution = false,
                       MPCParams *mpc_params = nullptr,
-                      CompositeRigidBodyInertia *crbi = nullptr,
-                      void *state_provider = nullptr);
+                      CompositeRigidBodyInertia *crbi = nullptr);
   ConvexMPCLocomotion() = default;
   ~ConvexMPCLocomotion() = default;
 
@@ -101,6 +127,16 @@ public:
   void SetHighSpeedTurningGain(const double high_speed_turning_gain) {
     high_speed_turning_gain_ = high_speed_turning_gain;
   }
+  void SetFootLandingOffset(const Eigen::Vector3d &landing_foot_offset) {
+    landing_foot_offset_ = landing_foot_offset;
+  }
+
+  // update robot specific WBO & WBO ang vel outside
+  void UpdateWBO(const Eigen::Vector3d &wbo_ypr,
+                 const Eigen::Vector3d &wbo_ang_vel) {
+    wbo_ypr_ = wbo_ypr;
+    wbo_ang_vel_ = wbo_ang_vel;
+  }
 
   // MPC desired state trajectory
   aligned_vector<Vector12d> des_state_traj_;
@@ -109,13 +145,13 @@ public:
 
   // WBC task variables
   // from Raibert Heuristics
-  Eigen::Vector3d des_foot_pos_[2]; // left, right order
-  Eigen::Vector3d des_foot_vel_[2];
-  Eigen::Vector3d des_foot_acc_[2];
+  Eigen::Vector3d des_foot_pos_[foot_side::NumFoot]; // left, right order
+  Eigen::Vector3d des_foot_vel_[foot_side::NumFoot];
+  Eigen::Vector3d des_foot_acc_[foot_side::NumFoot];
 
-  Eigen::Quaterniond des_foot_ori_[2];
-  Eigen::Vector3d des_foot_ang_vel_[2];
-  Eigen::Vector3d des_foot_ang_acc_[2];
+  Eigen::Quaterniond des_foot_ori_[foot_side::NumFoot];
+  Eigen::Vector3d des_foot_ang_vel_[foot_side::NumFoot];
+  Eigen::Vector3d des_foot_ang_acc_[foot_side::NumFoot];
 
   // from desired state commands
   Eigen::Vector3d des_body_pos_;
@@ -135,6 +171,7 @@ public:
   // contact variable
   // from gait scheduler
   Eigen::Vector2d contact_state_;
+  Eigen::Vector2d swing_state_;
 
   double x_vel_cmd_; // from yaml
   double y_vel_cmd_; // from yaml
@@ -151,7 +188,7 @@ private:
   double dt_mpc_;
 
   void _InitializeConvexMPC(MPCParams *mpc_params);
-  void _InitializeConvexMPC();
+  void _InitializeConvexMPC(); // TODO: to be deprecated
   void _SolveConvexMPC(int *contact_schedule_table);
 
   std::shared_ptr<CostFunction> cost_function_;
@@ -181,6 +218,9 @@ private:
   Eigen::Vector3d rpy_int_;
   Eigen::Vector3d rpy_comp_;
 
+  Eigen::Vector3d wbo_ypr_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d wbo_ang_vel_ = Eigen::Vector3d::Zero();
+
   int gait_number_;
   int current_gait_number_ = gait::kStand;
 
@@ -192,31 +232,35 @@ private:
   Eigen::Vector3d des_base_com_pos_in_world_;
 
   // reference trajectory generation
-  Eigen::Vector3d des_body_vel_in_body_;
+  Eigen::Vector3d des_com_vel_in_body_;
 
   // desired body states for WBC update
-  Eigen::Vector3d des_body_pos_in_world_;
-  Eigen::Vector3d des_body_vel_in_world_;
+  Eigen::Vector3d des_com_pos_in_world_;
+  Eigen::Vector3d des_com_vel_in_world_;
   double des_body_height_;
 
   // swing foot
-  bool b_first_swing_[2];
+  bool b_first_swing_[foot_side::NumFoot];
   double swing_height_;
   double raibert_gain_;
   double high_speed_turning_gain_;
+  Eigen::Vector3d landing_foot_offset_;
   aligned_vector<Vector3d> foot_pos_;           // lfoot, rfoot order
   aligned_vector<Matrix3d> foot_ori_;           // lfoot, rfoot order
   aligned_vector<Vector3d> base_to_hip_offset_; // lfoot, rfoot order
-  CubicBeizerTrajectoryManager<double> foot_swing_trajectory_[2];
-  HermiteQuaternionCurve2 foot_swing_ori_trajectory_[2];
-  double swing_time_[2];
-  double swing_time_remaining_[2];
+  CubicBeizerTrajectoryManager<double>
+      foot_swing_pos_trajectory_[foot_side::NumFoot];
+  HermiteQuaternionCurve2 foot_swing_ori_trajectory_[foot_side::NumFoot];
+  double swing_time_[foot_side::NumFoot];
+  double swing_time_remaining_[foot_side::NumFoot];
   Eigen::Vector2d swing_states_;
   Eigen::Vector2d contact_states_;
 
   // for inertia traj
-  CubicBeizerTrajectoryManager<double> foot_swing_trajectory_for_inertia_[2];
-  HermiteQuaternionCurve2 foot_swing_ori_trajectory_for_inertia_[2];
+  CubicBeizerTrajectoryManager<double>
+      foot_swing_pos_trajectory_for_inertia_[foot_side::NumFoot];
+  HermiteQuaternionCurve2
+      foot_swing_ori_trajectory_for_inertia_[foot_side::NumFoot];
 
   // clock
   Clock clock_;
@@ -224,17 +268,6 @@ private:
   // composite rigid body inertia
   CompositeRigidBodyInertia *crbi_;
 
-  // draco state provider
-  DracoStateProvider *sp_;
-
-  // utility function to avoid yaw wrap
-  double NormalizeYaw(double yaw) {
-    double twoPi = 2.0 * M_PI;
-    return fmod(fmod(yaw, twoPi) + twoPi, twoPi);
-  };
-
-  // TEST
-  Eigen::Matrix3d I_global_ = Eigen::Matrix3d::Identity();
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
   XBot::MatAppender::Ptr appender_;

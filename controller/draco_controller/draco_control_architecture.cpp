@@ -106,7 +106,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   convex_mpc_locomotion_ = new ConvexMPCLocomotion(
       sp_->servo_dt_, iterations_between_mpc, robot_, b_save_mpc_solution,
-      mpc_params_, draco_crbi_model_, sp_);
+      mpc_params_, draco_crbi_model_);
 
   //=============================================================
   // trajectory Managers
@@ -261,6 +261,7 @@ void DracoControlArchitecture::_InitializeParameters() {
       ->SetParameters(cfg_);
   state_machine_container_[draco_states::kRFContactTransitionEnd]
       ->SetParameters(cfg_);
+  state_machine_container_[draco_states::kLocomotion]->SetParameters(cfg_);
 
   // dcm planner params initialization
   dcm_tm_->InitializeParameters(cfg_["dcm_walking"]);

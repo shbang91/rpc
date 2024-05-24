@@ -193,47 +193,47 @@ linkaxes(ax,'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% MPC Reference trajectory
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% num_fig = num_fig + 1;
-% figure(num_fig)
-% % Example number of time steps
-% [row, col] = size(des_base_pos);
-% n = col;
-% % 
-% % plot3(des_base_pos(1,:), des_base_pos(2,:), des_base_pos(3,:), 'k-', 'LineWidth',2);
-% % hold on
-% % 
-% % plot3(des_lf_pos(1,:), des_lf_pos(2,:), des_lf_pos(3,:), 'r-', 'LineWidth',2);
-% % plot3(des_rf_pos(1,:), des_rf_pos(2,:), des_rf_pos(3,:), 'b-', 'LineWidth',2);
+num_fig = num_fig + 1;
+figure(num_fig)
+% Example number of time steps
+[row, col] = size(des_base_pos);
+n = col;
 % 
+% plot3(des_base_pos(1,:), des_base_pos(2,:), des_base_pos(3,:), 'k-', 'LineWidth',2);
+% hold on
 % 
-% % Define colors for plotting - this could be a predefined list or generated dynamically
-% colors = lines(ceil(n/10)); % 'jet' generates a colormap, which we use to get a variety of colors
-% 
-% % Loop through each segment of 10 steps
-% for i = 1:10:n-1
-%     % Determine the end of the current segment
-%     endIndex = min(i+9, n);
-%     
-%     % Extract the current segment of the trajectory
-%     segmentX = des_rf_pos(1, i:endIndex);
-%     segmentY = des_rf_pos(2, i:endIndex);
-%     segmentZ = des_rf_pos(3, i:endIndex);
-% 
-%     segmentBaseX = des_base_pos(1, i:endIndex);
-%     
-%     % Determining the color index
-%     colorIndex = ceil(i/10);
-%     if colorIndex > size(colors, 1)
-%         colorIndex = mode(colorIndex, size(colors, 1)) + 1;
-%     end
-% 
-%     plot(i:endIndex,segmentY, '-', 'LineWidth', 2, 'Color', colors(colorIndex, :));
-%     % Plot the current segment
-%     % Use mod or another strategy to cycle through colors if there are more segments than colors
-% %     plot3(segmentX, segmentY, segmentZ, '-', 'LineWidth', 2, 'Color',colors(colorIndex, :));
-%     hold on; % Keep the plot window open to overlay the next plots
+% plot3(des_lf_pos(1,:), des_lf_pos(2,:), des_lf_pos(3,:), 'r-', 'LineWidth',2);
+% plot3(des_rf_pos(1,:), des_rf_pos(2,:), des_rf_pos(3,:), 'b-', 'LineWidth',2);
+
+
+% Define colors for plotting - this could be a predefined list or generated dynamically
+colors = lines(ceil(n/10)); % 'jet' generates a colormap, which we use to get a variety of colors
+
+% Loop through each segment of 10 steps
+for i = 1:10:n-1
+    % Determine the end of the current segment
+    endIndex = min(i+9, n);
+    
+    % Extract the current segment of the trajectory
+    segmentX = des_lf_pos(1, i:endIndex);
+    segmentY = des_lf_pos(2, i:endIndex);
+    segmentZ = des_lf_pos(3, i:endIndex);
+
+    segmentBaseX = des_base_pos(1, i:endIndex);
+    
+    % Determining the color index
+    colorIndex = ceil(i/10);
+    if colorIndex > size(colors, 1)
+        colorIndex = mode(colorIndex, size(colors, 1)) + 1;
+    end
+
+    plot(i:endIndex,segmentX, '-', 'LineWidth', 2, 'Color', colors(colorIndex, :));
+    % Plot the current segment
+    % Use mod or another strategy to cycle through colors if there are more segments than colors
+%     plot3(segmentX, segmentY, segmentZ, '-', 'LineWidth', 2, 'Color',colors(colorIndex, :));
+    hold on; % Keep the plot window open to overlay the next plots
 %     plot(i:endIndex, segmentBaseY, '*', 'LineWidth',2, 'Color','k');
-% end
+end
 
 
 % Enhancing the plot
