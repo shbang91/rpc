@@ -10,36 +10,33 @@
         <color rgba="0.5 0.5 1 1.0"/>
     </material>
 
-    <!-- Used for fixing robot to Gazebo 'base_link' -->
-    <link name="world" />
-
-    <joint name="world_to_stand" type="fixed">
-        <parent link="world"/>
-        <child link="stand"/>
-        <origin xyz="0 0 1" rpy="0 0 0"/>
-    </joint>
-
+    <!-- Robot Pedestal -->
     <link name="stand">
         <visual>
-            <origin xyz="0 0 -0.5" rpy="0 0 0"/>
+            <origin xyz="0 0 0.0" rpy="0 0 0"/>
             <geometry>
                 <box size="0.3 0.3 1"/>
             </geometry>
             <material name="white"/>
         </visual>
         <collision>
-            <origin xyz="0 0 -0.5" rpy="0 0 0"/>
+            <origin xyz="0 0 0.0" rpy="0 0 0"/>
             <geometry>
                 <box size="0.3 0.3 1"/>
             </geometry>
         </collision>
+        <inertial>
+            <origin xyz="0 0 0.0" rpy="0 0 0"/>
+            <mass value="1"/>
+            <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+        </inertial>
     </link>
 
     <joint name="stand_to_link0" type="fixed">
         <parent link="stand" />
         <child link="link0" />
         <!-- .27 puts the link on the stand -->
-        <origin xyz="0 0 .27" rpy="0 0 0" />
+        <origin xyz="0 0 .77" rpy="0 0 0" />
     </joint>
 
     <!-- Base Link -->
@@ -58,10 +55,18 @@
         <inertial>            <!-- Doesn't matter, just placeholder values -->
             <origin xyz="0 0 0" />
             <mass value="1" />
-            <inertia ixx="0" ixy="0.0" ixz="0.0" iyy="0" iyz="0.0" izz="0" />
+            <inertia ixx="0.1" ixy="0.1" ixz="0.0" iyy="0.1" iyz="0.0" izz="0" />
         </inertial>
     </link>
-    <link name="link1" />
+
+    <!-- Link 1 -->
+    <link name="link1">
+         <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint1" type="revolute">
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="link0" />
@@ -93,7 +98,15 @@
             <inertia ixx="0.01" ixy="0.000017" ixz="-.00001" iyy="0.007494" iyz="0.000213" izz="0.009939" />
         </inertial>
     </link>
-    <link name="link2" />
+
+    <!-- Link 2 -->
+    <link name="link2">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint2" type="revolute">
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="link1_passive" />
@@ -125,7 +138,15 @@
             <inertia ixx="0.005694" ixy="0" ixz="0" iyy="0.005902" iyz="0.001353" izz="0.002415" />
         </inertial>
     </link>
-    <link name="link3" />
+
+    <!-- Link 3 -->
+    <link name="link3" >
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint3" type="revolute">
         <origin xyz="0 0 0.4" rpy="0 0 0" />
         <parent link="link2_passive" />
@@ -158,7 +179,15 @@
             <inertia ixx="0.012989" ixy="-0.000015" ixz="-.000003" iyy="0.002584" iyz="0.000632" izz="0.01305" />
         </inertial>
     </link>
-    <link name="link4" />
+
+    <!-- Link 4 -->
+    <link name="link4" >
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint4" type="revolute">
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="link3_passive" />
@@ -190,7 +219,15 @@
             <inertia ixx="0.004297" ixy="0" ixz="0" iyy="0.004366" iyz="-0.0008" izz="0.000988" />
         </inertial>
     </link>
-    <link name="link5" />
+
+    <!-- Link 5 -->
+    <link name="link5" >
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint5" type="revolute">
         <origin xyz="0 0 0.4" rpy="0 0 0" />
         <parent link="link4_passive" />
@@ -222,7 +259,15 @@
             <inertia ixx="0.005744" ixy="-0.00021" ixz="-0.000027" iyy="0.0018" iyz="-0.001278" izz="0.005457" />
         </inertial>
     </link>
-    <link name="link6" />
+
+    <!-- Link 6 -->
+    <link name="link6" >
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint6" type="revolute">
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="link5_passive" />
@@ -254,7 +299,15 @@
             <inertia ixx="0.000634" ixy="0" ixz="0" iyy="0.000629" iyz="0" izz="0.000546" />
         </inertial>
     </link>
-    <link name="link7" />
+
+    <!-- Link 7 -->
+    <link name="link7" >
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.00" />
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+        </inertial>
+    </link>
     <joint name="joint7" type="revolute">
         <origin xyz="0 0 0" rpy="0 0 0" />
         <parent link="link6_passive" />
@@ -287,18 +340,18 @@
         </inertial>
     </link>
 
+    <!-- End Effector -->
     <joint name="ee_joint" type="fixed">
         <origin xyz="0 0 0.33" rpy="0 0 0" />
         <parent link="link7_passive" />
         <child link="ee" />
     </joint>
     <link name="ee">
-        <collision>
-            <origin xyz="0 0 -0.075" rpy="0 0 0"/>
-            <geometry>
-                <box size="0.1 0.1 0.15"/>
-            </geometry>
-        </collision>
+        <inertia>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.00"/>
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+        </inertia>
     </link>
 
 </robot>
