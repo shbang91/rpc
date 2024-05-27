@@ -39,12 +39,13 @@ void DoubleSupportSwaying::FirstVisit() {
 
   // get desired final RF from each foot to use as starting desired reaction
   // force values
-  Eigen::VectorXd des_init_lfoot_rf = Eigen::VectorXd::Zero(6);
-  Eigen::VectorXd des_init_rfoot_rf = Eigen::VectorXd::Zero(6);
-  des_init_lfoot_rf = ctrl_arch_->lf_force_tm_->GetFinalDesiredRf();
-  des_init_rfoot_rf = ctrl_arch_->rf_force_tm_->GetFinalDesiredRf();
-  ctrl_arch_->lf_force_tm_->InitializeSwaying(des_init_lfoot_rf, amp_, freq_);
-  ctrl_arch_->rf_force_tm_->InitializeSwaying(des_init_rfoot_rf, amp_, freq_);
+  // Eigen::VectorXd des_init_lfoot_rf = Eigen::VectorXd::Zero(6);
+  // Eigen::VectorXd des_init_rfoot_rf = Eigen::VectorXd::Zero(6);
+  // des_init_lfoot_rf = ctrl_arch_->lf_force_tm_->GetFinalDesiredRf();
+  // des_init_rfoot_rf = ctrl_arch_->rf_force_tm_->GetFinalDesiredRf();
+  // ctrl_arch_->lf_force_tm_->InitializeSwaying(des_init_lfoot_rf, amp_,
+  // freq_); ctrl_arch_->rf_force_tm_->InitializeSwaying(des_init_rfoot_rf,
+  // amp_, freq_);
 }
 
 void DoubleSupportSwaying::OneStep() {

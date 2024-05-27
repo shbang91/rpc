@@ -26,6 +26,9 @@ public:
   virtual void SetParameters(const YAML::Node &node, const bool b_sim) = 0;
   void SetMaxFz(const double rf_z_max) { rf_z_max_ = rf_z_max; }
 
+  void SetDesiredPos(const Eigen::Vector3d &pos) { des_pos_ = pos; }
+  void SetDesiredOri(const Eigen::Quaterniond &quat) { des_quat_ = quat; }
+
   // getter
   double MaxFz() const { return rf_z_max_; }
   int Dim() const { return dim_; }
@@ -36,6 +39,28 @@ public:
   Eigen::MatrixXd UfMatrix() const { return cone_constraint_matrix_; }
   Eigen::VectorXd UfVector() const { return cone_constraint_vector_; }
   int TargetLinkIdx() const { return target_link_idx_; }
+  Eigen::VectorXd OpCommand() {
+    Eigen::VectorXd res = Eigen::VectorXd::Zero(6);
+    // pos
+    res.tail<3>() =
+        Eigen::Vector3d::Constant(5000).cwiseProduct(
+            des_pos_ -
+            robot_->GetLinkIsometry(target_link_idx_).translation()) -
+        Eigen::Vector3d::Constant(50).cwiseProduct(
+            robot_->GetLinkSpatialVel(target_link_idx_).tail<3>());
+    // ori
+    Eigen::Quaterniond curr_quat =
+        Eigen::Quaterniond(robot_->GetLinkIsometry(target_link_idx_).linear())
+            .normalized();
+    util::AvoidQuatJump(des_quat_, curr_quat);
+    Eigen::Quaterniond quat_err = des_quat_ * curr_quat.inverse();
+    Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
+    so3 *= Eigen::AngleAxisd(quat_err).angle();
+    res.head<3>() = Eigen::Vector3d::Constant(5000).cwiseProduct(so3) -
+                    Eigen::Vector3d::Constant(50).cwiseProduct(
+                        robot_->GetLinkSpatialVel(target_link_idx_).head<3>());
+    return res;
+  }
 
 protected:
   PinocchioRobotSystem *robot_;
@@ -52,4 +77,7 @@ protected:
   Eigen::VectorXd cone_constraint_vector_;
 
   Eigen::MatrixXd rot_w_l_;
+
+  Eigen::Vector3d des_pos_;
+  Eigen::Quaterniond des_quat_;
 };

@@ -5,6 +5,7 @@
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/contact.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -59,6 +60,13 @@ void DoubleSupportStandUp::FirstVisit() {
 
   Eigen::Vector3d target_com_pos =
       (lfoot_iso.translation() + rfoot_iso.translation()) / 2.;
+  // TEST
+  if (sp_->b_use_base_height_)
+    target_height_ =
+        robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
+  else
+    target_height_ = robot_->GetRobotComPos()[2];
+  // TEST
   target_com_pos[2] = target_height_;
 
   Eigen::Quaterniond lfoot_quat(lfoot_iso.linear());
@@ -95,13 +103,25 @@ void DoubleSupportStandUp::FirstVisit() {
   // initialize reaction force tasks
   // smoothly increase the fz in world frame
   Eigen::VectorXd init_reaction_force = Eigen::VectorXd::Zero(6);
-  init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
+  // init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
-  des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
+  // des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   ctrl_arch_->lf_force_tm_->InitializeInterpolation(
       init_reaction_force, des_reaction_force, end_time_);
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
       init_reaction_force, des_reaction_force, end_time_);
+
+  // TEST
+  auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
+  contact_map["lf_contact"]->SetDesiredPos(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
+  contact_map["rf_contact"]->SetDesiredPos(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
+  contact_map["lf_contact"]->SetDesiredOri(Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear()));
+  contact_map["rf_contact"]->SetDesiredOri(Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear()));
+  // TEST
 }
 
 void DoubleSupportStandUp::OneStep() {
@@ -119,8 +139,8 @@ void DoubleSupportStandUp::OneStep() {
   ctrl_arch_->rf_max_normal_froce_tm_->UpdateRampToMax(state_machine_time_);
 
   // update force traj manager
-  ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
-  ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
+  // ctrl_arch_->lf_force_tm_->UpdateDesired(state_machine_time_);
+  // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
 void DoubleSupportStandUp::LastVisit() {}

@@ -1331,95 +1331,95 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint position
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figure(num_fig)
-% num_fig = num_fig + 1;
-% j = 0;
-% k = 0;
-% for i = 1:14
-%     ax(i) = subplot(7,2,i);
-%     if mod(i,2) == 1
-%         j = j + 1;
-%         plot(time, joint_pos_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
-%         grid on
-%         hold on
-%         plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-%         min_val = min([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
-%         max_val = max([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
-%         min_val = min_val - 0.1 * (max_val - min_val);
-%         max_val = max_val + 0.1 *(max_val - min_val);
-%     %   set_fig_opt()
-%         plot_phase(time, state, min_val, max_val, phase_color)
-%         xlabel('time')
-%         ylabel(draco_lf_label(j))
-%         if j == 1
-%             title('left foot jpos data', 'FontSize',30)
-%         end
-%     else
-%         k = k + 1;
-%         plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
-%         grid on
-%         hold on
-%         plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-%         min_val = min([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
-%         max_val = max([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
-%         min_val = min_val - 0.1 * (max_val - min_val);
-%         max_val = max_val + 0.1 *(max_val - min_val);
-%     %   set_fig_opt()
-%         plot_phase(time, state, min_val, max_val, phase_color)
-%         xlabel('time')
-%         ylabel(draco_rf_label(k))
-%          if j == 1
-%             title('right foot jpos data', 'FontSize', 30)
-%         end
-%     end
-% end
-% linkaxes(ax, 'x')
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:14
+    ax(i) = subplot(7,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, joint_pos_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_pos_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
+        min_val = min([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
+        max_val = max([joint_pos_cmd(draco_lf_idx(j), :), joint_pos_act(draco_lf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(draco_lf_label(j))
+        if j == 1
+            title('left foot jpos data', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(time, joint_pos_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_pos_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
+        min_val = min([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
+        max_val = max([joint_pos_cmd(draco_rf_idx(k), :), joint_pos_act(draco_rf_idx(k), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(draco_rf_label(k))
+         if j == 1
+            title('right foot jpos data', 'FontSize', 30)
+        end
+    end
+end
+linkaxes(ax, 'x')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lower body joint velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figure(num_fig)
-% num_fig = num_fig + 1;
-% j = 0;
-% k = 0;
-% for i = 1:14
-%     ax(i) = subplot(7,2,i);
-%     if mod(i,2) == 1
-%         j = j + 1;
-%         plot(time, joint_vel_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
-%         grid on
-%         hold on
-%         plot(time, joint_vel_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
-%         min_val = min([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
-%         max_val = max([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
-%         min_val = min_val - 0.1 * (max_val - min_val);
-%         max_val = max_val + 0.1 *(max_val - min_val);
-%     %   set_fig_opt()
-%         plot_phase(time, state, min_val, max_val, phase_color)
-%         xlabel('time')
-%         ylabel(draco_lf_label(j))
-%         if j == 1
-%             title('left foot jvel data', 'FontSize',30)
-%         end
-%     else
-%         k = k + 1;
-%         plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
-%         grid on
-%         hold on
-%         plot(time, joint_vel_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
-%         min_val = min([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
-%         max_val = max([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
-%         min_val = min_val - 0.1 * (max_val - min_val);
-%         max_val = max_val + 0.1 *(max_val - min_val);
-%     %   set_fig_opt()
-%         plot_phase(time, state, min_val, max_val, phase_color)
-%         xlabel('time')
-%         ylabel(draco_rf_label(k))
-%          if j == 1
-%             title('right foot jvel data', 'FontSize', 30)
-%         end
-%     end
-% end
-% linkaxes(ax,'x')
+figure(num_fig)
+num_fig = num_fig + 1;
+j = 0;
+k = 0;
+for i = 1:14
+    ax(i) = subplot(7,2,i);
+    if mod(i,2) == 1
+        j = j + 1;
+        plot(time, joint_vel_cmd(draco_lf_idx(j), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_vel_act(draco_lf_idx(j), :), 'b', 'LineWidth', 2);
+        min_val = min([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
+        max_val = max([joint_vel_cmd(draco_lf_idx(j), :), joint_vel_act(draco_lf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(draco_lf_label(j))
+        if j == 1
+            title('left foot jvel data', 'FontSize',30)
+        end
+    else
+        k = k + 1;
+        plot(time, joint_vel_cmd(draco_rf_idx(k), :), 'r', 'LineWidth', 3);
+        grid on
+        hold on
+        plot(time, joint_vel_act(draco_rf_idx(k), :), 'b', 'LineWidth', 2);
+        min_val = min([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
+        max_val = max([joint_vel_cmd(draco_rf_idx(j), :), joint_vel_act(draco_rf_idx(j), :)]);
+        min_val = min_val - 0.1 * (max_val - min_val);
+        max_val = max_val + 0.1 *(max_val - min_val);
+    %   set_fig_opt()
+        plot_phase(time, state, min_val, max_val, phase_color)
+        xlabel('time')
+        ylabel(draco_rf_label(k))
+         if j == 1
+            title('right foot jvel data', 'FontSize', 30)
+        end
+    end
+end
+linkaxes(ax,'x')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % contact constraint

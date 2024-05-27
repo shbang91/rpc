@@ -45,8 +45,10 @@ void Locomotion::FirstVisit() {
   gait_command_->yaw_rate = gait_params_->yaw_rate_cmd_;
   // ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
   // sp_->des_body_height_);
-  ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
-                                                 sp_->des_com_height_);
+  // ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_,
+  // sp_->des_com_height_);
+  double des_height = robot_->GetRobotComPos()[2];
+  ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_, des_height);
   ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_params_->gait_number_);
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(
       gait_params_->swing_height_);

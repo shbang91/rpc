@@ -65,7 +65,8 @@ DracoInterface::DracoInterface()
       // new PinocchioRobotSystem(THIS_COM
       // "robot_model/draco/draco_modified.urdf", THIS_COM "robot_model/draco",
       // false, false);
-      new PinocchioRobotSystem(THIS_COM "robot_model/draco/draco3_old.urdf",
+      new PinocchioRobotSystem(THIS_COM
+                               "robot_model/draco/draco_latest_collisions.urdf",
                                THIS_COM "robot_model/draco", false, false);
 
   // set locomotion control point
@@ -105,6 +106,9 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   DracoSensorData *draco_sensor_data =
       static_cast<DracoSensorData *>(sensor_data);
   DracoCommand *draco_command = static_cast<DracoCommand *>(command_data);
+
+  // std::cout << "=========================================" << std::endl;
+  // std::cout << draco_command->joint_trq_cmd_.transpose() << '\n';
 
   // if (count_ <= waiting_count_) {
   // for simulation without state estimator

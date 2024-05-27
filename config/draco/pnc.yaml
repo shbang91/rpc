@@ -3,12 +3,12 @@ servo_dt: 0.00125
 ip_address: "tcp://127.0.0.1:5557"
 
 data_save_freq: 1
-#data_save_freq: 20
+#data_save_freq: 50
 
 stance_foot: 0 # 0: left_foot 1: right_foot
 
-b_sim: true ## if false, all the "exp_" parameters are used
-#b_sim: false ## if false, all the "exp_" parameters are used
+#b_sim: true ## if false, all the "exp_" parameters are used
+b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -69,7 +69,7 @@ controller:
 wbc:
   task:
     com_xy_task:
-      com_feedback_source: 0 # 0: com feedback / 1: icp feedback
+      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
       icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
 
       ########################################################################
@@ -99,7 +99,7 @@ wbc:
       exp_kp : [2.5, 1.2]
       exp_kd : [1., 1.]
 
-      exp_icp_kp : [0.5, 0.5]
+      exp_icp_kp : [2, 2]
       exp_icp_kd : [0., 0.] # x, y will be ignored
       exp_icp_ki : [0., 0.] 
 
@@ -115,7 +115,7 @@ wbc:
       exp_leaky_integrator_limit: [0.03, 0.03]
 
     com_z_task:
-      com_height_target_source: 0 # 0: com height / 1: base height
+      com_height_target_source: 1 # 0: com height / 1: base height
       ########################################################################
       ## sim params
       ########################################################################
@@ -132,8 +132,8 @@ wbc:
       exp_com_kp : [1.0]
       exp_com_kd : [1.0]
 
-      exp_base_kp : [1.0]
-      exp_base_kd : [1.0] # x, y will be ignored
+      exp_base_kp : [1000.0]
+      exp_base_kd : [100.0] # x, y will be ignored
 
       exp_kp_ik : [1.0]
 
@@ -183,8 +183,8 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [1., 1.5, 1.]
-      exp_kd : [0.5, 0.5, 0.5]
+      exp_kp : [500., 500, 500.]
+      exp_kd : [50, 50, 50]
       exp_kp_ik : [1.0, 1.0, 1.0]
 
     upper_body_task:
@@ -224,8 +224,8 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [2., 2., 3.]
-      exp_kd : [0.2, 0.2, 0.3]
+      exp_kp : [1500., 1500., 1500.]
+      exp_kd : [150, 150, 150]
       exp_kp_ik : [1., 1., 1.]
 
     foot_ori_task:
@@ -233,7 +233,7 @@ wbc:
       ## sim params
       ########################################################################
       sim_kp : [1000., 1000., 2500.]
-      sim_kd : [50, 50, 100]
+      sim_kd : [100, 100, 250]
       #sim_kp : [0., 0., 0.]
       #sim_kd : [0.00, 0.00, 0.00]
       sim_kp_ik : [1., 1., 1.]
@@ -241,8 +241,8 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_kp : [1., 1., 1.]
-      exp_kd : [0.1, 0.1, 0.1]
+      exp_kp : [1500., 1500., 1500.]
+      exp_kd : [150, 150, 150]
       exp_kp_ik : [1., 1., 1.]
 
     foot_rf_task:
@@ -273,9 +273,9 @@ wbc:
     ########################################################################
     ## exp params
     ########################################################################
-    exp_max_rf_z: 400.
+    exp_max_rf_z: 600.
 
-    exp_mu: 0.3
+    exp_mu: 0.5
     exp_foot_half_length: 0.08
     exp_foot_half_width: 0.04
     #exp_foot_half_length: 0.125
@@ -289,8 +289,8 @@ wbc:
     W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_left_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
     #W_delta_rf_right_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_left_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
-    #W_delta_rf_right_foot_in_contact: [1e1, 1e1, 1e1, 1e1, 1e1, 1e1]
+    #W_delta_rf_left_foot_in_contact: [1, 1, 1, 1, 1, 1]
+    #W_delta_rf_right_foot_in_contact: [1, 1, 1, 1, 1, 1]
     #W_delta_rf_left_foot_in_contact: [100, 100, 100, 100, 100, 100]
     #W_delta_rf_right_foot_in_contact: [100, 100, 100, 100, 100, 100]
 
@@ -324,8 +324,8 @@ wbc:
     #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5, 5, 5]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
 
-    W_xc_ddot_in_contact: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
-    #W_xc_ddot_in_contact: [0, 0, 0, 0, 0, 0]
+    #W_xc_ddot_in_contact: [1e7, 1e7, 1e7, 1e7, 1e7, 1e7]
+    W_xc_ddot_in_contact: [0, 0, 0, 0, 0, 0]
     #W_xc_ddot_in_contact: 15e4
     #W_xc_ddot_in_contact: 5e4
     #W_xc_ddot_in_swing: 1e-3
@@ -354,11 +354,12 @@ state_machine:
     initialize:
       init_duration: 5.
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
-      target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.1, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.1, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       #target_joint_pos: [0., 0.020, -0.7, 0.84, 0.84, -0.84, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.7, 0.84, 0.84, -0.84, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [-1.434e-4, -2.827e-3, -5.650e-1, 5.650e-1, 5.650e-1, -5.650e-1, 2.827e-3, 5.574e-8, 0.523, 3.1517e-8, -1.57, 1.555e-7, -4.075e-8, -5.106e-6, 3.007e-6, -2.977e-3, -5.650e-1, 5.650e-1, 5.650e-1, -5.650e-1, -2.9767e-3, -2.347e-8, -0.523, 4.1193e-8, -1.57, -6.215e-7, -3.4377e-7] #pinocchio robotsystem joint order
       b_only_joint_pos_control: false
-      wait_time: 15.
+      wait_time: 2.
 
     stand_up:
       standup_duration: 1.
@@ -373,17 +374,19 @@ state_machine:
       swing_height: 0.10
 
     com_swaying:
-      #amplitude: [0., 0.03, 0.] # [m]
-      #frequency: [0., 0.05, 0.] # [hz]
-      amplitude: [0., 0., 0.03] # [m]
-      frequency: [0., 0., 0.05] # [hz]
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.50, 0.] # [hz]
+      #amplitude: [0.05, 0., 0.] # [m]
+      #frequency: [0.5, 0., 0.] # [hz]
+      #amplitude: [0., 0., 0.03] # [m]
+      #frequency: [0., 0., 0.05] # [hz]
 
     lmpc_com_swaying:
       amplitude: [0., 0.05, 0.] # [m]
       frequency: [0., 0.7, 0.] # [hz]
 
 dcm_walking:
-  t_additional_init_trans: 0.
+  t_additional_init_trans: 0.0
   t_contact_trans: 0.3
   t_swing: 0.5
   percentage_settle: 0.9
@@ -408,7 +411,7 @@ dcm_walking:
   #alpha_ds: 0.5
 
   nominal_footwidth: 0.2025
-  nominal_forward_step: 0.3
+  nominal_forward_step: 0.1
   nominal_backward_step: -0.1
   nominal_turn_radians: 0.3
   nominal_strafe_distance: 0.05

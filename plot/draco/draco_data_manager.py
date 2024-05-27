@@ -110,7 +110,7 @@ if args.b_visualize:
 
     icp_viz, icp_model = vis_tools.add_sphere(viz.viewer,
                                               "icp",
-                                              color=vis_tools.Color.VIOLET)
+                                              color=vis_tools.violet)
     icp_viz_q = pin.neutral(icp_model)
 
     icp_des_viz, icp_des_model = vis_tools.add_sphere(viz.viewer,
@@ -158,10 +158,10 @@ while True:
     data_saver.add('lfoot_rf_cmd', list(msg.lfoot_rf_cmd))
     data_saver.add('rfoot_rf_cmd', list(msg.rfoot_rf_cmd))
 
-    data_saver.add('est_icp', list(msg.est_icp))
-    data_saver.add('des_icp', list(msg.des_icp))
+    # data_saver.add('est_icp', list(msg.est_icp))
+    # data_saver.add('des_icp', list(msg.des_icp))
 
-    data_saver.add('des_cmp', list(msg.des_cmp))
+    # data_saver.add('des_cmp', list(msg.des_cmp))
 
     # data_saver.add('base_joint_pos', list(msg.base_joint_pos))
     # data_saver.add('base_joint_ori', list(msg.base_joint_ori))
@@ -169,33 +169,33 @@ while True:
     # data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
 
     # data_saver.add('com_xy_weight', list(msg.com_xy_weight))
-    data_saver.add('com_xy_kp', list(msg.com_xy_kp))
-    data_saver.add('com_xy_kd', list(msg.com_xy_kd))
-    data_saver.add('com_xy_ki', list(msg.com_xy_ki))
+    # data_saver.add('com_xy_kp', list(msg.com_xy_kp))
+    # data_saver.add('com_xy_kd', list(msg.com_xy_kd))
+    # data_saver.add('com_xy_ki', list(msg.com_xy_ki))
 
     # data_saver.add('com_z_weight', msg.com_z_weight)
-    data_saver.add('com_z_kp', msg.com_z_kp)
-    data_saver.add('com_z_kd', msg.com_z_kd)
+    # data_saver.add('com_z_kp', msg.com_z_kp)
+    # data_saver.add('com_z_kd', msg.com_z_kd)
 
     # data_saver.add('torso_ori_weight', list(msg.torso_ori_weight))
-    data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
-    data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
+    # data_saver.add('torso_ori_kp', list(msg.torso_ori_kp))
+    # data_saver.add('torso_ori_kd', list(msg.torso_ori_kd))
 
     # data_saver.add('lf_pos_weight', list(msg.lf_pos_weight))
-    data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
-    data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
+    # data_saver.add('lf_pos_kp', list(msg.lf_pos_kp))
+    # data_saver.add('lf_pos_kd', list(msg.lf_pos_kd))
 
     # data_saver.add('rf_pos_weight', list(msg.rf_pos_weight))
-    data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
-    data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
+    # data_saver.add('rf_pos_kp', list(msg.rf_pos_kp))
+    # data_saver.add('rf_pos_kd', list(msg.rf_pos_kd))
 
     # data_saver.add('lf_ori_weight', list(msg.lf_ori_weight))
-    data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
-    data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
+    # data_saver.add('lf_ori_kp', list(msg.lf_ori_kp))
+    # data_saver.add('lf_ori_kd', list(msg.lf_ori_kd))
 
     # data_saver.add('rf_ori_weight', list(msg.rf_ori_weight))
-    data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
-    data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
+    # data_saver.add('rf_ori_kp', list(msg.rf_ori_kp))
+    # data_saver.add('rf_ori_kd', list(msg.rf_ori_kd))
 
     data_saver.advance()
 
@@ -224,25 +224,25 @@ while True:
         com_proj_viz_q[0] = msg.des_com_pos[0]
         com_proj_viz_q[1] = msg.des_com_pos[1]
 
-        icp_viz_q[0] = msg.est_icp[0]
-        icp_viz_q[1] = msg.est_icp[1]
-        icp_viz_q[2] = 0.
+        # icp_viz_q[0] = msg.est_icp[0]
+        # icp_viz_q[1] = msg.est_icp[1]
+        # icp_viz_q[2] = 0.
 
-        icp_des_viz_q[0] = msg.des_icp[0]
-        icp_des_viz_q[1] = msg.des_icp[1]
-        icp_des_viz_q[2] = 0.
+        # icp_des_viz_q[0] = msg.des_icp[0]
+        # icp_des_viz_q[1] = msg.des_icp[1]
+        # icp_des_viz_q[2] = 0.
 
-        cmp_des_viz_q[0] = msg.des_cmp[0]
-        cmp_des_viz_q[1] = msg.des_cmp[1]
-        cmp_des_viz_q[2] = 0.
+        # cmp_des_viz_q[0] = msg.des_cmp[0]
+        # cmp_des_viz_q[1] = msg.des_cmp[1]
+        # cmp_des_viz_q[2] = 0.
 
         viz.display(vis_q)
         com_des_viz.display(com_des_viz_q)
         com_viz.display(com_viz_q)
         com_proj_viz.display(com_proj_viz_q)
-        icp_viz.display(icp_viz_q)
-        icp_des_viz.display(icp_des_viz_q)
-        cmp_des_viz.display(cmp_des_viz_q)
+        # icp_viz.display(icp_viz_q)
+        # icp_des_viz.display(icp_des_viz_q)
+        # cmp_des_viz.display(cmp_des_viz_q)
 
         # plot GRFs
         if msg.phase != 1:
