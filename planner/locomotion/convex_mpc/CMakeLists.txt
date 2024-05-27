@@ -50,7 +50,7 @@ target_include_directories(
 ## Testing ##
 #############
 # Add testing directory
-if (BUILD_TESTING)
+if (BUILD_TEST AND BUILD_GTESTS)
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
 endif() # end if (BUILD_TESTS)
 

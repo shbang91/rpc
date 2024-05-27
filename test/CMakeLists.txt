@@ -1,3 +1,22 @@
+#googletest
+if (BUILD_GTESTS)
+    find_package(GTest QUIET)
+    if (GTest_FOUND)
+        message(STATUS "Using installed Google Test.")
+        include_directories(${GTEST_INCLUDE_DIRS})
+    else()
+        message(STATUS "Google TEST not found. Fetching from GitHub...")
+        include(FetchContent)       # <-- Note: requires CMake version > 3.11
+        FetchContent_Declare(
+                googletest
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG        release-1.11.0
+                )
+        FetchContent_MakeAvailable(googletest)
+    endif()
+    enable_testing()
+endif()
+
 add_executable(pin_robot_system_test pin_robot_system_test.cpp)
 target_link_libraries(pin_robot_system_test rpc-pin-robot-system)
 
@@ -25,24 +44,16 @@ if(BUILD_WITH_DART)
     target_link_libraries(draco_dart_test rpc-dart-robot-system)
 endif()
 
-#
-# Gtests
-#
-find_package(PkgConfig)
-include(FetchContent)       # <-- Note: requires CMake version > 3.11
-if(BUILD_GTESTS)
-    if(FETCH_GTEST_PKG)
-        FetchContent_Declare(
-                googletest
-                GIT_REPOSITORY https://github.com/google/googletest.git
-                GIT_TAG        e2239ee6043f73722e7aa812a459f54a28552929 # release-1.11.0
-                FIND_PACKAGE_ARGS NAMES GTest
-        )
-        FetchContent_MakeAvailable(googletest)
-    endif()
-    pkg_check_modules(GTEST "gtest" REQUIRED)
 
-    add_executable(ihwbc_test ihwbc_test.cpp)
-    target_link_libraries(ihwbc_test ${GTEST_LIBRARIES} rpc-draco-controller)
+
+if(BUILD_GTESTS)
+    #add_executable(ihwbc_test ihwbc_test.cpp)
+    #target_link_libraries(ihwbc_test rpc-draco-controller
+                                     #gtest)
+
+    add_executable(mujoco_pinocchio_comparison mujoco_pinocchio_comparison.cpp)
+    target_link_libraries(mujoco_pinocchio_comparison gtest
+                                                      ${mujoco_LIBRARIES}
+                                                      rpc-pin-robot-system)
 endif()
 

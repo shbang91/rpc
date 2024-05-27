@@ -31,11 +31,10 @@ option(BUILD_WITH_PROXQP "compile with ProxQP" OFF)
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 
+option(BUILD_TEST "build testing" OFF)
 # unit-testing tools
 option(BUILD_GTESTS "build google tests" OFF)
-option(FETCH_GTEST_PKG "use fetch pkg to clone google test" OFF)
 
-option(BUILD_TESTING "build testing" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: Debug | Release | RelWithDebInfo | MinSizeRel" FORCE)
@@ -62,13 +61,13 @@ if(PYTHON_BINDING)
     add_subdirectory(binding)
 endif()
 
-# Pinocchio
+#Pinocchio
 if(BUILD_WITH_PINOCCHIO)
     find_package(pinocchio)
     include_directories(${pinocchio_INCLUDE_DIRS})
 endif()
 
-# Mujoco
+#Mujoco
 if(BUILD_WITH_MUJOCO)
     find_package(Threads REQUIRED)
     find_package(glfw3 REQUIRED)
@@ -77,17 +76,17 @@ if(BUILD_WITH_MUJOCO)
     include_directories(mujoco/include)
 endif()
 
-# DART
+#DART
 if(BUILD_WITH_DART)
     find_package(DART 6.10 REQUIRED COMPONENTS utils-urdf gui-osg CONFIG)
     include_directories(${DART_INCLUDE_DIRS})
 endif()
 
-# Eigen
+#Eigen
 find_package(Eigen 3.3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 
-## MatLogger2
+#MatLogger2
 if(BUILD_WITH_MATLOGGER)
     find_package(matlogger2 REQUIRED)
     set(B_USE_MATLOGGER true)
@@ -111,6 +110,7 @@ else()
 endif()
 
 #hpipm-cpp
+#TODO:make it optional
 find_package(hpipm-cpp REQUIRED)
 
 #Boost
@@ -122,9 +122,11 @@ find_package(hpipm-cpp REQUIRED)
 ##==================================================
 add_subdirectory(controller)
 add_subdirectory(planner)
-add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
+if(BUILD_TEST)
+    add_subdirectory(test)
+endif()
 if(BUILD_WITH_MUJOCO)
     add_subdirectory(mujoco)
     add_subdirectory(simulator)
