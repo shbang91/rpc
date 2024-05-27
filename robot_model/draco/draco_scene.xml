@@ -2,12 +2,14 @@
   <include file="draco_latest_collisions.xml"/>
 
   <statistic center="0 0 0.6" extent="2.0"/>
+  <!--two geoms will collide if the following expression is true-->
+  <!--(contype1 & conaffinity2) || (contype2 & conaffinity1)-->
   <default>
       <default class="world_visual">
           <geom condim="1" contype="0" conaffinity="0" group="0"/>
       </default>
       <default class="world_collision">
-          <geom contype="3" conaffinity="2" condim="6" group="2" friction="0.6 0.005 0.0001"/>
+          <geom contype="3" conaffinity="2" condim="6" group="2" friction="0.5 0.005 0.0001" solref="0.015 1" solimp="0.99 0.99 0.001"/>
       </default>
   </default>
 
@@ -26,7 +28,7 @@
 
   <worldbody>
     <light pos="0 0 3.5" dir="0 0 -1" directional="true"/>
-    <geom name="floor" size="0 0 0.25" type="plane" material="groundplane" class="world_collision"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" class="world_collision"/>
   </worldbody>
 
   <keyframe>

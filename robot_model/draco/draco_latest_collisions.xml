@@ -1,6 +1,7 @@
 <mujoco model="draco">
   <compiler angle="radian" autolimits="true" eulerseq="zyx" meshdir="mujoco_meshes/"/>
   <option gravity="0 0 -9.81" timestep="0.00125" solver="Newton" tolerance="0.000000" impratio="60.0" iterations="10"/>
+  <!--<option gravity="0 0 -9.81" timestep="0.00125" solver="Newton" cone="elliptic" tolerance="1e-5" jacobian="dense" noslip_iterations="30" noslip_tolerance="1e-5" iterations="50"/>-->
   <default>
       <geom contype="1" conaffinity="2" condim="6" margin="0.0005" solref="0.005 1" group="1"/>
       <equality solref="0.005 1" solimp="0.99 0.999 0.00001"/>
@@ -41,7 +42,8 @@
   </asset>
 
   <worldbody>
-  <body name="torso_link" pos="0 0 0.95" gravcomp="0">
+  <body name="torso_link">
+  <!--<body name="torso_link">-->
     <site name="imu" pos="0 0 -0.09" euler="3.14159 0 3.14159"/>
     <inertial pos="-31.658e-03 -0.03865e-03 125.19e-03" quat="1 0 0 0" mass="7.856" diaginertia="178517.35e-06 181767.801e-06 37147.31e-06"/>
     <joint name="floating_base" type="free"/>
@@ -155,11 +157,12 @@
                 <geom pos="0 -0.101 0.834" type="mesh" mesh="l_ankle_fe_link"/>
                 <!--<geom size="0.055" rgba="0.8 0.8 0.8 1"/>-->
                 <body name="l_ankle_ie_link">
+                  <site name="l_foot_contact" pos="0 0 -0.0932995" euler="0 0 0"/>
                   <inertial pos="-0.00051 -0.012552 -0.054344" quat="0.706673 0.0509453 -0.0735591 0.70186" mass="0.5917" diaginertia="0.00174552 0.0011539 0.000964077"/>
                   <joint name="l_ankle_ie" pos="0 0 0" axis="1 0 0"  range="-0.523599 0.523599" damping="0.001" frictionloss="0.001" armature="0.01"/>
-                  <geom type="mesh" mesh="l_ankle_ie_link_small_foot"/>
-                  <!--<geom size="0.11 0.046006 0.0045" pos="0 -0.008432 -0.0832995" type="box" rgba="0.8 0.8 0.8 1"/>-->
-                  <!--<geom size="0.03" pos="0 -0.01 -0.06" rgba="0.8 0.8 0.8 1"/>-->
+                  <geom type="mesh" contype="0" conaffinity="0" mesh="l_ankle_ie_link_small_foot"/>
+                  <!--<geom size="0.11 0.046006 0.0045" group="3" pos="0 -0.008432 -0.0832995" type="box" rgba="0.8 0.8 0.8 1"/>-->
+                  <geom size="0.11 0.046006 0.010" group="3" pos="0 0 -0.0832995" type="box" rgba="0.8 0.8 0.8 1"/>
                 </body>
               </body>
             </body>
@@ -200,11 +203,12 @@
                 <geom pos="0 0.101 0.834" type="mesh" mesh="r_ankle_fe_link"/>
                 <!--<geom size="0.055" rgba="0.8 0.8 0.8 1"/>-->
                 <body name="r_ankle_ie_link">
+                  <site name="r_foot_contact" pos="0 0 -0.0932995" euler="0 0 0"/>
                   <inertial pos="-0.00051 0.012552 -0.054344" quat="0.70186 -0.0735591 0.0509453 0.706673" mass="0.5917" diaginertia="0.00174552 0.0011539 0.000964077"/>
                   <joint name="r_ankle_ie" pos="0 0 0" axis="1 0 0"  range="-0.523599 0.523599" damping="0.001" frictionloss="0.001" armature="0.01"/>
-                  <geom type="mesh" mesh="r_ankle_ie_link_small_foot"/>
-                  <!--<geom size="0.11 0.046006 0.0045" pos="0 0.008432 -0.0832995" type="box" rgba="0.8 0.8 0.8 1"/>-->
-                  <!--<geom size="0.03" pos="0 0.01 -0.06" rgba="0.8 0.8 0.8 1"/>-->
+                  <geom type="mesh" contype="0" conaffinity="0" mesh="r_ankle_ie_link_small_foot"/>
+                  <!--<geom size="0.11 0.046006 0.0045" group="3" pos="0 0.008432 -0.0832995" type="box" rgba="0.8 0.8 0.8 1"/>-->
+                  <geom size="0.11 0.046006 0.010" group="3" pos="0 0 -0.0832995" type="box" rgba="0.8 0.8 0.8 1"/>
                 </body>
               </body>
             </body>
@@ -268,14 +272,16 @@
       <gyro name="gyro" site="imu"/>
   </sensor>
 
+  <!--start with the fixed base pose-->
+  <equality>
+      <weld body1="world_link" body2="torso_link" relpose="0 0 0.95 1 0 0 0"/>
+  </equality>
+
   <!--rolling contact mechanism-->
   <equality>
       <joint joint1="l_knee_fe_jp" joint2="l_knee_fe_jd" polycoef="0 1 0 0 0"/>
       <joint joint1="r_knee_fe_jp" joint2="r_knee_fe_jd" polycoef="0 1 0 0 0"/>
   </equality>
 
-  <!--<equality>-->
-      <!--<weld body1="world_link" body2="torso_link" relpose="0 0 0.95 1 0 0 0"/>-->
-  <!--</equality>-->
 
 </mujoco>
