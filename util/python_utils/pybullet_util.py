@@ -247,7 +247,7 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
         base_joint_lin_vel (np.array):
             base lin vel in world
         base_joint_ang_vel (np.array):
-            base ang vel in world
+            base ang vel in local
         joint_pos (dict):
             Joint pos
         joint_vel (dict):
@@ -292,7 +292,7 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
     augrot_world_joint[3:6, 3:6] = rot_world_joint
     twist_joint_in_world = np.dot(augrot_world_joint, twist_joint_in_joint)
     sensor_data['base_joint_lin_vel'] = np.copy(twist_joint_in_world[3:6])
-    sensor_data['base_joint_ang_vel'] = np.copy(twist_joint_in_world[0:3])
+    sensor_data['base_joint_ang_vel'] = np.copy(twist_joint_in_joint[0:3])
 
     # Joint Quantities
     sensor_data['joint_pos'] = OrderedDict()
@@ -308,9 +308,11 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
 def simulate_dVel_data(robot, link_id, previous_link_velocity):
 
     # calculate imu acceleration in world frame by numerical differentiation
-    torso_dvel = (get_link_vel(robot, link_id['torso_imu'])[3:6] - previous_link_velocity)
+    torso_dvel = (get_link_vel(robot, link_id['torso_imu'])[3:6] -
+                  previous_link_velocity)
 
     return torso_dvel
+
 
 def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
                                nearval, farval):

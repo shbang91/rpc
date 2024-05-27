@@ -122,7 +122,7 @@ void PinocchioRobotSystem::UpdateRobotModel(
     Eigen::Matrix3d rot_w_basejoint =
         base_joint_quat.normalized().toRotationMatrix();
     qdot_.segment<3>(0) = rot_w_basejoint.transpose() * base_joint_lin_vel;
-    qdot_.segment<3>(3) = rot_w_basejoint.transpose() * base_joint_ang_vel;
+    qdot_.segment<3>(3) = base_joint_ang_vel; // local ang vel
     qdot_.tail(n_qdot_ - n_float_) = joint_vel;
 
   } else {
