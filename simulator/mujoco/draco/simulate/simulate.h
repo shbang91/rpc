@@ -30,6 +30,8 @@
 #include <mujoco/mjui.h>
 #include <mujoco/mujoco.h>
 
+#include "controller/interrupt_handler.hpp"
+
 namespace mujoco {
 
 // The viewer itself doesn't require a reentrant mutex, however we use it in
@@ -65,7 +67,8 @@ public:
   void LoadMessage(const char *displayed_filename);
 
   // Request that the Simulate UI thread render a new model
-  void Load(mjModel *m, mjData *d, const char *displayed_filename);
+  void Load(mjModel *m, mjData *d, const char *displayed_filename,
+            InterruptHandler *interrupt_handler = nullptr);
 
   // Clear the loading message
   // Can be called instead of Load to clear the message without
@@ -98,6 +101,8 @@ public:
 
   mjModel *m_ = nullptr;
   mjData *d_ = nullptr;
+
+  InterruptHandler *interrupt_handler_ = nullptr;
 
   int ncam_ = 0;
   int nkey_ = 0;

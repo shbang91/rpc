@@ -27,6 +27,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <iostream>
+
 #include "simulate/array_safety.h"
 #include "simulate/lodepng.h"
 #include "simulate/platform_ui_adapter.h"
@@ -1545,30 +1547,40 @@ void UiEvent(mjuiState *state) {
       break;
 
     case ']': // cycle up fixed cameras
-      if ((sim->m_ || !sim->is_passive_) && sim->ncam_) {
-        sim->cam.type = mjCAMERA_FIXED;
-        // camera = {0 or 1} are reserved for the free and tracking cameras
-        if (sim->camera < 2 || sim->camera == 2 + sim->ncam_ - 1) {
-          sim->camera = 2;
-        } else {
-          sim->camera += 1;
-        }
-        sim->cam.fixedcamid = sim->camera - 2;
-        mjui0_update_section(sim, SECT_RENDERING);
+      // if ((sim->m_ || !sim->is_passive_) && sim->ncam_) {
+      // sim->cam.type = mjCAMERA_FIXED;
+      // camera = {0 or 1} are reserved for the free and tracking cameras
+      // if (sim->camera < 2 || sim->camera == 2 + sim->ncam_ - 1) {
+      // sim->camera = 2;
+      //} else {
+      // sim->camera += 1;
+      //}
+      // sim->cam.fixedcamid = sim->camera - 2;
+      // mjui0_update_section(sim, SECT_RENDERING);
+      //}
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressEight();
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
       }
       break;
 
     case '[': // cycle down fixed cameras
-      if ((sim->m_ || sim->is_passive_) && sim->ncam_) {
-        sim->cam.type = mjCAMERA_FIXED;
-        // camera = {0 or 1} are reserved for the free and tracking cameras
-        if (sim->camera <= 2) {
-          sim->camera = 2 + sim->ncam_ - 1;
-        } else {
-          sim->camera -= 1;
-        }
-        sim->cam.fixedcamid = sim->camera - 2;
-        mjui0_update_section(sim, SECT_RENDERING);
+      // if ((sim->m_ || sim->is_passive_) && sim->ncam_) {
+      // sim->cam.type = mjCAMERA_FIXED;
+      // camera = {0 or 1} are reserved for the free and tracking cameras
+      // if (sim->camera <= 2) {
+      // sim->camera = 2 + sim->ncam_ - 1;
+      //} else {
+      // sim->camera -= 1;
+      //}
+      // sim->cam.fixedcamid = sim->camera - 2;
+      // mjui0_update_section(sim, SECT_RENDERING);
+      //}
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressFive();
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
       }
       break;
 
@@ -1593,21 +1605,35 @@ void UiEvent(mjuiState *state) {
       break;
 
     case '-': // slow down
-      if (!sim->is_passive_) {
-        int numclicks =
-            sizeof(sim->percentRealTime) / sizeof(sim->percentRealTime[0]);
-        if (sim->real_time_index < numclicks - 1 && !state->shift) {
-          sim->real_time_index++;
-          sim->speed_changed = true;
+      // if (!sim->is_passive_) {
+      // int numclicks =
+      // sizeof(sim->percentRealTime) / sizeof(sim->percentRealTime[0]);
+      // if (sim->real_time_index < numclicks - 1 && !state->shift) {
+      // sim->real_time_index++;
+      // sim->speed_changed = true;
+      //}
+      //}
+      for (int i = 0; i < sim->m_->neq; ++i) {
+        if (sim->m_->eq_type[i] == mjEQ_WELD) {
+          std::cout << "[Mujoco sim] lowering down the base z pos by 1cm!"
+                    << '\n';
+          sim->m_->eq_data[5 + 3 * i] -= 0.01;
         }
       }
       break;
 
     case '=': // speed up
-      if (!sim->is_passive_ && sim->real_time_index > 0 && !state->shift) {
-        sim->real_time_index--;
-        sim->speed_changed = true;
+      // if (!sim->is_passive_ && sim->real_time_index > 0 && !state->shift) {
+      // sim->real_time_index--;
+      // sim->speed_changed = true;
+      //}
+      for (int i = 0; i < sim->m_->neq; ++i) {
+        if (sim->m_->eq_type[i] == mjEQ_WELD) {
+          std::cout << "[Mujoco sim] Remove the Weld constraint!" << '\n';
+          sim->d_->eq_active[i] = false;
+        }
       }
+
       break;
 
     case mjKEY_TAB: // toggle left/right UI
@@ -2089,9 +2115,11 @@ void Simulate::LoadMessage(const char *displayed_filename) {
   }
 }
 
-void Simulate::Load(mjModel *m, mjData *d, const char *displayed_filename) {
+void Simulate::Load(mjModel *m, mjData *d, const char *displayed_filename,
+                    InterruptHandler *interrupt_handler) {
   this->mnew_ = m;
   this->dnew_ = d;
+  this->interrupt_handler_ = interrupt_handler;
   mju::strcpy_arr(this->filename, displayed_filename);
 
   {

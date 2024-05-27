@@ -8,3 +8,4 @@ target_link_libraries(run_draco ${mujoco_LIBRARIES}
                                 ${glfw3_LIBRARIES}
                                 glfw
                                 Threads::Threads)
+target_link_libraries(run_draco rpc-draco-controller)

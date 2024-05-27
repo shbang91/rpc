@@ -29,6 +29,10 @@
 #include "simulate/glfw_adapter.h"
 #include "simulate/simulate.h"
 
+// rpc related headers
+#include "configuration.hpp"
+#include "controller/draco_controller/draco_interface.hpp"
+
 #define MUJOCO_PLUGIN_DIR "mujoco_plugin"
 
 extern "C" {
@@ -60,6 +64,11 @@ mjData *d = nullptr;
 
 // control noise variables
 mjtNum *ctrlnoise = nullptr;
+
+// rpc controller
+Interface *draco_interface = nullptr;
+DracoSensorData *draco_sensor_data = nullptr;
+DracoCommand *draco_command = nullptr;
 
 using Seconds = std::chrono::duration<double>;
 
@@ -252,18 +261,238 @@ mjModel *LoadModel(const char *file, mj::Simulate &sim) {
   return mnew;
 }
 
+// TODO:
+void SetInitialConfig(mjData *d) {
+  d->qpos[2] = 0.95;
+  // map (joint name -> joint idx)
+  // d->qpos[9] = M_PI / 6;   // l_shoulder_aa
+  // d->qpos[11] = -M_PI / 2; // l_elbow_fe
+  // d->qpos[15] = -M_PI / 6; // r_shouler_aa
+  // d->qpos[17] = -M_PI / 2; // r_elbow_fe
+
+  // left leg
+  // d->qpos[22] = -M_PI / 4;
+  // d->qpos[23] = M_PI / 4;
+  // d->qpos[24] = M_PI / 4;
+  // d->qpos[25] = -M_PI / 4;
+
+  // right leg
+  // d->qpos[29] = -M_PI / 4;
+  // d->qpos[30] = M_PI / 4;
+  // d->qpos[31] = M_PI / 4;
+  // d->qpos[32] = -M_PI / 4;
+}
+
+// TODO:
+void MyController(const mjModel *m, mjData *d) {
+  // if (m->nu == m->nv)
+  // mju_scl(d->ctrl, d->qvel, -0.1, m->nv);
+}
+
+bool CopySensorData() {
+  //=================================================
+  // joint positions
+  //=================================================
+  // left leg
+  draco_sensor_data->joint_pos_[0] = d->qpos[20];
+  draco_sensor_data->joint_pos_[1] = d->qpos[21];
+  draco_sensor_data->joint_pos_[2] = d->qpos[22];
+  draco_sensor_data->joint_pos_[3] = d->qpos[23];
+  draco_sensor_data->joint_pos_[4] = d->qpos[24];
+  draco_sensor_data->joint_pos_[5] = d->qpos[25];
+  draco_sensor_data->joint_pos_[6] = d->qpos[26];
+  // left arm
+  draco_sensor_data->joint_pos_[7] = d->qpos[8];
+  draco_sensor_data->joint_pos_[8] = d->qpos[9];
+  draco_sensor_data->joint_pos_[9] = d->qpos[10];
+  draco_sensor_data->joint_pos_[10] = d->qpos[11];
+  draco_sensor_data->joint_pos_[11] = d->qpos[12];
+  draco_sensor_data->joint_pos_[12] = d->qpos[13];
+  // neck
+  draco_sensor_data->joint_pos_[13] = d->qpos[7];
+  // right leg
+  draco_sensor_data->joint_pos_[14] = d->qpos[27];
+  draco_sensor_data->joint_pos_[15] = d->qpos[28];
+  draco_sensor_data->joint_pos_[16] = d->qpos[29];
+  draco_sensor_data->joint_pos_[17] = d->qpos[30];
+  draco_sensor_data->joint_pos_[18] = d->qpos[31];
+  draco_sensor_data->joint_pos_[19] = d->qpos[32];
+  draco_sensor_data->joint_pos_[20] = d->qpos[33];
+  // right arm
+  draco_sensor_data->joint_pos_[21] = d->qpos[14];
+  draco_sensor_data->joint_pos_[22] = d->qpos[15];
+  draco_sensor_data->joint_pos_[23] = d->qpos[16];
+  draco_sensor_data->joint_pos_[24] = d->qpos[17];
+  draco_sensor_data->joint_pos_[25] = d->qpos[18];
+  draco_sensor_data->joint_pos_[26] = d->qpos[19];
+
+  //=================================================
+  // joint velocities
+  //=================================================
+  // left leg
+  draco_sensor_data->joint_vel_[0] = d->qvel[19];
+  draco_sensor_data->joint_vel_[1] = d->qvel[20];
+  draco_sensor_data->joint_vel_[2] = d->qvel[21];
+  draco_sensor_data->joint_vel_[3] = d->qvel[22];
+  draco_sensor_data->joint_vel_[4] = d->qvel[23];
+  draco_sensor_data->joint_vel_[5] = d->qvel[24];
+  draco_sensor_data->joint_vel_[6] = d->qvel[25];
+  // left arm
+  draco_sensor_data->joint_vel_[7] = d->qvel[7];
+  draco_sensor_data->joint_vel_[8] = d->qvel[8];
+  draco_sensor_data->joint_vel_[9] = d->qvel[9];
+  draco_sensor_data->joint_vel_[10] = d->qvel[10];
+  draco_sensor_data->joint_vel_[11] = d->qvel[11];
+  draco_sensor_data->joint_vel_[12] = d->qvel[12];
+  // neck
+  draco_sensor_data->joint_vel_[13] = d->qvel[6];
+  // right leg
+  draco_sensor_data->joint_vel_[14] = d->qvel[26];
+  draco_sensor_data->joint_vel_[15] = d->qvel[27];
+  draco_sensor_data->joint_vel_[16] = d->qvel[28];
+  draco_sensor_data->joint_vel_[17] = d->qvel[29];
+  draco_sensor_data->joint_vel_[18] = d->qvel[30];
+  draco_sensor_data->joint_vel_[19] = d->qvel[31];
+  draco_sensor_data->joint_vel_[20] = d->qvel[32];
+  // right arm
+  draco_sensor_data->joint_vel_[21] = d->qvel[13];
+  draco_sensor_data->joint_vel_[22] = d->qvel[14];
+  draco_sensor_data->joint_vel_[23] = d->qvel[15];
+  draco_sensor_data->joint_vel_[24] = d->qvel[16];
+  draco_sensor_data->joint_vel_[25] = d->qvel[17];
+  draco_sensor_data->joint_vel_[26] = d->qvel[18];
+
+  //==============================================
+  // TODO:floating base states
+  //==============================================
+  draco_sensor_data->base_joint_pos_[0] = d->qpos[0];
+  draco_sensor_data->base_joint_pos_[1] = d->qpos[1];
+  draco_sensor_data->base_joint_pos_[2] = d->qpos[2];
+
+  draco_sensor_data->base_joint_quat_[0] = d->qpos[4]; // q.x
+  draco_sensor_data->base_joint_quat_[1] = d->qpos[5]; // q.y
+  draco_sensor_data->base_joint_quat_[2] = d->qpos[6]; // q.z
+  draco_sensor_data->base_joint_quat_[3] = d->qpos[3]; // q.w
+
+  draco_sensor_data->base_joint_lin_vel_[0] = d->qvel[0];
+  draco_sensor_data->base_joint_lin_vel_[1] = d->qvel[1];
+  draco_sensor_data->base_joint_lin_vel_[2] = d->qvel[2];
+
+  draco_sensor_data->base_joint_ang_vel_[0] = d->qvel[3];
+  draco_sensor_data->base_joint_ang_vel_[1] = d->qvel[4];
+  draco_sensor_data->base_joint_ang_vel_[2] = d->qvel[5];
+
+  //==============================================
+  // TODO:contact states
+  //==============================================
+
+  return true;
+}
+
+void CopyCommand() {
+  // left arm
+  d->ctrl[0] = draco_command->joint_trq_cmd_[7] +
+               100 * (draco_command->joint_pos_cmd_[7] - d->qpos[8]) +
+               5 * (draco_command->joint_vel_cmd_[7] - d->qvel[7]);
+  d->ctrl[1] = draco_command->joint_trq_cmd_[8] +
+               100 * (draco_command->joint_pos_cmd_[8] - d->qpos[9]) +
+               5 * (draco_command->joint_vel_cmd_[8] - d->qvel[8]);
+  d->ctrl[2] = draco_command->joint_trq_cmd_[9] +
+               100 * (draco_command->joint_pos_cmd_[9] - d->qpos[10]) +
+               5 * (draco_command->joint_vel_cmd_[9] - d->qvel[9]);
+  d->ctrl[3] = draco_command->joint_trq_cmd_[10] +
+               100 * (draco_command->joint_pos_cmd_[10] - d->qpos[11]) +
+               5 * (draco_command->joint_vel_cmd_[10] - d->qvel[10]);
+  d->ctrl[4] = draco_command->joint_trq_cmd_[11] +
+               100 * (draco_command->joint_pos_cmd_[11] - d->qpos[12]) +
+               5 * (draco_command->joint_vel_cmd_[11] - d->qvel[11]);
+  d->ctrl[5] = draco_command->joint_trq_cmd_[12] +
+               100 * (draco_command->joint_pos_cmd_[12] - d->qpos[13]) +
+               5 * (draco_command->joint_vel_cmd_[12] - d->qvel[12]);
+  // right arm
+  d->ctrl[6] = draco_command->joint_trq_cmd_[21] +
+               100 * (draco_command->joint_pos_cmd_[21] - d->qpos[14]) +
+               5 * (draco_command->joint_vel_cmd_[21] - d->qvel[13]);
+  d->ctrl[7] = draco_command->joint_trq_cmd_[22] +
+               100 * (draco_command->joint_pos_cmd_[22] - d->qpos[15]) +
+               5 * (draco_command->joint_vel_cmd_[22] - d->qvel[14]);
+  d->ctrl[8] = draco_command->joint_trq_cmd_[23] +
+               100 * (draco_command->joint_pos_cmd_[23] - d->qpos[16]) +
+               5 * (draco_command->joint_vel_cmd_[23] - d->qvel[15]);
+  d->ctrl[9] = draco_command->joint_trq_cmd_[24] +
+               100 * (draco_command->joint_pos_cmd_[24] - d->qpos[17]) +
+               5 * (draco_command->joint_vel_cmd_[24] - d->qvel[16]);
+  d->ctrl[10] = draco_command->joint_trq_cmd_[25] +
+                100 * (draco_command->joint_pos_cmd_[25] - d->qpos[18]) +
+                5 * (draco_command->joint_vel_cmd_[25] - d->qvel[17]);
+  d->ctrl[11] = draco_command->joint_trq_cmd_[26] +
+                100 * (draco_command->joint_pos_cmd_[26] - d->qpos[19]) +
+                5 * (draco_command->joint_vel_cmd_[26] - d->qvel[18]);
+  // neck
+  d->ctrl[12] = draco_command->joint_trq_cmd_[13] +
+                100 * (draco_command->joint_pos_cmd_[13] - d->qpos[7]) +
+                5 * (draco_command->joint_vel_cmd_[13] - d->qvel[6]);
+  // left leg
+  d->ctrl[13] = draco_command->joint_trq_cmd_[0] +
+                400 * (draco_command->joint_pos_cmd_[0] - d->qpos[20]) +
+                20 * (draco_command->joint_vel_cmd_[0] - d->qvel[19]);
+  d->ctrl[14] = draco_command->joint_trq_cmd_[1] +
+                400 * (draco_command->joint_pos_cmd_[1] - d->qpos[21]) +
+                20 * (draco_command->joint_vel_cmd_[1] - d->qvel[20]);
+  d->ctrl[15] = draco_command->joint_trq_cmd_[2] +
+                400 * (draco_command->joint_pos_cmd_[2] - d->qpos[22]) +
+                20 * (draco_command->joint_vel_cmd_[2] - d->qvel[21]);
+  d->ctrl[16] = draco_command->joint_trq_cmd_[4] +
+                200 * (draco_command->joint_pos_cmd_[4] - d->qpos[24]) +
+                15 * (draco_command->joint_vel_cmd_[4] - d->qvel[23]);
+  d->ctrl[17] = draco_command->joint_trq_cmd_[5] +
+                50 * (draco_command->joint_pos_cmd_[5] - d->qpos[25]) +
+                5 * (draco_command->joint_vel_cmd_[5] - d->qvel[24]);
+  d->ctrl[18] = draco_command->joint_trq_cmd_[6] +
+                50 * (draco_command->joint_pos_cmd_[6] - d->qpos[26]) +
+                5 * (draco_command->joint_vel_cmd_[6] - d->qvel[25]);
+  // right leg
+  d->ctrl[19] = draco_command->joint_trq_cmd_[14] +
+                400 * (draco_command->joint_pos_cmd_[14] - d->qpos[27]) +
+                20 * (draco_command->joint_vel_cmd_[14] - d->qvel[26]);
+  d->ctrl[20] = draco_command->joint_trq_cmd_[15] +
+                400 * (draco_command->joint_pos_cmd_[15] - d->qpos[28]) +
+                20 * (draco_command->joint_vel_cmd_[15] - d->qvel[27]);
+  d->ctrl[21] = draco_command->joint_trq_cmd_[16] +
+                400 * (draco_command->joint_pos_cmd_[16] - d->qpos[29]) +
+                20 * (draco_command->joint_vel_cmd_[16] - d->qvel[28]);
+  d->ctrl[22] = draco_command->joint_trq_cmd_[18] +
+                200 * (draco_command->joint_pos_cmd_[18] - d->qpos[31]) +
+                15 * (draco_command->joint_vel_cmd_[18] - d->qvel[30]);
+  d->ctrl[23] = draco_command->joint_trq_cmd_[19] +
+                50 * (draco_command->joint_pos_cmd_[19] - d->qpos[32]) +
+                5 * (draco_command->joint_vel_cmd_[19] - d->qvel[31]);
+  d->ctrl[24] = draco_command->joint_trq_cmd_[20] +
+                50 * (draco_command->joint_pos_cmd_[20] - d->qpos[33]) +
+                5 * (draco_command->joint_vel_cmd_[20] - d->qvel[32]);
+  // std::cout << "----------------------------------------" << std::endl;
+  // for (int i = 0; i < 25; ++i) {
+  // std::cout << d->ctrl[i] << ", " << '\n';
+  //}
+}
+
 // simulate in background thread (while rendering in main thread)
 void PhysicsLoop(mj::Simulate &sim) {
   // cpu-sim syncronization point
   std::chrono::time_point<mj::Simulate::Clock> syncCPU;
   mjtNum syncSim = 0;
 
-  // run until asked to exit
+  int iter{0};
+  //***************************************************
+  // run until asked to exit (main simulation while loop)
+  //***************************************************
   while (!sim.exitrequest.load()) {
     if (sim.droploadrequest.load()) {
       sim.LoadMessage(sim.dropfilename);
       mjModel *mnew = LoadModel(sim.dropfilename, sim);
       sim.droploadrequest.store(false);
+
+      std::cout << "sim drop request!" << '\n';
 
       mjData *dnew = nullptr;
       if (mnew)
@@ -282,9 +511,9 @@ void PhysicsLoop(mj::Simulate &sim) {
         mj_forward(m, d);
 
         // allocate ctrlnoise
-        free(ctrlnoise);
-        ctrlnoise = (mjtNum *)malloc(sizeof(mjtNum) * m->nu);
-        mju_zero(ctrlnoise, m->nu);
+        // free(ctrlnoise);
+        // ctrlnoise = (mjtNum *)malloc(sizeof(mjtNum) * m->nu);
+        // mju_zero(ctrlnoise, m->nu);
       } else {
         sim.LoadMessageClear();
       }
@@ -295,6 +524,9 @@ void PhysicsLoop(mj::Simulate &sim) {
       sim.LoadMessage(sim.filename);
       mjModel *mnew = LoadModel(sim.filename, sim);
       mjData *dnew = nullptr;
+
+      std::cout << "sim uiload request!" << '\n';
+
       if (mnew)
         dnew = mj_makeData(mnew);
       if (dnew) {
@@ -311,9 +543,9 @@ void PhysicsLoop(mj::Simulate &sim) {
         mj_forward(m, d);
 
         // allocate ctrlnoise
-        free(ctrlnoise);
-        ctrlnoise = static_cast<mjtNum *>(malloc(sizeof(mjtNum) * m->nu));
-        mju_zero(ctrlnoise, m->nu);
+        // free(ctrlnoise);
+        // ctrlnoise = static_cast<mjtNum *>(malloc(sizeof(mjtNum) * m->nu));
+        // mju_zero(ctrlnoise, m->nu);
       } else {
         sim.LoadMessageClear();
       }
@@ -332,10 +564,20 @@ void PhysicsLoop(mj::Simulate &sim) {
       // lock the sim mutex
       const std::unique_lock<std::recursive_mutex> lock(sim.mtx);
 
-      // run only if model is present
+      //***********************************************************
+      // run only if model is present (main simulation loop)
+      //***********************************************************
       if (m) {
         // running
         if (sim.run) {
+          //*****************************************************
+          if (CopySensorData())
+            draco_interface->GetCommand(draco_sensor_data, draco_command);
+          CopyCommand();
+          // if (iter == 5)
+          // exit(0);
+          //*****************************************************
+
           bool stepped = false;
 
           // record cpu time at start of iteration
@@ -346,21 +588,21 @@ void PhysicsLoop(mj::Simulate &sim) {
           double elapsedSim = d->time - syncSim;
 
           // inject noise
-          if (sim.ctrl_noise_std) {
-            // convert rate and scale to discrete time (Ornstein–Uhlenbeck)
-            mjtNum rate = mju_exp(-m->opt.timestep /
-                                  mju_max(sim.ctrl_noise_rate, mjMINVAL));
-            mjtNum scale = sim.ctrl_noise_std * mju_sqrt(1 - rate * rate);
+          // if (sim.ctrl_noise_std) {
+          // convert rate and scale to discrete time (Ornstein–Uhlenbeck)
+          // mjtNum rate = mju_exp(-m->opt.timestep /
+          // mju_max(sim.ctrl_noise_rate, mjMINVAL));
+          // mjtNum scale = sim.ctrl_noise_std * mju_sqrt(1 - rate * rate);
 
-            for (int i = 0; i < m->nu; i++) {
-              // update noise
-              ctrlnoise[i] =
-                  rate * ctrlnoise[i] + scale * mju_standardNormal(nullptr);
+          // for (int i = 0; i < m->nu; i++) {
+          // update noise
+          // ctrlnoise[i] =
+          // rate * ctrlnoise[i] + scale * mju_standardNormal(nullptr);
 
-              // apply noise
-              d->ctrl[i] = ctrlnoise[i];
-            }
-          }
+          // apply noise
+          // d->ctrl[i] = ctrlnoise[i];
+          //}
+          //}
 
           // requested slow-down factor
           double slowdown = 100 / sim.percentRealTime[sim.real_time_index];
@@ -429,6 +671,7 @@ void PhysicsLoop(mj::Simulate &sim) {
         }
       }
     } // release std::lock_guard<std::mutex>
+    iter++;
   }
 }
 } // namespace
@@ -445,10 +688,25 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
       // lock the sim mutex
       const std::unique_lock<std::recursive_mutex> lock(sim->mtx);
 
+      // TEST print model
+      // mj_printModel(m, "draco_mjcf_info");
+
       d = mj_makeData(m);
     }
     if (d) {
-      sim->Load(m, d, filename);
+      //**********************************************
+      // Construct controller
+      draco_interface = new DracoInterface();
+      draco_sensor_data = new DracoSensorData();
+      draco_command = new DracoCommand();
+      //**********************************************
+
+      sim->Load(m, d, filename, draco_interface->interrupt_handler_);
+
+      //**********************************************
+      // Set initial configuration
+      SetInitialConfig(d);
+      //**********************************************
 
       // lock the sim mutex
       const std::unique_lock<std::recursive_mutex> lock(sim->mtx);
@@ -456,9 +714,9 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
       mj_forward(m, d);
 
       // allocate ctrlnoise
-      free(ctrlnoise);
-      ctrlnoise = static_cast<mjtNum *>(malloc(sizeof(mjtNum) * m->nu));
-      mju_zero(ctrlnoise, m->nu);
+      // free(ctrlnoise);
+      // ctrlnoise = static_cast<mjtNum *>(malloc(sizeof(mjtNum) * m->nu));
+      // mju_zero(ctrlnoise, m->nu);
     } else {
       sim->LoadMessageClear();
     }
@@ -467,7 +725,10 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
   PhysicsLoop(*sim);
 
   // delete everything we allocated
-  free(ctrlnoise);
+  delete draco_interface;
+  delete draco_sensor_data;
+  delete draco_command;
+  // free(ctrlnoise);
   mj_deleteData(d);
   mj_deleteModel(m);
 }
@@ -521,8 +782,12 @@ int main(int argc, char **argv) {
                                      &opt, &pert, /* is_passive = */ false);
 
   const char *filename = nullptr;
+
+  // TODO: remove if statement
   if (argc > 1) {
     filename = argv[1];
+  } else {
+    filename = THIS_COM "robot_model/draco/draco_scene.xml";
   }
 
   // start physics thread
