@@ -233,21 +233,34 @@
 
      <motor name="neck_pitch"     gear="1"  joint="neck_pitch"    ctrlrange="-8.8 8.8"/>
 
-     <motor name="l_hip_ie"       gear="1"  joint="l_hip_ie"      ctrlrange="-44 44"/>
-     <motor name="l_hip_aa"       gear="1"  joint="l_hip_aa"      ctrlrange="-56 56"/>
-     <motor name="l_hip_fe"       gear="1"  joint="l_hip_fe"      ctrlrange="-59.6 59.6"/>
-     <!--<motor name="l_knee_fe_jp"   gear="1"  joint="l_knee_fe_jp"  ctrlrange="-40.85 40.85"/>-->
-     <motor name="l_knee_fe_jd"   gear="1"  joint="l_knee_fe_jd"  ctrlrange="-40.85 40.85"/>
-     <motor name="l_ankle_fe"     gear="1"  joint="l_ankle_fe"    ctrlrange="-44 44"/>
-     <motor name="l_ankle_ie"     gear="1"  joint="l_ankle_ie"    ctrlrange="-30 30"/>
+     <motor name="l_hip_ie"       gear="1"  joint="l_hip_ie"      ctrlrange="-200 200"/>
+     <motor name="l_hip_aa"       gear="1"  joint="l_hip_aa"      ctrlrange="-200 200"/>
+     <motor name="l_hip_fe"       gear="1"  joint="l_hip_fe"      ctrlrange="-200 200"/>
+     <motor name="l_knee_fe_jd"   gear="1"  joint="l_knee_fe_jd"  ctrlrange="-200 200"/>
+     <motor name="l_ankle_fe"     gear="1"  joint="l_ankle_fe"    ctrlrange="-200 200"/>
+     <motor name="l_ankle_ie"     gear="1"  joint="l_ankle_ie"    ctrlrange="-200 200"/>
 
-     <motor name="r_hip_ie"       gear="1"  joint="r_hip_ie"      ctrlrange="-44 44"/>
-     <motor name="r_hip_aa"       gear="1"  joint="r_hip_aa"      ctrlrange="-56 56"/>
-     <motor name="r_hip_fe"       gear="1"  joint="r_hip_fe"      ctrlrange="-59.6 59.6"/>
-     <!--<motor name="r_knee_fe_jp"   gear="1"  joint="r_knee_fe_jp"  ctrlrange="-40.85 40"/>-->
-     <motor name="r_knee_fe_jd"   gear="1"  joint="r_knee_fe_jd"  ctrlrange="-40.85 40"/>
-     <motor name="r_ankle_fe"     gear="1"  joint="r_ankle_fe"    ctrlrange="-44 44"/>
-     <motor name="r_ankle_ie"     gear="1"  joint="r_ankle_ie"    ctrlrange="-30 30"/>
+     <motor name="r_hip_ie"       gear="1"  joint="r_hip_ie"      ctrlrange="-200 200"/>
+     <motor name="r_hip_aa"       gear="1"  joint="r_hip_aa"      ctrlrange="-200 200"/>
+     <motor name="r_hip_fe"       gear="1"  joint="r_hip_fe"      ctrlrange="-200 200"/>
+     <motor name="r_knee_fe_jd"   gear="1"  joint="r_knee_fe_jd"  ctrlrange="-200 200"/>
+     <motor name="r_ankle_fe"     gear="1"  joint="r_ankle_fe"    ctrlrange="-200 200"/>
+     <motor name="r_ankle_ie"     gear="1"  joint="r_ankle_ie"    ctrlrange="-200 200"/>
+     
+     <!--<motor name="l_hip_ie"       gear="1"  joint="l_hip_ie"      ctrlrange="-44 44"/>-->
+     <!--<motor name="l_hip_aa"       gear="1"  joint="l_hip_aa"      ctrlrange="-56 56"/>-->
+     <!--<motor name="l_hip_fe"       gear="1"  joint="l_hip_fe"      ctrlrange="-59.6 59.6"/>-->
+     <!--<motor name="l_knee_fe_jd"   gear="1"  joint="l_knee_fe_jd"  ctrlrange="-40.85 40.85"/>-->
+     <!--<motor name="l_ankle_fe"     gear="1"  joint="l_ankle_fe"    ctrlrange="-44 44"/>-->
+     <!--<motor name="l_ankle_ie"     gear="1"  joint="l_ankle_ie"    ctrlrange="-30 30"/>-->
+
+     <!--<motor name="r_hip_ie"       gear="1"  joint="r_hip_ie"      ctrlrange="-44 44"/>-->
+     <!--<motor name="r_hip_aa"       gear="1"  joint="r_hip_aa"      ctrlrange="-56 56"/>-->
+     <!--<motor name="r_hip_fe"       gear="1"  joint="r_hip_fe"      ctrlrange="-59.6 59.6"/>-->
+     <!--<motor name="r_knee_fe_jd"   gear="1"  joint="r_knee_fe_jd"  ctrlrange="-40.85 40.85"/>-->
+     <!--<motor name="r_ankle_fe"     gear="1"  joint="r_ankle_fe"    ctrlrange="-44 44"/>-->
+     <!--<motor name="r_ankle_ie"     gear="1"  joint="r_ankle_ie"    ctrlrange="-30 30"/>-->
+
   </actuator>
 
   <sensor>
