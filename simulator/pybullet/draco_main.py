@@ -541,7 +541,7 @@ if __name__ == "__main__":
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
     draco_humanoid = pb.loadURDF(
         # cwd + "/robot_model/draco/draco_modified.urdf",
-        cwd + "/robot_model/draco/draco3_old.urdf",
+        cwd + "/robot_model/draco/draco_latest_collisions.urdf",
         Config.INITIAL_BASE_JOINT_POS,
         Config.INITIAL_BASE_JOINT_QUAT,
         useFixedBase=False)
