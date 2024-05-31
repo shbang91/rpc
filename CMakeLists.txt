@@ -11,9 +11,9 @@ add_compile_options(-fPIC)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/build/Release/generators/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
 
 ##==================================================
 ## Build Setup
@@ -28,7 +28,9 @@ option(BUILD_WITH_PINOCCHIO "compile with PINOCCHIO" ON)
 option(BUILD_WITH_DART "compile with DART" OFF)
 
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
-option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
+option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" ON)
+
+option(BUILD_WITH_FOXGLOVE "compile with foxglove" ON)
 
 # unit-testing tools
 option(BUILD_GTESTS "build google tests" ON)
@@ -78,17 +80,32 @@ else()
     set(B_USE_MATLOGGER false)
 endif()
 
+#warning message if trying to build with foxglove but without zmq/protobuf
+if(BUILD_WITH_FOXGLOVE)
+    message("\n*** WARNING ***\nPLEASE ENABLE ZMQ/PROTOBUF -- needed dependencies\n")
+endif()
 
 #Protobuf & ZMQ
 if (BUILD_WITH_ZMQ_PROTOBUF)
-    find_package(ZMQ)
-    find_package(Protobuf)
-    if(Protobuf_FOUND AND ZMQ_FOUND)
+    find_package(ZeroMQ REQUIRED)
+    find_package(ZLIB REQUIRED)
+    find_package(protobuf REQUIRED)
+    if(Protobuf_FOUND AND ZeroMQ_FOUND)
         include_directories(${Protobuf_INCLUDE_DIRS})
         include_directories(${ZMQ_INCLUDE_DIRS})
+        include_directories(${ZeroMQ_INCLUDE_DIRS})
         add_subdirectory(messages)
     endif()
     set(B_USE_ZMQ true)
+
+    # Foxglove
+    if(BUILD_WITH_FOXGLOVE)
+        find_package(foxglove-schemas-protobuf REQUIRED)
+        find_package(foxglove-websocket REQUIRED)
+        set(B_USE_FOXGLOVE true)
+    else()
+        set(B_USE_FOXGLOVE false)
+    endif()
 else()
     set(B_USE_ZMQ false)
 endif()

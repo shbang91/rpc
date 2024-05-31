@@ -1,0 +1,14 @@
+[requires]
+protobuf/3.21.9
+zeromq/4.3.5
+foxglove-schemas-protobuf/0.1.0
+foxglove-websocket/1.2.0
+websocketpp/0.8.2
+openssl/3.2.1
+asio/1.28.1
+nlohmann_json/3.10.5
+[generators]
+CMakeDeps
+CMakeToolchain
+[layout]
+cmake_layout

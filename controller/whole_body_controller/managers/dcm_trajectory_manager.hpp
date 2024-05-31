@@ -132,4 +132,9 @@ private:
   void _UpdateFootStepsPreviewList(const int max_foot_steps_preview);
   void _ResetIndexAndClearFootSteps();
   void _AlternateLeg();
+
+  // port reader
+  int PortInit();
+  void FoxListener();
+  void SocketClose();
 };
