@@ -1,6 +1,4 @@
 [requires]
-protobuf/3.21.9
-zeromq/4.3.5
 foxglove-schemas-protobuf/0.1.0
 foxglove-websocket/1.2.0
 websocketpp/0.8.2

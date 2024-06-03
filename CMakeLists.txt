@@ -80,32 +80,16 @@ else()
     set(B_USE_MATLOGGER false)
 endif()
 
-#warning message if trying to build with foxglove but without zmq/protobuf
-if(BUILD_WITH_FOXGLOVE)
-    message("\n*** WARNING ***\nPLEASE ENABLE ZMQ/PROTOBUF -- needed dependencies\n")
-endif()
-
 #Protobuf & ZMQ
 if (BUILD_WITH_ZMQ_PROTOBUF)
-    find_package(ZeroMQ REQUIRED)
-    find_package(ZLIB REQUIRED)
-    find_package(protobuf REQUIRED)
-    if(Protobuf_FOUND AND ZeroMQ_FOUND)
+    find_package(ZMQ REQUIRED)
+    find_package(Protobuf REQUIRED)
+    if(Protobuf_FOUND AND ZMQ_FOUND)
         include_directories(${Protobuf_INCLUDE_DIRS})
         include_directories(${ZMQ_INCLUDE_DIRS})
-        include_directories(${ZeroMQ_INCLUDE_DIRS})
         add_subdirectory(messages)
     endif()
     set(B_USE_ZMQ true)
-
-    # Foxglove
-    if(BUILD_WITH_FOXGLOVE)
-        find_package(foxglove-schemas-protobuf REQUIRED)
-        find_package(foxglove-websocket REQUIRED)
-        set(B_USE_FOXGLOVE true)
-    else()
-        set(B_USE_FOXGLOVE false)
-    endif()
 else()
     set(B_USE_ZMQ false)
 endif()
@@ -122,6 +106,7 @@ add_subdirectory(planner)
 add_subdirectory(test)
 add_subdirectory(util)
 add_subdirectory(third_party)
+add_subdirectory(UI)
 
 ##==================================================
 ## Configuration File
