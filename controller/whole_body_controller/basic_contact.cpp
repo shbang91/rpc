@@ -45,10 +45,19 @@ void PointContact::UpdateConeConstraint() {
   cone_constraint_vector_[5] = -rf_z_max_;
 }
 
+void PointContact::UpdateOpCommand() {
+  Eigen::Vector3d pos_err =
+      des_pos_ - robot_->GetLinkIsometry(target_link_idx_).translation();
+  Eigen::Vector3d vel_err =
+      -robot_->GetLinkSpatialVel(target_link_idx_).tail<3>();
+  op_cmd_ = kp_.cwiseProduct(pos_err) + kd_.cwiseProduct(vel_err);
+}
 void PointContact::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
-    mu_ = b_sim ? util::ReadParameter<double>(node, "mu")
-                : util::ReadParameter<double>(node, "exp_mu");
+    std::string prefix = b_sim ? "sim" : "exp";
+    mu_ = util::ReadParameter<double>(node, prefix + "_mu");
+    kp_ = util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kp");
+    kd_ = util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kd");
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl
@@ -172,6 +181,31 @@ void SurfaceContact::UpdateConeConstraint() {
   // -Fz >= -rf_z_max
   cone_constraint_vector_[17] = -rf_z_max_;
 }
+void SurfaceContact::UpdateOpCommand() {
+  // pos err
+  Eigen::Vector3d pos_err =
+      des_pos_ - robot_->GetLinkIsometry(target_link_idx_).translation();
+  Eigen::Vector3d vel_err =
+      -robot_->GetLinkSpatialVel(target_link_idx_).tail<3>();
+  op_cmd_.tail<3>() =
+      kp_.tail<3>().cwiseProduct(pos_err) + kd_.tail<3>().cwiseProduct(vel_err);
+
+  // ori err
+  // quat
+  Eigen::Quaterniond curr_quat =
+      Eigen::Quaterniond(robot_->GetLinkIsometry(target_link_idx_).linear())
+          .normalized();
+  util::AvoidQuatJump(des_quat_, curr_quat);
+  Eigen::Quaterniond quat_err = des_quat_ * curr_quat.inverse();
+  Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
+  so3 *= Eigen::AngleAxisd(quat_err).angle();
+
+  // ang vel
+  Eigen::Vector3d ang_vel_err =
+      -robot_->GetLinkSpatialVel(target_link_idx_).head<3>();
+  op_cmd_.head<3>() =
+      kp_.head<3>().cwiseProduct(so3) + kd_.head<3>().cwiseProduct(ang_vel_err);
+}
 
 void SurfaceContact::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
@@ -179,6 +213,8 @@ void SurfaceContact::SetParameters(const YAML::Node &node, const bool b_sim) {
     util::ReadParameter(node, prefix + "_mu", mu_);
     util::ReadParameter(node, prefix + "_foot_half_length", x_);
     util::ReadParameter(node, prefix + "_foot_half_width", y_);
+    util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kp", kp_);
+    util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kd", kd_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

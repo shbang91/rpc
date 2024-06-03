@@ -5,6 +5,7 @@
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/contact.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -102,6 +103,16 @@ void DoubleSupportStandUp::FirstVisit() {
       init_reaction_force, des_reaction_force, end_time_);
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
       init_reaction_force, des_reaction_force, end_time_);
+
+  auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
+  contact_map["lf_contact"]->SetDesiredPos(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
+  contact_map["rf_contact"]->SetDesiredPos(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
+  contact_map["lf_contact"]->SetDesiredOri(Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear()));
+  contact_map["rf_contact"]->SetDesiredOri(Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear()));
 }
 
 void DoubleSupportStandUp::OneStep() {

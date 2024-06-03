@@ -40,13 +40,16 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
   // contact
   Eigen::MatrixXd Jc;
   Eigen::VectorXd JcDotQdot;
+  Eigen::VectorXd xc_ddot_des;
   for (auto it = contact_vector.begin(); it != contact_vector.end(); ++it) {
     if (it == contact_vector.begin()) {
       Jc = (*it)->Jacobian();
       JcDotQdot = (*it)->JacobianDotQdot();
+      xc_ddot_des = (*it)->OpCommand();
     } else {
       Jc = util::VStack(Jc, (*it)->Jacobian());
       JcDotQdot = util::VStack(JcDotQdot, (*it)->JacobianDotQdot());
+      xc_ddot_des = util::VStack(xc_ddot_des, (*it)->OpCommand());
     }
   }
   // contact projection
@@ -73,7 +76,8 @@ bool WBIC::FindConfiguration(const Eigen::VectorXd &curr_jpos,
 
   // qddot_0_cmd for contact constraints
   // TODO: xc_ddot_des = pd controller instead of using current
-  qddot_cmd = JcNi_bar * (-JcDotQdot);
+  qddot_cmd = JcNi_bar * (xc_ddot_des - JcDotQdot);
+  // qddot_cmd = JcNi_bar * (-JcDotQdot);
 
   // std::cout << "======================================================="
   //<< std::endl;

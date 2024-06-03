@@ -44,7 +44,7 @@ state_estimator:
   exp_num_data_ang_vel: [5, 5, 5]
 
   ## for simulation please use 0
-  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [10, 10, 10]
@@ -172,8 +172,8 @@ wbc:
       ########################################################################
       #sim_kp : [500., 500., 500.]
       #sim_kd : [50., 50., 50.]
-      sim_kp : [500., 500., 350.] ## issues when yaw ~ 90 degree
-      sim_kd : [50., 50., 40.]
+      sim_kp : [500., 500., 500.] ## issues when yaw ~ 90 degree
+      sim_kd : [50., 50., 50.]
       sim_kp_ik : [1.0, 1.0, 1.0]
       #
       #sim_kp : [100., 100., 100.]
@@ -264,22 +264,28 @@ wbc:
     ########################################################################
     sim_max_rf_z: 600.
 
-    sim_mu: 0.3
+    sim_mu: 0.5
     sim_foot_half_length: 0.08
     sim_foot_half_width: 0.04 ## 0.04
     #sim_foot_half_length: 0.125
     #sim_foot_half_width: 0.075
+    sim_kp: [1000, 1000, 1000, 5000, 5000, 5000] ## ori, pos order
+    sim_kd: [50, 50, 50, 50, 50, 50]
+    #sim_kp: [0, 0, 0, 0, 0, 0] ## ori, pos order
+    #sim_kd: [0, 0, 0, 0, 0, 0]
 
     ########################################################################
     ## exp params
     ########################################################################
-    exp_max_rf_z: 400.
+    exp_max_rf_z: 600.
 
-    exp_mu: 0.3
+    exp_mu: 0.5
     exp_foot_half_length: 0.08
     exp_foot_half_width: 0.04
     #exp_foot_half_length: 0.125
     #exp_foot_half_width: 0.075
+    exp_kp: [1000, 1000, 1000, 1000, 1000, 1000] ## ori, pos order
+    exp_kd: [50, 50, 50, 50, 50, 50]
 
   qp:
     W_delta_qddot: 1e5 #1e5

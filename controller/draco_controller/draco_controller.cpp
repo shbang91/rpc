@@ -175,6 +175,7 @@ void DracoController::GetCommand(void *command) {
       contact_ptr->UpdateJacobian();
       contact_ptr->UpdateJacobianDotQdot();
       contact_ptr->UpdateConeConstraint();
+      contact_ptr->UpdateOpCommand(); // update desired contact acc
     }
 
     // force task not iterated b/c not depending on q or qdot

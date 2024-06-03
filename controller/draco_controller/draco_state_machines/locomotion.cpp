@@ -6,6 +6,7 @@
 #include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/contact.hpp"
 #include "controller/whole_body_controller/force_task.hpp"
 #include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "convex_mpc/convex_mpc_locomotion.hpp"
@@ -24,6 +25,9 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
   // mpc gait
   gait_params_ = std::make_unique<GaitParams>();
   gait_command_ = std::make_shared<GaitCommand>();
+
+  // contact states
+  prev_contact_states_ << 1.0, 1.0; // both feet in contact
 }
 
 void Locomotion::FirstVisit() {
@@ -139,6 +143,18 @@ void Locomotion::OneStep() {
         tci_container->contact_map_["lf_contact"]->SetMaxFz(
             ctrl_arch_->mpc_params_->fz_max_);
 
+        // TEST
+        if (prev_contact_states_[foot] == 0.0) {
+          contact_map["lf_contact"]->SetDesiredPos(
+              robot_->GetLinkIsometry(draco_link::l_foot_contact)
+                  .translation());
+          contact_map["lf_contact"]->SetDesiredOri(
+              Eigen::Quaterniond(
+                  robot_->GetLinkIsometry(draco_link::l_foot_contact).linear())
+                  .normalized());
+        }
+        // TEST
+
         // task
         // task_vector.push_back(task_map["lf_pos_task"]);
         // task_vector.push_back(task_map["lf_ori_task"]);
@@ -157,6 +173,18 @@ void Locomotion::OneStep() {
         // task_vector.push_back(task_map["rf_ori_task"]);
         // rf_ori_quat_ = Eigen::Quaterniond(
         // robot_->GetLinkIsometry(draco_link::r_foot_contact).linear());
+        //
+        // TEST
+        if (prev_contact_states_[foot] == 0.0) {
+          contact_map["rf_contact"]->SetDesiredPos(
+              robot_->GetLinkIsometry(draco_link::r_foot_contact)
+                  .translation());
+          contact_map["rf_contact"]->SetDesiredOri(
+              Eigen::Quaterniond(
+                  robot_->GetLinkIsometry(draco_link::r_foot_contact).linear())
+                  .normalized());
+        }
+        // TEST
       }
     } else {
       // in swing
@@ -225,6 +253,9 @@ void Locomotion::OneStep() {
   task_vector.push_back(task_map["torso_ori_task"]);
   // task_vector.push_back(task_map["wbo_task"]);
   task_vector.push_back(task_map["upper_body_task"]);
+
+  // update contact states
+  prev_contact_states_ = mpc_interface->contact_state_;
 
 #if B_USE_ZMQ
   // for meshcat visualization (only visualize desired base & foot trajectories
