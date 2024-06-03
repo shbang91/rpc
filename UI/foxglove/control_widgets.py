@@ -2,6 +2,10 @@ import asyncio
 from typing import Any, Dict, List, Optional
 from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
 from foxglove_websocket.types import Parameter
+import time
+import json
+
+from UI.foxglove.foxglove_sceneorganizer import SceneChannel
 
 
 def load_params_store() -> Dict[str, Any]:
@@ -15,7 +19,7 @@ def load_params_store() -> Dict[str, Any]:
         "icp_kd": [0., 0.,],
         "icp_ki": [0., 0.],
         "read_only_str_param": "end of com_xy_task",
-        "n_steps": 1,
+        "n_steps": 5,
     }
     return param_store
 
@@ -33,7 +37,7 @@ class Listener(FoxgloveServerListener):
             request_id: Optional[str],
     ) -> List[Parameter]:
         return [
-            Parameter(name=k, value=v, type=None)
+            Parameter(name=k, value=v, type="float64")
             for k, v in self._param_store.items()
             if k in param_names or len(param_names) == 0
         ]
@@ -55,7 +59,7 @@ class Listener(FoxgloveServerListener):
 
         self.b_modified = True
         return [
-            Parameter(name=k, value=v, type=None)
+            Parameter(name=k, value=v, type="float64")
             for k, v in self._param_store.items()
             if k in param_names
         ]
@@ -86,18 +90,23 @@ async def run(step_listener: Listener):
             capabilities=["parameters", "parametersSubscribe"]) as server:
         param_store = step_listener._param_store
         server.set_listener(step_listener)
+        param_chan_id = await SceneChannel(True, "n_steps", "json", "n_steps",
+                                           ["n_steps"]).add_chan(server)
 
         while True:
             # check every two seconds if the parameters have been modified
             await asyncio.sleep(2.0)
             await server.update_parameters(
-                [Parameter(name="n_steps", value=param_store["n_steps"], type=None)]
+                [Parameter(name="n_steps", value=param_store["n_steps"], type="float64")]
             )
 
             if step_listener.has_been_modified():
                 print("Parameters have been modified")
                 print(f"Modified parameter: {step_listener.get_param_modified()}")
                 print(f"New value: {step_listener.get_val(step_listener.get_param_modified())}")
+                now = time.time_ns()
+                await server.send_message(param_chan_id, now, json.dumps(
+                    {"n_steps": step_listener.get_val("n_steps")}).encode("utf8"))
                 step_listener.reset()
 
 
