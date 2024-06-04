@@ -4,6 +4,7 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "controller/whole_body_controller/contact.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
@@ -101,6 +102,14 @@ void ContactTransitionStart::FirstVisit() {
   contact_vector.clear();
   contact_vector.push_back(contact_map["lf_contact"]);
   contact_vector.push_back(contact_map["rf_contact"]);
+  contact_map["lf_contact"]->SetDesiredPos(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
+  contact_map["rf_contact"]->SetDesiredPos(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
+  contact_map["lf_contact"]->SetDesiredOri(Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear()));
+  contact_map["rf_contact"]->SetDesiredOri(Eigen::Quaterniond(
+      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear()));
 
   auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
