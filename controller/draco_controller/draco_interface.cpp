@@ -61,7 +61,9 @@ DracoInterface::DracoInterface() : Interface() {
                                THIS_COM "robot_model/draco", false, false);
   robot_->SetRobotComOffset(com_offset);
   se_ = new DracoStateEstimator(robot_);
-  se_kf_ = new DracoKFStateEstimator(robot_);
+  if (sp_->b_use_kf_state_estimator_) {
+    se_kf_ = new DracoKFStateEstimator(robot_);
+  }
   ctrl_arch_ = new DracoControlArchitecture(robot_);
   interrupt_handler_ = new DracoInterruptHandler(
       static_cast<DracoControlArchitecture *>(ctrl_arch_));
@@ -76,7 +78,9 @@ DracoInterface::DracoInterface() : Interface() {
 DracoInterface::~DracoInterface() {
   delete robot_;
   delete se_;
-  delete se_kf_;
+  if (sp_->b_use_kf_state_estimator_) {
+    delete se_kf_;
+  }
   delete ctrl_arch_;
   delete interrupt_handler_;
   delete task_gain_handler_;
