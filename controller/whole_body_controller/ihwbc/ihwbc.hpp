@@ -13,6 +13,10 @@ class IHWBC {
 public:
   IHWBC(const Eigen::MatrixXd &Sa, const Eigen::MatrixXd *Sf = NULL,
         const Eigen::MatrixXd *Sv = NULL);
+
+        // Sa: acutated joint space selection matrix (if no passive actuation, Sa = I)
+        // Sf: floating base selection matrix (if no floating base, Sf = NULL)
+        // Sv: passive joint space selection matrix (if no passive joint, Sv = NULL)
   virtual ~IHWBC() = default;
 
   void UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,

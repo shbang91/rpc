@@ -31,8 +31,8 @@ PYBIND11_MODULE(optimo_interface_py, m){
         .def_readwrite("joint_vel_", &OptimoSensorData::joint_vel_)
         .def_readwrite("joint_trq_", &OptimoSensorData::joint_trq_)
         .def_readwrite("joint_sea_trq_", &OptimoSensorData::joint_sea_trq_)
-        .def_readwrite("base_joint_pos_", &OptimoSensorData::base_joint_pos_)
-        .def_readwrite("base_joint_quat_", &OptimoSensorData::base_joint_quat_);
+        .def_readwrite("base_pos_", &OptimoSensorData::base_pos_)
+        .def_readwrite("base_quat_", &OptimoSensorData::base_quat_);
 
     py::class_<OptimoCommand>(m, "OptimoCommand")
         .def(py::init<>())

@@ -30,6 +30,7 @@ def get_sensor_data_from_pybullet(robot):
  
     ## TODO: Get Joint SEA Torque
     
+    ## TODO: Use for loop istead?
     # Joint Position
     joint_pos[0] = pb.getJointState(robot, OptimoJointIdx.joint1)[0]
     joint_pos[1] = pb.getJointState(robot, OptimoJointIdx.joint2)[0]
@@ -46,6 +47,7 @@ def get_sensor_data_from_pybullet(robot):
     joint_vel[3] = pb.getJointState(robot, OptimoJointIdx.joint4)[1]
     joint_vel[4] = pb.getJointState(robot, OptimoJointIdx.joint5)[1]
     joint_vel[5] = pb.getJointState(robot, OptimoJointIdx.joint6)[1]
+    joint_vel[6] = pb.getJointState(robot, OptimoJointIdx.joint7)[1]
     
 def apply_control_inpit_to_pybullet(robot, command):
     mode = pb.TORQUE_CONTROL
@@ -59,8 +61,47 @@ def apply_control_inpit_to_pybullet(robot, command):
     pb.setJointMotorControl2(robot, OptimoJointIdx.joint6, controlMode=mode, force=command[5])
     pb.setJointMotorControl2(robot, OptimoJointIdx.joint7, controlMode=mode, force=command[6])
     
+def set_init_config_pybullet(robot):
+    pb.resetJointState(robot, OptimoJointIdx.joint1, 0.0, 0.0)
+    pb.resetJointState(robot, OptimoJointIdx.joint2, Config.INITIAL_JOINT_POSITION[1], 0.0)
+    pb.resetJointState(robot, OptimoJointIdx.joint3, Config.INITIAL_JOINT_POSITION[2], 0.0)
+    pb.resetJointState(robot, OptimoJointIdx.joint4, Config.INITIAL_JOINT_POSITION[3], 0.0)
+    pb.resetJointState(robot, OptimoJointIdx.joint5, Config.INITIAL_JOINT_POSITION[4], 0.0)
+    pb.resetJointState(robot, OptimoJointIdx.joint6, Config.INITIAL_JOINT_POSITION[5], 0.0)
+    pb.resetJointState(robot, OptimoJointIdx.joint7, Config.INITIAL_JOINT_POSITION[6], 0.0)
+    print("Initial Configuration Set")
+    
+from scipy.spatial.transform import Rotation as R
+def add_tf_visualization(robot, link_index):
+    """
+    Add a visualization of the desired frame of the robot. 
+    """
+    pos, ori = pb.getLinkState(robot, link_index)[0:2]
+
+    # Define the axis unit vectors
+    x_axis = np.array([0.1, 0, 0])
+    y_axis = np.array([0, 0.1, 0])
+    z_axis = np.array([0, 0, 0.1])
+
+    # Convert the quaternion to a rotation matrix
+    rot = R.from_quat(ori).as_matrix()
+
+    # Rotate the axis vectors by the orientation
+    x_ending = pos + rot.dot(x_axis)
+    y_ending = pos + rot.dot(y_axis)
+    z_ending = pos + rot.dot(z_axis)
+
+    # Define the color of the debug line 
+    red = [1, 0, 0]  # RGB values for red
+    blue = [0, 0, 1]  # RGB values for blue
+    green = [0, 1, 0]  # RGB values for green
+
+    pb.addUserDebugLine(pos, x_ending, red, lineWidth=4, lifeTime=0)
+    pb.addUserDebugLine(pos, y_ending, green, lineWidth=4, lifeTime=0)
+    pb.addUserDebugLine(pos, z_ending, blue, lineWidth=4, lifeTime=0)
 
 
+    
 
 def main():
     # Pybullet Renderer
@@ -71,26 +112,56 @@ def main():
     
     # Simulation Physics
     pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT, numSubSteps=1)
-    pb.setGravity(0, 0, -9.81)
+    pb.setGravity(0, 0, 9.81)
     
     # Sim parameters
     dt = Config.CONTROLLER_DT
     count = 0
     rate = 1 / dt
     
-    
-    
     # Load URDF
     optimo_arm = pb.loadURDF(cwd + "/robot_model/optimo/optimo.urdf",
-                                [0, 0, 0.1],
+                                [0, 0, 0],
                                 [0, 0, 0, 1],
                                 useFixedBase=True)
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=True)
     
-    # RUn Simulation
+    
+    set_init_config_pybullet(optimo_arm)
+    
+    add_tf_visualization(optimo_arm, OptimoLinkIdx.base_link)
+
+    
+
+    # Initialize RPC Interface
+    rpc_optimo_command = optimo_interface_py.OptimoInterface()
+    rpc_optimo_command = optimo_interface_py.OptimoCommand()
+    rpc_optimo_sensor_data = optimo_interface_py.OptimoSensorData()
+    
+    
+    # Simulation Time Parameters
+    rate = RateLimiter(frequency=1. / dt)
+    
+    #  Simulation Main Loop
     while True:
         pb.stepSimulation()
-        rate = RateLimiter(frequency=1. / dt)
+        
+
+
+        
+        # print without newline
+        print("Simulation Time: ", count * dt, end="\r")
+        
+        
+
+        
+        
+    
+        
+        count += 1    
+        rate.sleep()
+        
+            
     
     
 if __name__ == "__main__":

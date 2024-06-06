@@ -5,18 +5,24 @@
 
 #include "controller/interface.hpp"
 #include "controller/optimo_controller/optimo_definition.hpp"
+#include "controller/optimo_controller/optimo_interface.hpp"
+#include "controller/optimo_controller/optimo_interrupt_handler.hpp"
+// #include "controller/optimo_controller/optimo_state_provider.hpp"
+// #include "controller/optimo_controller/optimo_task_gain_handler.hpp"
+
+class OptimoStateProvider;
+class OptimoTaskGainHandler;
 
 class OptimoSensorData {
 public:
-  OptimoSensorData() {
-    joint_pos_ =(Eigen::VectorXd::Zero(optimo::n_adof));
-    Eigen::VectorXd::Zero(7);
-    joint_vel_ = Eigen::VectorXd::Zero(7);
-    joint_trq_ = Eigen::VectorXd::Zero(7); 
-    joint_sea_trq_ = Eigen::VectorXd::Zero(optimo::n_adof);
-    base_joint_pos_ = Eigen::Vector3d::Zero();
-    base_joint_quat_ = Eigen::Vector4d(0., 0., 0., 1.);
-  }
+  OptimoSensorData()
+    : joint_pos_(Eigen::VectorXd::Zero(optimo::n_adof)),
+      joint_vel_(Eigen::VectorXd::Zero(7)),
+      joint_trq_(Eigen::VectorXd::Zero(7)),
+      joint_sea_trq_(Eigen::VectorXd::Zero(optimo::n_adof)),
+      base_pos_(Eigen::Vector3d::Zero()),
+      base_quat_(Eigen::Vector4d(0., 0., 0., 1.)){};
+
   virtual ~OptimoSensorData() = default;
 
   Eigen::VectorXd joint_pos_;
@@ -24,8 +30,8 @@ public:
   Eigen::VectorXd joint_trq_;
   Eigen::VectorXd joint_sea_trq_;
   
-  Eigen::Vector3d base_joint_pos_;
-  Eigen::Vector4d base_joint_quat_;
+  Eigen::Vector3d base_pos_;
+  Eigen::Vector4d base_quat_;
 };
 
 class OptimoCommand {
@@ -48,4 +54,10 @@ public:
   virtual ~OptimoInterface();
 
   void GetCommand(void *sensor_data, void *command_data) override;
+
+  OptimoTaskGainHandler *task_gain_handler_;
+
+  private:
+  OptimoStateProvider *sp_;
+  void _SafeCommand(OptimoSensorData *data, OptimoCommand *command);
 };

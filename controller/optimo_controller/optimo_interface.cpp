@@ -15,9 +15,19 @@ OptimoInterface::OptimoInterface() : Interface() {
 
   robot_ = new PinocchioRobotSystem(THIS_COM "robot_model/optimo/optimo.urdf",
                                     THIS_COM "robot_model/optimo", true, false);
+
+  // ctrl_arch_ = new OptimoControlArchitecture(robot_);
+
+  // interrupt_handler_ = new InterruptHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
+  // task_gain_handler_ = new OptimoTaskGainHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
 }
 
-OptimoInterface::~OptimoInterface() { delete robot_; }
+OptimoInterface::~OptimoInterface() { 
+  delete robot_;
+  // delete ctrl_arch_;
+  // delete interrupt_handler_;
+  // delete task_gain_handler_;
+}
 
 void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
   // TODO:timing variables
@@ -29,4 +39,16 @@ void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
   // TODO:update sensor data to pinocchio model using state estimator class
 
   // TODO:get control command through control architecture class
+
+  // process interrupt & task gains
+
+  if (interrupt_handler_->IsSignalReceived()) {
+      interrupt_handler_->Process();
+  }
+}
+
+void OptimoInterface::_SafeCommand(OptimoSensorData *data, OptimoCommand *command) {
+  command->joint_pos_cmd_ = data->joint_pos_;
+  command->joint_vel_cmd_.setZero();
+  command->joint_trq_cmd_.setZero();
 }
