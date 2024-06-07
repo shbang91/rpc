@@ -111,7 +111,7 @@ void DoubleSupportStandUp::FirstVisit() {
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
       init_reaction_force, des_reaction_force, end_time_);
 
-  // TEST
+  // contact PD controller
   auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
   contact_map["lf_contact"]->SetDesiredPos(
       robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
@@ -121,7 +121,6 @@ void DoubleSupportStandUp::FirstVisit() {
       robot_->GetLinkIsometry(draco_link::l_foot_contact).linear()));
   contact_map["rf_contact"]->SetDesiredOri(Eigen::Quaterniond(
       robot_->GetLinkIsometry(draco_link::r_foot_contact).linear()));
-  // TEST
 }
 
 void DoubleSupportStandUp::OneStep() {

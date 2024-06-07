@@ -30,17 +30,20 @@ mpc_params:
     #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
 
     ####### without inertia
-    Qqq: [100, 100, 500, 200, 200, 5000] ## roll, pitch, yaw, x, y, z
-    Qvv: [10, 10, 30, 20, 20, 50] ## wx, wy, wz, xdot, ydot, zdot
-    Quu: [1e-1, 1e-1, 1e-1, 1e-3, 1e-3, 1e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #Qqq: [100, 100, 500, 200, 200, 5000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [10, 10, 30, 20, 20, 50] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-1, 1e-1, 1e-1, 1e-3, 1e-3, 1e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
 
+    Qqq: [10, 10, 25, 20, 20, 100] ## roll, pitch, yaw, x, y, z
+    Qvv: [1, 1, 2.5, 2, 2, 10] ## wx, wy, wz, xdot, ydot, zdot
+    Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
     ####### with inertia (before)
     #Qqq: [3000, 3000, 5000, 100, 100, 100000] ## roll, pitch, yaw, x, y, z
     #Qvv: [300, 300, 500, 1, 1, 50000] ## wx, wy, wz, xdot, ydot, zdot
     #Quu: [1e-2, 1e-2, 5e-4, 1e-4, 1e-4, 5e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
 
-    Qqq_terminal: [10000, 10000, 15000, 20000, 20000, 500000]
-    Qvv_terminal: [100, 100, 100, 100, 100, 5000]
+    Qqq_terminal: [10, 10, 15, 20, 20, 50]
+    Qvv_terminal: [1, 1, 1, 1, 1, 1]
     decay_rate: 0.98
 
     ####### with inertia (After)
@@ -57,9 +60,9 @@ mpc_params:
       -0.00292598, 0.885743, -0.00292598, 1.23588 ]
 
   contact_wrench_cone:
-    mu: 0.3
+    mu: 0.5
     fz_min: 20.0 #[N]
-    fz_max: 600 #[N]
+    fz_max: 800 #[N]
     foot_half_length: 0.08 #[m]
     foot_half_width: 0.04 #[m]
 

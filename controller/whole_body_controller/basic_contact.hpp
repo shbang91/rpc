@@ -10,6 +10,7 @@ public:
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
   void UpdateConeConstraint() override;
+  void UpdateOpCommand() override;
   void SetParameters(const YAML::Node &node, const bool b_sim) override;
 };
 
@@ -22,6 +23,7 @@ public:
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
   void UpdateConeConstraint() override;
+  void UpdateOpCommand() override;
   void SetParameters(const YAML::Node &node, const bool b_sim) override;
 
 private:

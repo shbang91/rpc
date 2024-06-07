@@ -36,6 +36,9 @@ private:
   std::shared_ptr<GaitCommand> gait_command_;
   std::unique_ptr<GaitParams> gait_params_;
 
+  // contact state
+  Eigen::Vector2d prev_contact_states_;
+
   // WBC QP params yaml
   Eigen::VectorXd W_force_rate_of_change_left_foot_ = Eigen::VectorXd::Zero(6);
   Eigen::VectorXd W_force_rate_of_change_right_foot_ = Eigen::VectorXd::Zero(6);
