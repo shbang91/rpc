@@ -120,16 +120,20 @@ def main():
     rate = 1 / dt
     
     # Load URDF
-    optimo_arm = pb.loadURDF(cwd + "/robot_model/optimo/optimo.urdf",
+    robot = pb.loadURDF(cwd + "/robot_model/optimo/optimo.urdf",
                                 [0, 0, 0],
                                 [0, 0, 0, 1],
                                 useFixedBase=True)
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=True)
     
     
-    set_init_config_pybullet(optimo_arm)
+    set_init_config_pybullet(robot)
     
-    add_tf_visualization(optimo_arm, OptimoLinkIdx.base_link)
+    add_tf_visualization(robot, OptimoLinkIdx.ee)
+    add_tf_visualization(robot, PlatoLinkIdx.ee1)
+    add_tf_visualization(robot, PlatoLinkIdx.ee2)
+    add_tf_visualization(robot, PlatoLinkIdx.ee3)
+    
 
     
 

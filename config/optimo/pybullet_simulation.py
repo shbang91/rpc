@@ -44,6 +44,23 @@ class OptimoJointIdx(object):
     joint5 = 10
     joint6 = 12
     joint7 = 14
+    
+class PlatoLinkIdx(object):
+    ee1 = 21
+    ee2 = 25
+    ee3 = 29
+
+class PlatoJointIdx(object):
+    joint1 = 18
+    joint2 = 19
+    joint3 = 20
+    joint4 = 22
+    joint5 = 23
+    joint6 = 24
+    joint7 = 26
+    joint8 = 27
+    joint9 = 28
+
 
     
 
