@@ -1,3 +1,5 @@
+add_subdirectory(client)
+
 add_executable(simple-client-subscriber simple_client_subscriber.cpp)
 target_link_libraries(simple-client-subscriber
         foxglove-websocket::foxglove-websocket
