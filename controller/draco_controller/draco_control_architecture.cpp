@@ -25,6 +25,10 @@
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "util/util.hpp"
 
+#if B_USE_FOXGLOVE
+#include "UI/foxglove/client/parameter_subscriber.hpp"
+#endif
+
 DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     : ControlArchitecture(robot) {
   util::PrettyConstructor(1, "DracoControlArchitecture");
@@ -135,6 +139,16 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
       tci_container_->force_task_map_["rf_force_task"], robot_);
 
   //=============================================================
+  // attach Foxglove Clients to control parameters
+  //=============================================================
+  #if B_USE_FOXGLOVE
+  param_map = {
+      {"n_steps", dcm_tm_->GetNumSteps()}
+  };
+  param_subscriber_ = new FoxgloveParameterSubscriber(param_map);
+  #endif
+
+  //=============================================================
   // initialize state machines
   //=============================================================
   state_machine_container_[draco_states::kInitialize] =
@@ -206,6 +220,10 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kRFContactTransitionEnd];
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
+
+#if B_USE_FOXGLOVE
+  delete param_subscriber_;
+#endif
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
@@ -213,6 +231,10 @@ void DracoControlArchitecture::GetCommand(void *command) {
     state_machine_container_[state_]->FirstVisit();
     b_state_first_visit_ = false;
   }
+
+#if B_USE_FOXGLOVE
+  param_subscriber_->UpdateParameters();
+#endif
 
   state_machine_container_[state_]->OneStep();
   upper_body_tm_->UseNominalUpperBodyJointPos(

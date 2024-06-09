@@ -37,6 +37,9 @@ if(BUILD_WITH_MATLOGGER)
     target_link_libraries(rpc-draco-controller PUBLIC matlogger2::matlogger2)
 endif()
 
+if(BUILD_WITH_FOXGLOVE)
+    target_link_libraries(rpc-draco-controller PUBLIC foxglove-parameter-subscriber)
+endif()
 
 install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${controller_headers} DESTINATION

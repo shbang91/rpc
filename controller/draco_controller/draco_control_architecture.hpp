@@ -1,5 +1,8 @@
 #pragma once
 #include "controller/control_architecture.hpp"
+#if B_USE_FOXGLOVE
+#include "UI/foxglove/client/parameter_subscriber.hpp"
+#endif
 
 namespace draco_states {
 constexpr int kInitialize = 1;
@@ -59,4 +62,9 @@ private:
   // LMPCHandler *lmpc_handler_;
 
   void _InitializeParameters() override;
+
+#if B_USE_FOXGLOVE
+  std::unordered_map<std::string, int*> param_map;
+  FoxgloveParameterSubscriber *param_subscriber_;
+#endif
 };

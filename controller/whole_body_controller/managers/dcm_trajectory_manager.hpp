@@ -93,6 +93,7 @@ public:
   int GetSwingLeg() { return swing_leg_; }
 
   // setter (for operator UI)
+  int* GetNumSteps();
 
 private:
   DCMPlanner *dcm_planner_;
