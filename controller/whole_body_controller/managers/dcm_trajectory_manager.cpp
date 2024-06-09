@@ -3,12 +3,6 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
-//PORT READER
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
 DCMTrajectoryManager::DCMTrajectoryManager(DCMPlanner *dcm_planner,
                                            Task *com_xy_task, Task *com_z_task,
                                            Task *torso_ori_task,
@@ -211,8 +205,6 @@ void DCMTrajectoryManager::InitializeParameters(const YAML::Node &node) {
   util::ReadParameter(node, "first_swing_leg", first_swing_leg_);
 }
 
-void DCMTrajectoryManager::SetNumSteps(const int n_steps) {
-  n_steps_ = n_steps;
 }
 
 void DCMTrajectoryManager::_UpdateFootStepsPreviewList(
@@ -237,50 +229,4 @@ void DCMTrajectoryManager::_AlternateLeg() {
   first_swing_leg_ = first_swing_leg_ == end_effector::LFoot
                          ? end_effector::RFoot
                          : end_effector::LFoot;
-}
-
-class Reader{
-    public:
-      int socket;
-      struct sockaddr_in serverAddr;
-      socklen_t addr_size;
-      char buffer[1024];
-} reader;
-
-int DCMTrajectoryManager::PortInit() {
-    // make socket
-    reader.socket = socket(AF_INET, SOCK_DGRAM, 0);
-    if (reader.socket < 0) {
-        std::cerr << "ERROR: Can't open socket\n";
-        return -1;
-    }
-    // address struct
-    reader.serverAddr.sin_family = AF_INET;
-    reader.serverAddr.sin_port = htons(8766);
-    reader.serverAddr.sin_addr.s_addr = INADDR_ANY;
-    memset(reader.serverAddr.sin_zero, '\0', sizeof reader.serverAddr.sin_zero);
-    // bind socket to local address and port
-    if (bind(reader.socket, (struct sockaddr *)&reader.serverAddr, sizeof(reader.serverAddr)) < 0) {
-        std::cerr << "ERROR: Can't bind socket\n";
-        close(reader.socket);
-        return -1;
-    }
-    reader.addr_size = sizeof(reader.serverAddr);
-    return 1;
-}
-
-void DCMTrajectoryManager::FoxListener(){
-    // read data
-    int bytesReceived = recvfrom(reader.socket, reader.buffer, sizeof(reader.buffer), 0, (struct sockaddr *)&reader.serverAddr, &reader.addr_size);
-    if (bytesReceived < 0) {
-        std::cerr << "ERROR: Can't read data\n";
-        SocketClose();
-    }
-    // debug: output data
-    std::cout << "***_DATA_***: " << std::string(reader.buffer, bytesReceived) << std::endl;
-}
-
-void DCMTrajectoryManager::SocketClose(void) {
-    // Close the socket
-    close(reader.socket);
 }

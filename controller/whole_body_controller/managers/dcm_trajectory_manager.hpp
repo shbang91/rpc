@@ -93,7 +93,6 @@ public:
   int GetSwingLeg() { return swing_leg_; }
 
   // setter (for operator UI)
-  void SetNumSteps(const int n_steps);
 
 private:
   DCMPlanner *dcm_planner_;
@@ -133,8 +132,4 @@ private:
   void _ResetIndexAndClearFootSteps();
   void _AlternateLeg();
 
-  // port reader
-  int PortInit();
-  void FoxListener();
-  void SocketClose();
 };
