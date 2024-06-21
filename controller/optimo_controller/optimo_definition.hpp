@@ -31,7 +31,30 @@ constexpr int joint6 = 5;
 constexpr int joint7 = 6;
 } // namespace optimo_joint
 
+namespace plato_link{
+constexpr int ee1 = 21;
+constexpr int ee2 = 25;
+constexpr int ee3 = 29;
+} // namespace plato_link
+
+namespace plato_joint{
+constexpr int joint1 = 18;
+constexpr int joint2 = 19;
+constexpr int joint3 = 20;
+constexpr int joint4 = 22;
+constexpr int joint5 = 23;
+constexpr int joint6 = 24;
+constexpr int joint7 = 26;
+constexpr int joint8 = 27;
+constexpr int joint9 = 28;
+} // namespace plato_joint
+
 namespace optimo {
 constexpr int n_qdot = 7;
 constexpr int n_adof = 7;
 } // namespace optimo
+
+namespace plato {
+constexpr int n_qdot = 9;
+constexpr int n_adof = 9;
+} // namespace plato
