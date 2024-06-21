@@ -57,4 +57,5 @@ constexpr int n_adof = 7;
 namespace plato {
 constexpr int n_qdot = 9;
 constexpr int n_adof = 9;
+constexpr int n_adof_total = optimo::n_adof + plato::n_adof; // arm + hand
 } // namespace plato

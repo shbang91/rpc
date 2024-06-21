@@ -123,6 +123,20 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   // Tasks, Contacts parameter initialization
   //=============================================================
+  try{
+    cfg_ = YAML::LoadFile(THIS_COM "config/optimo/ihwbc.yaml");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+  bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
+  bool b_save_wbc_costs =
+      util::ReadParameter<bool>(cfg_["wbc"]["qp"], "b_save_costs");
+  this->_InitializeParameters(b_sim);
+  if (!b_save_wbc_costs) {
+    task_unweighted_cost_map_.clear();
+    task_weighted_cost_map_.clear();
+  }
 
 
 
@@ -141,4 +155,42 @@ OptimoTCIContainer::~OptimoTCIContainer() {
   delete f2_ori_task_;
   delete f3_ori_task_;
 
+  // contact
+  delete ee_contact_;
+  delete f1_contact_;
+  delete f2_contact_;
+  delete f3_contact_;
+
+  // force task
+  delete ee_reaction_force_task_;
+  delete f1_reaction_force_task_;
+  delete f2_reaction_force_task_;
+  delete f3_reaction_force_task_;
+
+}
+
+
+void OptimoTCIContainer::_InitializeParameters(const bool b_sim) {
+  //task
+  ee_pos_task_ -> SetParameters(cfg_["wbc"]["task"]["ee_pos_task"], b_sim);
+  f1_pos_task_ -> SetParameters(cfg_["wbc"]["task"]["f1_pos_task"], b_sim);
+  f2_pos_task_ -> SetParameters(cfg_["wbc"]["task"]["f2_pos_task"], b_sim);
+  f3_pos_task_ -> SetParameters(cfg_["wbc"]["task"]["f3_pos_task"], b_sim);
+
+  ee_ori_task_ -> SetParameters(cfg_["wbc"]["task"]["ee_ori_task"], b_sim);
+  f1_ori_task_ -> SetParameters(cfg_["wbc"]["task"]["f1_ori_task"], b_sim);
+  f2_ori_task_ -> SetParameters(cfg_["wbc"]["task"]["f2_ori_task"], b_sim);
+  f3_ori_task_ -> SetParameters(cfg_["wbc"]["task"]["f3_ori_task"], b_sim);
+
+  //contact
+  ee_contact_ -> SetParameters(cfg_["wbc"]["contact"], b_sim);
+  f1_contact_ -> SetParameters(cfg_["wbc"]["contact"], b_sim);
+  f2_contact_ -> SetParameters(cfg_["wbc"]["contact"], b_sim);
+  f3_contact_ -> SetParameters(cfg_["wbc"]["contact"], b_sim);
+
+  //force task
+  ee_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
+  f1_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
+  f2_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
+  f3_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
 }

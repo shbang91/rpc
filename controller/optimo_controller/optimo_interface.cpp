@@ -42,9 +42,10 @@ void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   // process interrupt & task gains
 
-  if (interrupt_handler_->IsSignalReceived()) {
-      interrupt_handler_->Process();
-  }
+  // TODO: interrupt handler
+  // if (interrupt_handler_->IsSignalReceived()) {
+  //     interrupt_handler_->Process();
+  // }
 }
 
 void OptimoInterface::_SafeCommand(OptimoSensorData *data, OptimoCommand *command) {
