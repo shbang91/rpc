@@ -20,9 +20,10 @@ def load_params_store() -> Dict[str, Any]:
         "icp_ki": [0., 0.],
         "read_only_str_param": "end of com_xy_task",
         "n_steps": 5,
+        "t_ss": 101,
+        "t_ds": 102,
     }
     return param_store
-
 
 class Listener(FoxgloveServerListener):
     def __init__(self, param_store: Dict[str, Any]) -> None:

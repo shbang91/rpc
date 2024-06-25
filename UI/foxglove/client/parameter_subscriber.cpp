@@ -9,7 +9,7 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
         return;
       }
 
-      client_.getParameters({"n_steps"});
+      client_.getParameters({"n_steps","t_ss","t_ds"});
   });
 
   client_.setTextMessageHandler([&](const std::string& payload) {
@@ -19,9 +19,19 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
         if (op == "parameterValues") {
           auto param_value = msg["parameters"].get<std::vector<foxglove::Parameter>>();
           for (const auto& param : param_value) {
-            auto p_val = param.getValue().getValue<int64_t>();
-            std::cout << param.getName() << ": " << p_val << std::endl;
-            *parameters_map[param.getName()] = p_val;
+              //handler needed to differentiate datatypes   :::   clean up later
+            if(param.getType() == foxglove::ParameterType::PARAMETER_INTEGER){
+                std::cout << "type: INTEGER" << std::endl;
+                auto p_val = param.getValue().getValue<int64_t>();
+                std::cout << param.getName() << ": " << p_val << std::endl;
+                *parameters_map[param.getName()] = p_val;
+            }
+            else if(param.getType() == foxglove::ParameterType::PARAMETER_DOUBLE){
+                std::cout << "type: DOUBLE" << std::endl;
+                auto p_val = param.getValue().getValue<double>();
+                std::cout << param.getName() << ": " << p_val << std::endl;
+                *parameters_map[param.getName()] = p_val;
+            }
           }
         }
         return;

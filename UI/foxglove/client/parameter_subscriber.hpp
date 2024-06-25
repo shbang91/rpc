@@ -7,7 +7,7 @@
 class FoxgloveParameterSubscriber {
 public:
   FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_map,
-                              const std::string uri = "ws://localhost:8766");
+                              const std::string url = "ws://localhost:8766");
   ~FoxgloveParameterSubscriber();
 
   void UpdateParameters();

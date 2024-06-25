@@ -3,6 +3,7 @@
 #if B_USE_FOXGLOVE
 #include "UI/foxglove/client/parameter_subscriber.hpp"
 #endif
+#include <any>
 
 namespace draco_states {
 constexpr int kInitialize = 1;
