@@ -65,7 +65,7 @@ private:
   void _InitializeParameters() override;
 
 #if B_USE_FOXGLOVE
-  std::unordered_map<std::string, int*> param_map;
+  std::unordered_map<std::string, double*> param_map;
   FoxgloveParameterSubscriber *param_subscriber_;
 #endif
 };

@@ -19,9 +19,9 @@ def load_params_store() -> Dict[str, Any]:
         "icp_kd": [0., 0.,],
         "icp_ki": [0., 0.],
         "read_only_str_param": "end of com_xy_task",
-        "n_steps": 5,
-        "t_ss": 101,
-        "t_ds": 102,
+        "n_steps": 3,
+        "t_ss": 0.8,
+        "t_ds": 1.2,
     }
     return param_store
 

@@ -513,7 +513,7 @@ while True:
                                       msg.rfoot_ori, rfoot_rf_normal)
         elif args.visualizer == 'foxglove':
             print("FLAG_FOXTRIG")
-            webbrowser.open('https://app.foxglove.dev/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
+            #webbrowser.open('https://app.foxglove.dev/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
             th_fast = threading.Thread(target=asyncio.run(main()), args=())
             th_fast.start()
             #asyncio.run(main())
