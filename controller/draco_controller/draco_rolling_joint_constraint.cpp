@@ -6,7 +6,7 @@ DracoRollingJointConstraint::DracoRollingJointConstraint(
     PinocchioRobotSystem *robot)
     : InternalConstraint(robot, 2) {
 
-  util::PrettyConstructor(3, "DracoRollingJointConstraint");
+  //util::PrettyConstructor(3, "DracoRollingJointConstraint");
 }
 
 void DracoRollingJointConstraint::UpdateJacobian() {

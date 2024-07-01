@@ -6,7 +6,7 @@ TaskHierarchyManager::TaskHierarchyManager(Task *task, Eigen::VectorXd w_max,
     : task_(task), w_max_(w_max), w_min_(w_min),
       w_start_(Eigen::VectorXd ::Zero(task->Dim())),
       w_fin_(Eigen::VectorXd::Zero(task->Dim())), duration_(0.) {
-  util::PrettyConstructor(2, "TaskHierarchyManager");
+  //util::PrettyConstructor(2, "TaskHierarchyManager");
 }
 
 void TaskHierarchyManager::InitializeRampToMax(const double interp_duration) {

@@ -5,7 +5,7 @@
 UpperBodyTrajetoryManager::UpperBodyTrajetoryManager(
     Task *upper_body_task, PinocchioRobotSystem *robot)
     : upper_body_task_(upper_body_task), robot_(robot) {
-  util::PrettyConstructor(2, "UpperBodyTrajetoryManager");
+  //util::PrettyConstructor(2, "UpperBodyTrajetoryManager");
 }
 
 void UpperBodyTrajetoryManager::UseNominalUpperBodyJointPos(

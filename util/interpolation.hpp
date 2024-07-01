@@ -226,3 +226,102 @@ private:
   std::vector<MinJerkCurve> curves_;
   Eigen::VectorXd output_;
 };
+
+class QuadraticBezierCurve {
+public:
+  QuadraticBezierCurve();
+  QuadraticBezierCurve(const Eigen::VectorXd &start_pos_,
+                       const Eigen::VectorXd &mid_pos_,
+                       const Eigen::VectorXd &end_pos_,
+                       const double &duration_);
+  ~QuadraticBezierCurve();
+
+  Eigen::VectorXd Evaluate(const double t);
+  Eigen::VectorXd EvaluateFirstDerivative(const double t);
+  Eigen::VectorXd EvaluateSecondDerivative(const double t);
+
+private:
+  Eigen::VectorXd start_pos;
+  Eigen::VectorXd mid_pos;
+  Eigen::VectorXd end_pos;
+
+  double duration;
+
+  Eigen::VectorXd output;
+};
+
+class AlipSwing {
+public:
+  AlipSwing();
+  AlipSwing(const Eigen::Vector3d &start_pos_, const Eigen::Vector3d &end_pos_,
+            const double &mid_z_pos_, const double &duration_);
+  ~AlipSwing();
+
+  Eigen::Vector3d Evaluate(const double t);
+  Eigen::Vector3d EvaluateFirstDerivative(const double t);
+  Eigen::Vector3d EvaluateSecondDerivative(const double t);
+
+private:
+  Eigen::Vector3d start_pos;
+  Eigen::Vector3d end_pos;
+
+  HermiteCurve *first_z;
+  HermiteCurve *second_z;
+
+  Eigen::Vector3d output;
+
+  double s;
+  double duration;
+  double x;
+  double y;
+  double z;
+};
+
+class QuadraticLagrangePol {
+public:
+  QuadraticLagrangePol();
+  QuadraticLagrangePol(const double &z0, const double &t0, const double &z1,
+                       const double &t1, const double &z2, const double &t2);
+  ~QuadraticLagrangePol();
+
+  void Initialize(const double &z0, const double &t0, const double &z1,
+                  const double &t1, const double &z2, const double &t2);
+  double Evaluate(const double t);
+  double EvaluateFirstDerivative(const double t);
+  double EvaluateSecondDerivative(const double t);
+
+private:
+  double a; // z(t) = a*t²+b*t+c
+  double b;
+  double c;
+  double duration;
+};
+
+class AlipSwing2 { // alip swing but with z  is a lagrange polinomial
+public:
+  AlipSwing2();
+  AlipSwing2(const Eigen::Vector3d &start_pos_, const Eigen::Vector3d &end_pos_,
+             const double &mid_z_pos_, const double &duration_);
+  ~AlipSwing2();
+  void Initialize(const Eigen::Vector3d &start_pos_,
+                  const Eigen::Vector3d &end_pos_, const double &mid_z_pos_,
+                  const double &duration_);
+
+  Eigen::Vector3d Evaluate(const double t);
+  Eigen::Vector3d EvaluateFirstDerivative(const double t);
+  Eigen::Vector3d EvaluateSecondDerivative(const double t);
+
+private:
+  Eigen::Vector3d start_pos;
+  Eigen::Vector3d end_pos;
+
+  QuadraticLagrangePol *z_curve;
+
+  Eigen::Vector3d output;
+
+  double s;
+  double duration;
+  double x;
+  double y;
+  double z;
+};

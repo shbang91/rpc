@@ -8,7 +8,7 @@ IHWBC::IHWBC(const Eigen::MatrixXd &sa, const Eigen::MatrixXd *sf,
              const Eigen::MatrixXd *sv)
     : sa_(sa), dim_contact_(0), dim_cone_constraint_(0), b_contact_(true),
       lambda_qddot_(0.), b_first_visit_(true) {
-  util::PrettyConstructor(3, "IHWBC");
+  //util::PrettyConstructor(3, "IHWBC");
 
   num_qdot_ = sa_.cols();
   num_active_ = sa_.rows();
@@ -73,12 +73,13 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   // task cost
   cost_t_mat.setZero(num_qdot_, num_qdot_);
   cost_t_vec.setZero(num_qdot_);
+  int count = 0;
   for (const auto &[task_str, task_ptr] : task_map) {
     Eigen::MatrixXd jt = task_ptr->Jacobian();
     Eigen::VectorXd jtdot_qdot = task_ptr->JacobianDotQdot();
     Eigen::VectorXd des_xddot = task_ptr->OpCommand();
     Eigen::MatrixXd weight_mat = task_ptr->Weight().asDiagonal();
-
+    
     // std::cout
     //<< "--------------------------------------------------------------"
     //<< std::endl;
@@ -90,6 +91,12 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
 
     cost_t_mat += jt.transpose() * weight_mat * jt;
     cost_t_vec += (jtdot_qdot - des_xddot).transpose() * weight_mat * jt;
+
+    //task_ptr->Debug();
+    //std::cout <<  "IDX" << task_ptr->TargetIdx() << std::endl;
+    
+    //std::cout << "IHWBC cost_t_vec" << count++ << std::endl << cost_t_vec << std::endl << jtdot_qdot << std::endl << des_xddot << std::endl << "hehe" << weight_mat << std::endl << jt << std::endl;
+    //std::cout << "only jdotqdot " << std::endl << des_xddot << std::endl << std::endl;
   }
   cost_t_mat += lambda_qddot_ * A_; // regularization term
 
@@ -444,6 +451,8 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   CI_.resize(num_qp_vars_, num_ineq_const_);
   ci0_.resize(num_ineq_const_);
 
+  //std::cout << "QP init" << cost_mat << cost_vec << eq_mat << eq_vec << std::endl;//<< ineq_mat << ineq_vec << std::endl;
+  //std::cout << cost_vec << std::endl;
   _SetQPCost(cost_mat, cost_vec);
   _SetQPEqualityConstraint(eq_mat, eq_vec);
   _SetQPInEqualityConstraint(ineq_mat, ineq_vec);
@@ -556,6 +565,8 @@ void IHWBC::_SolveQP() {
 
   qddot_sol_ = qp_sol.head(num_qdot_);
   rf_sol_ = qp_sol.tail(dim_contact_);
+
+  //std::cout << "IHWBC sol" << qddot_sol_ <<  rf_sol_ << std::endl;
 }
 
 void IHWBC::SetParameters(const YAML::Node &node) {

@@ -30,7 +30,7 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
       b_use_modified_swing_foot_jac_(false), smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
-  util::PrettyConstructor(2, "DracoController");
+  //util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
 #if B_USE_MATLOGGER
@@ -223,6 +223,9 @@ void DracoController::GetCommand(void *command) {
                   tci_container_->force_task_map_, wbc_qddot_cmd_,
                   joint_trq_cmd_); // joint_trq_cmd_ size: 27
 
+
+    //std::cout << "CONTROLLER GIVE COMMAND" << joint_trq_cmd_ << std::endl;
+
     // joint integrator for real experiment
     Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd_.tail(robot_->NumActiveDof());
     joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
@@ -255,6 +258,25 @@ void DracoController::GetCommand(void *command) {
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
     this->_SaveData();
   }
+}
+
+
+void DracoController::Reset(){
+  joint_pos_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
+  joint_vel_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
+  joint_trq_cmd_ = Eigen::VectorXd::Zero(draco::n_adof);
+  joint_trq_cmd_prev_ = Eigen::VectorXd::Zero(draco::n_adof);
+  wbc_qddot_cmd_ = Eigen::VectorXd::Zero(draco::n_qdot);
+  b_sim_ = false;
+  b_int_constraint_first_visit_ = true; 
+  b_first_visit_pos_ctrl_ = true;
+  b_first_visit_wbc_ctrl_ = true; 
+  b_smoothing_command_ = false;
+  b_use_modified_swing_foot_jac_ = false;
+  smoothing_command_duration_ = 0.;
+  init_joint_pos_ = Eigen::VectorXd::Zero(draco::n_adof);
+  //ihwbc_->Reset();
+  //joint_integrator_->Reset();
 }
 
 void DracoController::_SaveData() {

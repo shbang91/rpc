@@ -5,7 +5,7 @@
 MaxNormalForceTrajectoryManager::MaxNormalForceTrajectoryManager(
     Contact *contact, const double max_rf_z)
     : contact_(contact), max_rf_z_(max_rf_z) {
-  util::PrettyConstructor(2, "MaxNormalForceTrajectoryManager");
+  //util::PrettyConstructor(2, "MaxNormalForceTrajectoryManager");
 
   min_rf_z_ = 0.001;
   init_max_rf_z_ = 0.;   // default

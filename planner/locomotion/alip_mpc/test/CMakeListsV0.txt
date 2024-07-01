@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.1...3.27)
+
+project(Test_ALIP_MPC)
+set(CMAKE_CXX_STANDARD 17)
+
+# for using casadi
+find_package(casadi REQUIRED)
+
+# set casadi include directory
+set(CASADI_INCLUDE_DIR /usr/local/include/casadi)
+
+# find casadi library
+find_library(CASADI_LIBRARY
+    NAMES casadi
+    HINTS ${CASADI_INCLUDE_DIR}/../lib $ENV{CASADI_PREFIX}/lib)
+    
+if(CASADI_LIBRARY)
+    set(CASADI_LIBRARIES ${CASADI_LIBRARIES} ${CASADI_LIBRARY})
+endif()
+
+
+
+add_library(test_lib test_mpc_dyn.cpp test_mpc_dyn.hpp)
+
+
+# Control Library
+set(LIB_CTRL
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/NewStep_mpc.cpp)
+add_library(ctrl_ ${LIB_CTRL})
+target_include_directories(ctrl_ PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_link_libraries(ctrl_
+    ${CASADI_LIBRARIES}
+     test_lib)
+
+
+add_executable(TEST0 test_mpc_dyn.cpp)
+target_link_libraries(TEST0 ctrl_)

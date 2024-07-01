@@ -9,11 +9,8 @@
 DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
-    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
-      b_com_swaying_(false), b_lmpc_swaying_(false), b_nmpc_swaying_(false),
-      b_dcm_walking_(false), b_lmpc_walking_(false), b_nmpc_walking_(false),
-      b_static_walking_(false) {
-  util::PrettyConstructor(2, "DoubleSupportBalance");
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
+  //util::PrettyConstructor(2, "DoubleSupportBalance");
 
   try {
     YAML::Node cfg =
@@ -31,19 +28,10 @@ DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
 }
 
 void DoubleSupportBalance::FirstVisit() {
-  std::cout << "draco_states: kDoubleSupportBalance" << std::endl;
+  //std::cout << "draco_states: kDoubleSupportBalance" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
   // reset flags
-  b_com_swaying_ = false;
-  b_lmpc_swaying_ = false;
-  b_nmpc_swaying_ = false;
-
-  b_dcm_walking_ = false;
-  b_lmpc_walking_ = false;
-  b_nmpc_walking_ = false;
-
-  b_static_walking_ = false;
 
   // set current foot position as nominal (desired) for rest of this state
   nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
@@ -66,14 +54,7 @@ void DoubleSupportBalance::OneStep() {
 }
 
 bool DoubleSupportBalance::EndOfState() {
-  if (b_com_swaying_ || b_lmpc_swaying_ || b_nmpc_swaying_ || b_lmpc_walking_ ||
-      b_nmpc_walking_ || b_static_walking_)
-    return true;
-
-  if (b_dcm_walking_ && ctrl_arch_->dcm_tm_->GetFootStepList().size() > 0 &&
-      !ctrl_arch_->dcm_tm_->NoRemainingSteps())
-    return true;
-
+  if (state_machine_time_ > 0.1) return true;
   return false;
 }
 
@@ -82,11 +63,11 @@ void DoubleSupportBalance::LastVisit() {
 
   if (sp_->b_use_base_height_)
     sp_->des_com_height_ = robot_->GetRobotComPos()[2];
-
+  /*
   std::cout << "-----------------------------------------" << std::endl;
   std::cout << "des com height: " << sp_->des_com_height_ << std::endl;
   std::cout << "-----------------------------------------" << std::endl;
-
+  */
   Eigen::Isometry3d torso_iso =
       robot_->GetLinkIsometry(draco_link::torso_com_link);
   FootStep::MakeHorizontal(torso_iso);
@@ -94,38 +75,8 @@ void DoubleSupportBalance::LastVisit() {
 }
 
 StateId DoubleSupportBalance::GetNextState() {
-  if (b_com_swaying_)
-    return draco_states::kDoubleSupportSwaying;
-  // if (b_lmpc_swaying_)
-  // return draco_states::kComSwayingLmpc;
-  // if (b_nmpc_swaying_)
-  // return draco_states::kComSwayingNmpc;
-
-  if (b_dcm_walking_) {
-    if (ctrl_arch_->dcm_tm_->GetSwingLeg() == end_effector::LFoot) {
-      b_dcm_walking_ = false;
-      return draco_states::kLFContactTransitionStart;
-    } else if (ctrl_arch_->dcm_tm_->GetSwingLeg() == end_effector::RFoot) {
-      b_dcm_walking_ = false;
-      return draco_states::kRFContactTransitionStart;
-    }
+    return draco_states::AlipLocomotion;
   }
 
-  //}
-  //}
-
-  // if (b_lmpc_walking_)
-  // return;
-  // if (b_nmpc_walking_)
-  // return;
-
-  // if (b_static_walking_) {
-  // if (true) {
-  // return draco_states::kMoveComToLFoot;
-  //} else {
-  // return draco_states::kMoveComToRFoot;
-  //}
-  //}
-}
 
 void DoubleSupportBalance::SetParameters(const YAML::Node &node) {}

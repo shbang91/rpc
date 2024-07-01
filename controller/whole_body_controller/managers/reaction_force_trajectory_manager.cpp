@@ -12,7 +12,7 @@ ForceTrajectoryManager::ForceTrajectoryManager(ForceTask *force_task,
 
   grav_vec_ << 0., 0., 0., 0., 0., 9.81;
 
-  util::PrettyConstructor(2, "ReactionForceTrajectoryManager");
+  //util::PrettyConstructor(2, "ReactionForceTrajectoryManager");
 }
 
 void ForceTrajectoryManager::InitializeInterpolation(

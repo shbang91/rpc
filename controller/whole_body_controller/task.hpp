@@ -1,6 +1,8 @@
 #pragma once
 #include <Eigen/Dense>
 #include <iostream>
+#include <fstream>
+#include <string>
 
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
@@ -125,6 +127,18 @@ public:
     std::cout << "task_weight: " << weight_.transpose() << std::endl;
   }
 
+  void openTxt(std::string name){
+    std::string fileName = std::string(THIS_COM) + "/test/alip/task_" + name + ".txt";
+    file.open(fileName, std::fstream::out);
+  }
+
+  void saveTxt(double time, double stance_leg, double state){
+    file << pos_.transpose() << " " << des_pos_.transpose() << " ";
+    file << vel_.transpose() << " " << des_vel_.transpose() << " ";
+    file << weight_.transpose() << " " << time << " " << stance_leg << " ";
+    file << state << std::endl;
+  }
+
 protected:
   PinocchioRobotSystem *robot_;
   int dim_;
@@ -164,4 +178,7 @@ protected:
   Eigen::VectorXd jacobian_dot_q_dot_;
 
   Eigen::VectorXd weight_;
+
+  std::fstream file;
+
 };

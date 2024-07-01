@@ -16,7 +16,7 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
                                            DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
       rf_z_max_interp_duration_(0.) {
-  util::PrettyConstructor(2, "DoubleSupportStandUp");
+  //util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
   init_reaction_force_.setZero();
@@ -27,7 +27,7 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
 }
 
 void DoubleSupportStandUp::FirstVisit() {
-  std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
+  //std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
   Eigen::Isometry3d stance_foot_iso =

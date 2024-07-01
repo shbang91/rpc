@@ -20,6 +20,7 @@ public:
 
   void GetCommand(void *command);
 
+  void Reset();
 private:
   PinocchioRobotSystem *robot_;
   DracoTCIContainer *tci_container_;

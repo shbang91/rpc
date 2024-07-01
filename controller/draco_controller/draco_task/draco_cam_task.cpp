@@ -3,7 +3,7 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
 
 DracoCAMTask::DracoCAMTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
-  util::PrettyConstructor(3, "DracoCAMTask");
+  //util::PrettyConstructor(3, "DracoCAMTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }

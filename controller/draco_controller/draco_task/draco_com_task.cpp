@@ -6,7 +6,7 @@
 DracoComTask::DracoComTask(PinocchioRobotSystem *robot)
     : Task(robot, 3), com_feedback_source_(com_feedback_source::kComFeedback),
       com_height_target_source_(com_height_target_source::kComHeight) {
-  util::PrettyConstructor(3, "DracoCoMTask");
+  //util::PrettyConstructor(3, "DracoCoMTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }

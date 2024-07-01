@@ -99,6 +99,7 @@ public:
   // setters
   void SetRobotComOffset(const Eigen::Vector3d &com_offset);
 
+  void Reset();
 private:
   void _Initialize();
   void _UpdateCentroidalQuantities();

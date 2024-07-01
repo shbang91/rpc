@@ -3,6 +3,8 @@
 #include "util/util.hpp"
 #include <Eigen/Dense>
 
+#include "planner/locomotion/alip_mpc/include/NewStep_mpc.hpp"
+
 namespace dcm_walking_primitive {
 constexpr int kFwdWalk = 0;
 constexpr int kBwdWalk = 1;
@@ -123,7 +125,8 @@ private:
   double nominal_backward_step_ = -0.25;
   double nominal_turn_radians_ = M_PI / 4.0;
   double nominal_strafe_distance_ = 0.125;
-  int n_steps_ = 3;
+  int n_steps_ = 6;
+
 
   // for footstep generation
   void _UpdateFootStepsPreviewList(const int max_foot_steps_preview);

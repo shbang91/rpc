@@ -5,7 +5,7 @@ DartRobotSystem::DartRobotSystem(const std::string &_urdf_path,
                                  const bool _b_fixed_base,
                                  const bool _b_print_info, const int _n_vdof)
     : RobotSystem(_b_fixed_base, _b_print_info), n_vdof_(_n_vdof) {
-  util::PrettyConstructor(1, "DartRobotSystem");
+  //util::PrettyConstructor(1, "DartRobotSystem");
   dart::utils::DartLoader urdf_loader;
   skeleton_ = urdf_loader.parseSkeleton(_urdf_path);
 

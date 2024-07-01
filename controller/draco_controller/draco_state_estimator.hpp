@@ -31,6 +31,12 @@ public:
 
   // simulation only
   void UpdateGroundTruthSensorData(DracoSensorData *sensor_data);
+  void UpdateFootContact(DracoSensorData *sensor_data);
+
+  void GetRlpolicy(DracoSensorData *sensor_data);
+  void UpdateWbcObs();
+
+  void Reset();
 
 private:
   void _ComputeDCM();

@@ -5,7 +5,17 @@ import numpy as np
 import json
 import multiprocessing as mp
 from tqdm import tqdm
+import configparser
 
+def read_config(filename):
+    config = configparser.ConfigParser()
+    config.read(filename)
+    return config
+
+def read_config(filename):
+    config = configparser.ConfigParser()
+    config.read(filename)
+    return config
 
 def pretty_print(ob):
     print(json.dumps(ob, indent=4))
@@ -67,9 +77,6 @@ def rot_to_quat(rot):
     """
     return np.copy(R.from_matrix(rot).as_quat())
 
-
-def rot_to_rpy(rot):
-    return R.from_matrix(rot).as_euler('xyz')
 
 def QuatToExp(quat):
     img_vec = np.array([quat[0], quat[1], quat[2]])

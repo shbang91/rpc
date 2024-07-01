@@ -112,7 +112,7 @@ protected:
 
   // -----------------------------------------------------
   std::vector<FootStep> foot_step_list_;
-  std::vector<Eigen::Vector3d> vrp_list_;
+  std::vector<Eigen::Vector3d> vrp_list_;                         //this seems important
   std::vector<int> vrp_type_list_;
   std::map<int, int> vrp_index_to_footstep_index_map_;
 

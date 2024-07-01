@@ -2,7 +2,7 @@
 
 JointTask::JointTask(PinocchioRobotSystem *robot)
     : Task(robot, robot->NumActiveDof()) {
-  util::PrettyConstructor(3, "JointTask");
+  //util::PrettyConstructor(3, "JointTask");
 }
 
 // not being used
@@ -29,7 +29,7 @@ void JointTask::UpdateJacobianDotQdot() {
 SelectedJointTask::SelectedJointTask(
     PinocchioRobotSystem *robot, const std::vector<int> &joint_idx_container)
     : Task(robot, joint_idx_container.size()) {
-  util::PrettyConstructor(3, "SelectedJointTask");
+  //util::PrettyConstructor(3, "SelectedJointTask");
   joint_idx_container_ = joint_idx_container;
 }
 
@@ -64,7 +64,7 @@ std::vector<int> SelectedJointTask::JointIdxContainer() {
 // Link Position Task
 LinkPosTask::LinkPosTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
-  util::PrettyConstructor(3, "LinkPosTask");
+  //util::PrettyConstructor(3, "LinkPosTask");
 
   target_idx_ = target_idx;
 }
@@ -104,7 +104,7 @@ void LinkPosTask::UpdateJacobianDotQdot() {
 // Link Orientation Task
 LinkOriTask::LinkOriTask(PinocchioRobotSystem *robot, int target_idx)
     : Task(robot, 3) {
-  util::PrettyConstructor(3, "LinkOriTask");
+  //util::PrettyConstructor(3, "LinkOriTask");
   target_idx_ = target_idx;
   des_pos_.resize(4); // quaternion
   des_pos_.setZero();
@@ -170,7 +170,7 @@ void LinkOriTask::UpdateJacobianDotQdot() {
 
 // Robot Center of Mass Task
 ComTask::ComTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
-  util::PrettyConstructor(3, "Com Task");
+  //util::PrettyConstructor(3, "Com Task");
   // no target idx
 }
 

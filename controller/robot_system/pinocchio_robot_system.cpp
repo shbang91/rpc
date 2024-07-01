@@ -7,7 +7,7 @@ PinocchioRobotSystem::PinocchioRobotSystem(const std::string &urdf_file,
                                            const bool b_print_info)
     : urdf_file_(urdf_file), package_dir_(package_dir),
       b_fixed_base_(b_fixed_base), b_print_info_(b_print_info) {
-  util::PrettyConstructor(1, "PinocchioRobotSystem");
+  //util::PrettyConstructor(1, "PinocchioRobotSystem");
   this->_Initialize();
   if (b_print_info)
     this->_PrintRobotInfo();
@@ -322,4 +322,13 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
 
 void PinocchioRobotSystem::SetRobotComOffset(const Eigen::Vector3d &com_offset) {
   com_offset_ = com_offset;
+}
+
+
+void PinocchioRobotSystem::Reset(){
+  q_ = Eigen::VectorXd::Zero(n_q_);
+  qdot_ = Eigen::VectorXd::Zero(n_qdot_);
+  Ig_.setZero();
+  Hg_.setZero();
+  Ag_ = Eigen::MatrixXd::Zero(6, n_qdot_);
 }

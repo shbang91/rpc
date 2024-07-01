@@ -10,7 +10,7 @@ public:
         rf_des_(Eigen::VectorXd::Zero(contact_->Dim())),
         rf_cmd_(Eigen::VectorXd::Zero(contact_->Dim())),
         weight_(Eigen::VectorXd::Zero(contact_->Dim())) {
-    util::PrettyConstructor(3, "ForceTask");
+    //util::PrettyConstructor(3, "ForceTask");
   };
   virtual ~ForceTask() = default;
 

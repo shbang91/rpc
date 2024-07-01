@@ -1,12 +1,15 @@
-servo_dt: 0.00125
+#servo_dt: 0.00125
+#servo_dt: 0.0025
+servo_dt: 0.00175
+
 
 ip_address: "tcp://127.0.0.1:5557"
 
 #data_save_freq: 1
 data_save_freq: 50
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 contact_detection:
   b_debug_only_log: true
@@ -87,7 +90,7 @@ controller:
 wbc:
   task:
     com_xy_task:
-      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
+      com_feedback_source: 0 # 0: com feedback / 1: icp feedback
       icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
 
       ########################################################################
@@ -132,13 +135,18 @@ wbc:
       exp_lpf_time_constant: 0.03
 
     com_z_task:
-      com_height_target_source: 1 # 0: com height / 1: base height
+      com_height_target_source: 0 # 0: com height / 1: base height
       ########################################################################
       ## sim params
       ########################################################################
-      sim_com_weight : [1000.]
-      sim_com_kp : [100.]
-      sim_com_kd : [5.]
+     # sim_com_weight : [1000.]  Carlos
+      sim_com_weight : [1000.] #Carlos
+      sim_com_kp : [1000.]
+      sim_com_kd : [50.]
+
+      #sim_com_weight : [1000.]
+      #sim_com_kp : [100.]
+      #sim_com_kd : [5.]
 
       sim_base_weight : [1000.] # only used when target source : 1
       sim_base_kp : [100.]
@@ -147,7 +155,7 @@ wbc:
       ########################################################################
       ## exp params
       ########################################################################
-      exp_com_weight : [1000.]
+      exp_com_weight : [1000.] 
       exp_com_kp : [100.]
       exp_com_kd : [5.]
 
@@ -172,9 +180,12 @@ wbc:
       ########################################################################
       ## sim params
       ########################################################################
-      sim_weight : [100., 100., 10.]
-      sim_kp : [200., 200., 100.]
-      sim_kd : [14., 14., 10.]
+      #sim_weight : [100., 100., 10.]
+      sim_weight : [500., 500., 50.]
+      #sim_kp : [200., 200., 100.]
+      #sim_kd : [14., 14., 10.]
+      sim_kp : [250., 250., 200.]
+      sim_kd : [31., 31., 20.]
 
       ## exp params
       exp_weight : [2500., 1500., 200.]
@@ -188,10 +199,16 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      sim_weight : [40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40.]
+      #sim_weight : [400., 400., 400., 400., 400., 400., 400., 400., 400., 400., 400., 400., 400.]
+      #sim_weight : [800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800.]
+      sim_weight : [500., 500., 500., 500., 500., 500., 500., 500., 500., 500., 500., 500., 500.]
+      #sim_weight : [40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40.]
       sim_kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
-      sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+      #sim_kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+      sim_kd : [15., 15., 15., 7., 5., 5., 20., 15., 15., 15., 5., 4., 4.]
+      #sim_kd : [30., 30., 30., 14., 10., 10., 40., 30., 30., 30., 10., 8., 8.]
 
+      #sim_kd : [45., 45., 40., 22., 15., 15., 60., 40., 40., 45., 14., 12., 12.]
       ########################################################################
       ## exp params
       ########################################################################
@@ -205,8 +222,14 @@ wbc:
       ########################################################################
       sim_weight : [5000., 5000., 5000.]
       sim_weight_at_swing : [8000., 8000., 8000.]
-      sim_kp : [300., 300., 300.]
-      sim_kd : [30., 30., 30.]
+      #sim_kp : [800., 800., 700.]
+      #sim_kd : [25., 25., 20.]
+      sim_kp: [500, 500, 500]
+      sim_kd: [25, 25, 100]
+      #sim_kp : [200., 200., 350.]
+      #sim_kd : [20., 20., 30.]
+      #sim_kp : [300., 300., 300.]
+      #sim_kd : [30., 30., 30.]
 
       ########################################################################
       ## exp params
@@ -214,7 +237,7 @@ wbc:
       exp_weight : [6000., 6000., 5000.]
       exp_weight_at_swing : [8000., 8500., 8000.]
       exp_kp : [150., 200., 250.]
-      exp_kd : [3.0, 0.8, 7.0]
+      exp_kd : [3.0, 3, 3]
 
     foot_ori_task:
       ########################################################################
@@ -222,8 +245,10 @@ wbc:
       ########################################################################
       sim_weight : [5000., 5000., 5000.]
       sim_weight_at_swing : [5000., 5000., 5000.]
-      sim_kp : [80., 80., 80.]
-      sim_kd : [4., 4., 4.]
+      #sim_kp : [80., 80., 80.]
+      #sim_kd : [4., 4., 4.]
+      sim_kp : [400., 400., 400.]  #good change 800
+      sim_kd : [40., 40., 40.]  #40
 
       ########################################################################
       ## exp params
@@ -295,8 +320,8 @@ state_machine:
       wait_time: 15.
 
     stand_up:
-      standup_duration: 5.
-      target_com_height: 0.658
+      standup_duration: 0.2
+      target_com_height: 0.685
       target_base_height: 0.90
 
       rf_z_max_interp_duration: 0.1
@@ -361,4 +386,76 @@ lmpc_walking:
   n_steps: 1
   first_swing_leg: 0 ## 0: left leg ## 1: right leg
 
+#mpc freq == 0 --> mu = 0.4
+#mpc freq == 5 --> mu = 0.1
+alip_mpc_walking:
+  verbose: false
+  save_freq: 100000
+  new_solver: false #true is better for mpc freq
+  #mpc_freq: 0  #50aag
+  step_horizon: "4"
+  intervals: "2"
+  Ts: 0.275    #0.25  #Greater Ts makes offset increase also
+  stance_leg: -1 # -1: RIGHT SWING TO START; 1: LEFT SWING TO START
+  leg_width: 0.1 #0.1 0.05
+  zH: 0.69   #this will be the reference height target. The height for the mpc will be another
+  mu: 0.2
+  total_mass: 39.15342    
+  ufp_x_max: 0.5  #0.6
+  ufp_y_max: 0.5  #0.4
+  ufp_y_min: 0.09 #0.05
+  #Lx_offset: 0 #0
+  #Ly_des: 0 #3
+  #com_yaw: 10  #degrees
+  kx: 0
+  ky: 0
+  #old solver:
+  y_mech_max: 0.15
 
+
+  #new solver params:
+  new_ufp_x_max: 0.5
+  new_ufp_y_max: 0.2
+
+  q_term_0: 10
+  q_term_1: 10
+  q_term_2: 10.1
+  q_term_3: 10.1
+
+  variable_height: 0
+  swing_height: 0.05   #0.07  higher swing_height can work for lower zH
+  reference_swing_height: 0.1 #0.08   #for a swing of 0.5m
+  Bezier: 0
+  Alip: 0
+  Alip2: 1
+  task: #not implemente yet
+    com_z_pos: [9000]  
+    com_xy_pos: [0,0] 
+    torso_ori: [7000, 7000, 7000]
+    stance_foot_weight: [9000, 9000, 9000]
+    stance_foot_ori_weight: [7000, 7000, 7000]
+    swing_foot_weight: [8000, 8000, 8000] #8000 
+    swing_foot_ori_weight: [6000, 6000, 6000]
+
+  rf_z_MAX: 600
+  #610
+  rf_z_max: 0
+  #0.001
+
+
+
+
+#my stance leg is right:
+#   --> COM will have y > 0  (indata.stance = )
+#   --> UFP next left stance will have y > 0 (RS)
+#   --> COM at impact will have y < 0 (indata.stance = 1)
+#   --> if indata.stance = 1 move left
+#my stance leg is left:
+#   --> COM will have y < 0
+#   --> UFP next right stance will have y < 0 (LS)
+#   --> COM at impact will have y > 0 (indata.stance = -1)
+#   --> if indata.stance = -1 move right
+
+
+
+# --> LS solver solves for 

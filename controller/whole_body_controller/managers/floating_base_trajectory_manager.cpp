@@ -15,7 +15,7 @@ FloatingBaseTrajectoryManager::FloatingBaseTrajectoryManager(
       freq_(Eigen::Vector3d::Zero()), b_swaying_(false),
       min_jerk_curve_(nullptr), min_jerk_time_(nullptr) {
 
-  util::PrettyConstructor(2, "FloatingBaseTrajectoryManager");
+  //util::PrettyConstructor(2, "FloatingBaseTrajectoryManager");
 }
 
 FloatingBaseTrajectoryManager::~FloatingBaseTrajectoryManager() {

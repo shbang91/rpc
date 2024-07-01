@@ -9,7 +9,7 @@ JointIntegrator::JointIntegrator(const int num_joints, const double dt,
     : num_joints_(num_joints), dt_(dt), pos_min_(pos_min), pos_max_(pos_max),
       vel_min_(vel_min), vel_max_(vel_max), alpha_pos_(0.), alpha_vel_(0.),
       pos_max_error_vec_(Eigen::VectorXd::Zero(num_joints)) {
-  util::PrettyConstructor(3, "JointIntegrator");
+  //util::PrettyConstructor(3, "JointIntegrator");
 
   jpos_ = Eigen::VectorXd::Zero(num_joints_);
   jvel_ = Eigen::VectorXd::Zero(num_joints_);

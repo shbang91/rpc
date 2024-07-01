@@ -13,7 +13,7 @@ LMPCHandler::LMPCHandler(DCMPlanner *dcm_planner, PinocchioRobotSystem *robot,
       rfoot_rf_task_(rfoot_rf_task), lfoot_idx_(lfoot_idx),
       rfoot_idx_(rfoot_idx), b_first_visit_(true), walking_primitive_(-1),
       first_swing_leg_(end_effector::LFoot), current_foot_step_idx_(0) {
-  util::PrettyConstructor(2, "LMPCHandler");
+  //util::PrettyConstructor(2, "LMPCHandler");
   foot_step_list_.clear();
   foot_step_preview_list_.clear();
 }

@@ -5,7 +5,7 @@
 
 ContactDetectionManager::ContactDetectionManager(PinocchioRobotSystem *_robot)
   : b_contact_touchdown_(2, false), b_heel_toe_touchdown_(2, false) {
-  util::PrettyConstructor(2, "ContactDetectionManager");
+  //util::PrettyConstructor(2, "ContactDetectionManager");
 
   robot_ = _robot;
   wait_count_post_transition_ = 100;    // wait this many control ticks before re-transitioning

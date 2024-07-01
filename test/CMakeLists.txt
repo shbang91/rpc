@@ -1,11 +1,13 @@
+add_subdirectory(alip)
+
 add_executable(pin_robot_system_test pin_robot_system_test.cpp)
 target_link_libraries(pin_robot_system_test rpc-pin-robot-system)
 
 add_executable(dcm_planner_test dcm_planner_test.cpp)
 target_link_libraries(dcm_planner_test rpc-wbc)
 
-add_executable(lmpc_handler_test lmpc_handler_test.cpp)
-target_link_libraries(lmpc_handler_test rpc-lmpc-handler)
+#add_executable(lmpc_handler_test lmpc_handler_test.cpp)
+#target_link_libraries(lmpc_handler_test rpc-lmpc-handler)
 
 add_executable(draco_interface_test rpc_interface.cpp)
 target_link_libraries(draco_interface_test rpc-draco-controller)

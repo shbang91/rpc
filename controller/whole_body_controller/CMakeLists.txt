@@ -7,7 +7,8 @@ add_library(rpc-wbc ${sources} ${wbc_headers} ${manager_headers})
 target_link_libraries(rpc-wbc PUBLIC rpc-pin-robot-system
                               PUBLIC rpc-goldfarb
                               PUBLIC rpc-dcm-planner
-                              PUBLIC rpc-util)
+                              PUBLIC rpc-util
+                              PUBLIC rpc-alip-planner)
 if(BUILD_WITH_MATLOGGER)
     target_link_libraries(rpc-wbc PUBLIC matlogger2::matlogger2)
 endif()

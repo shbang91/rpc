@@ -5,7 +5,7 @@
 #endif
 
 DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
-  util::PrettyConstructor(1, "DracoKFStateEstimator");
+  //util::PrettyConstructor(1, "DracoKFStateEstimator");
   robot_ = _robot;
   sp_ = DracoStateProvider::GetStateProvider();
 

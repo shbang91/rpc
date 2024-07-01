@@ -25,7 +25,8 @@ target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-dcm-planner
                                            PUBLIC rpc-lmpc-handler
                                            PUBLIC rpc-filter
-                                           PUBLIC rpc-state-estimator)
+                                           PUBLIC rpc-state-estimator
+                                           PUBLIC rpc-alip-planner)
 
 if(BUILD_WITH_ZMQ_PROTOBUF)
     target_link_libraries(rpc-draco-controller PUBLIC ${Protobuf_LIBRARIES}

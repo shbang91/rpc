@@ -203,3 +203,5 @@ Eigen::Isometry3d FootStep::MakeIsometry(const FootStep &foot_step) {
   ret.linear() = foot_step.GetRotMat();
   return ret;
 }
+
+

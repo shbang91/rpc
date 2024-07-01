@@ -18,7 +18,7 @@ DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
       feedback_source_(feedback_source::kCoMFeedback),
       icp_integrator_(nullptr),
       icp_lpf_(nullptr) {
-  util::PrettyConstructor(3, "DracoCoMXYTask");
+  //util::PrettyConstructor(3, "DracoCoMXYTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
 

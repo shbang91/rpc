@@ -7,7 +7,7 @@
 
 DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot) : Task(robot, 1) {
 
-  util::PrettyConstructor(3, "DracoCoMZTask");
+  //util::PrettyConstructor(3, "DracoCoMZTask");
   sp_ = DracoStateProvider::GetStateProvider();
 }
 

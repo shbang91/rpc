@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<robot name="wedge_11">
+  <link name="wedge_11__link_2">
+    <inertial>
+      <mass value="0"/>
+      <origin rpy="0      0     -1.5708" xyz="1 0 0"/>
+      <inertia ixx="0.166667" ixy="0" ixz="0" iyy="0.166667" iyz="0" izz="0.166667"/>
+    </inertial>
+    <collision name="wedge_11__collision">
+      <origin rpy="0      0     -1.5708" xyz="1 0 0"/>
+      <geometry>
+        <mesh filename="package://wedge_11.stl" scale="1 5 1"/>
+      </geometry>
+    </collision>
+    <visual name="wedge_11__visual">
+      <origin rpy="0      0     -1.5708" xyz="1 0 0"/>
+      <geometry>
+        <mesh filename="package://wedge_11.stl" scale="1 5 1"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>

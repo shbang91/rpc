@@ -49,8 +49,9 @@ int main() {
   Eigen::Vector3d init_dcm_vel = Eigen::Vector3d::Zero();
   Eigen::Quaterniond init_torso_quat(
       robot.GetLinkIsometry(draco_link::torso_com_link).linear());
-
+  cout << "start :" << endl;
   dcm_tm.ForwardWalkMode();
+  cout << "finish alip: " << endl;
   dcm_tm.Initialize(0., dcm_transfer_type::kInitial, init_torso_quat, init_dcm,
                     init_dcm_vel);
   dcm_tm.GetDCMPlanner()->SaveSolution("1");
@@ -85,5 +86,7 @@ int main() {
                     init_dcm_vel);
   dcm_tm.GetDCMPlanner()->SaveSolution("7");
 
+
+  cout << "end test " << endl;
   return 0;
 }

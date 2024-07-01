@@ -18,6 +18,7 @@ public:
   std::unordered_map<StateId, StateMachine *> state_machine_container() const {
     return this->state_machine_container_;
   }
+  virtual void Reset() = 0;
 
 protected:
   PinocchioRobotSystem *robot_;
@@ -26,7 +27,6 @@ protected:
   std::unordered_map<StateId, StateMachine *> state_machine_container_;
   StateId state_;
   StateId prev_state_;
-
   YAML::Node cfg_;
   virtual void _InitializeParameters() = 0;
 };

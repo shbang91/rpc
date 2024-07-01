@@ -1,5 +1,6 @@
 #pragma once
 #include "controller/control_architecture.hpp"
+#include <string>
 
 namespace draco_states {
 constexpr int kInitialize = 1;
@@ -13,6 +14,8 @@ constexpr int kRFContactTransitionStart = 8;
 constexpr int kRFContactTransitionEnd = 9;
 constexpr int kRFSingleSupportSwing = 10;
 constexpr int kDoubleSupportSwayingLmpc = 11;
+
+constexpr int AlipLocomotion = 12;
 } // namespace draco_states
 
 class DracoController;
@@ -26,6 +29,8 @@ class DCMTrajectoryManager;
 class DracoStateProvider;
 class TaskHierarchyManager;
 class ForceTrajectoryManager;
+class AlipMpcTrajectoryManager;
+class NewStep_mpc;
 // class LMPCHandler;
 
 class DracoControlArchitecture : public ControlArchitecture {
@@ -34,6 +39,14 @@ public:
   virtual ~DracoControlArchitecture();
 
   void GetCommand(void *command) override;
+
+  void changeStateToAlip(){
+    state_ = draco_states::AlipLocomotion;
+  }
+
+  void Reset() override; 
+
+
 
   DracoTCIContainer *tci_container_;
 
@@ -47,6 +60,8 @@ public:
   ForceTrajectoryManager *lf_force_tm_;
   ForceTrajectoryManager *rf_force_tm_;
 
+  AlipMpcTrajectoryManager *alip_tm_;
+
   TaskHierarchyManager *lf_pos_hm_;
   TaskHierarchyManager *lf_ori_hm_;
   TaskHierarchyManager *rf_pos_hm_;
@@ -56,7 +71,15 @@ private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
-  // LMPCHandler *lmpc_handler_;
+  NewStep_mpc *alip_mpc_;
 
+  bool verbose = false;
+  int save_freq_ = 0;
+  int SAVE_FREQ_;
+  double rf_MAX_;
+  int alipIter;
+  double Tr;
+  // LMPCHandler *lmpc_handler_;
+  bool first_ever = true;
   void _InitializeParameters() override;
 };

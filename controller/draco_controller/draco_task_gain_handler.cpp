@@ -11,11 +11,11 @@ DracoTaskGainHandler::DracoTaskGainHandler(DracoControlArchitecture *ctrl_arch)
     : ctrl_arch_(ctrl_arch), b_signal_received_(false), b_first_visit_(false),
       b_com_xy_task_(false), count_(0) {
 
-  util::PrettyConstructor(1, "DracoTaskGainHandler");
+  //util::PrettyConstructor(1, "DracoTaskGainHandler");
   std::string border = "=";
-  for (unsigned int i = 0; i < 79; ++i)
-    border += "=";
-  util::ColorPrint(color::kBoldRed, border);
+  //for (unsigned int i = 0; i < 79; ++i)
+    //border += "=";
+  ////util::ColorPrint(color::kBoldRed, border);
 }
 
 void DracoTaskGainHandler::Trigger(const std::string &task_name,

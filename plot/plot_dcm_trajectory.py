@@ -145,6 +145,7 @@ def main(args):
     cmp_des = []
     lfoot_pos_act = []
     rfoot_pos_act = []
+    """
     with open('experiment_data/pnc.pkl', 'rb') as file:
         while True:
             try:
@@ -194,6 +195,7 @@ def main(args):
         2: 'seagreen',
         3: 'gold'
     }
+    """
     # ==========================================================================
     # Plot Motion
     # ==========================================================================

@@ -10,7 +10,7 @@ Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
                        DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false),
       wait_time_(0.), min_jerk_curves_(nullptr) {
-  util::PrettyConstructor(2, "Initialize");
+  //util::PrettyConstructor(2, "Initialize");
 
   sp_ = DracoStateProvider::GetStateProvider();
   target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());

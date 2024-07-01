@@ -12,7 +12,7 @@
 
 DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
     : TCIContainer(robot) {
-  util::PrettyConstructor(2, "DracoTCIContainer");
+  //util::PrettyConstructor(2, "DracoTCIContainer");
 
   //=============================================================
   // Tasks List
@@ -138,6 +138,17 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
     task_unweighted_cost_map_.clear();
     task_weighted_cost_map_.clear();
   }
+
+
+  if (verbose){
+    com_z_task_->openTxt("com_z");
+    torso_ori_task_->openTxt("torso_com_ori");
+    upper_body_task_->openTxt("upper_body");
+    lf_pos_task_->openTxt("lf_pos");
+    lf_ori_task_->openTxt("lf_ori");
+    rf_pos_task_->openTxt("rf_pos");
+    rf_ori_task_->openTxt("rf_ori");
+  }
 }
 
 DracoTCIContainer::~DracoTCIContainer() {
@@ -184,4 +195,17 @@ void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
                                          b_sim);
   rf_reaction_force_task_->SetParameters(cfg_["wbc"]["task"]["foot_rf_task"],
                                          b_sim);
+
+
+  util::ReadParameter(cfg_["alip_mpc_walking"], "verbose", verbose);
+}
+
+void DracoTCIContainer::saveTxts(const double &time, const double &stance_leg, const double &state){
+    com_z_task_->saveTxt(time, stance_leg, state);
+    torso_ori_task_->saveTxt(time, stance_leg, state);
+    upper_body_task_->saveTxt(time, stance_leg, state);
+    lf_pos_task_->saveTxt(time, stance_leg, state);
+    lf_ori_task_->saveTxt(time, stance_leg, state);
+    rf_pos_task_->saveTxt(time, stance_leg, state);
+    rf_ori_task_->saveTxt(time, stance_leg, state);
 }

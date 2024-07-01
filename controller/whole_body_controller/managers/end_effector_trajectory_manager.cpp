@@ -9,7 +9,7 @@ EndEffectorTrajectoryManager::EndEffectorTrajectoryManager(
     : pos_task_(pos_task), ori_task_(ori_task), robot_(robot),
       pos_first_half_curve_(nullptr), pos_second_half_curve_(nullptr),
       ori_curve_(nullptr) {
-  util::PrettyConstructor(2, "EndEffectorTrajectoryManager");
+  //util::PrettyConstructor(2, "EndEffectorTrajectoryManager");
 }
 
 EndEffectorTrajectoryManager::~EndEffectorTrajectoryManager() {

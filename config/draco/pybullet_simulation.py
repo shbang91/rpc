@@ -1,5 +1,7 @@
 class Config(object):
-    CONTROLLER_DT = 0.00125
+    #CONTROLLER_DT = 0.00125
+    #CONTROLLER_DT = 0.0025
+    CONTROLLER_DT = 0.00175
     N_SUBSTEP = 1
 
     INITIAL_BASE_JOINT_POS = [0, 0, 0.95 - 0.195]
@@ -89,3 +91,45 @@ class DracoJointIdx(object):
     r_knee_fe_jd = 34
     r_ankle_fe = 35
     r_ankle_ie = 36
+
+
+class AlipParams(object):
+    N_BATCH = 1
+    TS = 0.275
+    NT_qp = 4
+    NT_mpc = 1
+    NS = 4
+    MASS = 35.
+    ZH = 0.69
+    WIDTH = 0.05
+    G = 9.81
+    UFP_X_MAX = 0.55
+    UFP_Y_MAX = 0.4
+    UFP_Y_MIN = 0.04
+    UFP_Y_MIN_turn = 0.15
+    LX_OFFSET = 0.
+    LY_DES = 0.
+    COM_YAW = 0.
+    INITIAL_STANCE_LEG = -1
+    SWING_HEIGHT = 0.05
+
+    PX = 1.
+    PY = 1.
+    PLX = 1.
+    PLY = 1.
+    PBOUND = 5.
+
+    RF_Z_MAX = 1000.0
+
+    #COM
+    """
+    UCOM_X_MAX = 0.3
+    UCOM_Y_EXT = 0.3
+    UCOM_Y_INT = 0.1
+
+    """
+    #Mixed
+    """
+    ALPHA = 0.7
+
+    """

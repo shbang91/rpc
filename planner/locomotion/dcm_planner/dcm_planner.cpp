@@ -3,7 +3,7 @@
 DCMPlanner::DCMPlanner()
     : Planner(), init_dcm_pos_(Eigen::Vector3d::Zero()),
       init_dcm_vel_(Eigen::Vector3d::Zero()) {
-  util::PrettyConstructor(2, "DCMPlanner");
+  //util::PrettyConstructor(2, "DCMPlanner");
   initial_left_stance_foot_.SetLeftSide();
   initial_right_stance_foot_.SetRightSide();
 }
@@ -28,14 +28,14 @@ void DCMPlanner::InitializeFootStepsVrp(
   Eigen::Vector3d right_stance_vrp(0, 0, z_vrp_);   // in foot local frame
 
   current_stance_vrp =
-      init_foot_stance.GetRotMat() * current_vrp + init_foot_stance.GetPos();
+      init_foot_stance.GetRotMat() * current_vrp + init_foot_stance.GetPos();//C: functions are in foot_step
   left_stance_vrp = current_stance_vrp;
   right_stance_vrp = current_stance_vrp;
 
   // add an vrp to transfer to the stance leg
   vrp_list_.push_back(current_stance_vrp);
 
-  int previous_step_foot_side = init_foot_stance.GetFootSide();
+  int previous_step_foot_side = init_foot_stance.GetFootSide(); //C:f in foot_step
 
   for (int step_idx(0); step_idx < input_footstep_list.size(); ++step_idx) {
     current_vrp << 0, 0, z_vrp_; // in foot local frame
@@ -103,7 +103,7 @@ void DCMPlanner::InitializeFootStepsVrp(
   vrp_type_list_.push_back(vrp_type::kTransfer);
 
   // add the remaining vrp
-  this->InitializeFootStepsVrp(input_footstep_list, init_foot_stance);
+  this->InitializeFootStepsVrp(input_footstep_list, init_foot_stance);  //C: the same func 
 }
 
 void DCMPlanner::InitializeFootStepsVrp(

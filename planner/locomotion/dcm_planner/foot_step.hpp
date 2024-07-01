@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "configuration.hpp"
+#include "planner/locomotion/alip_mpc/include/NewStep_mpc.hpp"
 
 class FootStep {
 public:

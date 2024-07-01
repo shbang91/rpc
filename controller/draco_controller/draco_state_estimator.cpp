@@ -20,7 +20,7 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
       global_leg_odometry_(Eigen::Vector3d::Zero()),
       prev_base_joint_pos_(Eigen::Vector3d::Zero()), b_first_visit_(true),
       com_vel_exp_filter_(nullptr) {
-  util::PrettyConstructor(1, "DracoStateEstimator");
+  //util::PrettyConstructor(1, "DracoStateEstimator");
   sp_ = DracoStateProvider::GetStateProvider();
 
   R_imu_base_com_ =
@@ -92,7 +92,7 @@ void DracoStateEstimator::Initialize(DracoSensorData *sensor_data) {
   robot_->UpdateRobotModel(
       Eigen::Vector3d::Zero(), Eigen::Quaterniond::Identity(),
       Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), sensor_data->joint_pos_,
-      sensor_data->joint_vel_, false);
+      sensor_data->joint_vel_, true);
 
   // save data
 #if B_USE_MATLOGGER
@@ -158,8 +158,8 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
       sensor_data->joint_vel_, true);
 
   // TODO:foot contact switch
-  // sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
-  // sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
+   sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
+   sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
 
   // velocity filtering for com vel (for real experiment)
   Eigen::Vector3d real_com_vel = robot_->GetRobotComLinVel();
@@ -256,6 +256,12 @@ void DracoStateEstimator::_ComputeDCM() {
                   (1 - alpha) * sp_->dcm_vel_; // not being used in controller
 }
 
+void DracoStateEstimator::UpdateFootContact(DracoSensorData *sensor_data){
+    sp_->b_lf_contact_ = (sensor_data->b_lf_contact_) ? true : false;
+    sp_->b_rf_contact_ = (sensor_data->b_rf_contact_) ? true : false;
+}
+
+
 void DracoStateEstimator::UpdateGroundTruthSensorData(
     DracoSensorData *sensor_data) {
   Eigen::Vector4d base_joint_ori = sensor_data->base_joint_quat_;
@@ -267,7 +273,10 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
       sensor_data->base_joint_lin_vel_, sensor_data->base_joint_ang_vel_,
       sensor_data->joint_pos_, sensor_data->joint_vel_, true);
 
-  this->_ComputeDCM();
+  
+
+  //this->_ComputeDCM();
+  //this->UpdateFootContact(sensor_data);
 
 #if B_USE_ZMQ
   // DracoDataManager *dm = DracoDataManager::GetDataManager();
@@ -278,4 +287,61 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
 
   // dm->data_->joint_positions_ = sensor_data->joint_pos_;
 #endif
+}
+
+void DracoStateEstimator::GetRlpolicy(DracoSensorData *sensor_data){
+  sp_-> res_rl_action_ = sensor_data->res_rl_action_;
+  sp_-> initial_stance_leg_ = sensor_data->initial_stance_leg_;
+  sp_-> stance_leg_ = sp_->initial_stance_leg_;
+  sp_-> Lx_offset_des_ = sensor_data->policy_command_[0];
+  sp_-> Ly_des_ = sensor_data->policy_command_[1];
+  sp_-> des_com_yaw_ = sensor_data->policy_command_[2];
+}
+
+void DracoStateEstimator::UpdateWbcObs(){
+  Eigen::Vector3d com_pos = robot_->GetRobotComPos();
+  Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+  Eigen::Isometry3d des_torso_iso = sp_->des_end_torso_iso_;
+  Eigen::Isometry3d torso_iso = robot_->GetLinkIsometry(draco_link::torso_com_link);
+  Eigen::Isometry3d swfoot_iso;
+  Eigen::Vector3d stfoot_pos;
+  Eigen::Vector3d torso_com_ang_vel = robot_->GetLinkSpatialVel(draco_link::torso_com_link).head<3>();
+
+  if (sp_->stance_leg_ == 1) {
+    stfoot_pos = robot_->GetLinkIsometry(draco_link::r_foot_contact).translation();
+    swfoot_iso = robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  }
+  else {
+    stfoot_pos = robot_->GetLinkIsometry(draco_link::l_foot_contact).translation();
+    swfoot_iso = robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  }
+ 
+  Eigen::Vector3d com_pos_stfoot = com_pos - stfoot_pos;
+  Eigen::Vector3d com_pos_stfoot_torso_ori = des_torso_iso.linear().transpose() * com_pos_stfoot;
+  Eigen::Vector3d com_vel_torso_ori = des_torso_iso.linear().transpose() * com_vel;
+
+  Eigen::Vector3d L = sp_->mass_ * com_pos_stfoot_torso_ori.cross(com_vel);
+  Eigen::Vector3d Lc = robot_->GetHg().head<3>();
+  Lc = des_torso_iso.linear().transpose() * Lc;
+  L += Lc;
+  sp_->com_pos_stance_frame_ = com_pos_stfoot_torso_ori;
+  sp_->L_stance_frame_ = L;
+  sp_->stfoot_pos_ = stfoot_pos;
+  sp_->torso_roll_pitch_yaw_ = util::QuatToEulerZYX(Eigen::Quaterniond(torso_iso.linear()));
+  sp_->swfoot_roll_pitch_yaw_ = util::QuatToEulerZYX(Eigen::Quaterniond(swfoot_iso.linear()));
+  sp_->torso_com_ang_vel_ = torso_com_ang_vel;
+  
+  Eigen::Isometry3d torso_iso_des_frame = torso_iso;
+  Eigen::Isometry3d swfoot_iso_des_frame = swfoot_iso;
+  torso_iso_des_frame.linear() = des_torso_iso.linear().transpose()*torso_iso_des_frame.linear();
+  swfoot_iso_des_frame.linear() = des_torso_iso.linear().transpose()*swfoot_iso_des_frame.linear();
+  
+  sp_->torso_rpy_des_frame = util::QuatToEulerZYX(Eigen::Quaterniond(torso_iso_des_frame.linear()));
+  sp_->swfoot_rpy_des_frame = util::QuatToEulerZYX(Eigen::Quaterniond(swfoot_iso_des_frame.linear()));
+}
+
+void DracoStateEstimator::Reset(){
+      R_imu_base_com_ = Eigen::Matrix3d::Identity();
+      global_leg_odometry_ = Eigen::Vector3d::Zero();
+      prev_base_joint_pos_ = Eigen::Vector3d::Zero();
 }

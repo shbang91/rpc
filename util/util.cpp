@@ -349,6 +349,7 @@ Eigen::Quaternion<double> ExpToQuat(const Eigen::Vector3d &exp) {
 //     The equation is similar, but the values for fixed and body frame
 //     rotations are different.
 // World Orientation is R = Rz*Ry*Rx
+/*
 Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
                                   const double yaw) {
   Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
@@ -358,6 +359,30 @@ Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
   Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
   return q.normalized();
 }
+*/
+
+
+Eigen::Quaterniond EulerZYXtoQuat(const double r, const double p, const double y){
+  
+  double hy = y / 2.0;
+  double hp = p / 2.0;
+  double hr = r / 2.0;
+
+  double ys = sin(hy);
+  double yc = cos(hy);
+  double ps = sin(hp);
+  double pc = cos(hp);
+  double rs = sin(hr);
+  double rc = cos(hr);
+
+  Eigen::Quaterniond quat;
+  quat.w() = rc * pc * yc + rs * ps * ys;
+  quat.x() = rs * pc * yc - rc * ps * ys;
+  quat.y() = rc * ps * yc + rs * pc * ys;
+  quat.z() = rc * pc * ys - rs * ps * yc;
+  return quat;
+}
+
 
 Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in) {
   // to match equation from:

@@ -7,6 +7,9 @@ public:
   DracoTCIContainer(PinocchioRobotSystem *robot);
   virtual ~DracoTCIContainer();
 
+
+  void saveTxts(const double &time, const double &st_leg, const double &state);
+
 private:
   Task *jpos_task_;
   Task *com_xy_task_;
@@ -29,4 +32,6 @@ private:
 
   YAML::Node cfg_;
   void _InitializeParameters(const bool b_sim);
+
+  bool verbose = false;
 };
