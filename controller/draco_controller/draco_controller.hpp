@@ -4,6 +4,7 @@
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
+#include <matlogger2/utils/mat_appender.h>
 #endif
 
 class PinocchioRobotSystem;
@@ -21,6 +22,7 @@ public:
   void GetCommand(void *command);
 
   void Reset();
+
 private:
   PinocchioRobotSystem *robot_;
   DracoTCIContainer *tci_container_;
@@ -52,5 +54,6 @@ private:
 
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
+  XBot::MatAppender::Ptr appender_;
 #endif
 };
