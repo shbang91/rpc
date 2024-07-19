@@ -91,7 +91,13 @@ OptimoController::OptimoController(OptimoTCIContainer *tci_container,
               << std::endl;
     }
 
-  }
+}
+
+
+OptimoController::~OptimoController() {
+  delete ihwbc_;
+  delete joint_integrator_;
+}
 
 void OptimoController::GetCommand(void *command){
   if (sp_->state_ == optimo_states::kInitialize) {
@@ -185,10 +191,4 @@ void OptimoController::GetCommand(void *command){
   // if (sp_->count_ % sp_->data_save_freq_ == 0) {
   //   this->_SaveData();
   // }
-}
-
-
-OptimoController::~OptimoController() {
-  delete ihwbc_;
-  delete joint_integrator_;
 }
