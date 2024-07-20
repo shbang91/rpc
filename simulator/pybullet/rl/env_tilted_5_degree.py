@@ -45,6 +45,8 @@ if MEASEURE_TIME:
 
 def set_init_config_pybullet_robot(robot, client=None):
     # Upperbody
+    # note that here we initialize the robot on the 0.1 rad tilted plane
+    tilted_plane_angle_in_rad = 0.1
     #TODO: make a List of the torques that are 0
     for i in range(1, 36):
         client.resetJointState(robot, i, 0., 0.)
@@ -61,7 +63,8 @@ def set_init_config_pybullet_robot(robot, client=None):
     client.resetJointState(robot, DracoJointIdx.l_knee_fe_jp, np.pi / 4, 0.)
 
     client.resetJointState(robot, DracoJointIdx.l_knee_fe_jd, np.pi / 4, 0.)
-    client.resetJointState(robot, DracoJointIdx.l_ankle_fe, -np.pi / 4, 0.)
+    client.resetJointState(robot, DracoJointIdx.l_ankle_fe,
+                           -np.pi / 4 + tilted_plane_angle_in_rad, 0.)
     client.resetJointState(robot, DracoJointIdx.l_ankle_ie,
                            np.radians(-hip_yaw_angle), 0.)
 
@@ -70,7 +73,8 @@ def set_init_config_pybullet_robot(robot, client=None):
     client.resetJointState(robot, DracoJointIdx.r_hip_fe, -np.pi / 4, 0.)
     client.resetJointState(robot, DracoJointIdx.r_knee_fe_jp, np.pi / 4, 0.)
     client.resetJointState(robot, DracoJointIdx.r_knee_fe_jd, np.pi / 4, 0.)
-    client.resetJointState(robot, DracoJointIdx.r_ankle_fe, -np.pi / 4, 0.)
+    client.resetJointState(robot, DracoJointIdx.r_ankle_fe,
+                           -np.pi / 4 + tilted_plane_angle_in_rad, 0.)
     client.resetJointState(robot, DracoJointIdx.r_ankle_ie,
                            np.radians(hip_yaw_angle), 0.)
 
@@ -112,7 +116,7 @@ def dict_to_numpy(obs_dict):
     return np.array(obs)
 
 
-class DracoEnv_v2(gym.Env):
+class DracoEnv_tilted_plane_5_downhill(gym.Env):
     metadata = {
         "render.modes": ["human", "rgb_array"],
         "video.frames_per_second": 50
@@ -125,17 +129,9 @@ class DracoEnv_v2(gym.Env):
                  reduced_obs_size: bool = False,
                  render: bool = False,
                  disturbance: bool = False,
-                 video=None,
-                 b_video_jpg: bool = False,
-                 record_freq: int = 1) -> None:
+                 video=None) -> None:
         self._render = render
         self._video = video
-        self._b_video_jpg = b_video_jpg
-        self._video_record_freq = record_freq
-        print("--------------------------------")
-        print("boolean video jpg: ", self._b_video_jpg)
-        print("video record frequency: ", self._video_record_freq)
-        print("--------------------------------")
         self._reduced_obs_size = reduced_obs_size
         self._mpc_freq = mpc_freq
         self._sim_dt = sim_dt
@@ -165,9 +161,9 @@ class DracoEnv_v2(gym.Env):
         if (self._render):
             self.client.resetDebugVisualizerCamera(
                 cameraDistance=1.0,
-                cameraYaw=120,
+                cameraYaw=180,
                 cameraPitch=-30,
-                cameraTargetPosition=[1, 0.5, 1.0])
+                cameraTargetPosition=[1, 11, 1.0])
         self.client.setPhysicsEngineParameter(
             fixedTimeStep=Config.CONTROLLER_DT, numSubSteps=Config.N_SUBSTEP)
         self.client.setGravity(0, 0, -9.81)
@@ -183,22 +179,13 @@ class DracoEnv_v2(gym.Env):
             useFixedBase=0,
             flags=p.URDF_USE_SELF_COLLISION)
 
-        ground = self.client.loadURDF(cwd + "/robot_model/ground/plane.urdf",
+        ground = self.client.loadURDF(cwd +
+                                      "/robot_model/ground/tilted_plane.urdf",
                                       useFixedBase=1)
 
         if self._video is not None:
             self.client.startStateLogging(self.client.STATE_LOGGING_VIDEO_MP4,
                                           self._video, [self.robot])
-        # Video record with jpg params
-        if self._b_video_jpg:
-            self._video_dir = 'video/draco'
-            if os.path.exists(self._video_dir):
-                shutil.rmtree(self._video_dir)
-            os.makedirs(self._video_dir)
-        self._wbc_count = 0
-        self._jpg_count = 0
-        self._render_width = 1920  #jpg image
-        self._render_height = 1080  #jpg image
 
         if (self.render):
             self.client.configureDebugVisualizer(
@@ -392,31 +379,6 @@ class DracoEnv_v2(gym.Env):
 
             self.client.stepSimulation()
             #if self._render: self.rate.sleep()
-
-            if self._b_video_jpg and (self._wbc_count % self._video_record_freq
-                                      == 0):
-                # save frame
-                cam_data = self.client.getDebugVisualizerCamera()
-                view_mat = cam_data[2]
-                proj_mat = cam_data[3]
-                (_, _, px, _, _) = self.client.getCameraImage(
-                    self._render_width,
-                    self._render_height,
-                    viewMatrix=view_mat,
-                    projectionMatrix=proj_mat,
-                    renderer=self.client.ER_BULLET_HARDWARE_OPENGL)
-                frame = np.array(px, dtype=np.uint8)
-                frame = np.reshape(
-                    np.array(px),
-                    (self._render_height, self._render_width, -1))
-                frame = frame[:, :, :3]
-                frame = frame[:, :, [2, 1, 0]]  # << RGB to BGR
-                filename = self._video_dir + '/step%06d.jpg' % self._jpg_count
-                cv2.imwrite(filename, frame)
-                self._jpg_count += 1
-
-            self._wbc_count += 1
-
             done = self._compute_termination(self._rpc_draco_command.wbc_obs_)
             if done: break
 
