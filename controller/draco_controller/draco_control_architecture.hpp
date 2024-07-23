@@ -2,6 +2,7 @@
 #include "controller/control_architecture.hpp"
 #if B_USE_FOXGLOVE
 #include "UI/foxglove/client/parameter_subscriber.hpp"
+#include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 #include <any>
 
@@ -48,6 +49,7 @@ public:
   EndEffectorTrajectoryManager *lf_SE3_tm_;
   EndEffectorTrajectoryManager *rf_SE3_tm_;
   DCMTrajectoryManager *dcm_tm_;
+  DracoDataManager *d_dm_;
   ForceTrajectoryManager *lf_force_tm_;
   ForceTrajectoryManager *rf_force_tm_;
 
@@ -65,7 +67,9 @@ private:
   void _InitializeParameters() override;
 
 #if B_USE_FOXGLOVE
-  std::unordered_map<std::string, double*> param_map;
+  std::unordered_map<std::string, int*> param_int_map;
+  std::unordered_map<std::string, double*> param_double_map;
+  std::unordered_map<std::string, Eigen::Vector3d DracoData::*> param_3d_map;
   FoxgloveParameterSubscriber *param_subscriber_;
 #endif
 };

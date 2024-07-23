@@ -205,7 +205,7 @@ void DCMTrajectoryManager::InitializeParameters(const YAML::Node &node) {
   util::ReadParameter(node, "first_swing_leg", first_swing_leg_);
 }
 
-double* DCMTrajectoryManager::GetNumSteps() {
+int* DCMTrajectoryManager::GetNumSteps() {
   return &n_steps_;
 }
 

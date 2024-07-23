@@ -1,12 +1,15 @@
 #pragma once
 
+#include <list>
 #include <foxglove/websocket/websocket_client.hpp>
 #include <foxglove/websocket/websocket_notls.hpp>
 #include <foxglove/websocket/serialization.hpp>
+#include <Eigen/Dense>
 
 class FoxgloveParameterSubscriber {
 public:
-  FoxgloveParameterSubscriber(std::unordered_map<std::string, double*> &parameters_map,
+  FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_int_map,
+                              std::unordered_map<std::string, double*> &parameters_double_map,
                               const std::string url = "ws://localhost:8766");
   ~FoxgloveParameterSubscriber();
 

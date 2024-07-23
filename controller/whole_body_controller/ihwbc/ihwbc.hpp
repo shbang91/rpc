@@ -42,6 +42,10 @@ public:
     joint_trq_limits_ = trq_limit;
   }
 
+double* Get_weight();
+double* Get_gains();
+double* Get_lambda_rf();
+
 protected:
   void _SetQPCost(const Eigen::MatrixXd &cost_mat,
                   const Eigen::VectorXd &cost_vec);

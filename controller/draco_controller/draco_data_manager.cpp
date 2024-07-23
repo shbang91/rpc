@@ -125,3 +125,14 @@ void DracoDataManager::SendData() {
   memcpy((void *)zmq_msg.data(), encoded_msg.c_str(), encoded_msg.size());
   socket_->send(zmq_msg);
 }
+
+Eigen::Vector3d DracoData::* torso_ori_weight(){
+    return &DracoData::torso_ori_weight;
+}
+Eigen::Vector3d DracoData::* torso_ori_kp(){
+    return &DracoData::torso_ori_kp;
+}
+Eigen::Vector3d DracoData::* torso_ori_kd(){
+    return &DracoData::torso_ori_kd;
+}
+

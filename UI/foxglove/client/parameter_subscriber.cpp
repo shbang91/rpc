@@ -1,6 +1,7 @@
 #include "parameter_subscriber.hpp"
 
-FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std::string, double*> &parameters_map,
+FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_int_map,
+                                                         std::unordered_map<std::string, double*> &parameters_double_map,
                                                          const std::string url) {
   next_sub_id_ = 0;
 
@@ -9,7 +10,10 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
         return;
       }
 
-      client_.getParameters({"n_steps","t_ss","t_ds"});
+      client_.getParameters({
+          "n_steps","t_ss","t_ds",
+          "1) weight"
+      });
   });
 
   client_.setTextMessageHandler([&](const std::string& payload) {
@@ -20,19 +24,38 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
           auto param_value = msg["parameters"].get<std::vector<foxglove::Parameter>>();
           for (const auto& param : param_value) {
               //handler needed to differentiate datatypes   :::   clean up later
-            //if integer, need to cast to double for mapped functions
+            if(param.getType() == foxglove::ParameterType::PARAMETER_ARRAY){
+                //std::cout << "type: ARRAY" << std::endl;
+                auto p_arr = param.getValue().getValue<const std::vector<foxglove::ParameterValue>&>();
+                std::cout << param.getName() << ": [ ";
+                for(const auto& arr_parm : p_arr){
+                    if(arr_parm.getType() == foxglove::ParameterType::PARAMETER_INTEGER){
+                        auto p_val = arr_parm.getValue<int64_t>();
+                        std::cout << p_val << " ";
+                    }
+                    else if(arr_parm.getType() == foxglove::ParameterType::PARAMETER_DOUBLE){
+                        auto p_val = arr_parm.getValue<double>();
+                        std::cout << p_val << " ";
+                    }}
+                std::cout << "]" << std::endl;
+            }
             if(param.getType() == foxglove::ParameterType::PARAMETER_INTEGER){
-                std::cout << "type: INTEGER" << std::endl;
+                //std::cout << "type: INTEGER" << std::endl;
                 auto p_val = param.getValue().getValue<int64_t>();
                 std::cout << param.getName() << ": " << p_val << std::endl;
-                double dp_val = double(p_val);
-                *parameters_map[param.getName()] = dp_val;
+                *parameters_int_map[param.getName()] = p_val;
             }
             else if(param.getType() == foxglove::ParameterType::PARAMETER_DOUBLE){
-                std::cout << "type: DOUBLE" << std::endl;
+                //std::cout << "type: DOUBLE" << std::endl;
                 auto p_val = param.getValue().getValue<double>();
                 std::cout << param.getName() << ": " << p_val << std::endl;
-                *parameters_map[param.getName()] = p_val;
+                //note -- compare pros/cons with template
+                if(param.getName() == "n_steps"){   //replace with list in case we need exceptions for other int variables
+                    int dp_val = round(p_val);
+                    std::cout << param.getName() << " rounded to: " << dp_val << std::endl;
+                    *parameters_int_map[param.getName()] = dp_val;
+                }
+                else *parameters_double_map[param.getName()] = p_val;
             }
           }
         }

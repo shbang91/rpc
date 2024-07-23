@@ -93,7 +93,7 @@ public:
   int GetSwingLeg() { return swing_leg_; }
 
   // setter (for operator UI)
-  double* GetNumSteps();
+  int* GetNumSteps();
 
 private:
   DCMPlanner *dcm_planner_;
@@ -126,7 +126,7 @@ private:
   double nominal_backward_step_ = -0.25;
   double nominal_turn_radians_ = M_PI / 4.0;
   double nominal_strafe_distance_ = 0.125;
-  double n_steps_ = 3;
+  int n_steps_ = 3;
 
   // for footstep generation
   void _UpdateFootStepsPreviewList(const int max_foot_steps_preview);

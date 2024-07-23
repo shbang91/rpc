@@ -570,3 +570,17 @@ void IHWBC::SetParameters(const YAML::Node &node) {
     std::exit(EXIT_FAILURE);
   }
 }
+
+double x_weight = 0;
+double x_gains = 1;
+double x_lrf = 2;
+
+double* Get_weight(){
+    return &x_weight;
+}
+double* Get_gains(){
+    return &x_gains;
+}
+double* Get_lambda_rf(){
+    return &x_lrf;
+}
