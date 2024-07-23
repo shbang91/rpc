@@ -142,12 +142,14 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   // attach Foxglove Clients to control parameters
   //=============================================================
   #if B_USE_FOXGLOVE
-  param_map = {{
-      {"n_steps", dcm_tm_->GetNumSteps()},
-      {"t_ss", dcm_planner_->Get_t_ss()},
-      {"t_ds", dcm_planner_->Get_t_ds()}
+  param_map_int_ = {{
+      {"n_steps", dcm_tm_->GetNumSteps()}
   }};
-  param_subscriber_ = new FoxgloveParameterSubscriber(param_map);
+  param_map_double_ = {{
+        {"t_ss", dcm_planner_->GetTssPtr()},
+        {"t_ds", dcm_planner_->GetTdsPtr()}
+  }};
+  param_subscriber_ = new FoxgloveParameterSubscriber(param_map_int_, param_map_double_);
   #endif
 
   //=============================================================

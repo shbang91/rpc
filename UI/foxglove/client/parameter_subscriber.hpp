@@ -6,11 +6,15 @@
 
 class FoxgloveParameterSubscriber {
 public:
-  FoxgloveParameterSubscriber(std::unordered_map<std::string, double*> &parameters_map,
+  FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_map_int,
+                              std::unordered_map<std::string, double*> &parameters_map_double,
                               const std::string url = "ws://localhost:8766");
   ~FoxgloveParameterSubscriber();
 
   void UpdateParameters();
+
+private:
+  double _ParseFoxgloveParameter(const foxglove::Parameter& param);
 
 private:
   foxglove::SubscriptionId next_sub_id_;

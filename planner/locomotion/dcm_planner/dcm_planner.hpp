@@ -102,8 +102,8 @@ public:
   Eigen::Vector3d GetRefVrp(const double current_time) const;
 
   //testing param update
-  double* Get_t_ss();
-  double* Get_t_ds();
+  double* GetTssPtr();
+  double* GetTdsPtr();
 
 protected:
   // setter related variables
