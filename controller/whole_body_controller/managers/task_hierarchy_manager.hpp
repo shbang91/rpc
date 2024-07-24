@@ -14,6 +14,12 @@ public:
   void UpdateRampToMax(const double state_machine_time);
   void UpdateRampToMin(const double state_machine_time);
 
+  // Helper methods for gain tuning (e.g., via Foxglove)
+  void SetWeightMax(const Eigen::Vector3d &w_max);
+  void SetWeightMin(const Eigen::Vector3d &w_min);
+  void SetTaskKp(const Eigen::Vector3d &kp);
+  void SetTaskKd(const Eigen::Vector3d &kd);
+
 private:
   Task *task_;
 

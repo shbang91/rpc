@@ -3,6 +3,7 @@
 FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_map_int,
                                                          std::unordered_map<std::string, double*> &parameters_map_double,
                                                          std::unordered_map<std::string, Task*> &parameters_map_task,
+                                                         std::unordered_map<std::string, TaskHierarchyManager*> &parameters_map_hm,
                                                          const std::string url) {
   next_sub_id_ = 0;
 
@@ -14,6 +15,8 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
       client_.getParameters({
           "n_steps", "t_ss", "t_ds",
           "torso_ori_task_weight", "torso_ori_task_kp", "torso_ori_task_kd",
+          "foot_pos_task_weight", "foot_pos_task_weight_at_swing", "foot_pos_task_kp", "foot_pos_task_kd",
+          "foot_ori_task_weight", "foot_ori_task_weight_at_swing", "foot_ori_task_kp", "foot_ori_task_kd"
       });
   });
 
@@ -33,6 +36,14 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
             else if (parameters_map_double.count(param.getName())) {
               double p_val = _ParseFoxgloveParameter(param);
               *parameters_map_double[param.getName()] = double(p_val);
+            }     // ------ process as task from hierarchy manager --------
+            else if (param.getName().find("foot_pos_task") != std::string::npos) {
+              // loop through left and right feet managers to set new weight values
+              _UpdateTaskHierarchyManager(param, "pos", parameters_map_hm);
+            }
+            else if (param.getName().find("foot_ori_task") != std::string::npos) {
+              // loop through left and right feet managers to set new weight values
+              _UpdateTaskHierarchyManager(param, "ori", parameters_map_hm);
             } else {  // ------ process as task --------
               // loop through all tasks to find the one that matches the parameter name
               for (auto &[name, task]: parameters_map_task) {
@@ -43,6 +54,7 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
                     task->SetWeight(task_weights);
                   } else if (param.getName().find("kp") != std::string::npos) {
                     Eigen::Vector3d task_kp = _ParseFoxgloveParameterVec(param);
+                    task->SetKp(task_kp);
                   } else if (param.getName().find("kd") != std::string::npos) {
                     Eigen::Vector3d task_kd = _ParseFoxgloveParameterVec(param);
                     task->SetKd(task_kd);
@@ -114,4 +126,27 @@ Eigen::Vector3d FoxgloveParameterSubscriber::_ParseFoxgloveParameterVec(const fo
   }
 
   return vec;
+}
+
+void FoxgloveParameterSubscriber::_UpdateTaskHierarchyManager(const foxglove::Parameter &param,
+                                                              const std::string &pos_or_ori,
+                                                              std::unordered_map<std::string, TaskHierarchyManager*> &parameters_map_hm) {
+  for (auto &[name_hm, task_hm]: parameters_map_hm) {
+    if (name_hm.find(pos_or_ori) != std::string::npos) {
+      // set new weight, kp, or kd values
+      if (param.getName().find("weight_at_swing") != std::string::npos) {
+        Eigen::Vector3d task_weights = _ParseFoxgloveParameterVec(param);
+        task_hm->SetWeightMin(task_weights);
+      } else if (param.getName().find("weight") != std::string::npos) {
+        Eigen::Vector3d task_weights = _ParseFoxgloveParameterVec(param);
+        task_hm->SetWeightMax(task_weights);
+      } else if (param.getName().find("kp") != std::string::npos) {
+        Eigen::Vector3d task_kp = _ParseFoxgloveParameterVec(param);
+        task_hm->SetTaskKp(task_kp);
+      } else if (param.getName().find("kd") != std::string::npos) {
+        Eigen::Vector3d task_kd = _ParseFoxgloveParameterVec(param);
+        task_hm->SetTaskKd(task_kd);
+      }
+    }
+  }
 }

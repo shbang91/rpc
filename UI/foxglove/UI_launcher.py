@@ -83,6 +83,12 @@ async def main():
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
         torso_ori_w_chan_id = await SceneChannel(True,"torso_ori_weight", "json", "torso_ori_weight", ["ori_x", "ori_y", "ori_z"]).add_chan(server)
+        lf_pos_w_chan_id = await SceneChannel(True, "lf_pos_weight", "json", "lf_pos_weight", ["x", "y", "z"]).add_chan(server)
+        lf_pos_kp_chan_id = await SceneChannel(True, "lf_pos_kp", "json", "lf_pos_kp", ["x", "y", "z"]).add_chan(server)
+        lf_pos_kd_chan_id = await SceneChannel(True, "lf_pos_kd", "json", "lf_pos_kd", ["x", "y", "z"]).add_chan(server)
+        lf_ori_w_chan_id = await SceneChannel(True, "lf_ori_weight", "json", "lf_ori_weight", ["x", "y", "z"]).add_chan(server)
+        rf_pos_w_chan_id = await SceneChannel(True, "rf_pos_weight", "json", "rf_pos_weight", ["x", "y", "z"]).add_chan(server)
+        rf_ori_w_chan_id = await SceneChannel(True, "rf_ori_weight", "json", "rf_ori_weight", ["x", "y", "z"]).add_chan(server)
 
         #create all of the visual scenes
         scenes = []
@@ -141,7 +147,41 @@ async def main():
                  "ori_y": list(msg.torso_ori_weight)[1],
                  "ori_z": list(msg.torso_ori_weight)[2]}).encode("utf8"))
 
-            #send 2 pairs of l & r norm data as topics to foxglove
+            # read lf_pos weights as topics in foxglove
+            await server.send_message(lf_pos_w_chan_id, now, json.dumps(
+                {"x": list(msg.lf_pos_weight)[0],
+                 "y": list(msg.lf_pos_weight)[1],
+                 "z": list(msg.lf_pos_weight)[2]}).encode("utf8"))
+
+            # read lf_pos kp as topics in foxglove
+            await server.send_message(lf_pos_kp_chan_id, now, json.dumps(
+                {"x": list(msg.lf_pos_kp)[0],
+                 "y": list(msg.lf_pos_kp)[1],
+                 "z": list(msg.lf_pos_kp)[2]}).encode("utf8"))
+
+            # read lf_pos kd as topics in foxglove
+            await server.send_message(lf_pos_kd_chan_id, now, json.dumps(
+                {"x": list(msg.lf_pos_kd)[0],
+                 "y": list(msg.lf_pos_kd)[1],
+                 "z": list(msg.lf_pos_kd)[2]}).encode("utf8"))
+
+            # read rf_pos weights as topics in foxglove
+            await server.send_message(rf_pos_w_chan_id, now, json.dumps(
+                {"x": list(msg.rf_pos_weight)[0],
+                 "y": list(msg.rf_pos_weight)[1],
+                 "z": list(msg.rf_pos_weight)[2]}).encode("utf8"))
+
+            # read lf_ori weights as topics in foxglove
+            await server.send_message(lf_ori_w_chan_id, now, json.dumps(
+                {"x": list(msg.lf_ori_weight)[0],
+                 "y": list(msg.lf_ori_weight)[1],
+                 "z": list(msg.lf_ori_weight)[2]}).encode("utf8"))
+
+            # read rf_ori weights as topics in foxglove
+            await server.send_message(rf_ori_w_chan_id, now, json.dumps(
+                {"x": list(msg.rf_ori_weight)[0],
+                 "y": list(msg.rf_ori_weight)[1],
+                 "z": list(msg.rf_ori_weight)[2]}).encode("utf8"))
             await server.send_message(grfs_chan_id, now, json.dumps(
                 {"lfoot_rf_cmd_x": list(msg.lfoot_rf_cmd)[3], "rfoot_rf_cmd_x": list(msg.rfoot_rf_cmd)[3],
                  "lfoot_rf_cmd_y": list(msg.lfoot_rf_cmd)[4], "rfoot_rf_cmd_y": list(msg.rfoot_rf_cmd)[4],
