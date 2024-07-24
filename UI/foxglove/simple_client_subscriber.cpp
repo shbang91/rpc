@@ -14,42 +14,6 @@
 constexpr char DEFAULT_URI[] = "ws://localhost:8766";
 
 std::atomic<bool> doAbort = false;
-/*
-//NOTE: MOVE TO .hpp WHEN DONE CREATING (in wrong location atm)
-class ParameterReadWrite{
-private:
-    auto p_client;
-    list<char*> params;
-public:
-    auto getClient(){
-        return p_client;
-    }
-    list<char*> getParams(){
-        return params;
-    }
-    void connect(){
-        paramcount = 0;
-        const auto url = argc > 1 ? argv[1] : DEFAULT_URI;
-        const auto topicRegex = argc > 2 ? std::regex(argv[2]) : std::regex(".*");
-        foxglove::SubscriptionId nextSubId = 0;
-        foxglove::Client<foxglove::WebSocketNoTls> client;
-        p_client = client;
-        return;
-    }
-    void subscribeParam(char* parameter){
-        params.push_back(parameter);
-        return;
-    }
-    void updateParams(){
-        p_client.setBinaryMessageHandler([&](const uint8_t* data, size_t dataLength) {
-            if (static_cast<foxglove::BinaryOpcode>(data[0]) != foxglove::BinaryOpcode::MESSAGE_DATA) {
-                return;
-            }
-            p_client.getParameters(params);   //CHECK IF COMPATIBLE WITH LIST
-        });
-    }
-}
-*/
 
 void signal_handler(int) {
   doAbort = true;
