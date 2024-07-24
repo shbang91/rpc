@@ -103,12 +103,3 @@ async def run(step_listener: Listener):
                 await server.send_message(param_chan_id, now, json.dumps(
                     {"n_steps": step_listener.get_val("n_steps")}).encode("utf8"))
                 step_listener.reset()
-
-
-#TODO remove?
-def paramtest(server,step_listener, param_store):
-    server.set_listener(step_listener)
-
-    server.update_parameters(
-        [Parameter(name="n_steps", value=param_store["n_steps"], type=None)]
-    )

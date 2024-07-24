@@ -98,13 +98,6 @@ public:
 
   std::unique_ptr<DracoData> data_;
 
-  //torso orientation
-  Eigen::Vector3d DracoData::* torso_ori_weight();
-  Eigen::Vector3d DracoData::* torso_ori_kp();
-  Eigen::Vector3d DracoData::* torso_ori_kd();
-  //foot position
-  //foot orientation
-
 private:
   DracoDataManager();
 
