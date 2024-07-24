@@ -13,9 +13,9 @@ def load_params_store() -> Dict[str, Any]:
         "n_steps": 3,
         "t_ss": 0.8,
         "t_ds": 1.2,
-        "torso_ori_task_weight": [100., 100., 10.],
-        "torso_ori_task_kp": [200., 200., 100.],
-        "torso_ori_task_kd": [14., 14., 10.],
+        "torso_ori_task_weight": [100., 100., 10.],     # simulation values
+        "torso_ori_task_kp": [200., 200., 100.],        # simulation values
+        "torso_ori_task_kd": [14., 14., 10.],           # simulation values
         "foot_pos_task_weight": [5000., 5000., 5000.],  # simulation values
         "foot_pos_task_weight_at_swing": [8000., 8000., 8000.],  # simulation values
         "foot_pos_task_kp": [300., 300., 300.],         # simulation values

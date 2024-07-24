@@ -82,7 +82,7 @@ async def main():
                                                                             "lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
-        torso_ori_w_chan_id = await SceneChannel(True,"torso_ori_weight", "json", "torso_ori_weight", ["ori_x", "ori_y", "ori_z"]).add_chan(server)
+        torso_ori_w_chan_id = await SceneChannel(True, "torso_ori_weight", "json", "torso_ori_weight", ["x", "y", "z"]).add_chan(server)
         lf_pos_w_chan_id = await SceneChannel(True, "lf_pos_weight", "json", "lf_pos_weight", ["x", "y", "z"]).add_chan(server)
         lf_pos_kp_chan_id = await SceneChannel(True, "lf_pos_kp", "json", "lf_pos_kp", ["x", "y", "z"]).add_chan(server)
         lf_pos_kd_chan_id = await SceneChannel(True, "lf_pos_kd", "json", "lf_pos_kd", ["x", "y", "z"]).add_chan(server)
@@ -136,16 +136,16 @@ async def main():
             vis_q[3:7] = np.array(base_ori)  # quaternion [x,y,z,w]
             vis_q[7:] = np.array(msg.joint_positions)
 
-            #send 2 pairs of icp x & y as topics to foxglove
+            # send 2 pairs of icp x & y as topics to foxglove
             await server.send_message(icp_chan_id, now, json.dumps(
                 {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
 
-            #send torso_ori weights as topics to foxglove
+            # read torso_ori weights as topics in foxglove
             await server.send_message(torso_ori_w_chan_id, now, json.dumps(
-                {"ori_x": list(msg.torso_ori_weight)[0],
-                 "ori_y": list(msg.torso_ori_weight)[1],
-                 "ori_z": list(msg.torso_ori_weight)[2]}).encode("utf8"))
+                {"x": list(msg.torso_ori_weight)[0],
+                 "y": list(msg.torso_ori_weight)[1],
+                 "z": list(msg.torso_ori_weight)[2]}).encode("utf8"))
 
             # read lf_pos weights as topics in foxglove
             await server.send_message(lf_pos_w_chan_id, now, json.dumps(
@@ -182,6 +182,8 @@ async def main():
                 {"x": list(msg.rf_ori_weight)[0],
                  "y": list(msg.rf_ori_weight)[1],
                  "z": list(msg.rf_ori_weight)[2]}).encode("utf8"))
+
+            # send 2 pairs of l & r norm data as topics to foxglove
             await server.send_message(grfs_chan_id, now, json.dumps(
                 {"lfoot_rf_cmd_x": list(msg.lfoot_rf_cmd)[3], "rfoot_rf_cmd_x": list(msg.rfoot_rf_cmd)[3],
                  "lfoot_rf_cmd_y": list(msg.lfoot_rf_cmd)[4], "rfoot_rf_cmd_y": list(msg.rfoot_rf_cmd)[4],
