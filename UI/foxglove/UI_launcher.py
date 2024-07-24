@@ -82,6 +82,7 @@ async def main():
                                                                             "lfoot_rf_normal_filt","rfoot_rf_normal_filt"]).add_chan(server)
         icpS_chan_id = await SceneChannel(False,"icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema).add_chan(server)
         icp_chan_id = await SceneChannel(True,"icp", "json", "icp", ["est_x","est_y","des_x","des_y"]).add_chan(server)
+        torso_ori_w_chan_id = await SceneChannel(True,"torso_ori_weight", "json", "torso_ori_weight", ["ori_x", "ori_y", "ori_z"]).add_chan(server)
 
         #create all of the visual scenes
         scenes = []
@@ -133,6 +134,12 @@ async def main():
             await server.send_message(icp_chan_id, now, json.dumps(
                 {"est_x": list(msg.est_icp)[0], "est_y": list(msg.est_icp)[1], "des_x": list(msg.des_icp)[0],
                  "des_y": list(msg.des_icp)[1]}).encode("utf8"))
+
+            #send torso_ori weights as topics to foxglove
+            await server.send_message(torso_ori_w_chan_id, now, json.dumps(
+                {"ori_x": list(msg.torso_ori_weight)[0],
+                 "ori_y": list(msg.torso_ori_weight)[1],
+                 "ori_z": list(msg.torso_ori_weight)[2]}).encode("utf8"))
 
             #send 2 pairs of l & r norm data as topics to foxglove
             await server.send_message(grfs_chan_id, now, json.dumps(
