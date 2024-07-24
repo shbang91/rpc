@@ -149,7 +149,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
         {"t_ss", dcm_planner_->GetTssPtr()},
         {"t_ds", dcm_planner_->GetTdsPtr()}
   }};
-  param_subscriber_ = new FoxgloveParameterSubscriber(param_map_int_, param_map_double_);
+  param_subscriber_ = new FoxgloveParameterSubscriber(param_map_int_, param_map_double_,
+                                                      tci_container_->task_map_);
   #endif
 
   //=============================================================

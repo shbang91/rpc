@@ -5,6 +5,7 @@ add_library(foxglove-parameter-subscriber ${sources} ${headers})
 target_link_libraries(foxglove-parameter-subscriber
         foxglove-websocket::foxglove-websocket
         Boost::program_options
+        rpc-wbc
 )
 
 install(TARGETS foxglove-parameter-subscriber DESTINATION "${INSTALL_LIB_DIR}")

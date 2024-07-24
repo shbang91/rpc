@@ -2,6 +2,7 @@
 
 FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_map_int,
                                                          std::unordered_map<std::string, double*> &parameters_map_double,
+                                                         std::unordered_map<std::string, Task*> &parameters_map_task,
                                                          const std::string url) {
   next_sub_id_ = 0;
 
@@ -11,8 +12,8 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
       }
 
       client_.getParameters({
-          "n_steps","t_ss","t_ds",
-          "1) weight"
+          "n_steps", "t_ss", "t_ds",
+          "torso_ori_task_weight", "torso_ori_task_kp", "torso_ori_task_kd",
       });
   });
 
@@ -24,12 +25,30 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
           auto param_value = msg["parameters"].get<std::vector<foxglove::Parameter>>();
           for (const auto& param : param_value) {
             // assign new parameter value according to specified Map Type (after parsing from Foxglove)
+            // ------ process as int --------
             if (parameters_map_int.count(param.getName())) {
               double p_val = _ParseFoxgloveParameter(param);
               *parameters_map_int[param.getName()] = int(p_val);
-            } else if (parameters_map_double.count(param.getName())) {
+            }         // ------ process as double --------
+            else if (parameters_map_double.count(param.getName())) {
               double p_val = _ParseFoxgloveParameter(param);
               *parameters_map_double[param.getName()] = double(p_val);
+            } else {  // ------ process as task --------
+              // loop through all tasks to find the one that matches the parameter name
+              for (auto &[name, task]: parameters_map_task) {
+                if (param.getName().find(name) != std::string::npos) {
+                  // set new weight, kp, or kd values
+                  if (param.getName().find("weight") != std::string::npos) {
+                    Eigen::Vector3d task_weights = _ParseFoxgloveParameterVec(param);
+                    task->SetWeight(task_weights);
+                  } else if (param.getName().find("kp") != std::string::npos) {
+                    Eigen::Vector3d task_kp = _ParseFoxgloveParameterVec(param);
+                  } else if (param.getName().find("kd") != std::string::npos) {
+                    Eigen::Vector3d task_kd = _ParseFoxgloveParameterVec(param);
+                    task->SetKd(task_kd);
+                  }
+                }
+              }
             }
           }
         }
@@ -77,4 +96,22 @@ double FoxgloveParameterSubscriber::_ParseFoxgloveParameter(const foxglove::Para
   }
 
   return 0.0;
+}
+
+Eigen::Vector3d FoxgloveParameterSubscriber::_ParseFoxgloveParameterVec(const foxglove::Parameter& param) {
+  Eigen::Vector3d vec;
+  if(param.getType() == foxglove::ParameterType::PARAMETER_ARRAY){
+    auto p_val = param.getValue().getValue<std::vector<foxglove::ParameterValue>>();
+    if (p_val[0].getType() == foxglove::ParameterType::PARAMETER_DOUBLE) {
+      vec[0] = p_val[0].getValue<double>();
+      vec[1] = p_val[1].getValue<double>();
+      vec[2] = p_val[2].getValue<double>();
+    } else {
+      vec[0] = double(p_val[0].getValue<int64_t>());
+      vec[1] = double(p_val[1].getValue<int64_t>());
+      vec[2] = double(p_val[2].getValue<int64_t>());
+    }
+  }
+
+  return vec;
 }
