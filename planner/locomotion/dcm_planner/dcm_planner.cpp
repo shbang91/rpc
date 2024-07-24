@@ -742,11 +742,11 @@ void DCMPlanner::Initialize() {}
 
 void DCMPlanner::GetResults() {}
 
-double* DCMPlanner::Get_t_ss() {
+double* DCMPlanner::GetTssPtr() {
     return &t_ss_;
 }
 
-double* DCMPlanner::Get_t_ds() {
+double* DCMPlanner::GetTdsPtr() {
     return &t_ds_;
 }
 

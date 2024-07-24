@@ -60,7 +60,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kFwdWalk:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetFwdWalkFootStep(
-        int(n_steps_), nominal_forward_step_, nominal_footwidth_, first_swing_leg_,
+        n_steps_, nominal_forward_step_, nominal_footwidth_, first_swing_leg_,
         init_mid_foot);
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
@@ -69,7 +69,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kBwdWalk:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetFwdWalkFootStep(
-        int(n_steps_), nominal_backward_step_, nominal_footwidth_, first_swing_leg_,
+        n_steps_, nominal_backward_step_, nominal_footwidth_, first_swing_leg_,
         init_mid_foot);
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
@@ -78,7 +78,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kInPlaceWalk:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetInPlaceWalkFootStep(
-        int(n_steps_), nominal_footwidth_, first_swing_leg_, init_mid_foot);
+        n_steps_, nominal_footwidth_, first_swing_leg_, init_mid_foot);
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
     _AlternateLeg();
@@ -87,7 +87,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kLeftTurn:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetTurningFootStep(
-        int(n_steps_), nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
+        n_steps_, nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
     first_swing_leg_ = end_effector::LFoot;
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
@@ -96,7 +96,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kRightTurn:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetTurningFootStep(
-        int(n_steps_), -nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
+        n_steps_, -nominal_turn_radians_, nominal_footwidth_, init_mid_foot);
     first_swing_leg_ = end_effector::RFoot;
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
@@ -105,7 +105,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kLeftStrafe:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetStrafeFootStep(
-        int(n_steps_), nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
+        n_steps_, nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
     first_swing_leg_ = end_effector::LFoot;
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine
@@ -114,7 +114,7 @@ void DCMTrajectoryManager::GenerateFootSteps() {
   case dcm_walking_primitive::kRightStrafe:
     _ResetIndexAndClearFootSteps();
     foot_step_list_ = FootStep::GetStrafeFootStep(
-        int(n_steps_), -nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
+        n_steps_, -nominal_strafe_distance_, nominal_footwidth_, init_mid_foot);
     first_swing_leg_ = end_effector::RFoot;
     swing_leg_ =
         first_swing_leg_; // for getter function(GetSwingLeg()) in state machine

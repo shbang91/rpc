@@ -1,7 +1,7 @@
 #include "parameter_subscriber.hpp"
 
-FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_int_map,
-                                                         std::unordered_map<std::string, double*> &parameters_double_map,
+FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std::string, int*> &parameters_map_int,
+                                                         std::unordered_map<std::string, double*> &parameters_map_double,
                                                          const std::string url) {
   next_sub_id_ = 0;
 
@@ -23,39 +23,13 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(std::unordered_map<std:
         if (op == "parameterValues") {
           auto param_value = msg["parameters"].get<std::vector<foxglove::Parameter>>();
           for (const auto& param : param_value) {
-              //handler needed to differentiate datatypes   :::   clean up later
-            if(param.getType() == foxglove::ParameterType::PARAMETER_ARRAY){
-                //std::cout << "type: ARRAY" << std::endl;
-                auto p_arr = param.getValue().getValue<const std::vector<foxglove::ParameterValue>&>();
-                std::cout << param.getName() << ": [ ";
-                for(const auto& arr_parm : p_arr){
-                    if(arr_parm.getType() == foxglove::ParameterType::PARAMETER_INTEGER){
-                        auto p_val = arr_parm.getValue<int64_t>();
-                        std::cout << p_val << " ";
-                    }
-                    else if(arr_parm.getType() == foxglove::ParameterType::PARAMETER_DOUBLE){
-                        auto p_val = arr_parm.getValue<double>();
-                        std::cout << p_val << " ";
-                    }}
-                std::cout << "]" << std::endl;
-            }
-            if(param.getType() == foxglove::ParameterType::PARAMETER_INTEGER){
-                //std::cout << "type: INTEGER" << std::endl;
-                auto p_val = param.getValue().getValue<int64_t>();
-                std::cout << param.getName() << ": " << p_val << std::endl;
-                *parameters_int_map[param.getName()] = p_val;
-            }
-            else if(param.getType() == foxglove::ParameterType::PARAMETER_DOUBLE){
-                //std::cout << "type: DOUBLE" << std::endl;
-                auto p_val = param.getValue().getValue<double>();
-                std::cout << param.getName() << ": " << p_val << std::endl;
-                //note -- compare pros/cons with template
-                if(param.getName() == "n_steps"){   //replace with list in case we need exceptions for other int variables
-                    int dp_val = round(p_val);
-                    std::cout << param.getName() << " rounded to: " << dp_val << std::endl;
-                    *parameters_int_map[param.getName()] = dp_val;
-                }
-                else *parameters_double_map[param.getName()] = p_val;
+            // assign new parameter value according to specified Map Type (after parsing from Foxglove)
+            if (parameters_map_int.count(param.getName())) {
+              double p_val = _ParseFoxgloveParameter(param);
+              *parameters_map_int[param.getName()] = int(p_val);
+            } else if (parameters_map_double.count(param.getName())) {
+              double p_val = _ParseFoxgloveParameter(param);
+              *parameters_map_double[param.getName()] = double(p_val);
             }
           }
         }
@@ -91,4 +65,16 @@ FoxgloveParameterSubscriber::~FoxgloveParameterSubscriber() {
 
 void FoxgloveParameterSubscriber::UpdateParameters() {
   // add here parameters that need to be interpolated from current to desired value
+}
+
+double FoxgloveParameterSubscriber::_ParseFoxgloveParameter(const foxglove::Parameter& param) {
+  if(param.getType() == foxglove::ParameterType::PARAMETER_INTEGER){
+    int64_t p_val = param.getValue().getValue<int64_t>();
+    return double(p_val);
+  }
+  else if(param.getType() == foxglove::ParameterType::PARAMETER_DOUBLE){
+    return param.getValue().getValue<double>();
+  }
+
+  return 0.0;
 }
