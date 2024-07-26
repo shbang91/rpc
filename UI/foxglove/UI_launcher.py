@@ -72,6 +72,7 @@ def isMesh(geometry_object):
     return False
 
 
+xyz_scenes = {"torso_ori_weight","lf_pos_weight","lf_pos_kp","lf_pos_kd","lf_ori_weight","rf_pos_weight","rf_ori_weight"}
 async def main():
     async with (FoxgloveServer("0.0.0.0", 8765, "Visualization server",capabilities=["parameters", "parametersSubscribe"]) as server):
         tf_chan_id = await SceneChannel(False,"transforms", "protobuf", FrameTransform.DESCRIPTOR.full_name, frame_schema).add_chan(server)
