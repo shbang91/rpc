@@ -38,7 +38,7 @@ public:
   bool b_use_base_height_;
 
   double des_com_height_;
-  double des_body_height_;
+  // double des_body_height_;
   Eigen::Quaterniond des_torso_quat_;
 
   int planning_id_;
