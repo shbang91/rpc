@@ -796,7 +796,8 @@
       <origin rpy="0 -0 0" xyz="0 0 -0.0832995"/>
       <geometry>
         <!--<box size="0.22 0.092012 0.009"/>-->
-        <box size="0.22 0.1 0.02"/>
+        <box size="0.22 0.1 0.009"/>
+        <!--<box size="0.22 0.1 0.02"/>-->
       </geometry>
     </collision>
     <inertial>
@@ -814,8 +815,8 @@
   <!--=============================== l_foot_contact_frame (l_foot_contact) ===========================-->
   <joint name="l_foot_contact_frame" type="fixed">
     <!--<origin rpy="0 0 0" xyz="0 -0.008432 -0.087801"/>-->
-    <!--<origin rpy="0 0 0" xyz="0 -0.008432 -0.0874995"/>-->
-    <origin rpy="0 0 0" xyz="0 0 -0.0932995"/>
+    <origin rpy="0 0 0" xyz="0 0 -0.0877995"/>
+    <!--<origin rpy="0 0 0" xyz="0 0 -0.0932995"/>-->
     <parent link="l_ankle_ie_link"/>
     <child link="l_foot_contact"/>
   </joint>
@@ -1073,7 +1074,8 @@
       <origin rpy="0 -0 0" xyz="0 0 -0.0832995"/>
       <geometry>
         <!--<box size="0.22 0.092012 0.009"/>-->
-        <box size="0.22 0.1 0.02"/>
+        <box size="0.22 0.1 0.009"/>
+        <!--<box size="0.22 0.1 0.02"/>-->
       </geometry>
     </collision>
     <inertial>
@@ -1091,8 +1093,8 @@
   <!--=============================== r_foot_contact_frame (r_foot_contact) ===========================-->
   <joint name="r_foot_contact_frame" type="fixed">
     <!--<origin rpy="0 0 0" xyz="0 0.008432 -0.087801"/>-->
-    <!--<origin rpy="0 0 0" xyz="0 0.008432 -0.0877995"/>-->
-    <origin rpy="0 0 0" xyz="0 0 -0.0932995"/>
+    <origin rpy="0 0 0" xyz="0 0 -0.0877995"/>
+    <!--<origin rpy="0 0 0" xyz="0 0 -0.0932995"/>-->
     <parent link="r_ankle_ie_link"/>
     <child link="r_foot_contact"/>
   </joint>
