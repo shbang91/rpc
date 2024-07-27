@@ -23,7 +23,6 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
   sp_ = DracoStateProvider::GetStateProvider();
 
   // mpc gait
-  gait_params_ = std::make_unique<GaitParams>();
   gait_command_ = std::make_shared<GaitCommand>();
 
   // contact states
@@ -44,20 +43,21 @@ void Locomotion::FirstVisit() {
       W_delta_rf_rfoot_;
 
   // initialize convexMPC
-  gait_command_->vel_xy_des[0] = gait_params_->x_vel_cmd_;
-  gait_command_->vel_xy_des[1] = gait_params_->y_vel_cmd_;
-  gait_command_->yaw_rate = gait_params_->yaw_rate_cmd_;
+  gait_command_->vel_xy_des[0] = ctrl_arch_->mpc_gait_params_->x_vel_cmd_;
+  gait_command_->vel_xy_des[1] = ctrl_arch_->mpc_gait_params_->y_vel_cmd_;
+  gait_command_->yaw_rate = ctrl_arch_->mpc_gait_params_->yaw_rate_cmd_;
   double des_height = robot_->GetRobotComPos()[2]; // CoM height
   ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_, des_height);
-  ctrl_arch_->convex_mpc_locomotion_->SetGait(gait_params_->gait_number_);
+  ctrl_arch_->convex_mpc_locomotion_->SetGait(
+      ctrl_arch_->mpc_gait_params_->gait_number_);
   ctrl_arch_->convex_mpc_locomotion_->SetSwingHeight(
-      gait_params_->swing_height_);
+      ctrl_arch_->mpc_gait_params_->swing_height_);
   ctrl_arch_->convex_mpc_locomotion_->SetRaibertGain(
-      gait_params_->raibert_gain_);
+      ctrl_arch_->mpc_gait_params_->raibert_gain_);
   ctrl_arch_->convex_mpc_locomotion_->SetHighSpeedTurningGain(
-      gait_params_->high_speed_turning_gain_);
+      ctrl_arch_->mpc_gait_params_->high_speed_turning_gain_);
   ctrl_arch_->convex_mpc_locomotion_->SetFootLandingOffset(
-      gait_params_->landing_foot_offset_);
+      ctrl_arch_->mpc_gait_params_->landing_foot_offset_);
   // TODO: check if this is true
   ctrl_arch_->convex_mpc_locomotion_->SetHipLocation(
       robot_->GetBaseToFootXYOffset());
@@ -73,8 +73,8 @@ void Locomotion::OneStep() {
   // Gait command User Interrupt
   //=========================================================================
   if (b_increase_x_vel_) {
-    gait_params_->x_vel_cmd_ += 0.1;
-    mpc_interface->x_vel_cmd_ = gait_params_->x_vel_cmd_;
+    ctrl_arch_->mpc_gait_params_->x_vel_cmd_ += 0.1;
+    mpc_interface->x_vel_cmd_ = ctrl_arch_->mpc_gait_params_->x_vel_cmd_;
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "Desired X vel: " << mpc_interface->x_vel_cmd_ << "m/s"
               << std::endl;
@@ -82,8 +82,8 @@ void Locomotion::OneStep() {
     b_increase_x_vel_ = false;
   }
   if (b_increase_y_vel_) {
-    gait_params_->y_vel_cmd_ += 0.1;
-    mpc_interface->y_vel_cmd_ = gait_params_->y_vel_cmd_;
+    ctrl_arch_->mpc_gait_params_->y_vel_cmd_ += 0.1;
+    mpc_interface->y_vel_cmd_ = ctrl_arch_->mpc_gait_params_->y_vel_cmd_;
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "Desired Y vel: " << mpc_interface->y_vel_cmd_ << "m/s"
               << std::endl;
@@ -91,8 +91,8 @@ void Locomotion::OneStep() {
     b_increase_y_vel_ = false;
   }
   if (b_increase_yaw_vel_) {
-    gait_params_->yaw_rate_cmd_ += 0.1;
-    mpc_interface->yaw_rate_cmd_ = gait_params_->yaw_rate_cmd_;
+    ctrl_arch_->mpc_gait_params_->yaw_rate_cmd_ += 0.1;
+    mpc_interface->yaw_rate_cmd_ = ctrl_arch_->mpc_gait_params_->yaw_rate_cmd_;
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "Desired Yaw vel: " << mpc_interface->yaw_rate_cmd_ << "rad/s"
               << std::endl;
@@ -100,8 +100,8 @@ void Locomotion::OneStep() {
     b_increase_yaw_vel_ = false;
   }
   if (b_decrease_yaw_vel_) {
-    gait_params_->yaw_rate_cmd_ -= 0.1;
-    mpc_interface->yaw_rate_cmd_ = gait_params_->yaw_rate_cmd_;
+    ctrl_arch_->mpc_gait_params_->yaw_rate_cmd_ -= 0.1;
+    mpc_interface->yaw_rate_cmd_ = ctrl_arch_->mpc_gait_params_->yaw_rate_cmd_;
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "Desired Yaw vel: " << mpc_interface->yaw_rate_cmd_ << "rad/s"
               << std::endl;
@@ -258,7 +258,7 @@ void Locomotion::OneStep() {
 #if B_USE_ZMQ
   // for meshcat visualization (only visualize desired base & foot trajectories
   // for computing variable inertia calculation)
-  // TODO: visualize chaning target footstep location
+  // TODO: visualize changing target footstep location
   if (sp_->count_ % sp_->data_save_freq_ == 0) {
     DracoDataManager *dm = DracoDataManager::GetDataManager();
 
@@ -315,24 +315,6 @@ void Locomotion::SetParameters(const YAML::Node &node) {
     util::ReadParameter(node["wbc"]["qp"],
                         "W_delta_rf_right_foot_in_contact_mpc",
                         W_delta_rf_rfoot_);
-    YAML::Node mpc_cfg =
-        YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
-    gait_params_->x_vel_cmd_ =
-        util::ReadParameter<double>(mpc_cfg["gait"], "x_vel_cmd");
-    gait_params_->y_vel_cmd_ =
-        util::ReadParameter<double>(mpc_cfg["gait"], "y_vel_cmd");
-    gait_params_->yaw_rate_cmd_ =
-        util::ReadParameter<double>(mpc_cfg["gait"], "yaw_rate_cmd");
-    gait_params_->gait_number_ =
-        util::ReadParameter<int>(mpc_cfg["gait"], "gait_number");
-    gait_params_->swing_height_ =
-        util::ReadParameter<double>(mpc_cfg["swing_foot"], "height");
-    gait_params_->raibert_gain_ =
-        util::ReadParameter<double>(mpc_cfg["swing_foot"], "raibert_gain");
-    gait_params_->high_speed_turning_gain_ = util::ReadParameter<double>(
-        mpc_cfg["swing_foot"], "high_speed_turning_gain");
-    gait_params_->landing_foot_offset_ = util::ReadParameter<Eigen::Vector3d>(
-        mpc_cfg["swing_foot"], "landing_foot_offset");
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [ " << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

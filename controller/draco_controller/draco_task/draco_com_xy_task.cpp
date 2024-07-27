@@ -14,7 +14,7 @@
 #endif
 
 DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
-    : Task(robot, 2), b_sim_(false),
+    : Task(robot, 2), b_sim_(true),
       feedback_source_(feedback_source::kCoMFeedback),
       icp_integrator_(nullptr) {
   util::PrettyConstructor(3, "DracoCoMXYTask");
@@ -85,20 +85,20 @@ void DracoCoMXYTask::UpdateOpCommand() {
     double omega = sqrt(kGravAcc / com_height);
     // double omega = sqrt(kGravAcc / sp_->des_com_height_);
 
-    Eigen::Vector2d des_icp = des_pos_ + des_vel_ / omega;
-    Eigen::Vector2d des_icp_dot = des_vel_ + des_acc_ / omega;
+    des_icp_ = des_pos_ + des_vel_ / omega;
+    des_icp_dot_ = des_vel_ + des_acc_ / omega;
 
-    Eigen::Vector2d local_des_icp = rot_link_w * des_icp;
-    Eigen::Vector2d local_des_icp_dot = rot_link_w * des_icp_dot;
+    Eigen::Vector2d local_des_icp = rot_link_w * des_icp_;
+    Eigen::Vector2d local_des_icp_dot = rot_link_w * des_icp_dot_;
 
-    Eigen::Vector2d icp = sp_->dcm_.head<2>();
-    Eigen::Vector2d icp_err = des_icp - icp;
+    icp_ = sp_->dcm_.head<2>();
+    Eigen::Vector2d icp_err = des_icp_ - icp_;
 
-    Eigen::Vector2d local_icp = rot_link_w * icp;
+    Eigen::Vector2d local_icp = rot_link_w * icp_;
     Eigen::Vector2d local_icp_err = rot_link_w * icp_err;
 
     Eigen::Vector2d des_cmp =
-        icp - des_icp_dot / omega - kp_.cwiseProduct(icp_err);
+        icp_ - des_icp_dot_ / omega - kp_.cwiseProduct(icp_err);
 
     // Eigen::Vector2d des_cmp =
     // icp - des_icp_dot / omega -
@@ -137,7 +137,7 @@ void DracoCoMXYTask::UpdateOpCommand() {
 #if B_USE_ZMQ
     if (sp_->count_ % sp_->data_save_freq_ == 0) {
       DracoDataManager *dm = DracoDataManager::GetDataManager();
-      dm->data_->des_icp_ = des_icp;
+      dm->data_->des_icp_ = des_icp_;
       dm->data_->des_cmp_ = des_cmp;
     }
 #endif
@@ -283,39 +283,43 @@ void DracoCoMXYTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot().head<2>();
 }
 
-void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
+void DracoCoMXYTask::SetParameters(const YAML::Node &node) {
   try {
 
-    b_sim_ = b_sim;
+    std::string test_env_name = util::ReadParameter<std::string>(node, "env");
+    if (test_env_name == "hw") {
+      b_sim_ = false;
+    }
 
-    util::ReadParameter(node, "com_feedback_source", feedback_source_);
+    util::ReadParameter(node["wbc"]["task"]["com_xy_task"],
+                        "com_feedback_source", feedback_source_);
 
-    std::string prefix = b_sim ? "sim" : "exp";
-    util::ReadParameter(node, prefix + "_kp_ik", kp_ik_);
+    util::ReadParameter(node["wbc"]["task"]["com_xy_task"], "kp_ik", kp_ik_);
     if (feedback_source_ == feedback_source::kCoMFeedback) {
-      util::ReadParameter(node, prefix + "_kp", kp_);
-      util::ReadParameter(node, prefix + "_kd", kd_);
+      util::ReadParameter(node["wbc"]["task"]["com_xy_task"], "kp", kp_);
+      util::ReadParameter(node["wbc"]["task"]["com_xy_task"], "kd", kd_);
     } else if (feedback_source_ == feedback_source::kIcpFeedback) {
-      util::ReadParameter(node, prefix + "_icp_kp", kp_);
-      util::ReadParameter(node, prefix + "_icp_kd", kd_);
-      util::ReadParameter(node, prefix + "_icp_ki", ki_);
+      util::ReadParameter(node["wbc"]["task"]["com_xy_task"], "icp_kp", kp_);
+      util::ReadParameter(node["wbc"]["task"]["com_xy_task"], "icp_kd", kd_);
+      util::ReadParameter(node["wbc"]["task"]["com_xy_task"], "icp_ki", ki_);
 
-      icp_integrator_type_ =
-          util::ReadParameter<int>(node, "icp_integrator_type");
+      icp_integrator_type_ = util::ReadParameter<int>(
+          node["wbc"]["task"]["com_xy_task"], "icp_integrator_type");
       if (icp_integrator_type_ == icp_integrator::kExponentialSmoother) {
-        double time_constant =
-            util::ReadParameter<double>(node, prefix + "_time_constant");
+        double time_constant = util::ReadParameter<double>(
+            node["wbc"]["task"]["com_xy_task"], "time_constant");
         Eigen::VectorXd average_icp_error_limit =
             util::ReadParameter<Eigen::VectorXd>(
-                node, prefix + "_avg_icp_error_limit");
+                node["wbc"]["task"]["com_xy_task"], "avg_icp_error_limit");
 
         icp_integrator_ = new ExponentialMovingAverageFilter(
             sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(2),
             -average_icp_error_limit, average_icp_error_limit);
       } else if (icp_integrator_type_ == icp_integrator::kLeakyIntegrator) {
-        leaky_rate_ = util::ReadParameter<double>(node, prefix + "_leaky_rate");
+        leaky_rate_ = util::ReadParameter<double>(
+            node["wbc"]["task"]["com_xy_task"], "leaky_rate");
         leaky_integrator_limit_ = util::ReadParameter<Eigen::Vector2d>(
-            node, prefix + "_leaky_integrator_limit");
+            node["wbc"]["task"]["com_xy_task"], "leaky_integrator_limit");
       }
     } else
       throw std::invalid_argument("No Matching CoM Feedback Source");

@@ -23,44 +23,73 @@
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "convex_mpc/convex_mpc_locomotion.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
-#include "util/util.hpp"
 
 #include "controller/whole_body_controller/task.hpp"
-DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
+DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
+                                                   const YAML::Node &cfg)
     : ControlArchitecture(robot) {
   util::PrettyConstructor(1, "DracoControlArchitecture");
 
   sp_ = DracoStateProvider::GetStateProvider();
 
-  try {
-    cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
-
-  bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
-
   // set starting state
-  prev_state_ =
-      b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
-  state_ =
-      b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
-
-  std::string prefix = b_sim ? "sim" : "exp";
+  std::string test_env_name = util::ReadParameter<std::string>(cfg, "env");
+  if (test_env_name == "pybullet") {
+    prev_state_ = draco_states::kDoubleSupportStandUp;
+    state_ = draco_states::kDoubleSupportStandUp;
+  } else {
+    // mujoco & hw
+    prev_state_ = draco_states::kInitialize;
+    state_ = draco_states::kInitialize;
+  }
 
   //=============================================================
   // initialize task, contact, controller, planner
   //=============================================================
-  tci_container_ = new DracoTCIContainer(robot_);
-  controller_ = new DracoController(tci_container_, robot_);
+  tci_container_ = new DracoTCIContainer(robot_, cfg);
+  controller_ = new DracoController(tci_container_, robot_, cfg);
 
   // dcm planner
   dcm_planner_ = new DCMPlanner();
 
-  // convex mpc planner
-  YAML::Node cfg_mpc =
-      YAML::LoadFile(THIS_COM "config/draco/MPC_LOCOMOTION.yaml");
+  //=============================================================
+  // Convex MPC Planner
+  //=============================================================
+  YAML::Node cfg_mpc;
+  if (test_env_name == "mujoco")
+    cfg_mpc =
+        YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/MPC_LOCOMOTION.yaml");
+  else if (test_env_name == "pybullet")
+    cfg_mpc = YAML::LoadFile(THIS_COM
+                             "config/draco/sim/pybullet/MPC_LOCOMOTION.yaml");
+  else if (test_env_name == "hw")
+    cfg_mpc = YAML::LoadFile(THIS_COM "config/draco/hw/MPC_LOCOMOTION.yaml");
+  else {
+    std::cout << "[DracoControlArchitecture] Please check the test_env_name"
+              << '\n';
+    assert(false);
+  }
+
+  // mpc gait parameter setting
+  mpc_gait_params_ = new GaitParams();
+  mpc_gait_params_->x_vel_cmd_ =
+      util::ReadParameter<double>(cfg_mpc["gait"], "x_vel_cmd");
+  mpc_gait_params_->y_vel_cmd_ =
+      util::ReadParameter<double>(cfg_mpc["gait"], "y_vel_cmd");
+  mpc_gait_params_->yaw_rate_cmd_ =
+      util::ReadParameter<double>(cfg_mpc["gait"], "yaw_rate_cmd");
+  mpc_gait_params_->gait_number_ =
+      util::ReadParameter<int>(cfg_mpc["gait"], "gait_number");
+  mpc_gait_params_->swing_height_ =
+      util::ReadParameter<double>(cfg_mpc["swing_foot"], "height");
+  mpc_gait_params_->raibert_gain_ =
+      util::ReadParameter<double>(cfg_mpc["swing_foot"], "raibert_gain");
+  mpc_gait_params_->high_speed_turning_gain_ = util::ReadParameter<double>(
+      cfg_mpc["swing_foot"], "high_speed_turning_gain");
+  mpc_gait_params_->landing_foot_offset_ = util::ReadParameter<Eigen::Vector3d>(
+      cfg_mpc["swing_foot"], "landing_foot_offset");
+
+  // mpc parameter setting
   double iterations_between_mpc =
       util::ReadParameter<double>(cfg_mpc, "iterations_btw_mpc");
   bool b_save_mpc_solution =
@@ -114,16 +143,20 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   //  initialize kinematics manager
   upper_body_tm_ = new UpperBodyTrajetoryManager(
       tci_container_->task_map_["upper_body_task"], robot_);
+
   floating_base_tm_ = new FloatingBaseTrajectoryManager(
       tci_container_->task_map_["com_xy_task"],
       tci_container_->task_map_["com_z_task"],
       tci_container_->task_map_["torso_ori_task"], robot_);
+
   dcm_tm_ = new DCMTrajectoryManager(
       dcm_planner_, tci_container_->task_map_["com_xy_task"],
       tci_container_->task_map_["com_z_task"],
       tci_container_->task_map_["torso_ori_task"], robot_,
       draco_link::l_foot_contact, draco_link::r_foot_contact,
       sp_->b_use_base_height_);
+  dcm_tm_->InitializeParameters(cfg["dcm_walking"]);
+
   lf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->task_map_["lf_pos_task"],
       tci_container_->task_map_["lf_ori_task"], robot_);
@@ -133,7 +166,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
 
   // initialize dynamics manager
   double max_rf_z;
-  util::ReadParameter(cfg_["wbc"]["contact"], prefix + "_max_rf_z", max_rf_z);
+  util::ReadParameter(cfg["wbc"]["contact"], "max_rf_z", max_rf_z);
   lf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
       tci_container_->contact_map_["lf_contact"], max_rf_z);
   rf_max_normal_froce_tm_ = new MaxNormalForceTrajectoryManager(
@@ -151,45 +184,73 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   //=============================================================
   state_machine_container_[draco_states::kInitialize] =
       new Initialize(draco_states::kInitialize, robot_, this);
+  state_machine_container_[draco_states::kInitialize]->SetParameters(cfg);
+
   state_machine_container_[draco_states::kDoubleSupportStandUp] =
       new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
                                this);
+  state_machine_container_[draco_states::kDoubleSupportStandUp]->SetParameters(
+      cfg);
+
   state_machine_container_[draco_states::kDoubleSupportBalance] =
       new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_,
                                this);
+
   state_machine_container_[draco_states::kDoubleSupportSwaying] =
       new DoubleSupportSwaying(draco_states::kDoubleSupportSwaying, robot_,
                                this);
+  state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
+      cfg);
+
   state_machine_container_[draco_states::kLFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kLFContactTransitionStart,
                                  robot_, this);
+  state_machine_container_[draco_states::kLFContactTransitionStart]
+      ->SetParameters(cfg);
+
   state_machine_container_[draco_states::kLFContactTransitionEnd] =
       new ContactTransitionEnd(draco_states::kLFContactTransitionEnd, robot_,
                                this);
+  state_machine_container_[draco_states::kLFContactTransitionEnd]
+      ->SetParameters(cfg);
+
   state_machine_container_[draco_states::kLFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kLFSingleSupportSwing, robot_, this);
+  state_machine_container_[draco_states::kLFSingleSupportSwing]->SetParameters(
+      cfg);
 
   state_machine_container_[draco_states::kRFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kRFContactTransitionStart,
                                  robot_, this);
+  state_machine_container_[draco_states::kRFContactTransitionStart]
+      ->SetParameters(cfg);
+
   state_machine_container_[draco_states::kRFContactTransitionEnd] =
       new ContactTransitionEnd(draco_states::kRFContactTransitionEnd, robot_,
                                this);
+  state_machine_container_[draco_states::kRFContactTransitionEnd]
+      ->SetParameters(cfg);
+
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
+  state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
+      cfg);
 
   state_machine_container_[draco_states::kLocomotion] =
       new Locomotion(draco_states::kLocomotion, robot_, this);
-
-  this->_InitializeParameters();
+  state_machine_container_[draco_states::kLocomotion]->SetParameters(cfg);
 }
 
 DracoControlArchitecture::~DracoControlArchitecture() {
   delete tci_container_;
   delete controller_;
   delete dcm_planner_;
-  delete convex_mpc_locomotion_;
+
+  // mpc
+  delete mpc_gait_params_;
+  delete mpc_params_;
   delete draco_crbi_model_;
+  delete convex_mpc_locomotion_;
 
   // tm
   delete upper_body_tm_;
@@ -238,31 +299,4 @@ void DracoControlArchitecture::GetCommand(void *command) {
     state_ = state_machine_container_[state_]->GetNextState();
     b_state_first_visit_ = true;
   }
-}
-
-void DracoControlArchitecture::_InitializeParameters() {
-  // state machine initialization
-  state_machine_container_[draco_states::kInitialize]->SetParameters(
-      cfg_["state_machine"]["initialize"]);
-  state_machine_container_[draco_states::kDoubleSupportStandUp]->SetParameters(
-      cfg_["state_machine"]["stand_up"]);
-  state_machine_container_[draco_states::kLFSingleSupportSwing]->SetParameters(
-      cfg_["state_machine"]["single_support_swing"]);
-  state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
-      cfg_["state_machine"]["single_support_swing"]);
-  state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
-      cfg_["state_machine"]["com_swaying"]);
-
-  state_machine_container_[draco_states::kLFContactTransitionStart]
-      ->SetParameters(cfg_);
-  state_machine_container_[draco_states::kRFContactTransitionStart]
-      ->SetParameters(cfg_);
-  state_machine_container_[draco_states::kLFContactTransitionEnd]
-      ->SetParameters(cfg_);
-  state_machine_container_[draco_states::kRFContactTransitionEnd]
-      ->SetParameters(cfg_);
-  state_machine_container_[draco_states::kLocomotion]->SetParameters(cfg_);
-
-  // dcm planner params initialization
-  dcm_tm_->InitializeParameters(cfg_["dcm_walking"]);
 }

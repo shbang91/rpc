@@ -129,6 +129,11 @@ public:
     rfoot_cp_string_ = rfoot_cp_string;
     foot_cp_string_vec_.push_back(lfoot_cp_string_);
     foot_cp_string_vec_.push_back(rfoot_cp_string_);
+    std::cout << "============================================" << '\n';
+    std::cout << "Left foot control point in URDF: " << lfoot_cp_string << '\n';
+    std::cout << "Right foot control point in URDF: " << rfoot_cp_string
+              << '\n';
+    std::cout << "============================================" << '\n';
   }
 
 private:

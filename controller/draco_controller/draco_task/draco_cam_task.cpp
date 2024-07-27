@@ -47,10 +47,9 @@ void DracoCAMTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
 
-void DracoCAMTask::SetParameters(const YAML::Node &node, const bool b_sim) {
+void DracoCAMTask::SetParameters(const YAML::Node &node) {
   try {
-    std::string prefix = b_sim ? "sim" : "exp";
-    util::ReadParameter(node, prefix + "_kd", kd_);
+    util::ReadParameter(node, "kd", kd_);
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

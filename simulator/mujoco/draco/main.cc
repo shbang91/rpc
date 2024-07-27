@@ -70,6 +70,10 @@ Interface *draco_interface = nullptr;
 DracoSensorData *draco_sensor_data = nullptr;
 DracoCommand *draco_command = nullptr;
 
+// mujoco joint & actuator maps
+std::unordered_map<std::string, int> mj_jnt_map_;
+std::unordered_map<std::string, int> mj_act_map_;
+
 using Seconds = std::chrono::duration<double>;
 
 //---------------------------------------- plugin handling
@@ -262,6 +266,11 @@ mjModel *LoadModel(const char *file, mj::Simulate &sim) {
 }
 
 // TODO:
+void SetJointAndActuatorMaps(
+    mjModel *m, std::unordered_map<std::string, int> &joint_map,
+    std::unordered_map<std::string, int> &actuator_map) {}
+
+// TODO:
 void SetInitialConfig(mjData *d) {
   d->qpos[2] = 0.95;
   // map (joint name -> joint idx)
@@ -363,7 +372,7 @@ bool CopySensorData() {
   draco_sensor_data->joint_vel_[26] = d->qvel[18];
 
   //==============================================
-  // TODO:floating base states
+  // floating base states for ground truth state estimation
   //==============================================
   draco_sensor_data->base_joint_pos_[0] = d->qpos[0];
   draco_sensor_data->base_joint_pos_[1] = d->qpos[1];
@@ -383,7 +392,7 @@ bool CopySensorData() {
   draco_sensor_data->base_joint_ang_vel_[2] = d->qvel[5];
 
   //==============================================
-  // TODO:contact states
+  // TODO:contact states (1. contact normal force, 2. swing foot height)
   //==============================================
 
   return true;
@@ -437,39 +446,39 @@ void CopyCommand() {
                 400 * (draco_command->joint_pos_cmd_[0] - d->qpos[20]) +
                 20 * (draco_command->joint_vel_cmd_[0] - d->qvel[19]);
   d->ctrl[14] = draco_command->joint_trq_cmd_[1] +
-                400 * (draco_command->joint_pos_cmd_[1] - d->qpos[21]) +
+                500 * (draco_command->joint_pos_cmd_[1] - d->qpos[21]) +
                 20 * (draco_command->joint_vel_cmd_[1] - d->qvel[20]);
   d->ctrl[15] = draco_command->joint_trq_cmd_[2] +
-                400 * (draco_command->joint_pos_cmd_[2] - d->qpos[22]) +
+                500 * (draco_command->joint_pos_cmd_[2] - d->qpos[22]) +
                 20 * (draco_command->joint_vel_cmd_[2] - d->qvel[21]);
   d->ctrl[16] = draco_command->joint_trq_cmd_[4] +
-                200 * (draco_command->joint_pos_cmd_[4] - d->qpos[24]) +
-                15 * (draco_command->joint_vel_cmd_[4] - d->qvel[23]);
+                300 * (draco_command->joint_pos_cmd_[4] - d->qpos[24]) +
+                10 * (draco_command->joint_vel_cmd_[4] - d->qvel[23]);
   d->ctrl[17] = draco_command->joint_trq_cmd_[5] +
-                50 * (draco_command->joint_pos_cmd_[5] - d->qpos[25]) +
-                5 * (draco_command->joint_vel_cmd_[5] - d->qvel[24]);
+                70 * (draco_command->joint_pos_cmd_[5] - d->qpos[25]) +
+                4 * (draco_command->joint_vel_cmd_[5] - d->qvel[24]);
   d->ctrl[18] = draco_command->joint_trq_cmd_[6] +
-                50 * (draco_command->joint_pos_cmd_[6] - d->qpos[26]) +
-                5 * (draco_command->joint_vel_cmd_[6] - d->qvel[25]);
+                70 * (draco_command->joint_pos_cmd_[6] - d->qpos[26]) +
+                4 * (draco_command->joint_vel_cmd_[6] - d->qvel[25]);
   // right leg
   d->ctrl[19] = draco_command->joint_trq_cmd_[14] +
                 400 * (draco_command->joint_pos_cmd_[14] - d->qpos[27]) +
                 20 * (draco_command->joint_vel_cmd_[14] - d->qvel[26]);
   d->ctrl[20] = draco_command->joint_trq_cmd_[15] +
-                400 * (draco_command->joint_pos_cmd_[15] - d->qpos[28]) +
+                500 * (draco_command->joint_pos_cmd_[15] - d->qpos[28]) +
                 20 * (draco_command->joint_vel_cmd_[15] - d->qvel[27]);
   d->ctrl[21] = draco_command->joint_trq_cmd_[16] +
-                400 * (draco_command->joint_pos_cmd_[16] - d->qpos[29]) +
+                500 * (draco_command->joint_pos_cmd_[16] - d->qpos[29]) +
                 20 * (draco_command->joint_vel_cmd_[16] - d->qvel[28]);
   d->ctrl[22] = draco_command->joint_trq_cmd_[18] +
-                200 * (draco_command->joint_pos_cmd_[18] - d->qpos[31]) +
-                15 * (draco_command->joint_vel_cmd_[18] - d->qvel[30]);
+                300 * (draco_command->joint_pos_cmd_[18] - d->qpos[31]) +
+                10 * (draco_command->joint_vel_cmd_[18] - d->qvel[30]);
   d->ctrl[23] = draco_command->joint_trq_cmd_[19] +
-                50 * (draco_command->joint_pos_cmd_[19] - d->qpos[32]) +
-                5 * (draco_command->joint_vel_cmd_[19] - d->qvel[31]);
+                70 * (draco_command->joint_pos_cmd_[19] - d->qpos[32]) +
+                4 * (draco_command->joint_vel_cmd_[19] - d->qvel[31]);
   d->ctrl[24] = draco_command->joint_trq_cmd_[20] +
-                50 * (draco_command->joint_pos_cmd_[20] - d->qpos[33]) +
-                5 * (draco_command->joint_vel_cmd_[20] - d->qvel[32]);
+                70 * (draco_command->joint_pos_cmd_[20] - d->qpos[33]) +
+                4 * (draco_command->joint_vel_cmd_[20] - d->qvel[32]);
   // std::cout << "----------------------------------------" << std::endl;
   // for (int i = 0; i < 25; ++i) {
   // std::cout << d->ctrl[i] << ", " << '\n';
@@ -694,17 +703,25 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
       d = mj_makeData(m);
     }
     if (d) {
-      //**********************************************
       // Construct controller
+      //**********************************************
       draco_interface = new DracoInterface();
       draco_sensor_data = new DracoSensorData();
       draco_command = new DracoCommand();
       //**********************************************
 
-      sim->Load(m, d, filename, draco_interface->interrupt_handler_);
-
+      // Pass keystroke interrupt
       //**********************************************
+      sim->Load(m, d, filename, draco_interface->interrupt_handler_);
+      //**********************************************
+
+      // Set up mujoco joint & actuator maps
+      // ********************************************
+      SetJointAndActuatorMaps(m, mj_jnt_map_, mj_act_map_);
+      // ********************************************
+
       // Set initial configuration
+      //**********************************************
       SetInitialConfig(d);
       //**********************************************
 

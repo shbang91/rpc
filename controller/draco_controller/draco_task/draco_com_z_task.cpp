@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot)
-    : Task(robot, 1), b_sim_(false) {
+    : Task(robot, 1), b_sim_(true) {
 
   util::PrettyConstructor(3, "DracoCoMZTask");
   sp_ = DracoStateProvider::GetStateProvider();
@@ -102,22 +102,26 @@ void DracoCoMZTask::UpdateJacobianDotQdot() {
   }
 }
 
-void DracoCoMZTask::SetParameters(const YAML::Node &node, const bool b_sim) {
+void DracoCoMZTask::SetParameters(const YAML::Node &node) {
   try {
-    b_sim_ = b_sim;
 
-    util::ReadParameter(node, "com_height_target_source", com_height_);
+    std::string test_env_name = util::ReadParameter<std::string>(node, "env");
+    if (test_env_name == "hw") {
+      b_sim_ = false;
+    }
+
+    util::ReadParameter(node["wbc"]["task"]["com_z_task"],
+                        "com_height_target_source", com_height_);
 
     sp_->b_use_base_height_ = com_height_ == com_height::kBase ? true : false;
 
-    std::string prefix = b_sim ? "sim" : "exp";
-    util::ReadParameter(node, prefix + "_kp_ik", kp_ik_);
+    util::ReadParameter(node["wbc"]["task"]["com_z_task"], "kp_ik", kp_ik_);
     if (com_height_ == com_height::kCoM) {
-      util::ReadParameter(node, prefix + "_com_kp", kp_);
-      util::ReadParameter(node, prefix + "_com_kd", kd_);
+      util::ReadParameter(node["wbc"]["task"]["com_z_task"], "com_kp", kp_);
+      util::ReadParameter(node["wbc"]["task"]["com_z_task"], "com_kd", kd_);
     } else if (com_height_ == com_height::kBase) {
-      util::ReadParameter(node, prefix + "_base_kp", kp_);
-      util::ReadParameter(node, prefix + "_base_kd", kd_);
+      util::ReadParameter(node["wbc"]["task"]["com_z_task"], "base_kp", kp_);
+      util::ReadParameter(node["wbc"]["task"]["com_z_task"], "base_kd", kd_);
     } else
       throw std::invalid_argument("No Matching CoM Height Target Source");
 

@@ -6,7 +6,7 @@ class QPParams;
 
 class DracoTCIContainer : public TCIContainer {
 public:
-  DracoTCIContainer(PinocchioRobotSystem *robot);
+  DracoTCIContainer(PinocchioRobotSystem *robot, const YAML::Node &cfg);
   virtual ~DracoTCIContainer();
 
   QPParams *qp_params_;
@@ -34,5 +34,5 @@ private:
   ForceTask *rf_reaction_force_task_;
 
   YAML::Node cfg_;
-  void _InitializeParameters(const bool b_sim);
+  void _InitializeParameters(const YAML::Node &cfg);
 };

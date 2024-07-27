@@ -22,8 +22,8 @@ end
 
 [tmp, i] = max([d.datenum]);
 fprintf('loading %s \n', d(i).name)
-load(d(i).name, "icp_error_raw")
-load(d(i).name, "icp_avg_err")
+% load(d(i).name, "icp_error_raw")
+% load(d(i).name, "icp_avg_err")
 
 
 [tmp, i] = max([dd.datenum]);

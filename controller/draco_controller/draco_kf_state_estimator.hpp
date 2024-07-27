@@ -1,5 +1,4 @@
 #pragma once
-
 /**
  * Linear KF State Estimator
  *
@@ -15,15 +14,12 @@
 #include <vector>
 
 #include "configuration.hpp"
-#include "controller/draco_controller/draco_interface.hpp"
-#include "controller/draco_controller/draco_state_provider.hpp"
-#include "controller/filter/digital_filters.hpp"
-#include "controller/robot_system/pinocchio_robot_system.hpp"
-#include "controller/state_estimator/MARGFilter.hpp"
+#include "controller/draco_controller/state_estimator.hpp"
 #include "util/util.hpp"
 
 // kalman filter files
 #include "controller/state_estimator/FloatingBaseSystemModel.hpp"
+#include "controller/state_estimator/MARGFilter.hpp"
 #include "controller/state_estimator/PoseMeasurementModel.hpp"
 #include "third_party/kalman_filters/ExtendedKalmanFilter.hpp"
 
@@ -31,17 +27,22 @@
 #include <matlogger2/matlogger2.h>
 #endif
 
-class DracoSensorData;
+class DracoStateProvider;
+class SimpleMovingAverage;
+class ExponentialMovingAverageFilter;
 
-class DracoKFStateEstimator {
+class DracoKFStateEstimator : public StateEstimator {
 public:
   enum SupportState { LEFT, RIGHT, DOUBLE };
 
-  DracoKFStateEstimator(PinocchioRobotSystem *robot);
+  DracoKFStateEstimator(PinocchioRobotSystem *robot, const YAML::Node &cfg);
   ~DracoKFStateEstimator();
 
-  void Initialize(DracoSensorData *sensor_data);
-  void Update(DracoSensorData *sensor_data);
+  void Initialize(DracoSensorData *sensor_data) override;
+  void Update(DracoSensorData *sensor_data) override;
+
+  // simulation only
+  void UpdateGroundTruthSensorData(DracoSensorData *sensor_data) override;
 
   void ComputeDCM();
 
@@ -52,7 +53,6 @@ private:
                                             bool use_marg_filter);
 
 protected:
-  PinocchioRobotSystem *robot_;
   DracoStateProvider *sp_;
   SupportState current_support_state_;
   SupportState prev_support_state_;

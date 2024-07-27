@@ -1,5 +1,5 @@
 #pragma once
-//#include "controller/interrupt.hpp"
+#include "util/util.hpp"
 
 class PinocchioRobotSystem;
 class ControlArchitecture;
@@ -21,4 +21,5 @@ protected:
 
   PinocchioRobotSystem *robot_;
   ControlArchitecture *ctrl_arch_;
+  YAML::Node cfg_;
 };

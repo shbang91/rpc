@@ -88,15 +88,6 @@ void DoubleSupportBalance::LastVisit() {
       Eigen::Quaterniond(rf_iso.linear()).normalized().coeffs(),
       Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
 
-  // TEST
-  // std::cout << "nominal inertia: " << std::endl;
-  // std::cout << robot_->GetIg() << std::endl;
-  // std::cout << "nominal inertia local: " << std::endl;
-  // Eigen::Matrix3d local_inertia = robot_->GetBodyOriRot().transpose() *
-  // robot_->GetIg().topLeftCorner<3, 3>() *
-  // robot_->GetBodyOriRot();
-  // std::cout << local_inertia << std::endl;
-  // exit(0);
   sp_->wbo_des_ =
       ctrl_arch_->tci_container_->task_map_["wbo_task"]->CurrentPos();
 }

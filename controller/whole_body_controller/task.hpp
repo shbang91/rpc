@@ -61,12 +61,11 @@ public:
 
   // setter function
   // task gain, hierarchy
-  virtual void SetParameters(const YAML::Node &node, const bool b_sim) {
+  virtual void SetParameters(const YAML::Node &node) {
     try {
-      std::string prefix = b_sim ? "sim" : "exp";
-      util::ReadParameter(node, prefix + "_kp", kp_);
-      util::ReadParameter(node, prefix + "_kd", kd_);
-      util::ReadParameter(node, prefix + "_kp_ik", kp_ik_);
+      util::ReadParameter(node, "kp", kp_);
+      util::ReadParameter(node, "kd", kd_);
+      util::ReadParameter(node, "kp_ik", kp_ik_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
                 << __FILE__ << "]" << std::endl;

@@ -1,13 +1,16 @@
 #pragma once
+
+#include <Eigen/Dense>
+#include <vector>
+
 #include "configuration.hpp"
+#include "controller/draco_controller/state_estimator.hpp"
+#include "util/util.hpp"
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
 #include <matlogger2/utils/mat_appender.h>
 #endif
-
-#include <Eigen/Dense>
-#include <vector>
 
 namespace com_vel_filter {
 constexpr int kMovingAverage = 0;
@@ -15,28 +18,24 @@ constexpr int kExponentialSmoother = 1;
 constexpr int kLowPassFilter = 2;
 } // namespace com_vel_filter
 
-class DracoSensorData;
-class PinocchioRobotSystem;
 class DracoStateProvider;
 class SimpleMovingAverage;
 class ExponentialMovingAverageFilter;
 class LowPassVelocityFilter;
 
-class DracoStateEstimator {
+class DracoStateEstimator : public StateEstimator {
 public:
-  DracoStateEstimator(PinocchioRobotSystem *robot);
+  DracoStateEstimator(PinocchioRobotSystem *robot, const YAML::Node &cfg);
   virtual ~DracoStateEstimator();
 
-  void Initialize(DracoSensorData *sensor_data);
-  void Update(DracoSensorData *sensor_data);
+  void Initialize(DracoSensorData *sensor_data) override;
+  void Update(DracoSensorData *sensor_data) override;
 
   // simulation only
-  void UpdateGroundTruthSensorData(DracoSensorData *sensor_data);
+  void UpdateGroundTruthSensorData(DracoSensorData *sensor_data) override;
 
 private:
   void _ComputeDCM();
-
-  PinocchioRobotSystem *robot_;
   DracoStateProvider *sp_;
 
   Eigen::Matrix3d R_imu_base_com_;

@@ -6,8 +6,7 @@
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/interface.hpp"
 
-class DracoStateEstimator;
-class DracoKFStateEstimator;
+class StateEstimator;
 class DracoStateProvider;
 class DracoTaskGainHandler;
 
@@ -62,10 +61,12 @@ public:
   DracoTaskGainHandler *task_gain_handler_;
 
 private:
-  DracoStateEstimator *se_;
-  DracoKFStateEstimator *se_kf_;
+  StateEstimator *se_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
+  void SetParameters();
 
-  bool b_use_kf_state_estimator_;
+  // state estimator selection
+  std::string state_estimator_type_;
+  bool b_cheater_mode_;
 };

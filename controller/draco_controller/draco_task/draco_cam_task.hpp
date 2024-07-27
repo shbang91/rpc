@@ -14,7 +14,7 @@ public:
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 
-  void SetParameters(const YAML::Node &node, const bool b_sim) override;
+  void SetParameters(const YAML::Node &node) override;
 
 private:
   DracoStateProvider *sp_;

@@ -15,7 +15,7 @@ import numpy as np
 np.set_printoptions(precision=4)
 import ipdb
 
-from config.fixed_draco.pybullet_simulation import Config
+from config.fixed_draco.pybullet.pybullet_params import Config
 from util.python_utils import pybullet_util
 from util.python_utils import util
 from collections import OrderedDict

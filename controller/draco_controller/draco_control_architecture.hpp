@@ -1,5 +1,6 @@
 #pragma once
 #include "controller/control_architecture.hpp"
+#include "util/util.hpp"
 
 namespace draco_states {
 constexpr int kInitialize = 1;
@@ -27,12 +28,13 @@ class DracoStateProvider;
 class ForceTrajectoryManager;
 class QPParamsManager;
 class ConvexMPCLocomotion;
+class GaitParams;
 class MPCParams;
 class CompositeRigidBodyInertia;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
-  DracoControlArchitecture(PinocchioRobotSystem *robot);
+  DracoControlArchitecture(PinocchioRobotSystem *robot, const YAML::Node &cfg);
   virtual ~DracoControlArchitecture();
 
   void GetCommand(void *command) override;
@@ -51,12 +53,11 @@ public:
   QPParamsManager *qp_pm_;
   ConvexMPCLocomotion *convex_mpc_locomotion_;
   CompositeRigidBodyInertia *draco_crbi_model_;
+  GaitParams *mpc_gait_params_;
   MPCParams *mpc_params_;
 
 private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
-
-  void _InitializeParameters() override;
 };

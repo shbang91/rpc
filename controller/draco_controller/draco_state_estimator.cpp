@@ -7,36 +7,37 @@
 #include "controller/draco_controller/draco_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 
-#include "util/util.hpp"
-
 #if B_USE_ZMQ
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
 #include <string>
 
-DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
-    : robot_(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
+DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot,
+                                         const YAML::Node &cfg)
+    : StateEstimator(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
       global_leg_odometry_(Eigen::Vector3d::Zero()),
       prev_base_joint_pos_(Eigen::Vector3d::Zero()), b_first_visit_(true),
       com_vel_exp_filter_(nullptr) {
   util::PrettyConstructor(1, "DracoStateEstimator");
+
   sp_ = DracoStateProvider::GetStateProvider();
+
+  // assume start with double support
+  sp_->b_lf_contact_ = true;
+  sp_->b_rf_contact_ = true;
 
   R_imu_base_com_ =
       robot_->GetLinkIsometry(draco_link::torso_imu).linear().transpose() *
       robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
 
   try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
     com_vel_filter_type_ =
         util::ReadParameter<int>(cfg["state_estimator"], "com_vel_filter_type");
-    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
 
-    std::string prefix = b_sim ? "sim" : "exp";
     if (com_vel_filter_type_ == com_vel_filter::kMovingAverage) {
       Eigen::Vector3d num_data_com_vel = util::ReadParameter<Eigen::Vector3d>(
-          cfg["state_estimator"], prefix + "_num_data_com_vel");
+          cfg["state_estimator"], "num_data_com_vel");
       com_vel_mv_avg_filter_.clear();
       for (int i = 0; i < 3; i++) {
         com_vel_mv_avg_filter_.push_back(
@@ -258,7 +259,21 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
       sensor_data->base_joint_lin_vel_, sensor_data->base_joint_ang_vel_,
       sensor_data->joint_pos_, sensor_data->joint_vel_, true);
 
-  this->_ComputeDCM();
+  // compute DCM
+  Eigen::Vector3d com_pos = robot_->GetRobotComPos();
+  Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+  sp_->com_vel_est_ = com_vel;
+  double omega = sqrt(9.81 / com_pos[2]);
+
+  sp_->prev_dcm_ = sp_->dcm_;
+  sp_->dcm_ = com_pos + com_vel / omega;
+
+  double cutoff_period =
+      0.01; // 10ms cut-off period for first-order low pass filter
+  double alpha = sp_->servo_dt_ / cutoff_period;
+
+  sp_->dcm_vel_ = alpha * (sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_ +
+                  (1 - alpha) * sp_->dcm_vel_; // not being used in controller
 
 #if B_USE_ZMQ
   if (sp_->count_ % sp_->data_save_freq_ == 0) {

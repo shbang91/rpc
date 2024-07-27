@@ -78,10 +78,10 @@ num_fig = 1;
 %         j = j + 1;
 %         plot(wbc_time, des_icp(j, :), 'r', 'LineWidth', 3);
 %         hold on
-%         plot(wbc_time, icp_est(j, :), 'b', 'LineWidth', 2);
+%         plot(wbc_time, act_icp(j, :), 'b', 'LineWidth', 2);
 %         grid on
-%         min_val = min([des_icp(j,:), icp_est(j,:)]);
-%         max_val = max([des_icp(j,:), icp_est(j,:)]);
+%         min_val = min([des_icp(j,:), act_icp(j,:)]);
+%         max_val = max([des_icp(j,:), act_icp(j,:)]);
 %         min_val = min_val - 0.1 * (max_val - min_val);
 %         max_val = max_val + 0.1 *(max_val - min_val);
 %         set_fig_opt()

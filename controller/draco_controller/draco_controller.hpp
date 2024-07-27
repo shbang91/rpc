@@ -16,8 +16,8 @@ class JointIntegrator;
 
 class DracoController {
 public:
-  DracoController(DracoTCIContainer *tci_container,
-                  PinocchioRobotSystem *robot);
+  DracoController(DracoTCIContainer *tci_container, PinocchioRobotSystem *robot,
+                  const YAML::Node &cfg);
   virtual ~DracoController();
 
   void GetCommand(void *command);

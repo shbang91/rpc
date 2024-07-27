@@ -6,6 +6,7 @@
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_rolling_joint_constraint.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
+#include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/whole_body_controller/basic_contact.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
@@ -21,13 +22,14 @@
 #include "controller/draco_controller/draco_task/draco_wbo_task.hpp"
 
 DracoController::DracoController(DracoTCIContainer *tci_container,
-                                 PinocchioRobotSystem *robot)
+                                 PinocchioRobotSystem *robot,
+                                 const YAML::Node &cfg)
     : tci_container_(tci_container), robot_(robot),
       joint_pos_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_vel_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_trq_cmd_(Eigen::VectorXd::Zero(draco::n_adof)),
       joint_trq_cmd_prev_(Eigen::VectorXd::Zero(draco::n_adof)),
-      wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(false),
+      wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(true),
       b_first_visit_pos_ctrl_(true), b_first_visit_wbc_ctrl_(true),
       b_smoothing_command_(false), b_use_modified_swing_foot_jac_(false),
       b_use_filtered_torque_(false), alpha_cmd_(0.0),
@@ -84,20 +86,16 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
   // read yaml & set params
   try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-
     // initialize draco controller params
-    b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
-    if (!b_sim_) {
-      util::ReadParameter(cfg["controller"], "exp_smoothing_command_duration",
-                          smoothing_command_duration_);
-    }
-
-    b_use_modified_swing_foot_jac_ = util::ReadParameter<bool>(
-        cfg["controller"], "b_use_modified_swing_foot_jac");
-    b_use_filtered_torque_ =
-        util::ReadParameter<bool>(cfg["controller"], "b_use_filtered_torque");
-    alpha_cmd_ = util::ReadParameter<double>(cfg["controller"], "alpha_cmd");
+    util::ReadParameter(cfg["controller"], "b_smoothing_command",
+                        b_smoothing_command_);
+    util::ReadParameter(cfg["controller"], "smoothing_command_duration",
+                        smoothing_command_duration_);
+    util::ReadParameter(cfg["controller"], "b_use_modified_swing_foot_jac",
+                        b_use_modified_swing_foot_jac_);
+    util::ReadParameter<bool>(cfg["controller"], "b_use_filtered_torque",
+                              b_use_filtered_torque_);
+    util::ReadParameter<double>(cfg["controller"], "alpha_cmd", alpha_cmd_);
 
   } catch (std::runtime_error &e) {
     std::cout << "Error reading parameter [" << e.what() << "] at file: ["
@@ -117,7 +115,6 @@ void DracoController::GetCommand(void *command) {
       // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
       smoothing_command_start_time_ = sp_->current_time_;
-      b_smoothing_command_ = true;
       // change flag
       b_first_visit_pos_ctrl_ = false;
     }
@@ -132,10 +129,9 @@ void DracoController::GetCommand(void *command) {
       init_joint_pos_ = robot_->GetJointPos();
 
       // for real experiment smoothing command
-      if (!b_sim_) {
-        smoothing_command_start_time_ = sp_->current_time_;
-        b_smoothing_command_ = true;
-      }
+      smoothing_command_start_time_ = sp_->current_time_;
+      b_smoothing_command_ = true;
+
       // change flag
       b_first_visit_wbc_ctrl_ = false;
     }
@@ -409,6 +405,17 @@ void DracoController::_SaveData() {
                  tci_container_->task_map_["rf_ori_task"]->DesiredVel());
     logger_->add("act_rf_ori_vel",
                  tci_container_->task_map_["rf_ori_task"]->CurrentVel());
+
+    // ICP data
+    logger_->add("des_icp", static_cast<DracoCoMXYTask *>(
+                                tci_container_->task_map_["com_xy_task"])
+                                ->des_icp_);
+    logger_->add("des_icp_dot", static_cast<DracoCoMXYTask *>(
+                                    tci_container_->task_map_["com_xy_task"])
+                                    ->des_icp_dot_);
+    logger_->add("act_icp", static_cast<DracoCoMXYTask *>(
+                                tci_container_->task_map_["com_xy_task"])
+                                ->icp_);
 
     // ========================================================================
     // task data in local frame (it depends on each task)

@@ -13,7 +13,8 @@
 
 #include "controller/draco_controller/draco_task/draco_wbo_task.hpp"
 
-DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
+DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot,
+                                     const YAML::Node &cfg)
     : TCIContainer(robot) {
   util::PrettyConstructor(2, "DracoTCIContainer");
 
@@ -114,14 +115,7 @@ DracoTCIContainer::DracoTCIContainer(PinocchioRobotSystem *robot)
   //=============================================================
   // Tasks, Contacts parameter initialization
   //=============================================================
-  try {
-    cfg_ = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-  } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
-  bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
-  this->_InitializeParameters(b_sim);
+  this->_InitializeParameters(cfg);
 }
 
 DracoTCIContainer::~DracoTCIContainer() {
@@ -149,28 +143,25 @@ DracoTCIContainer::~DracoTCIContainer() {
   delete qp_params_;
 }
 
-void DracoTCIContainer::_InitializeParameters(const bool b_sim) {
+void DracoTCIContainer::_InitializeParameters(const YAML::Node &cfg) {
   // task
-  com_xy_task_->SetParameters(cfg_["wbc"]["task"]["com_xy_task"], b_sim);
-  com_z_task_->SetParameters(cfg_["wbc"]["task"]["com_z_task"], b_sim);
-  cam_task_->SetParameters(cfg_["wbc"]["task"]["cam_task"], b_sim);
-  wbo_task_->SetParameters(cfg_["wbc"]["task"]["wbo_task"], b_sim);
-  torso_ori_task_->SetParameters(cfg_["wbc"]["task"]["torso_ori_task"], b_sim);
-  upper_body_task_->SetParameters(cfg_["wbc"]["task"]["upper_body_task"],
-                                  b_sim);
+  com_xy_task_->SetParameters(cfg);
+  com_z_task_->SetParameters(cfg);
+  cam_task_->SetParameters(cfg["wbc"]["task"]["cam_task"]);
+  wbo_task_->SetParameters(cfg["wbc"]["task"]["wbo_task"]);
+  torso_ori_task_->SetParameters(cfg["wbc"]["task"]["torso_ori_task"]);
+  upper_body_task_->SetParameters(cfg["wbc"]["task"]["upper_body_task"]);
 
-  lf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
-  rf_pos_task_->SetParameters(cfg_["wbc"]["task"]["foot_pos_task"], b_sim);
-  lf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
-  rf_ori_task_->SetParameters(cfg_["wbc"]["task"]["foot_ori_task"], b_sim);
+  lf_pos_task_->SetParameters(cfg["wbc"]["task"]["foot_pos_task"]);
+  rf_pos_task_->SetParameters(cfg["wbc"]["task"]["foot_pos_task"]);
+  lf_ori_task_->SetParameters(cfg["wbc"]["task"]["foot_ori_task"]);
+  rf_ori_task_->SetParameters(cfg["wbc"]["task"]["foot_ori_task"]);
 
   // contact
-  lf_contact_->SetParameters(cfg_["wbc"]["contact"], b_sim);
-  rf_contact_->SetParameters(cfg_["wbc"]["contact"], b_sim);
+  lf_contact_->SetParameters(cfg["wbc"]["contact"]);
+  rf_contact_->SetParameters(cfg["wbc"]["contact"]);
 
   // force task
-  lf_reaction_force_task_->SetParameters(cfg_["wbc"]["task"]["foot_rf_task"],
-                                         b_sim);
-  rf_reaction_force_task_->SetParameters(cfg_["wbc"]["task"]["foot_rf_task"],
-                                         b_sim);
+  lf_reaction_force_task_->SetParameters(cfg["wbc"]["task"]["foot_rf_task"]);
+  rf_reaction_force_task_->SetParameters(cfg["wbc"]["task"]["foot_rf_task"]);
 }

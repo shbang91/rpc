@@ -13,7 +13,7 @@ import time
 import numpy as np
 import ipdb
 
-from config.draco.pybullet_simulation import *
+from config.draco.sim.pybullet.pybullet_params import *
 from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import liegroup

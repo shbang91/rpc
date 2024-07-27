@@ -33,7 +33,12 @@ public:
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 
-  void SetParameters(const YAML::Node &node, const bool b_sim) override;
+  void SetParameters(const YAML::Node &node) override;
+
+  // ICP variables
+  Eigen::Vector2d des_icp_ = Eigen::Vector2d::Zero();
+  Eigen::Vector2d icp_ = Eigen::Vector2d::Zero();
+  Eigen::Vector2d des_icp_dot_ = Eigen::Vector2d::Zero();
 
 private:
   DracoStateProvider *sp_;

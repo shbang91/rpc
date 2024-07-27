@@ -47,10 +47,9 @@ public:
   int Dim() const { return dim_; }
   Contact *contact() { return contact_; }
 
-  void SetParameters(const YAML::Node &node, const bool b_sim) {
+  void SetParameters(const YAML::Node &node) {
     try {
-      std::string prefix = b_sim ? "sim" : "exp";
-      util::ReadParameter(node, prefix + "_weight", weight_);
+      util::ReadParameter(node, "weight", weight_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
                 << __FILE__ << "]" << std::endl;

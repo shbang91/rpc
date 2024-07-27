@@ -1,0 +1,283 @@
+env: hw
+servo_dt: 0.00125
+ip_address: "tcp://127.0.0.1:5557"
+data_save_freq: 1
+#data_save_freq: 50
+stance_foot: 0 # 0: left_foot 1: right_foot
+
+state_estimator:
+  b_cheater_mode: false ## true: use simulation groundtruth states
+  state_estimator_type: default ## 1. default (IMU + Leg kinematics) 2. kf 
+
+  sigma_base_vel: [0.0, 0.0, 0.0]
+  sigma_base_acc: [0.5, 0.5, 0.5]
+  sigma_pos_lfoot: [0.001, 0.001, 0.001]
+  sigma_pos_rfoot: [0.001, 0.001, 0.001]
+  sigma_vel_lfoot: [0.005, 0.005, 0.002]
+  sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  base_accel_time_constant: 0.02
+  base_accel_limits: [1., 1., 1.]
+  base_com_vel_time_constant: 1.0
+  num_data_base_accel: [10, 10, 10]
+  num_data_ang_vel: [5, 5, 5]
+
+  ## for simulation please use 0
+  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+
+  ## IF 0: simple moving average filter parameter
+  num_data_com_vel: [10, 10, 10]
+
+  ## IF 1: exponential smoother filter parameter
+  #com_vel_time_constant: 0.1 
+  com_vel_time_constant: 0.01
+  com_vel_err_limit: [1., 1., 1.]
+
+  ## IF 2: low-pass filter parameter
+  cut_off_period: 0.01
+
+
+controller:
+  b_smoothing_command: true 
+  #smoothing_command_duration: 0.2
+  smoothing_command_duration: 3. ## this will filter the control command at the beginning
+  b_use_modified_swing_foot_jac: true
+  b_use_filtered_torque: false
+  alpha_cmd: 0.5
+
+wbc:
+  task:
+    com_xy_task:
+      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
+      icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
+
+      kp : [400, 400]
+      kd : [80., 80.]
+
+      icp_kp : [2.0, 2.0]
+      icp_kd : [0., 0.] # x, y will be ignored
+      icp_ki : [0.0, 0.0] 
+
+      kp_ik : [1.0, 1.0]
+      #kp_ik : [0.7, 0.7]
+
+      ## IF icp_integrator_type == 0:
+      time_constant : 0.1
+      avg_icp_error_limit: [0.04, 0.04]
+
+      ## IF icp_integrator_type == 1:
+      leaky_rate: 0.5
+      leaky_integrator_limit: [0.03, 0.03]
+
+    com_z_task:
+      com_height_target_source: 1 # 0: com height / 1: base height
+      com_kp : [1.0]
+      com_kd : [1.0]
+
+      base_kp : [1000.0]
+      base_kd : [100.0] # x, y will be ignored
+
+      kp_ik : [1.0]
+
+    cam_task:
+      kd : [0., 0., 0.]
+
+    wbo_task:
+      kp : [0.0, 0.0, 1.0]
+      kd : [0.0, 0.0, 2.0]
+      #kp : [0.0, 0.0, 0.0]
+      #kd : [0.0, 0.0, 0.0]
+      kp_ik : [0., 0., 1]
+
+    torso_ori_task:
+      kp : [1000., 1000, 1000.]
+      kd : [100, 100, 100]
+      kp_ik : [1.0, 1.0, 1.0]
+
+    upper_body_task:
+      ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
+      ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
+      ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
+      #kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
+      kp : [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+      kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
+      kp_ik : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
+
+    foot_pos_task:
+      kp : [3000., 3000., 3000.]
+      kd : [150, 150, 150]
+      kp_ik : [1., 1., 1.]
+
+    foot_ori_task:
+      kp : [3000., 3000., 3000.]
+      kd : [150, 150, 150]
+      kp_ik : [1., 1., 1.]
+
+    foot_rf_task:
+      weight : [0., 0., 0., 0., 0., 0.]
+      #weight : [0., 0., 0., 0., 0., 1e-4]
+
+  contact:
+    max_rf_z: 600.
+
+    mu: 0.5
+    foot_half_length: 0.08
+    foot_half_width: 0.04
+    #foot_half_length: 0.125
+    #foot_half_width: 0.075
+    kp: [2500, 2500, 2500, 2500, 2500, 2500] ## ori, pos order
+    kd: [100, 100, 100, 100, 100, 100]
+
+  qp:
+    W_delta_qddot: 1e5 #1e5
+
+    ## for DCM Walking
+    W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
+    #W_delta_rf_left_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
+    #W_delta_rf_right_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
+    #W_delta_rf_left_foot_in_contact: [1, 1, 1, 1, 1, 1]
+    #W_delta_rf_right_foot_in_contact: [1, 1, 1, 1, 1, 1]
+    #W_delta_rf_left_foot_in_contact: [100, 100, 100, 100, 100, 100]
+    #W_delta_rf_right_foot_in_contact: [100, 100, 100, 100, 100, 100]
+
+    ## for MPC walking
+    #Old one
+    #W_delta_rf_left_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
+    #W_delta_rf_right_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
+
+    ########################################################################
+    # Working gains
+    ########################################################################
+    #W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 1000000, 50000, 50000, 1000]
+    #W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 1000000, 50000, 50000, 1000]
+    #W_delta_rf_left_foot_in_contact_mpc: [500000, 500000, 50000000, 500000, 500000, 5000]
+    #W_delta_rf_right_foot_in_contact_mpc: [500000, 500000, 50000000, 500000, 500000, 5000]
+    #W_delta_rf_left_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
+    #W_delta_rf_right_foot_in_contact_mpc: [1000000, 1000000, 1000000, 50000, 500000, 5000]
+
+    #working params
+    #W_delta_rf_left_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 50000]
+    #W_delta_rf_right_foot_in_contact_mpc: [50000, 50000, 100000, 10000, 10000, 50000]
+    #W_delta_rf_left_foot_in_contact_mpc: [80000, 80000, 150000, 20000, 20000, 20000]
+    #W_delta_rf_right_foot_in_contact_mpc: [80000, 80000, 150000, 20000, 20000, 20000]
+    W_delta_rf_left_foot_in_contact_mpc: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
+    W_delta_rf_right_foot_in_contact_mpc: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
+
+    W_delta_rf_left_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
+    W_delta_rf_right_foot_in_swing: [5, 5, 5, 5e-3, 5e-3, 5e-4]
+    #W_delta_rf_left_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
+    #W_delta_rf_right_foot_in_swing: [5, 5, 5e-4, 5e-3, 5e-3, 5e-4]
+    #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5, 5, 5]
+    #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
+
+    #W_xc_ddot_in_contact: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
+    W_xc_ddot_in_contact: [0, 0, 0, 0, 0, 0]
+    #W_xc_ddot_in_contact: 15e4
+    #W_xc_ddot_in_contact: 5e4
+    #W_xc_ddot_in_swing: 1e-3
+    #W_xc_ddot_in_contact: 0
+    W_xc_ddot_in_swing: 0
+
+
+    #W_force_rate_of_change_left_foot: [5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
+    #W_force_rate_of_change_right_foot: [5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
+    W_force_rate_of_change_left_foot: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    W_force_rate_of_change_right_foot: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+
+    #W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
+    #W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
+
+    #W_delta_qddot: 1e5
+    #W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
+    #W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
+    #W_delta_rf_left_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
+    #W_delta_rf_right_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
+    #W_xc_ddot_in_contact: 1e7
+    #W_xc_ddot_in_swing: 1e-3
+
+state_machine:
+    initialize:
+      init_duration: 5.
+      #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.1, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.1, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.020, -0.7, 0.84, 0.84, -0.84, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.7, 0.84, 0.84, -0.84, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [-1.434e-4, -2.827e-3, -5.650e-1, 5.650e-1, 5.650e-1, -5.650e-1, 2.827e-3, 5.574e-8, 0.523, 3.1517e-8, -1.57, 1.555e-7, -4.075e-8, -5.106e-6, 3.007e-6, -2.977e-3, -5.650e-1, 5.650e-1, 5.650e-1, -5.650e-1, -2.9767e-3, -2.347e-8, -0.523, 4.1193e-8, -1.57, -6.215e-7, -3.4377e-7] #pinocchio robotsystem joint order
+      b_only_joint_pos_control: false
+      wait_time: 2.
+
+    stand_up:
+      standup_duration: 1.
+      #target_com_height: 0.658
+      target_com_height: 0.7
+      #target_base_height: 0.88
+      target_base_height: 0.93
+
+      rf_z_max_interp_duration: 0.1
+
+    single_support_swing:
+      swing_height: 0.10
+
+    com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.50, 0.] # [hz]
+      #amplitude: [0.05, 0., 0.] # [m]
+      #frequency: [0.5, 0., 0.] # [hz]
+      #amplitude: [0., 0., 0.03] # [m]
+      #frequency: [0., 0., 0.05] # [hz]
+
+    lmpc_com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.7, 0.] # [hz]
+
+dcm_walking:
+  t_additional_init_trans: 0.0
+  t_contact_trans: 0.3
+  t_swing: 0.5
+  percentage_settle: 0.9
+  alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.
+  #t_contact_trans: 0.45
+  #t_swing: 0.55
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.
+  #t_contact_trans: 1.8
+  #t_swing: 0.8
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.4
+  #t_contact_trans: 1.6
+  #t_swing: 0.8
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  nominal_footwidth: 0.2025
+  nominal_forward_step: 0.20
+  nominal_backward_step: -0.1
+  nominal_turn_radians: 0.3
+  nominal_strafe_distance: 0.05
+  n_steps: 5
+  first_swing_leg: 1 ## 0: left leg ## 1: right leg
+
+
+lmpc_walking:
+  ##dcm related params
+  t_additional_init_trans: 0.
+  t_contact_trans: 0.45
+  t_swing: 0.55
+  percentage_settle: 0.9
+  alpha_ds: 0.5
+
+  ##footstep related params
+  nominal_footwidth: 0.2
+  nominal_forward_step: 0.1
+  nominal_backward_step: -0.1
+  nominal_turn_radians: 0.3
+  nominal_strafe_distance: 0.02
+  n_steps: 1
+  first_swing_leg: 0 ## 0: left leg ## 1: right leg

@@ -109,14 +109,14 @@ StateId ContactTransitionEnd::GetNextState() {
     return draco_states::kRFSingleSupportSwing;
 }
 
-void ContactTransitionEnd::SetParameters(const YAML::Node &node) {
+void ContactTransitionEnd::SetParameters(const YAML::Node &cfg) {
   try {
     // qp params yaml
-    util::ReadParameter(node["wbc"]["qp"], "W_xc_ddot_in_swing",
+    util::ReadParameter(cfg["wbc"]["qp"], "W_xc_ddot_in_swing",
                         W_xc_ddot_in_swing_);
-    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_left_foot_in_swing",
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_left_foot_in_swing",
                         W_delta_rf_left_foot_in_swing_);
-    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_right_foot_in_swing",
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_swing",
                         W_delta_rf_right_foot_in_swing_);
 
   } catch (std::runtime_error &e) {

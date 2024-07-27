@@ -4,7 +4,6 @@
 class PinocchioRobotSystem;
 class DracoControlArchitecture;
 class DracoStateProvider;
-class GaitParams;
 class GaitCommand;
 
 class Locomotion : public StateMachine {
@@ -34,7 +33,6 @@ private:
 
   // gait
   std::shared_ptr<GaitCommand> gait_command_;
-  std::unique_ptr<GaitParams> gait_params_;
 
   // contact state
   Eigen::Vector2d prev_contact_states_;

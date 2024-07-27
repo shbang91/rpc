@@ -24,11 +24,8 @@ public:
   virtual void UpdateOpCommand() = 0;
 
   // setter
-  virtual void SetParameters(const YAML::Node &node, const bool b_sim) = 0;
+  virtual void SetParameters(const YAML::Node &node) = 0;
   void SetMaxFz(const double rf_z_max) { rf_z_max_ = rf_z_max; }
-  void SetDesiredPos(const Eigen::Vector3d &pos) { des_pos_ = pos; }
-  void SetDesiredOri(const Eigen::Quaterniond &quat) { des_quat_ = quat; }
-
   void SetDesiredPos(const Eigen::Vector3d &pos) { des_pos_ = pos; }
   void SetDesiredOri(const Eigen::Quaterniond &quat) { des_quat_ = quat; }
 

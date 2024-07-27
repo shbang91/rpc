@@ -152,18 +152,18 @@ StateId DoubleSupportStandUp::GetNextState() {
   return draco_states::kDoubleSupportBalance;
 }
 
-void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
+void DoubleSupportStandUp::SetParameters(const YAML::Node &cfg) {
   try {
-    util::ReadParameter(node, "standup_duration", end_time_);
+    util::ReadParameter(cfg["state_machine"]["stand_up"], "standup_duration",
+                        end_time_);
     std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
-    util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
+    util::ReadParameter(cfg["state_machine"]["stand_up"],
+                        "target_" + prefix + "_height", target_height_);
     sp_->des_com_height_ = target_height_;
-    sp_->des_body_height_ = target_height_;
-    util::ReadParameter(node, "rf_z_max_interp_duration",
-                        rf_z_max_interp_duration_);
+    util::ReadParameter(cfg["state_machine"]["stand_up"],
+                        "rf_z_max_interp_duration", rf_z_max_interp_duration_);
 
     // qp params yaml
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
     util::ReadParameter(cfg["wbc"]["qp"], "W_delta_qddot", W_delta_qddot_);
     util::ReadParameter(cfg["wbc"]["qp"], "W_xc_ddot_in_contact",
                         W_xc_ddot_in_contact_);

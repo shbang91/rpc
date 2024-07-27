@@ -11,14 +11,12 @@
 #include "controller/draco_controller/draco_task_gain_handler.hpp"
 
 #include "controller/draco_controller/draco_definition.hpp"
-#include "util/util.hpp"
 
 #if B_USE_ZMQ
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
-DracoInterface::DracoInterface()
-    : Interface(), b_use_kf_state_estimator_(false) {
+DracoInterface::DracoInterface() : Interface() {
   std::string border = "=";
   for (unsigned int i = 0; i < 79; ++i)
     border += "=";
@@ -26,72 +24,45 @@ DracoInterface::DracoInterface()
   util::PrettyConstructor(0, "DracoInterface");
 
   sp_ = DracoStateProvider::GetStateProvider();
-  try {
-    YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
 
-    sp_->servo_dt_ =
-        util::ReadParameter<double>(cfg, "servo_dt"); // set control frequency
-
-    sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
-    b_use_kf_state_estimator_ =
-        util::ReadParameter<bool>(cfg["state_estimator"], "kf");
-
-    int stance_foot = util::ReadParameter<int>(cfg, "stance_foot");
-    if (stance_foot == 0) {
-      sp_->stance_foot_ = draco_link::l_foot_contact;
-      sp_->prev_stance_foot_ = draco_link::l_foot_contact;
-    } else if (stance_foot == 1) {
-      sp_->stance_foot_ = draco_link::r_foot_contact;
-      sp_->prev_stance_foot_ = draco_link::r_foot_contact;
-    } else {
-      assert(false);
-    }
-
-#if B_USE_ZMQ
-    if (!DracoDataManager::GetDataManager()->IsInitialized()) {
-      std::string socket_address =
-          util::ReadParameter<std::string>(cfg, "ip_address");
-      DracoDataManager::GetDataManager()->InitializeSocket(
-          socket_address); // initalize data publisher
-    }
-#endif
-  } catch (const std::runtime_error &ex) {
-    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
-
-  robot_ =
-      // new PinocchioRobotSystem(THIS_COM
-      // "robot_model/draco/draco_modified.urdf", THIS_COM "robot_model/draco",
-      // false, false);
-      new PinocchioRobotSystem(THIS_COM
-                               "robot_model/draco/draco_latest_collisions.urdf",
-                               THIS_COM "robot_model/draco", false, false);
+  // initialize robot model
+  // robot_ =
+  // new PinocchioRobotSystem(THIS_COM
+  // "robot_model/draco/draco_modified.urdf", THIS_COM "robot_model/draco",
+  // false, false);
+  robot_ = new PinocchioRobotSystem(
+      THIS_COM "robot_model/draco/draco_latest_collisions.urdf",
+      THIS_COM "robot_model/draco", false, false);
 
   // set locomotion control point
   robot_->SetFeetControlPoint("l_foot_contact", "r_foot_contact");
 
-  // robot_ = new PinocchioRobotSystem(THIS_COM
-  //"robot_model/draco/draco3_big_feet.urdf",
-  // THIS_COM "robot_model/draco", false, false);
-  se_ = new DracoStateEstimator(robot_);
-  se_kf_ = new DracoKFStateEstimator(robot_);
-  ctrl_arch_ = new DracoControlArchitecture(robot_);
+  // set control parameters
+  this->SetParameters();
+
+  // initialize state estimator
+  if (state_estimator_type_ == "default")
+    se_ = new DracoStateEstimator(robot_, cfg_);
+  else if (state_estimator_type_ == "kf")
+    se_ = new DracoKFStateEstimator(robot_, cfg_);
+  else {
+    std::cout
+        << "[DracoInterface] Please check the state estimator type in pnc.yaml"
+        << '\n';
+    assert(false);
+  }
+
+  // initialize controller
+  ctrl_arch_ = new DracoControlArchitecture(robot_, cfg_);
   interrupt_handler_ = new DracoInterruptHandler(
       static_cast<DracoControlArchitecture *>(ctrl_arch_));
   task_gain_handler_ = new DracoTaskGainHandler(
       static_cast<DracoControlArchitecture *>(ctrl_arch_));
-
-  // assume start with double support
-  sp_->b_lf_contact_ = true;
-  sp_->b_rf_contact_ = true;
 }
 
 DracoInterface::~DracoInterface() {
   delete robot_;
   delete se_;
-  delete se_kf_;
   delete ctrl_arch_;
   delete interrupt_handler_;
   delete task_gain_handler_;
@@ -107,28 +78,13 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
       static_cast<DracoSensorData *>(sensor_data);
   DracoCommand *draco_command = static_cast<DracoCommand *>(command_data);
 
-  // std::cout << "=========================================" << std::endl;
-  // std::cout << draco_command->joint_trq_cmd_.transpose() << '\n';
-
-  // if (count_ <= waiting_count_) {
-  // for simulation without state estimator
-  // se_->UpdateGroundTruthSensorData(draco_sensor_data);
-  // se_->Initialize(draco_sensor_data);
-  // this->_SafeCommand(draco_sensor_data, draco_command);
-  //} else {
-
-  // for simulation without state estimator
-  // se_->UpdateGroundTruthSensorData(draco_sensor_data);
-
-  if (b_use_kf_state_estimator_) {
-    sp_->state_ == draco_states::kInitialize
-        ? se_kf_->Initialize(draco_sensor_data)
-        : se_kf_->Update(draco_sensor_data);
-  } else {
-    // sp_->state_ == draco_states::kInitialize
-    //? se_->Initialize(draco_sensor_data)
-    //: se_->Update(draco_sensor_data);
+  // estimate states
+  if (b_cheater_mode_)
     se_->UpdateGroundTruthSensorData(draco_sensor_data);
+  else {
+    sp_->state_ == draco_states::kInitialize
+        ? se_->Initialize(draco_sensor_data)
+        : se_->Update(draco_sensor_data);
   }
 
   // process interrupt & task gains
@@ -149,6 +105,7 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   }
 #endif
 
+  // step control count
   count_++;
 }
 
@@ -157,4 +114,62 @@ void DracoInterface::_SafeCommand(DracoSensorData *data,
   command->joint_pos_cmd_ = data->joint_pos_;
   command->joint_vel_cmd_.setZero();
   command->joint_trq_cmd_.setZero();
+}
+
+void DracoInterface::SetParameters() {
+  try {
+    // select test environment
+    YAML::Node interface_cfg =
+        YAML::LoadFile(THIS_COM "config/draco/INTERFACE.yaml");
+    std::string test_env_name =
+        util::ReadParameter<std::string>(interface_cfg, "test_env_name");
+    std::cout << "============================================" << '\n';
+    std::cout << "TEST ENV: " << test_env_name << '\n';
+    std::cout << "============================================" << '\n';
+
+    if (test_env_name == "mujoco") {
+      cfg_ = YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/pnc.yaml");
+    } else if (test_env_name == "pybullet") {
+      cfg_ = YAML::LoadFile(THIS_COM "config/draco/sim/pybullet/pnc.yaml");
+    } else if (test_env_name == "hw") {
+      cfg_ = YAML::LoadFile(THIS_COM "config/draco/hw/pnc.yaml");
+    } else {
+      assert(false);
+    }
+
+    // WBC controller frequency
+    sp_->servo_dt_ = util::ReadParameter<double>(cfg_, "servo_dt");
+    sp_->data_save_freq_ = util::ReadParameter<int>(cfg_, "data_save_freq");
+
+    // select state estimator
+    state_estimator_type_ = util::ReadParameter<std::string>(
+        cfg_["state_estimator"], "state_estimator_type");
+    b_cheater_mode_ =
+        util::ReadParameter<bool>(cfg_["state_estimator"], "b_cheater_mode");
+
+    // select stance foot side
+    int stance_foot = util::ReadParameter<int>(cfg_, "stance_foot");
+    if (stance_foot == 0) {
+      sp_->stance_foot_ = draco_link::l_foot_contact;
+      sp_->prev_stance_foot_ = draco_link::l_foot_contact;
+    } else if (stance_foot == 1) {
+      sp_->stance_foot_ = draco_link::r_foot_contact;
+      sp_->prev_stance_foot_ = draco_link::r_foot_contact;
+    } else {
+      assert(false);
+    }
+
+#if B_USE_ZMQ
+    // ZMQ socket communication
+    if (!DracoDataManager::GetDataManager()->IsInitialized()) {
+      std::string socket_address =
+          util::ReadParameter<std::string>(cfg_, "ip_address");
+      DracoDataManager::GetDataManager()->InitializeSocket(socket_address);
+    }
+#endif
+
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
 }

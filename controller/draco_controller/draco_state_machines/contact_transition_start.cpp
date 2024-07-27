@@ -231,14 +231,14 @@ StateId ContactTransitionStart::GetNextState() {
   }
 }
 
-void ContactTransitionStart::SetParameters(const YAML::Node &node) {
+void ContactTransitionStart::SetParameters(const YAML::Node &cfg) {
   try {
     // qp params yaml
-    util::ReadParameter(node["wbc"]["qp"], "W_xc_ddot_in_contact",
+    util::ReadParameter(cfg["wbc"]["qp"], "W_xc_ddot_in_contact",
                         W_xc_ddot_in_contact_);
-    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_left_foot_in_contact",
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_left_foot_in_contact",
                         W_delta_rf_left_foot_in_contact_);
-    util::ReadParameter(node["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
+    util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
                         W_delta_rf_right_foot_in_contact_);
 
   } catch (std::runtime_error &e) {

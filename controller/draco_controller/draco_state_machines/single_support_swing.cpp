@@ -168,9 +168,10 @@ StateId SingleSupportSwing::GetNextState() {
     return draco_states::kLFContactTransitionStart;
 }
 
-void SingleSupportSwing::SetParameters(const YAML::Node &node) {
+void SingleSupportSwing::SetParameters(const YAML::Node &cfg) {
   try {
-    util::ReadParameter(node, "swing_height", swing_height_);
+    util::ReadParameter(cfg["state_machine"]["single_support_swing"],
+                        "swing_height", swing_height_);
 
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["

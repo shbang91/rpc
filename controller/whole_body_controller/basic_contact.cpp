@@ -52,12 +52,11 @@ void PointContact::UpdateOpCommand() {
       -robot_->GetLinkSpatialVel(target_link_idx_).tail<3>();
   op_cmd_ = kp_.cwiseProduct(pos_err) + kd_.cwiseProduct(vel_err);
 }
-void PointContact::SetParameters(const YAML::Node &node, const bool b_sim) {
+void PointContact::SetParameters(const YAML::Node &node) {
   try {
-    std::string prefix = b_sim ? "sim" : "exp";
-    mu_ = util::ReadParameter<double>(node, prefix + "_mu");
-    kp_ = util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kp");
-    kd_ = util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kd");
+    mu_ = util::ReadParameter<double>(node, "mu");
+    kp_ = util::ReadParameter<Eigen::VectorXd>(node, "kp");
+    kd_ = util::ReadParameter<Eigen::VectorXd>(node, "kd");
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl
@@ -207,14 +206,13 @@ void SurfaceContact::UpdateOpCommand() {
       kp_.head<3>().cwiseProduct(so3) + kd_.head<3>().cwiseProduct(ang_vel_err);
 }
 
-void SurfaceContact::SetParameters(const YAML::Node &node, const bool b_sim) {
+void SurfaceContact::SetParameters(const YAML::Node &node) {
   try {
-    std::string prefix = b_sim ? "sim" : "exp";
-    util::ReadParameter(node, prefix + "_mu", mu_);
-    util::ReadParameter(node, prefix + "_foot_half_length", x_);
-    util::ReadParameter(node, prefix + "_foot_half_width", y_);
-    util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kp", kp_);
-    util::ReadParameter<Eigen::VectorXd>(node, prefix + "_kd", kd_);
+    util::ReadParameter(node, "mu", mu_);
+    util::ReadParameter(node, "foot_half_length", x_);
+    util::ReadParameter(node, "foot_half_width", y_);
+    util::ReadParameter<Eigen::VectorXd>(node, "kp", kp_);
+    util::ReadParameter<Eigen::VectorXd>(node, "kd", kd_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

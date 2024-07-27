@@ -1,48 +1,55 @@
-#include "draco_kf_state_estimator.hpp"
+#include "controller/robot_system/pinocchio_robot_system.hpp"
+
+#include "controller/filter/digital_filters.hpp"
+
+#include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_interface.hpp"
+#include "controller/draco_controller/draco_kf_state_estimator.hpp"
+#include "controller/draco_controller/draco_state_provider.hpp"
 
 #if B_USE_ZMQ
-#include "draco_data_manager.hpp"
+#include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
-DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot) {
+DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *robot,
+                                             const YAML::Node &cfg)
+    : StateEstimator(robot) {
   util::PrettyConstructor(1, "DracoKFStateEstimator");
-  robot_ = _robot;
   sp_ = DracoStateProvider::GetStateProvider();
+
+  // assume start with double support
+  sp_->b_lf_contact_ = true;
+  sp_->b_rf_contact_ = true;
 
   iso_imu_to_base_com_ =
       robot_->GetLinkIsometry(draco_link::torso_imu).inverse() *
       robot_->GetLinkIsometry(draco_link::torso_com_link);
 
   try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-
-    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
-    std::string prefix = b_sim ? "sim" : "exp";
-
     Eigen::Vector3d sigma_base_vel = util::ReadParameter<Eigen::Vector3d>(
-        cfg["state_estimator"], prefix + "_sigma_base_vel");
+        cfg["state_estimator"], "sigma_base_vel");
     Eigen::Vector3d sigma_base_acc = util::ReadParameter<Eigen::Vector3d>(
-        cfg["state_estimator"], prefix + "_sigma_base_acc");
+        cfg["state_estimator"], "sigma_base_acc");
     Eigen::Vector3d sigma_pos_lfoot = util::ReadParameter<Eigen::Vector3d>(
-        cfg["state_estimator"], prefix + "_sigma_pos_lfoot");
+        cfg["state_estimator"], "sigma_pos_lfoot");
     Eigen::Vector3d sigma_pos_rfoot = util::ReadParameter<Eigen::Vector3d>(
-        cfg["state_estimator"], prefix + "_sigma_pos_rfoot");
+        cfg["state_estimator"], "sigma_pos_rfoot");
     Eigen::Vector3d sigma_vel_lfoot = util::ReadParameter<Eigen::Vector3d>(
-        cfg["state_estimator"], prefix + "_sigma_vel_lfoot");
+        cfg["state_estimator"], "sigma_vel_lfoot");
     Eigen::Vector3d sigma_vel_rfoot = util::ReadParameter<Eigen::Vector3d>(
-        cfg["state_estimator"], prefix + "_sigma_vel_rfoot");
+        cfg["state_estimator"], "sigma_vel_rfoot");
     Eigen::VectorXd n_data_com_vel = util::ReadParameter<Eigen::VectorXd>(
-        cfg["state_estimator"], prefix + "_num_data_com_vel");
+        cfg["state_estimator"], "num_data_com_vel");
     //  Eigen::VectorXd n_data_cam = util::ReadParameter<Eigen::VectorXd>(
-    //      cfg["state_estimator"], prefix + "n_data_cam");
+    //      cfg["state_estimator"], "n_data_cam");
     Eigen::VectorXd n_data_base_accel = util::ReadParameter<Eigen::VectorXd>(
-        cfg["state_estimator"], prefix + "_num_data_base_accel");
+        cfg["state_estimator"], "num_data_base_accel");
     Eigen::VectorXd n_data_ang_vel = util::ReadParameter<Eigen::VectorXd>(
-        cfg["state_estimator"], prefix + "_num_data_ang_vel");
+        cfg["state_estimator"], "num_data_ang_vel");
     double time_constant = util::ReadParameter<double>(
-        cfg["state_estimator"], prefix + "_base_accel_time_constant");
+        cfg["state_estimator"], "base_accel_time_constant");
     Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
-        cfg["state_estimator"], prefix + "_base_accel_limits");
+        cfg["state_estimator"], "base_accel_limits");
 
     for (int i = 0; i < 3; ++i) {
       com_vel_filter_.push_back(SimpleMovingAverage(n_data_com_vel[i]));
@@ -430,4 +437,31 @@ void DracoKFStateEstimator::ComputeDCM() {
   double alpha_vel = 0.1; // TODO Study this alpha value
   sp_->dcm_vel_ = alpha_vel * ((sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_) +
                   (1.0 - alpha_vel) * sp_->dcm_vel_;
+}
+void DracoKFStateEstimator::UpdateGroundTruthSensorData(
+    DracoSensorData *sensor_data) {
+  Eigen::Vector4d base_joint_ori = sensor_data->base_joint_quat_;
+  Eigen::Quaterniond base_joint_quat(base_joint_ori[3], base_joint_ori[0],
+                                     base_joint_ori[1], base_joint_ori[2]);
+
+  robot_->UpdateRobotModel(
+      sensor_data->base_joint_pos_, base_joint_quat.normalized(),
+      sensor_data->base_joint_lin_vel_, sensor_data->base_joint_ang_vel_,
+      sensor_data->joint_pos_, sensor_data->joint_vel_, true);
+
+  // compute DCM
+  Eigen::Vector3d com_pos = robot_->GetRobotComPos();
+  Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+  sp_->com_vel_est_ = com_vel;
+  double omega = sqrt(9.81 / com_pos[2]);
+
+  sp_->prev_dcm_ = sp_->dcm_;
+  sp_->dcm_ = com_pos + com_vel / omega;
+
+  double cutoff_period =
+      0.01; // 10ms cut-off period for first-order low pass filter
+  double alpha = sp_->servo_dt_ / cutoff_period;
+
+  sp_->dcm_vel_ = alpha * (sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_ +
+                  (1 - alpha) * sp_->dcm_vel_; // not being used in controller
 }

@@ -69,10 +69,11 @@ void DoubleSupportSwaying::LastVisit() {}
 
 StateId DoubleSupportSwaying::GetNextState() {}
 
-void DoubleSupportSwaying::SetParameters(const YAML::Node &node) {
+void DoubleSupportSwaying::SetParameters(const YAML::Node &cfg) {
   try {
-    util::ReadParameter(node, "amplitude", amp_);
-    util::ReadParameter(node, "frequency", freq_);
+    util::ReadParameter(cfg["state_machine"]["com_swaying"], "amplitude", amp_);
+    util::ReadParameter(cfg["state_machine"]["com_swaying"], "frequency",
+                        freq_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [ " << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
