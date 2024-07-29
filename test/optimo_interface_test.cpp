@@ -1,4 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "controller/optimo_controller/optimo_interface.hpp"
+#include <iostream>
 
 int main(int argc, char **argv) {
 
@@ -7,3 +10,4 @@ int main(int argc, char **argv) {
 
   return 0;
 }
+

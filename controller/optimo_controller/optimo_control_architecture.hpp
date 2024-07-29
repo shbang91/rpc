@@ -2,8 +2,10 @@
 #include "controller/control_architecture.hpp"
 
 namespace optimo_states{
-    constexpr int free_motion = 0;
-    constexpr int stop_motion = 1;
+    constexpr int kInitialize = 1;
+    constexpr int kStandUp = 2;
+    constexpr int kFreeMotion = 3;
+    constexpr int kStopMotion = 4;
 }
 
 
@@ -13,6 +15,7 @@ class EndEffectorTrajectoryManager;
 class OptimoStateProvider;
 class TaskHierarchyManager;
 class ForceTrajectoryManager;
+class UpperBodyTrajetoryManager;
 
 
 class OptimoControlArchitecture : public ControlArchitecture {
@@ -24,31 +27,35 @@ public:
 
     OptimoTCIContainer *tci_container_;
 
+    ////////////////////////// Upper Body Trajectory Manager ////////////////////////
+    // UpperBodyTrajetoryManager *upper_body_tm_;
 
     ////////////////////////// End Effector Trajectory Manager ////////////////////////
-    EndEffectorTrajectoryManager ee_SE3_tm_;
+    EndEffectorTrajectoryManager *ee_SE3_tm_;
 
-    EndEffectorTrajectoryManager f1_ee_SE3_tm_;
-    EndEffectorTrajectoryManager f2_ee_SE3_tm_;
-    EndEffectorTrajectoryManager f3_ee_SE3_tm_;
+    EndEffectorTrajectoryManager *f1_SE3_tm_;
+    EndEffectorTrajectoryManager *f2_SE3_tm_;
+    EndEffectorTrajectoryManager *f3_SE3_tm_;
 
     ////////////////////////// Force Trajectory Manager ////////////////////////
-    ForceTrajectoryManager ee_force_tm_;
+    ForceTrajectoryManager *ee_force_tm_;
 
-    ForceTrajectoryManager f1_force_tm_;
-    ForceTrajectoryManager f2_force_tm_;
-    ForceTrajectoryManager f3_force_tm_;
+    // ForceTrajectoryManager *f1_force_tm_;
+    // ForceTrajectoryManager *f2_force_tm_;
+    // ForceTrajectoryManager *f3_force_tm_;
+
 
     ////////////////////////// Task Hierarchy Manager //////////////////////////
     TaskHierarchyManager *ee_pos_hm_;
     TaskHierarchyManager *ee_ori_hm_;
 
-    TaskHierarchyManager *f1_ee_pos_hm_;
-    TaskHierarchyManager *f2_ee_pos_hm_;
-    TaskHierarchyManager *f3_ee_pos_hm_;
-    TaskHierarchyManager *f1_ee_ori_hm_;
-    TaskHierarchyManager *f2_ee_ori_hm_;
-    TaskHierarchyManager *f3_ee_ori_hm_;
+    TaskHierarchyManager *f1_pos_hm_;
+    TaskHierarchyManager *f2_pos_hm_;
+    TaskHierarchyManager *f3_pos_hm_;
+
+    TaskHierarchyManager *f1_ori_hm_;
+    TaskHierarchyManager *f2_ori_hm_;
+    TaskHierarchyManager *f3_ori_hm_;
 
 
 private:

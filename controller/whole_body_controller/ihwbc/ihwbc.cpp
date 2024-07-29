@@ -335,6 +335,7 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
         // floating base: x, internal constraint: x, contact: x
         eq_mat.setZero(0, num_qdot_);
         eq_vec.setZero(0);
+        std::cout << "No contact" << std::endl;
       }
     }
   }
@@ -468,8 +469,8 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   // qddot_cmd = sa_ * qddot_sol_;
   // rf_cmd = rf_sol_;
   qddot_cmd = qddot_sol_;
-  force_task_map["lf_force_task"]->UpdateCmd(rf_sol_.head(dim_contact_ / 2));
-  force_task_map["rf_force_task"]->UpdateCmd(rf_sol_.tail(dim_contact_ / 2));
+  // force_task_map["lf_force_task"]->UpdateCmd(rf_sol_.head(dim_contact_ / 2));
+  // force_task_map["rf_force_task"]->UpdateCmd(rf_sol_.tail(dim_contact_ / 2));
 }
 
 void IHWBC::ComputeTaskCosts(

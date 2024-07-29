@@ -3,7 +3,7 @@ def deg2rad(deg):
     return deg * 3.14159265359 / 180
 
 class Config(object):
-    CONTROLLER_DT = 0.00125
+    CONTROLLER_DT = 0.001
     N_SUBSTEP = 1
 
     INITIAL_BASE_JOINT_POS = [0, 0, 0.95 - 0.195]

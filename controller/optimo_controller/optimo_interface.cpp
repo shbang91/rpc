@@ -4,7 +4,10 @@
 
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
+
 #include "controller/optimo_controller/optimo_interface.hpp"
+#include "controller/optimo_controller/optimo_control_architecture.hpp"
+#include "controller/optimo_controller/optimo_task_gain_handler.hpp"
 
 OptimoInterface::OptimoInterface() : Interface() {
   std::string border = "=";
@@ -16,17 +19,17 @@ OptimoInterface::OptimoInterface() : Interface() {
   robot_ = new PinocchioRobotSystem(THIS_COM "robot_model/optimo/optimo.urdf",
                                     THIS_COM "robot_model/optimo", true, false);
 
-  // ctrl_arch_ = new OptimoControlArchitecture(robot_);
+  ctrl_arch_ = new OptimoControlArchitecture(robot_);
 
   // interrupt_handler_ = new InterruptHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
-  // task_gain_handler_ = new OptimoTaskGainHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
+  task_gain_handler_ = new OptimoTaskGainHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
 }
 
 OptimoInterface::~OptimoInterface() { 
   delete robot_;
-  // delete ctrl_arch_;
+  delete ctrl_arch_;
   // delete interrupt_handler_;
-  // delete task_gain_handler_;
+  delete task_gain_handler_;
 }
 
 void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {

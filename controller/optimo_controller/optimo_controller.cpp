@@ -1,7 +1,9 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
 #include "controller/optimo_controller/optimo_control_architecture.hpp"
+
 #include "controller/optimo_controller/optimo_controller.hpp"
+
 #include "controller/optimo_controller/optimo_definition.hpp"
 #include "controller/optimo_controller/optimo_interface.hpp"
 #include "controller/optimo_controller/optimo_state_provider.hpp"
@@ -54,7 +56,7 @@ OptimoController::OptimoController(OptimoTCIContainer *tci_container,
 
     // read yaml & set parameters
     try {
-      YAML::Node cfg = YAML::LoadFile(THIS_COM "config/optimo/ihwbc.yaml");
+      YAML::Node cfg = YAML::LoadFile(THIS_COM "config/optimo/ihwbc_gains.yaml");
 
       //initialize optimo controller params
       b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");

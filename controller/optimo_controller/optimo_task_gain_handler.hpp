@@ -50,4 +50,4 @@ private:
 
   int count_;
 
-}
+};

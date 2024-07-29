@@ -47,7 +47,7 @@ void PointContact::UpdateConeConstraint() {
 
 void PointContact::SetParameters(const YAML::Node &node, const bool b_sim) {
   try {
-    mu_ = b_sim ? util::ReadParameter<double>(node, "mu")
+    mu_ = b_sim ? util::ReadParameter<double>(node, "sim_mu")
                 : util::ReadParameter<double>(node, "exp_mu");
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["

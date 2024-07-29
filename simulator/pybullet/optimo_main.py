@@ -112,7 +112,7 @@ def main():
     
     # Simulation Physics
     pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT, numSubSteps=1)
-    pb.setGravity(0, 0, 9.81)
+    pb.setGravity(0, 0, -9.81)
     
     # Sim parameters
     dt = Config.CONTROLLER_DT
@@ -134,8 +134,12 @@ def main():
     add_tf_visualization(robot, PlatoLinkIdx.ee2)
     add_tf_visualization(robot, PlatoLinkIdx.ee3)
     
+    n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
+    robot, Config.INITIAL_BASE_JOINT_POS,
+    Config.INITIAL_BASE_JOINT_QUAT, Config.PRINT_ROBOT_INFO)
 
-    
+    pybullet_util.set_joint_friction(robot, joint_id_dict, 0)
+    pybullet_util.set_link_damping(robot, link_id_dict, 0., 0.)
 
     # Initialize RPC Interface
     rpc_optimo_command = optimo_interface_py.OptimoInterface()

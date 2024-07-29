@@ -27,6 +27,11 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
   f2_ori_task_ = new LinkOriTask(robot_, plato_link::ee2);
   f3_ori_task_ = new LinkOriTask(robot_, plato_link::ee3);
 
+  // std::vector<int> upper_body_jidx{
+  //     optimo_joint::joint1, optimo_joint::joint2, optimo_joint::joint3,
+  //     optimo_joint::joint4, optimo_joint::joint5, optimo_joint::joint6, optimo_joint::joint7};
+
+  // upper_body_task_ = new SelectedJointTask(robot_, upper_body_jidx);
 
   // WBC Task list w/o joint task
   task_map_.clear();
@@ -99,10 +104,10 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
 
   force_task_map_.clear();
 
-  force_task_map_.insert(std::make_pair("ee_reaction_force_task", ee_reaction_force_task_));
-  force_task_map_.insert(std::make_pair("f1_reaction_force_task", f1_reaction_force_task_));
-  force_task_map_.insert(std::make_pair("f2_reaction_force_task", f2_reaction_force_task_));
-  force_task_map_.insert(std::make_pair("f3_reaction_force_task", f3_reaction_force_task_));
+  force_task_map_.insert(std::make_pair("ee_force_task", ee_reaction_force_task_));
+  force_task_map_.insert(std::make_pair("f1_force_task", f1_reaction_force_task_));
+  force_task_map_.insert(std::make_pair("f2_force_task", f2_reaction_force_task_));
+  force_task_map_.insert(std::make_pair("f3_force_task", f3_reaction_force_task_));
 
   task_unweighted_cost_map_.insert(std::make_pair("ee_force_task", NAN));
   task_unweighted_cost_map_.insert(std::make_pair("f1_force_task", NAN));
@@ -124,7 +129,7 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
   // Tasks, Contacts parameter initialization
   //=============================================================
   try{
-    cfg_ = YAML::LoadFile(THIS_COM "config/optimo/ihwbc.yaml");
+    cfg_ = YAML::LoadFile(THIS_COM "config/optimo/ihwbc_gains.yaml");
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -146,14 +151,18 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
 OptimoTCIContainer::~OptimoTCIContainer() {
   // task
   delete jpos_task_;
+
   delete ee_pos_task_;
   delete f1_pos_task_;
   delete f2_pos_task_;
   delete f3_pos_task_;
+
   delete ee_ori_task_;
   delete f1_ori_task_;
   delete f2_ori_task_;
   delete f3_ori_task_;
+
+  // delete upper_body_task_;
 
   // contact
   delete ee_contact_;
@@ -189,8 +198,8 @@ void OptimoTCIContainer::_InitializeParameters(const bool b_sim) {
   f3_contact_ -> SetParameters(cfg_["wbc"]["contact"], b_sim);
 
   //force task
-  ee_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
-  f1_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
-  f2_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
-  f3_reaction_force_task_ -> SetParameters(cfg_["wbc"]["rf_task"], b_sim);
+  ee_reaction_force_task_ -> SetParameters(cfg_["wbc"]["task"]["ee_rf_task"], b_sim);
+  f1_reaction_force_task_ -> SetParameters(cfg_["wbc"]["task"]["rf_task"], b_sim);
+  f2_reaction_force_task_ -> SetParameters(cfg_["wbc"]["task"]["rf_task"], b_sim);
+  f3_reaction_force_task_ -> SetParameters(cfg_["wbc"]["task"]["rf_task"], b_sim);
 }

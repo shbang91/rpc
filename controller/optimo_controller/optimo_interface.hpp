@@ -5,13 +5,10 @@
 
 #include "controller/interface.hpp"
 #include "controller/optimo_controller/optimo_definition.hpp"
-#include "controller/optimo_controller/optimo_interface.hpp"
-#include "controller/optimo_controller/optimo_interrupt_handler.hpp"
-// #include "controller/optimo_controller/optimo_state_provider.hpp"
-// #include "controller/optimo_controller/optimo_task_gain_handler.hpp"
+
 
 class OptimoStateProvider;
-// class OptimoTaskGainHandler;
+class OptimoTaskGainHandler;
 
 class OptimoSensorData {
 public:
@@ -55,7 +52,7 @@ public:
 
   void GetCommand(void *sensor_data, void *command_data) override;
 
-  // OptimoTaskGainHandler *task_gain_handler_;
+  OptimoTaskGainHandler *task_gain_handler_;
 
   private:
   OptimoStateProvider *sp_;
