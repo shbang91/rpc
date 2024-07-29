@@ -1,0 +1,33 @@
+name: tests
+on:
+  push:
+    branches:
+      - main
+      - 'feature/add-ci-workflows'
+jobs:
+  setup:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Eigen3
+        uses: kupns-aka-kupa/setup-eigen3@v1
+      - name: Install Boost
+        uses: egor-tensin/build-boost@v1
+      - run: |
+          ./dependency/scripts/install_gtest.sh
+          ./scripts/install/install_protobuf.sh && ./dependency/scripts/install_zmq.sh
+          sudo apt install python3-pip
+          pip install "pybind11[global]"
+          git clone --recursive https://github.com/stack-of-tasks/pinocchio
+          git checkout master
+          cd pinocchio && mkdir build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+          make -j4
+          make install
+#          export CMAKE_PREFIX_PATH=/opt/openrobots:$CMAKE_PREFIX_PATH
+          export CMAKE_PREFIX_PATH=/usr/local/include:$CMAKE_PREFIX_PATH
+          mkdir -p /$HOME/rpc && cd /$HOME/rpc 
+          cd build 
+          cmake .. && make 
+          ./bin/ihwbc_test
