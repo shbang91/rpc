@@ -115,6 +115,10 @@ void PinocchioRobotSystem::UpdateRobotModel(
 
   } else {
     // fixed base robot
+    Eigen::Matrix3d rotation = base_joint_quat.normalized().toRotationMatrix();
+    pinocchio::SE3 base_transform(rotation, base_joint_pos);
+    model_.jointPlacements[1] = base_transform;
+
     q_ = joint_pos;
     qdot_ = joint_vel;
   }
