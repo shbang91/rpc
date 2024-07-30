@@ -102,7 +102,7 @@ OptimoController::~OptimoController() {
 }
 
 void OptimoController::GetCommand(void *command) {
-  if (sp_->state_ == optimo_states::kInitialize) {
+  if (sp_->state_ == optimo_states::kStandUp) {
     if (b_first_visit_pos_ctrl_) {
       // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
@@ -115,7 +115,10 @@ void OptimoController::GetCommand(void *command) {
     joint_vel_cmd_ = tci_container_->task_map_["joint_task"]->DesiredVel();
     // joint_trq_cmd_ = Eigen::VectorXd::Zero(plato::n_adof_total);
     joint_trq_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
-  } else {
+  } 
+  
+  else {
+  
     // first visit for feedforward torque command
     if (b_first_visit_wbc_ctrl_) {
       // for joint integrator initialization
@@ -155,6 +158,9 @@ void OptimoController::GetCommand(void *command) {
     Eigen::VectorXd cori = robot_->GetCoriolis();
     Eigen::VectorXd grav = robot_->GetGravity();
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
+
+    // task map check
+    
 
     ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
                   tci_container_->internal_constraint_map_,

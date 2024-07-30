@@ -228,6 +228,8 @@ def main():
 
         # print("Command pos: ", rpc_joint_pos_command, end="\r")
         # print("Command vel: ", rpc_joint_vel_command, end="\r")
+        
+        # t_cmd = t_ff + kp(e) + kd(e_dot)
         joint_impedance_command = rpc_trq_command + ActuatorGains.KP * (
             rpc_joint_pos_command -
             joint_pos) + ActuatorGains.KD * (rpc_joint_vel_command - joint_vel)
