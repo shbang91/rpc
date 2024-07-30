@@ -20,88 +20,88 @@
 #endif
 
 OptimoController::OptimoController(OptimoTCIContainer *tci_container,
-                                 PinocchioRobotSystem *robot)
-    :   tci_container_(tci_container), robot_(robot),
-        joint_pos_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-        joint_vel_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-        joint_trq_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-        joint_trq_cmd_prev_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-        wbc_qddot_cmd_(Eigen::VectorXd::Zero(optimo::n_qdot)), 
-        b_sim_(true), 
-        b_first_visit_pos_ctrl_(true),
-        b_first_visit_wbc_ctrl_(true), 
-        b_smoothing_command_(false),
-        smoothing_command_duration_(0.),
-        init_joint_pos_(Eigen::VectorXd::Zero(plato::n_adof_total)) {
-    util::PrettyConstructor(2, "OptimoController");
-    sp_ = OptimoStateProvider::GetStateProvider();
+                                   PinocchioRobotSystem *robot)
+    : tci_container_(tci_container), robot_(robot),
+      joint_pos_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
+      joint_vel_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
+      joint_trq_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
+      joint_trq_cmd_prev_(Eigen::VectorXd::Zero(plato::n_adof_total)),
+      wbc_qddot_cmd_(Eigen::VectorXd::Zero(optimo::n_qdot)), b_sim_(true),
+      b_first_visit_pos_ctrl_(true), b_first_visit_wbc_ctrl_(true),
+      b_smoothing_command_(false), smoothing_command_duration_(0.),
+      init_joint_pos_(Eigen::VectorXd::Zero(optimo::n_adof)) {
+  // init_joint_pos_(Eigen::VectorXd::Zero(plato::n_adof_total)) {
+  util::PrettyConstructor(2, "OptimoController");
+  sp_ = OptimoStateProvider::GetStateProvider();
 
 #if B_USE_MATLOGGER
-  logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_controller_data");
+  logger_ = XBot::MatLogger2::MakeLogger("/tmp/optimo_controller_data");
 #endif
 
-    // actuated selection matrix
-    sa_ = Eigen::MatrixXd::Identity(plato::n_adof_total, plato::n_adof_total); // all joints are actuated
+  // actuated selection matrix
+  // sa_ = Eigen::MatrixXd::Identity(
+  // plato::n_adof_total, plato::n_adof_total); // all joints are actuated
+  sa_ = Eigen::MatrixXd::Identity(optimo::n_adof,
+                                  optimo::n_adof); // all joints are actuated
 
-    // initialize IHWBC
-    ihwbc_ = new IHWBC(sa_);
+  // initialize IHWBC
+  ihwbc_ = new IHWBC(sa_);
 
-    // joint integrator initialization
-    Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
-    Eigen::VectorXd jpos_ub = robot_->JointPosLimits().rightCols(1);
-    Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
-    Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
-   
-    joint_integrator_ = new JointIntegrator(plato::n_adof_total, sp_->servo_dt_, jpos_lb, jpos_ub, jvel_lb, jvel_ub);
+  // joint integrator initialization
+  Eigen::VectorXd jpos_lb = robot_->JointPosLimits().leftCols(1);
+  Eigen::VectorXd jpos_ub = robot_->JointPosLimits().rightCols(1);
+  Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
+  Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
 
-    // read yaml & set parameters
-    try {
-      YAML::Node cfg = YAML::LoadFile(THIS_COM "config/optimo/ihwbc_gains.yaml");
+  joint_integrator_ = new JointIntegrator(plato::n_adof_total, sp_->servo_dt_,
+                                          jpos_lb, jpos_ub, jvel_lb, jvel_ub);
 
-      //initialize optimo controller params
-      b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
-      if (!b_sim_) {
-        b_smoothing_command_ = true;
-        util::ReadParameter(cfg["controller"], "smoothing_command_duration", smoothing_command_duration_);
-      }
+  // read yaml & set parameters
+  try {
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/optimo/ihwbc_gains.yaml");
 
-      // initialize iwbc qp params
-      ihwbc_->SetParameters(cfg["wbc"]["qp"]);
-      if (ihwbc_->IsTrqLimit()) {
-        std::cout << "------------------------------------" << std::endl;
-        std::cout << "Torque Limits are considred in WBC" << std::endl;
-        std::cout << "------------------------------------" << std::endl;
-        Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit =
-            robot_->JointTrqLimits();
-        ihwbc_->SetTrqLimit(trq_limit);
-      }
+    // initialize optimo controller params
+    b_sim_ = util::ReadParameter<bool>(cfg, "b_sim");
+    if (!b_sim_) {
+      b_smoothing_command_ = true;
+      util::ReadParameter(cfg["controller"], "smoothing_command_duration",
+                          smoothing_command_duration_);
+    }
 
-      // initialize joint integrator params
-      double pos_cutoff_freq = util::ReadParameter<double>(
-          cfg["wbc"]["joint_integrator"], "pos_cutoff_freq");
-      double vel_cutoff_freq = util::ReadParameter<double>(
-          cfg["wbc"]["joint_integrator"], "vel_cutoff_freq");
-      double pos_max_error = util::ReadParameter<double>(
-          cfg["wbc"]["joint_integrator"], "max_pos_err");
-      joint_integrator_->SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq);
-      joint_integrator_->SetMaxPositionError(pos_max_error);
+    // initialize iwbc qp params
+    ihwbc_->SetParameters(cfg["wbc"]["qp"]);
+    if (ihwbc_->IsTrqLimit()) {
+      std::cout << "------------------------------------" << std::endl;
+      std::cout << "Torque Limits are considred in WBC" << std::endl;
+      std::cout << "------------------------------------" << std::endl;
+      Eigen::Matrix<double, Eigen::Dynamic, 2> trq_limit =
+          robot_->JointTrqLimits();
+      ihwbc_->SetTrqLimit(trq_limit);
+    }
 
+    // initialize joint integrator params
+    double pos_cutoff_freq = util::ReadParameter<double>(
+        cfg["wbc"]["joint_integrator"], "pos_cutoff_freq");
+    double vel_cutoff_freq = util::ReadParameter<double>(
+        cfg["wbc"]["joint_integrator"], "vel_cutoff_freq");
+    double pos_max_error = util::ReadParameter<double>(
+        cfg["wbc"]["joint_integrator"], "max_pos_err");
+    joint_integrator_->SetCutoffFrequency(pos_cutoff_freq, vel_cutoff_freq);
+    joint_integrator_->SetMaxPositionError(pos_max_error);
 
-    } catch (std::runtime_error &e) {
+  } catch (std::runtime_error &e) {
     std::cout << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl
               << std::endl;
-    }
-
+  }
 }
-
 
 OptimoController::~OptimoController() {
   delete ihwbc_;
   delete joint_integrator_;
 }
 
-void OptimoController::GetCommand(void *command){
+void OptimoController::GetCommand(void *command) {
   if (sp_->state_ == optimo_states::kInitialize) {
     if (b_first_visit_pos_ctrl_) {
       // for smoothing
@@ -113,7 +113,8 @@ void OptimoController::GetCommand(void *command){
     // joint position control command
     joint_pos_cmd_ = tci_container_->task_map_["joint_task"]->DesiredPos();
     joint_vel_cmd_ = tci_container_->task_map_["joint_task"]->DesiredVel();
-    joint_trq_cmd_ = Eigen::VectorXd::Zero(plato::n_adof_total);
+    // joint_trq_cmd_ = Eigen::VectorXd::Zero(plato::n_adof_total);
+    joint_trq_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
   } else {
     // first visit for feedforward torque command
     if (b_first_visit_wbc_ctrl_) {
@@ -122,7 +123,7 @@ void OptimoController::GetCommand(void *command){
       joint_integrator_->Initialize(init_joint_pos_,
                                     Eigen::VectorXd::Zero(plato::n_adof_total));
       // erase jpos task
-      tci_container_->task_map_.erase("joint_task");
+      // tci_container_->task_map_.erase("joint_task");
 
       // for real experiment smoothing command
       if (!b_sim_) {
@@ -140,12 +141,12 @@ void OptimoController::GetCommand(void *command){
     }
 
     int rf_dim(0);
-    for (const auto &[contact_str, contact_ptr] : tci_container_->contact_map_) {
+    for (const auto &[contact_str, contact_ptr] :
+         tci_container_->contact_map_) {
       contact_ptr->UpdateJacobian();
       contact_ptr->UpdateJacobianDotQdot();
       rf_dim += contact_ptr->Dim();
     }
-
 
     // force task not iterated b/c not depending on q or qdot
     // mass, cori, grav update
@@ -157,8 +158,9 @@ void OptimoController::GetCommand(void *command){
 
     ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
                   tci_container_->internal_constraint_map_,
-                  tci_container_->force_task_map_, wbc_qddot_cmd_, joint_trq_cmd_);
-    
+                  tci_container_->force_task_map_, wbc_qddot_cmd_,
+                  joint_trq_cmd_);
+
     // joint integrator for real experiment
     Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd_.tail(robot_->NumActiveDof());
     joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
@@ -166,7 +168,7 @@ void OptimoController::GetCommand(void *command){
                                  joint_vel_cmd_);
   }
 
-    if (b_smoothing_command_) {
+  if (b_smoothing_command_) {
     // do smoothing command, only for real experiment
     double s =
         util::SmoothPos(0, 1, smoothing_command_duration_,
@@ -187,9 +189,6 @@ void OptimoController::GetCommand(void *command){
   static_cast<OptimoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
   static_cast<OptimoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
   static_cast<OptimoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
-
-
-
 
   // TODO: save data
   // if (sp_->count_ % sp_->data_save_freq_ == 0) {

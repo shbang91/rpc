@@ -1,8 +1,8 @@
 #pragma once
 
 namespace optimo_link {
-constexpr int world = 2;
-constexpr int stand = 4;
+constexpr int pedestal = 2;
+constexpr int base_link = 4;
 constexpr int link0 = 6;
 constexpr int link1 = 8;
 constexpr int link1_passive = 10;
@@ -31,13 +31,14 @@ constexpr int joint6 = 5;
 constexpr int joint7 = 6;
 } // namespace optimo_joint
 
-namespace plato_link{
-constexpr int ee1 = 21;
-constexpr int ee2 = 25;
-constexpr int ee3 = 29;
+namespace plato_link {
+constexpr int ee1 = 46;
+constexpr int ee2 = 54;
+constexpr int ee3 = 62;
 } // namespace plato_link
 
-namespace plato_joint{
+// TODO: need to reconfigure
+namespace plato_joint {
 constexpr int joint1 = 18;
 constexpr int joint2 = 19;
 constexpr int joint3 = 20;

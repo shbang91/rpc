@@ -6,25 +6,25 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "util/interpolation.hpp"
 
-Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot, 
-                        OptimoControlArchitecture *ctrl_arch) 
-        : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false), 
-        wait_time_(0.), min_jerk_curves_(nullptr) {
-    util::PrettyConstructor(2, "Initialize");
+Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
+                       OptimoControlArchitecture *ctrl_arch)
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false),
+      wait_time_(0.), min_jerk_curves_(nullptr) {
+  util::PrettyConstructor(2, "Initialize");
 
-    sp_ = OptimoStateProvider::GetStateProvider();
-    target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
-    init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
+  sp_ = OptimoStateProvider::GetStateProvider();
+  target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
+  init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 }
 
 Initialize::~Initialize() {
-    if (min_jerk_curves_ != nullptr) {
-        delete min_jerk_curves_;
-    }
+  if (min_jerk_curves_ != nullptr) {
+    delete min_jerk_curves_;
+  }
 }
 
 void Initialize::FirstVisit() {
-  std::cout << "optimo_states::kInitialize::FirstVisit" << std::endl;
+  std::cout << "optimo_states::kInitialize" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
   init_joint_pos_ = robot_->GetJointPos();
   min_jerk_curves_ = new MinJerkCurveVec(
@@ -37,7 +37,6 @@ void Initialize::FirstVisit() {
 
 void Initialize::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
-  std::cout << "optimo_states::kInitialize::OneStep" << std::endl;
   Eigen::VectorXd des_joint_pos =
       Eigen::VectorXd::Zero(target_joint_pos_.size());
   Eigen::VectorXd des_joint_vel =
@@ -70,9 +69,7 @@ bool Initialize::EndOfState() {
   }
 }
 
-StateId Initialize::GetNextState() {
-  return 0;
-}
+StateId Initialize::GetNextState() { return optimo_states::kStandUp; }
 
 void Initialize::SetParameters(const YAML::Node &node) {
   try {

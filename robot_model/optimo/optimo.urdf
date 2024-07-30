@@ -704,7 +704,8 @@
       </joint>
 
       <!-- Joint 18: plato_joint1 -->
-      <joint name="plato_joint1" type="revolute">
+      <!--<joint name="plato_joint1" type="revolute">-->
+      <joint name="plato_joint1" type="fixed">
         <origin rpy="1.5707963267948978903 0.00091996263300075529958 1.5707963267948956698" xyz="0.086299999999999960076 0.029999999999999440309 -0.031000000000000024064"/>
         <parent link="plato_base_link"/>
         <child link="plato_bracket_1"/>
@@ -714,7 +715,8 @@
       </joint>
 
       <!-- Joint 19: plato_joint2 -->
-      <joint name="plato_joint2" type="revolute">
+      <!--<joint name="plato_joint2" type="revolute">-->
+      <joint name="plato_joint2" type="fixed">
         <origin rpy="1.8618779238654332436e-18 -1.570796326794896336 0" xyz="-0.0050000000000000183187 -0.028149999999999991002 -0.0098999999999999921396"/>
         <parent link="plato_bracket_1"/>
         <child link="plato_proximal_1"/>
@@ -724,7 +726,8 @@
       </joint>
 
       <!-- Joint 20: plato_joint3 -->
-      <joint name="plato_joint3" type="revolute">
+      <!--<joint name="plato_joint3" type="revolute">-->
+      <joint name="plato_joint3" type="fixed">
         <origin rpy="7.3221470748390791342e-17 1.1335692351879312086e-16 -5.540689055843304715e-17" xyz="0.048000000000000000999 2.7755575615628913511e-17 -0.0027000000000001571354"/>
         <parent link="plato_proximal_1"/>
         <child link="plato_distal_1"/>
@@ -741,7 +744,8 @@
       </joint>
 
       <!-- Joint 22: plato_joint4 -->
-      <joint name="plato_joint4" type="revolute">
+      <!--<joint name="plato_joint4" type="revolute">-->
+      <joint name="plato_joint4" type="fixed">
         <origin rpy="-3.1415926535897922278 -1.5612511283791256454e-16 1.5655578416789037721" xyz="0.08399999999999986644 0.029999999999999422962 -0.010000000000000045311"/>
         <parent link="plato_base_link"/>
         <child link="plato_bracket_2"/>
@@ -751,7 +755,8 @@
       </joint>
 
       <!-- Joint 23: plato_joint5 -->
-      <joint name="plato_joint5" type="revolute">
+      <!--<joint name="plato_joint5" type="revolute">-->
+      <joint name="plato_joint5" type="fixed">
         <origin rpy="-1.5707963267948972241 4.9960036108132044319e-16 1.5707963267948961139" xyz="-0.004999999999999539535 0.028149999999999578137 -0.0098999999999999799966"/>
         <parent link="plato_bracket_2"/>
         <child link="plato_proximal_2"/>
@@ -761,7 +766,8 @@
       </joint>
 
       <!-- Joint 24: plato_joint6 -->
-      <joint name="plato_joint6" type="revolute">
+      <!--<joint name="plato_joint6" type="revolute">-->
+      <joint name="plato_joint6" type="fixed">
         <origin rpy="1.280885172630899511e-14 -7.2307898014349294445e-15 -1.0713652187632538156e-14" xyz="0.04800000000000018141 4.4980837630992365206e-17 -0.0029000000000003675615"/>
         <parent link="plato_proximal_2"/>
         <child link="plato_distal_2"/>
@@ -778,7 +784,8 @@
       </joint>
 
       <!-- Joint 26: plato_joint7 -->
-      <joint name="plato_joint7" type="revolute">
+      <!--<joint name="plato_joint7" type="revolute">-->
+      <joint name="plato_joint7" type="fixed">
         <origin rpy="-3.1415926535897917837 -9.7144514654701000072e-17 1.5655578416789044383" xyz="0.08399999999999986644 -0.030000000000000463796 -0.010000000000000050515"/>
         <parent link="plato_base_link"/>
         <child link="plato_bracket_3"/>
@@ -788,7 +795,8 @@
       </joint>
 
       <!-- Joint 27: plato_joint8 -->
-      <joint name="plato_joint8" type="revolute">
+      <!--<joint name="plato_joint8" type="revolute">-->
+      <joint name="plato_joint8" type="fixed">
         <origin rpy="-1.570796326794896558 4.9960036108133148724e-16 1.5707963267949323072" xyz="-0.0050000000000000044409 0.028149999999999952838 -0.0099000000000000112216"/>
         <parent link="plato_bracket_3"/>
         <child link="plato_proximal_3"/>
@@ -798,7 +806,8 @@
       </joint>
 
       <!-- Joint 28: plato_joint9 -->
-      <joint name="plato_joint9" type="revolute">
+      <!--<joint name="plato_joint9" type="revolute">-->
+      <joint name="plato_joint9" type="fixed">
         <origin rpy="8.673424925565731141e-16 3.5169650820948147417e-14 -1.6319559976759880709e-29" xyz="0.047999999999999709566 -1.6328084717631696776e-16 -0.0029000000000011100232"/>
         <parent link="plato_proximal_3"/>
         <child link="plato_distal_3"/>

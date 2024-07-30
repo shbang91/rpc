@@ -2,18 +2,21 @@
 def deg2rad(deg):
     return deg * 3.14159265359 / 180
 
+
 class Config(object):
     CONTROLLER_DT = 0.001
     N_SUBSTEP = 1
-
-    INITIAL_BASE_JOINT_POS = [0, 0, 0.95 - 0.195]
+    INITIAL_BASE_JOINT_POS = [0, 0, 0]
     INITIAL_BASE_JOINT_QUAT = [0, 0, 0, 1]
     # INITIAL_JOINT_POSITION = [0.0, 3.14, 0.0, 1.57, 0.0, 1.57, 0.0]
-    INITIAL_JOINT_POSITION = [deg2rad(0), deg2rad(210), 0.0, deg2rad(-120), 0.0, deg2rad(-60), 0.0]
-    # INITIAL_BASE_JOINT_POS = [0., 0., 1.5 - 0.757]
-    # INITIAL_BASE_JOINT_QUAT = [0., 0., 0.7071, 0.7071]
+    INITIAL_JOINT_POSITION = [
+        deg2rad(0),
+        deg2rad(210), 0.0,
+        deg2rad(-120), 0.0,
+        deg2rad(-60), 0.0
+    ]
 
-    PRINT_ROBOT_INFO = False
+    PRINT_ROBOT_INFO = True
 
     MEASURE_COMPUTATION_TIME = False
 
@@ -22,6 +25,7 @@ class Config(object):
 
     ##TODO:
     USE_MESHCAT = False
+
 
 class OptimoLinkIdx(object):
     #  getLinkState only works for child links that are connected by a joint to the parent. It will ignore the first link index who has no parent link.
@@ -35,7 +39,8 @@ class OptimoLinkIdx(object):
     link6 = 13
     link7 = 15
     ee = 16
-    
+
+
 class OptimoJointIdx(object):
     joint1 = 2
     joint2 = 4
@@ -44,11 +49,13 @@ class OptimoJointIdx(object):
     joint5 = 10
     joint6 = 12
     joint7 = 14
-    
+
+
 class PlatoLinkIdx(object):
     ee1 = 21
     ee2 = 25
     ee3 = 29
+
 
 class PlatoJointIdx(object):
     joint1 = 18
@@ -62,5 +69,6 @@ class PlatoJointIdx(object):
     joint9 = 28
 
 
-    
-
+class ActuatorGains(object):
+    KP = [200., 200., 200., 200., 200., 200., 200.]
+    KD = [5., 5., 5., 5., 5., 5., 5.]

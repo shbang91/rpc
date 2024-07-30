@@ -11,6 +11,23 @@ b_sim: true ## if false, all the "exp_" parameters are used
 
 wbc:
   task:
+    joint_pos_task:
+      ########################################################################
+      ## sim params
+      ########################################################################
+      sim_weight : [1000., 1000., 1000., 1000., 1000., 1000., 1000.]
+      sim_weight_at_contact : [1000., 1000., 1000., 1000., 1000., 1000., 1000.]
+      sim_kp : [200., 200., 200., 200., 200., 200., 200.]
+      sim_kd : [10., 10., 10., 10., 10., 10., 10.]
+
+      ########################################################################
+      ## exp params [TODO: change to real gains]
+      ########################################################################
+      exp_weight : [1000., 1000., 1000., 1000., 1000., 1000., 1000.]
+      exp_weight_at_contact : [1000., 1000., 1000., 1000., 1000., 1000., 1000.]
+      exp_kp : [200., 200., 200., 200., 200., 200., 200.]
+      exp_kd : [10., 10., 10., 10., 10., 10., 10.]
+
     ee_pos_task:
       ########################################################################
       ## sim params
@@ -208,7 +225,7 @@ wbc:
     exp_foot_half_width: 0.04 ## 0.04
 
   qp:
-    b_save_costs: true
+    b_save_costs: false
     lambda_qddot: 5e-6 ##regularization
     # TODO: 3 finger regularization
     lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5, 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5]  #regulariztion lfoot / rfoot (trq, force order)
@@ -224,6 +241,6 @@ wbc:
 state_machine:
   initialize:
     init_duration: 5.
+    wait_time: 0. 
     target_joint_pos: [0.0, 3.665191429188092, 0.0, -2.0943951023931953, 0.0, -1.0471975511965976, 0.0]
     b_only_joint_pos_control: true
-    wait_time: 15. 
