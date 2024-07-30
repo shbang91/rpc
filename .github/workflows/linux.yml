@@ -13,10 +13,7 @@ jobs:
       - run: |
           ./dependency/scripts/install_gtest.sh
           ./dependency/scripts/install_protobuf.sh && ./dependency/scripts/install_zmq.sh
-          pip install eigenpy
+          conda env create -f rpc.yml
           ./dependency/scripts/install_gh_pinocchio.sh
-          sudo apt install python3-pip
-          pip install "pybind11[global]"
-          pip install conan
           export CMAKE_PREFIX_PATH=/usr/local/include:$CMAKE_PREFIX_PATH
           mkdir build && cd build && cmake .. && make 
