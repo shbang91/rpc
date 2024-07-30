@@ -28,5 +28,12 @@ jobs:
           export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH # Adapt your desired python version here
           export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
-          mkdir build && cd build && cmake .. && make 
+          mkdir build && cd build && cmake .. && make
+      - name: Run rpc tests
+        shell: bash -l {0}
+        run: |
           ./bin/ihwbc_test
+          ./bin/friction_compensator_test
+          ./bin/dcm_planner_test
+          ./bin/lmpc_handler_test
+          ./bin/pin_robot_system_test
