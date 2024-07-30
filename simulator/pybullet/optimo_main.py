@@ -26,12 +26,12 @@ import optimo_interface_py
 def get_sensor_data_from_pybullet(robot):
     
     # Initialize sensor data
-    joint_pos, joint_vel = np.zeros(7), np.zeros(7)
+    joint_pos, joint_vel = np.zeros(7+9), np.zeros(7+9)
  
     ## TODO: Get Joint SEA Torque
     
     ## TODO: Use for loop istead?
-    # Joint Position
+    # Joint Position (Arm)
     joint_pos[0] = pb.getJointState(robot, OptimoJointIdx.joint1)[0]
     joint_pos[1] = pb.getJointState(robot, OptimoJointIdx.joint2)[0]
     joint_pos[2] = pb.getJointState(robot, OptimoJointIdx.joint3)[0]
@@ -40,7 +40,18 @@ def get_sensor_data_from_pybullet(robot):
     joint_pos[5] = pb.getJointState(robot, OptimoJointIdx.joint6)[0]
     joint_pos[6] = pb.getJointState(robot, OptimoJointIdx.joint7)[0]
     
-    # Joint Velocity
+    # Joint Position (Hand)
+    joint_pos[7] = pb.getJointState(robot, PlatoJointIdx.joint1)[0]
+    joint_pos[8] = pb.getJointState(robot, PlatoJointIdx.joint2)[0]
+    joint_pos[9] = pb.getJointState(robot, PlatoJointIdx.joint3)[0]
+    joint_pos[10] = pb.getJointState(robot, PlatoJointIdx.joint4)[0]
+    joint_pos[11] = pb.getJointState(robot, PlatoJointIdx.joint5)[0]
+    joint_pos[12] = pb.getJointState(robot, PlatoJointIdx.joint6)[0]
+    joint_pos[13] = pb.getJointState(robot, PlatoJointIdx.joint7)[0]
+    joint_pos[14] = pb.getJointState(robot, PlatoJointIdx.joint8)[0]
+    joint_pos[15] = pb.getJointState(robot, PlatoJointIdx.joint9)[0]
+    
+    # Joint Velocity (Arm)
     joint_vel[0] = pb.getJointState(robot, OptimoJointIdx.joint1)[1]
     joint_vel[1] = pb.getJointState(robot, OptimoJointIdx.joint2)[1]
     joint_vel[2] = pb.getJointState(robot, OptimoJointIdx.joint3)[1]
@@ -48,6 +59,18 @@ def get_sensor_data_from_pybullet(robot):
     joint_vel[4] = pb.getJointState(robot, OptimoJointIdx.joint5)[1]
     joint_vel[5] = pb.getJointState(robot, OptimoJointIdx.joint6)[1]
     joint_vel[6] = pb.getJointState(robot, OptimoJointIdx.joint7)[1]
+    
+    # Joint Velocity (Hand)
+    joint_vel[7] = pb.getJointState(robot, PlatoJointIdx.joint1)[1]
+    joint_vel[8] = pb.getJointState(robot, PlatoJointIdx.joint2)[1]
+    joint_vel[9] = pb.getJointState(robot, PlatoJointIdx.joint3)[1]
+    joint_vel[10] = pb.getJointState(robot, PlatoJointIdx.joint4)[1]
+    joint_vel[11] = pb.getJointState(robot, PlatoJointIdx.joint5)[1]
+    joint_vel[12] = pb.getJointState(robot, PlatoJointIdx.joint6)[1]
+    joint_vel[13] = pb.getJointState(robot, PlatoJointIdx.joint7)[1]
+    joint_vel[14] = pb.getJointState(robot, PlatoJointIdx.joint8)[1]
+    joint_vel[15] = pb.getJointState(robot, PlatoJointIdx.joint9)[1]
+    
     
     return joint_pos, joint_vel
     
@@ -63,6 +86,16 @@ def apply_control_inpit_to_pybullet(robot, command):
     pb.setJointMotorControl2(robot, OptimoJointIdx.joint6, controlMode=mode, force=command[5])
     pb.setJointMotorControl2(robot, OptimoJointIdx.joint7, controlMode=mode, force=command[6])
     
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint1, controlMode=mode, force=command[7])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint2, controlMode=mode, force=command[8])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint3, controlMode=mode, force=command[9])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint4, controlMode=mode, force=command[10])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint5, controlMode=mode, force=command[11])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint6, controlMode=mode, force=command[12])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint7, controlMode=mode, force=command[13])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint8, controlMode=mode, force=command[14])
+    pb.setJointMotorControl2(robot, PlatoJointIdx.joint9, controlMode=mode, force=command[15])
+    
 def set_init_config_pybullet(robot):
     pb.resetJointState(robot, OptimoJointIdx.joint1, 0.0, 0.0)
     pb.resetJointState(robot, OptimoJointIdx.joint2, Config.INITIAL_JOINT_POSITION[1], 0.0)
@@ -71,6 +104,16 @@ def set_init_config_pybullet(robot):
     pb.resetJointState(robot, OptimoJointIdx.joint5, Config.INITIAL_JOINT_POSITION[4], 0.0)
     pb.resetJointState(robot, OptimoJointIdx.joint6, Config.INITIAL_JOINT_POSITION[5], 0.0)
     pb.resetJointState(robot, OptimoJointIdx.joint7, Config.INITIAL_JOINT_POSITION[6], 0.0)
+    
+    pb.resetJointState(robot, PlatoJointIdx.joint1, Config.INITIAL_JOINT_POSITION[7], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint2, Config.INITIAL_JOINT_POSITION[8], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint3, Config.INITIAL_JOINT_POSITION[9], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint4, Config.INITIAL_JOINT_POSITION[10], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint5, Config.INITIAL_JOINT_POSITION[11], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint6, Config.INITIAL_JOINT_POSITION[12], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint7, Config.INITIAL_JOINT_POSITION[13], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint8, Config.INITIAL_JOINT_POSITION[14], 0.0)
+    pb.resetJointState(robot, PlatoJointIdx.joint9, Config.INITIAL_JOINT_POSITION[15], 0.0)
     print("Initial Configuration Set")
     
 from scipy.spatial.transform import Rotation as R

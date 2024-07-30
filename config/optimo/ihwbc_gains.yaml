@@ -224,6 +224,7 @@ wbc:
 state_machine:
   initialize:
     init_duration: 5.
-    target_joint_pos: [0.0, 3.665191429188092, 0.0, -2.0943951023931953, 0.0, -1.0471975511965976, 0.0]
+    target_joint_pos: [0.0, 3.665191429188092, 0.0, -2.0943951023931953, 0.0, -1.0471975511965976, 0.0, # 7 DOF Arm
+                       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # 9 DOF Hand
     b_only_joint_pos_control: true
     wait_time: 15. 

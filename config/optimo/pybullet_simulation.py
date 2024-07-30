@@ -9,7 +9,8 @@ class Config(object):
     INITIAL_BASE_JOINT_POS = [0, 0, 0.95 - 0.195]
     INITIAL_BASE_JOINT_QUAT = [0, 0, 0, 1]
     # INITIAL_JOINT_POSITION = [0.0, 3.14, 0.0, 1.57, 0.0, 1.57, 0.0]
-    INITIAL_JOINT_POSITION = [deg2rad(0), deg2rad(210), 0.0, deg2rad(-120), 0.0, deg2rad(-60), 0.0]
+    INITIAL_JOINT_POSITION = [deg2rad(0), deg2rad(210), 0.0, deg2rad(-120), 0.0, deg2rad(-60), 0.0,
+                              0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     # INITIAL_BASE_JOINT_POS = [0., 0., 1.5 - 0.757]
     # INITIAL_BASE_JOINT_QUAT = [0., 0., 0.7071, 0.7071]
 
