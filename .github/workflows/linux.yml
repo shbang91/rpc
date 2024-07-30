@@ -21,6 +21,11 @@ jobs:
         run: |
           conda activate rpc
           conda install conda-forge::eigenpy
+          pip install conan
+          echo ' ------- Installed Conan -------'
+          conan create . -pr=./.github/conan_profile
+          echo ' ------- Conan Profile successfully created -------'
+          conan install conanfile.txt --build=missing && cd build/ && cmake .. && make
           ./dependency/scripts/install_gtest.sh
           ./dependency/scripts/install_gh_pinocchio.sh
           export PATH=/opt/openrobots/bin:$PATH
@@ -42,7 +47,4 @@ jobs:
         run: |
           ./dependency/scripts/install_protobuf.sh
           ./dependency/scripts/install_zmq.sh
-          pip install conan
-          conan create . -pr=.github/conan_profile
-          conan install conanfile.txt --build=missing && cd build/ && cmake .. && make
           mkdir build_ui && cd build_ui && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=ON -DBUILD_WITH_FOXGLOVE=ON && make
