@@ -18,5 +18,4 @@ jobs:
           pip install "pybind11[global]"
           pip install conan
           export CMAKE_PREFIX_PATH=/usr/local/include:$CMAKE_PREFIX_PATH
-          conan install conanfile.txt --build=missing 
-          cd build && cmake .. && make 
+          mkdir build && cd build && cmake .. && make 
