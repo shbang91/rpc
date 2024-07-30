@@ -5,7 +5,7 @@ on:
       - main
       - 'feature/add-ci-workflows'
 jobs:
-  setup:
+  build-simple-and-test:
     runs-on: ubuntu-20.04
     steps:
       - name: Check out repository
@@ -28,7 +28,7 @@ jobs:
           export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH # Adapt your desired python version here
           export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
-          mkdir build && cd build && cmake .. && make
+          mkdir build && cd build && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=OFF -DBUILD_WITH_FOXGLOVE=OFF && make
       - name: Run rpc tests
         shell: bash -l {0}
         run: |
