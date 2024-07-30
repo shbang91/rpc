@@ -20,6 +20,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate rpc
+          conda install conda-forge::eigenpy
           conda list
           ./dependency/scripts/install_gtest.sh
           ./dependency/scripts/install_gh_pinocchio.sh
