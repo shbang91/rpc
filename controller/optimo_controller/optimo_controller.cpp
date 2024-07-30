@@ -22,15 +22,15 @@
 OptimoController::OptimoController(OptimoTCIContainer *tci_container,
                                    PinocchioRobotSystem *robot)
     : tci_container_(tci_container), robot_(robot),
-      joint_pos_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-      joint_vel_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-      joint_trq_cmd_(Eigen::VectorXd::Zero(plato::n_adof_total)),
-      joint_trq_cmd_prev_(Eigen::VectorXd::Zero(plato::n_adof_total)),
+      joint_pos_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
+      joint_vel_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
+      joint_trq_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
+      joint_trq_cmd_prev_(Eigen::VectorXd::Zero(optimo::n_adof)),
       wbc_qddot_cmd_(Eigen::VectorXd::Zero(optimo::n_qdot)), b_sim_(true),
       b_first_visit_pos_ctrl_(true), b_first_visit_wbc_ctrl_(true),
       b_smoothing_command_(false), smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(optimo::n_adof)) {
-  // init_joint_pos_(Eigen::VectorXd::Zero(plato::n_adof_total)) {
+  // init_joint_pos_(Eigen::VectorXd::Zero(optimo::n_adof)) {
   util::PrettyConstructor(2, "OptimoController");
   sp_ = OptimoStateProvider::GetStateProvider();
 
@@ -40,7 +40,7 @@ OptimoController::OptimoController(OptimoTCIContainer *tci_container,
 
   // actuated selection matrix
   // sa_ = Eigen::MatrixXd::Identity(
-  // plato::n_adof_total, plato::n_adof_total); // all joints are actuated
+  // optimo::n_adof, optimo::n_adof); // all joints are actuated
   sa_ = Eigen::MatrixXd::Identity(optimo::n_adof,
                                   optimo::n_adof); // all joints are actuated
 
@@ -53,7 +53,7 @@ OptimoController::OptimoController(OptimoTCIContainer *tci_container,
   Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
   Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
 
-  joint_integrator_ = new JointIntegrator(plato::n_adof_total, sp_->servo_dt_,
+  joint_integrator_ = new JointIntegrator(optimo::n_adof, sp_->servo_dt_,
                                           jpos_lb, jpos_ub, jvel_lb, jvel_ub);
 
   // read yaml & set parameters
@@ -102,7 +102,7 @@ OptimoController::~OptimoController() {
 }
 
 void OptimoController::GetCommand(void *command) {
-  if (sp_->state_ == optimo_states::kInitialize) {
+  if (sp_->state_ == optimo_states::kStandUp) {
     if (b_first_visit_pos_ctrl_) {
       // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
@@ -113,7 +113,7 @@ void OptimoController::GetCommand(void *command) {
     // joint position control command
     joint_pos_cmd_ = tci_container_->task_map_["joint_task"]->DesiredPos();
     joint_vel_cmd_ = tci_container_->task_map_["joint_task"]->DesiredVel();
-    // joint_trq_cmd_ = Eigen::VectorXd::Zero(plato::n_adof_total);
+    // joint_trq_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
     joint_trq_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
   } 
   
@@ -124,7 +124,7 @@ void OptimoController::GetCommand(void *command) {
       // for joint integrator initialization
       init_joint_pos_ = robot_->GetJointPos();
       joint_integrator_->Initialize(init_joint_pos_,
-                                    Eigen::VectorXd::Zero(plato::n_adof_total));
+                                    Eigen::VectorXd::Zero(optimo::n_adof));
       // erase jpos task
       // tci_container_->task_map_.erase("joint_task");
 
@@ -139,7 +139,9 @@ void OptimoController::GetCommand(void *command) {
     // task and contact update
 
     for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
+      std::cout << "seg 1" << std::endl;
       task_ptr->UpdateJacobian();
+      std::cout << "seg 2" << std::endl;
       task_ptr->UpdateJacobianDotQdot();
       task_ptr->UpdateOpCommand(sp_->rot_world_local_);
     }

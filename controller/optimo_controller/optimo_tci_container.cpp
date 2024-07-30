@@ -37,12 +37,12 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
   task_map_.clear();
   task_map_.insert(std::make_pair("joint_task", jpos_task_));
 
-  task_map_.insert(std::make_pair("ee_pos_task", ee_pos_task_));
+  // task_map_.insert(std::make_pair("ee_pos_task", ee_pos_task_));
   // task_map_.insert(std::make_pair("f1_pos_task", f1_pos_task_));
   // task_map_.insert(std::make_pair("f2_pos_task", f2_pos_task_));
   // task_map_.insert(std::make_pair("f3_pos_task", f3_pos_task_));
 
-  task_map_.insert(std::make_pair("ee_ori_task", ee_ori_task_));
+  // task_map_.insert(std::make_pair("ee_ori_task", ee_ori_task_));
   // task_map_.insert(std::make_pair("f1_ori_task", f1_ori_task_));
   // task_map_.insert(std::make_pair("f2_ori_task", f2_ori_task_));
   // task_map_.insert(std::make_pair("f3_ori_task", f3_ori_task_));

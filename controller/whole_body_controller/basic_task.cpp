@@ -17,8 +17,10 @@ void JointTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 }
 
 void JointTask::UpdateJacobian() {
+  std::cout << "joint jacobian" << std::endl;
   jacobian_.block(0, robot_->NumFloatDof(), dim_, robot_->NumActiveDof()) =
       Eigen::MatrixXd::Identity(robot_->NumActiveDof(), robot_->NumActiveDof());
+      
 }
 
 void JointTask::UpdateJacobianDotQdot() {
@@ -93,6 +95,7 @@ void LinkPosTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 }
 
 void LinkPosTask::UpdateJacobian() {
+  std::cout << "link jacobian" << std::endl;
   jacobian_ = robot_->GetLinkJacobian(target_idx_)
                   .block(dim_, 0, dim_, robot_->NumQdot());
 }
@@ -160,6 +163,7 @@ void LinkOriTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 }
 
 void LinkOriTask::UpdateJacobian() {
+  std::cout << "ori jacobian" << std::endl;
   jacobian_ =
       robot_->GetLinkJacobian(target_idx_).block(0, 0, dim_, robot_->NumQdot());
 }
@@ -187,7 +191,9 @@ void ComTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
   op_cmd_ = des_acc_ + kp_.cwiseProduct(pos_err_) + kd_.cwiseProduct(vel_err_);
 }
 
-void ComTask::UpdateJacobian() { jacobian_ = robot_->GetComLinJacobian(); }
+void ComTask::UpdateJacobian() { 
+  std::cout << "joint jacobian" << std::endl;
+  jacobian_ = robot_->GetComLinJacobian(); }
 
 void ComTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = robot_->GetComLinJacobianDotQdot();
