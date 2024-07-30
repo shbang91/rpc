@@ -23,6 +23,7 @@ jobs:
           conda install conda-forge::eigenpy
           pip install conan
           echo ' ------- Installed Conan -------'
+          mkdir -p ~/.conan2/profiles/
           cp .github/conan_profile ~/.conan2/profiles/default
           echo ' ------- Conan Profile successfully created -------'
           conan install conanfile.txt --build=missing && cd build/ && cmake .. && make
