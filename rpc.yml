@@ -5,12 +5,12 @@ dependencies:
   - pybind11=2.6.2
   - python=3.9.5
   - ruamel.yaml=0.17.10
-  - eigenpy=3.0.0
   - boost=1.78.0
   - boost-cpp=1.78.0
   - pip
   - pip:
       - certifi==2021.5.30
+      - eigenpy==3.0.0
       - imageio==2.9.0
       - ipdb==0.13.9
       - matplotlib==3.4.2
