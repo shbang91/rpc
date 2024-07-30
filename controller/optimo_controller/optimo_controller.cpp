@@ -102,7 +102,7 @@ OptimoController::~OptimoController() {
 }
 
 void OptimoController::GetCommand(void *command) {
-  if (sp_->state_ == optimo_states::kStandUp) {
+  if (sp_->state_ == optimo_states::kInitialize) {
     if (b_first_visit_pos_ctrl_) {
       // for smoothing
       init_joint_pos_ = robot_->GetJointPos();
@@ -138,40 +138,40 @@ void OptimoController::GetCommand(void *command) {
     // wbc command with contact (feedforward torque)
     // task and contact update
 
-    // for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
-    //   task_ptr->UpdateJacobian();
-    //   task_ptr->UpdateJacobianDotQdot();
-    //   task_ptr->UpdateOpCommand(sp_->rot_world_local_);
-    // }
+    for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
+      task_ptr->UpdateJacobian();
+      task_ptr->UpdateJacobianDotQdot();
+      task_ptr->UpdateOpCommand(sp_->rot_world_local_);
+    }
 
-    // int rf_dim(0);
-    // for (const auto &[contact_str, contact_ptr] :
-    //      tci_container_->contact_map_) {
-    //   contact_ptr->UpdateJacobian();
-    //   contact_ptr->UpdateJacobianDotQdot();
-    //   rf_dim += contact_ptr->Dim();
-    // }
+    int rf_dim(0);
+    for (const auto &[contact_str, contact_ptr] :
+         tci_container_->contact_map_) {
+      contact_ptr->UpdateJacobian();
+      contact_ptr->UpdateJacobianDotQdot();
+      rf_dim += contact_ptr->Dim();
+    }
 
     // force task not iterated b/c not depending on q or qdot
     // mass, cori, grav update
 
-    // Eigen::MatrixXd A = robot_->GetMassMatrix();
-    // Eigen::MatrixXd Ainv = robot_->GetMassMatrix().inverse();
-    // Eigen::VectorXd cori = robot_->GetCoriolis();
-    // Eigen::VectorXd grav = robot_->GetGravity();
-    // ihwbc_->UpdateSetting(A, Ainv, cori, grav);
+    Eigen::MatrixXd A = robot_->GetMassMatrix();
+    Eigen::MatrixXd Ainv = robot_->GetMassMatrix().inverse();
+    Eigen::VectorXd cori = robot_->GetCoriolis();
+    Eigen::VectorXd grav = robot_->GetGravity();
+    ihwbc_->UpdateSetting(A, Ainv, cori, grav);
 
     
-    // ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
-    //               tci_container_->internal_constraint_map_,
-    //               tci_container_->force_task_map_, wbc_qddot_cmd_,
-    //               joint_trq_cmd_);
+    ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
+                  tci_container_->internal_constraint_map_,
+                  tci_container_->force_task_map_, wbc_qddot_cmd_,
+                  joint_trq_cmd_);
 
     // joint integrator for real experiment
-    // Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd_.tail(robot_->NumActiveDof());
-    // joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
-    //                              robot_->GetJointVel(), joint_pos_cmd_,
-    //                              joint_vel_cmd_);
+    Eigen::VectorXd joint_acc_cmd = wbc_qddot_cmd_.tail(robot_->NumActiveDof());
+    joint_integrator_->Integrate(joint_acc_cmd, robot_->GetJointPos(),
+                                 robot_->GetJointVel(), joint_pos_cmd_,
+                                 joint_vel_cmd_);
   }
 
   if (b_smoothing_command_) {
@@ -192,9 +192,9 @@ void OptimoController::GetCommand(void *command) {
   }
 
   // copy command to DracoCommand class
-  // static_cast<OptimoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
-  // static_cast<OptimoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
-  // static_cast<OptimoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
+  static_cast<OptimoCommand *>(command)->joint_pos_cmd_ = joint_pos_cmd_;
+  static_cast<OptimoCommand *>(command)->joint_vel_cmd_ = joint_vel_cmd_;
+  static_cast<OptimoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 
   // TODO: save data
   // if (sp_->count_ % sp_->data_save_freq_ == 0) {
