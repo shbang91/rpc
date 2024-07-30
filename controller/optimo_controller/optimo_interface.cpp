@@ -7,6 +7,7 @@
 
 #include "controller/optimo_controller/optimo_interface.hpp"
 #include "controller/optimo_controller/optimo_control_architecture.hpp"
+#include "controller/optimo_controller/optimo_state_estimator.hpp"
 #include "controller/optimo_controller/optimo_task_gain_handler.hpp"
 
 OptimoInterface::OptimoInterface() : Interface() {
@@ -18,6 +19,7 @@ OptimoInterface::OptimoInterface() : Interface() {
 
   robot_ = new PinocchioRobotSystem(THIS_COM "robot_model/optimo/optimo.urdf",
                                     THIS_COM "robot_model/optimo", true, false);
+  se_ = new OptimoStateEstimator(robot_);
 
   ctrl_arch_ = new OptimoControlArchitecture(robot_);
 
@@ -27,6 +29,7 @@ OptimoInterface::OptimoInterface() : Interface() {
 
 OptimoInterface::~OptimoInterface() { 
   delete robot_;
+  delete se_;
   delete ctrl_arch_;
   // delete interrupt_handler_;
   delete task_gain_handler_;
@@ -40,7 +43,8 @@ void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   OptimoCommand *optimo_command = static_cast<OptimoCommand *>(command_data);
 
-  // TODO:update sensor data to pinocchio model using state estimator class
+  // update sensor data to pinocchio model using state estimator class
+  se_->Update(optimo_sensor_data);
 
   // TODO:get control command through control architecture class
 

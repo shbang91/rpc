@@ -9,6 +9,7 @@
 
 class OptimoStateProvider;
 class OptimoTaskGainHandler;
+class OptimoStateEstimator;
 
 class OptimoSensorData {
 public:
@@ -53,7 +54,8 @@ public:
 
   OptimoTaskGainHandler *task_gain_handler_;
 
-  private:
+private:
   OptimoStateProvider *sp_;
+  OptimoStateEstimator *se_;
   void _SafeCommand(OptimoSensorData *data, OptimoCommand *command);
 };
