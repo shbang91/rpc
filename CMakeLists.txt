@@ -30,7 +30,7 @@ option(BUILD_WITH_DART "compile with DART" OFF)
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" ON)
 
-option(BUILD_WITH_FOXGLOVE "compile with foxglove" ON)
+option(BUILD_WITH_FOXGLOVE "compile with foxglove" OFF)
 
 # unit-testing tools
 option(BUILD_GTESTS "build google tests" ON)
