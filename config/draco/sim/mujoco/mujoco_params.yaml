@@ -1,0 +1,77 @@
+actuator_gains:
+  l_hip_ie: 
+    kp: 400 
+    kd: 20
+  l_hip_aa:
+    kp: 500
+    kd: 20
+  l_hip_fe:
+    kp: 500
+    kd: 20
+  l_knee_fe_jd:
+    kp: 300
+    kd: 10
+  l_ankle_fe:
+    kp: 70
+    kd: 4
+  l_ankle_ie:
+    kp: 70
+    kd: 4
+  l_shoulder_fe:
+    kp: 100 
+    kd: 5
+  l_shoulder_aa:
+    kp: 100
+    kd: 5
+  l_shoulder_ie:
+    kp: 100
+    kd: 5
+  l_elbow_fe:
+    kp: 100
+    kd: 5
+  l_wrist_ps:
+    kp: 100
+    kd: 5
+  l_wrist_pitch:
+    kp: 100
+    kd: 5
+  neck_pitch:
+    kp: 100 
+    kd: 5
+  r_hip_ie:
+    kp: 400
+    kd: 20
+  r_hip_aa:
+    kp: 500
+    kd: 20
+  r_hip_fe:
+    kp: 500
+    kd: 20
+  r_knee_fe_jd:
+    kp: 300
+    kd: 10
+  r_ankle_fe:
+    kp: 70
+    kd: 4
+  r_ankle_ie:
+    kp: 70
+    kd: 4
+  r_shoulder_fe:
+    kp: 100
+    kd: 5
+  r_shoulder_aa:
+    kp: 100
+    kd: 5
+  r_shoulder_ie:
+    kp: 100
+    kd: 5
+  r_elbow_fe:
+    kp: 100
+    kd: 5
+  r_wrist_ps:
+    kp: 100
+    kd: 5
+  r_wrist_pitch:
+    kp: 100
+    kd: 5
+

@@ -30,9 +30,11 @@ DracoInterface::DracoInterface() : Interface() {
   // new PinocchioRobotSystem(THIS_COM
   // "robot_model/draco/draco_modified.urdf", THIS_COM "robot_model/draco",
   // false, false);
+  std::vector<std::string> unactuated_joint_list = {"l_knee_fe_jp",
+                                                    "r_knee_fe_jp"};
   robot_ = new PinocchioRobotSystem(
       THIS_COM "robot_model/draco/draco_latest_collisions.urdf",
-      THIS_COM "robot_model/draco", false, false);
+      THIS_COM "robot_model/draco", false, false, &unactuated_joint_list);
 
   // set locomotion control point
   robot_->SetFeetControlPoint("l_foot_contact", "r_foot_contact");

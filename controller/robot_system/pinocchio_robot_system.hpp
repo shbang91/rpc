@@ -15,6 +15,7 @@
 #include <Eigen/Dense>
 #include <map>
 #include <string>
+#include <unordered_map>
 
 /*
  *  Pinnochio considers floating base with 7 positions and 6 velocities with the
@@ -26,9 +27,10 @@
 
 class PinocchioRobotSystem {
 public:
-  PinocchioRobotSystem(const std::string &urdf_file,
-                       const std::string &package_dir, const bool b_fixed_base,
-                       const bool b_print_info);
+  PinocchioRobotSystem(
+      const std::string &urdf_file, const std::string &package_dir,
+      const bool b_fixed_base, const bool b_print_info,
+      std::vector<std::string> *unactuated_joint_list = nullptr);
   virtual ~PinocchioRobotSystem() = default;
 
   void UpdateRobotModel(const Eigen::Vector3d &base_joint_pos,
@@ -121,6 +123,13 @@ public:
     return joint_trq_limits_;
   }
 
+  std::unordered_map<std::string, int> GetJointNameAndIndexMap() const {
+    return joint_name_idx_map_;
+  }
+  std::unordered_map<std::string, int> GetActuatorNameAndIndexMap() const {
+    return actuator_name_idx_map_;
+  }
+
   // setter funtion
   void SetFeetControlPoint(const std::string &lfoot_cp_string,
                            const std::string &rfoot_cp_string) {
@@ -137,7 +146,7 @@ public:
   }
 
 private:
-  void _Initialize();
+  void _Initialize(std::vector<std::string> *unactuated_joint_list);
   void _InitializeRootFrame();
   void _UpdateCentroidalQuantities();
   void _PrintRobotInfo();
@@ -169,6 +178,10 @@ private:
   int n_adof_;
   int n_float_;
 
+  // get joint & actuator index map for indexing
+  std::unordered_map<std::string, int> joint_name_idx_map_;
+  std::unordered_map<std::string, int> actuator_name_idx_map_;
+  // for print out
   std::map<double, std::string> joint_idx_map_;
   std::map<double, std::string> link_idx_map_;
 

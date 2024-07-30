@@ -32,6 +32,8 @@
 // rpc related headers
 #include "configuration.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
+#include "controller/robot_system/pinocchio_robot_system.hpp"
+#include "util/util.hpp"
 
 #define MUJOCO_PLUGIN_DIR "mujoco_plugin"
 
@@ -70,9 +72,18 @@ Interface *draco_interface = nullptr;
 DracoSensorData *draco_sensor_data = nullptr;
 DracoCommand *draco_command = nullptr;
 
+// pinocchio joint & actuator maps
+std::unordered_map<std::string, int> pin_jnt_map_;
+std::unordered_map<std::string, int> pin_act_map_;
+
 // mujoco joint & actuator maps
-std::unordered_map<std::string, int> mj_jnt_map_;
+std::unordered_map<std::string, int> mj_qpos_map_;
+std::unordered_map<std::string, int> mj_qvel_map_;
 std::unordered_map<std::string, int> mj_act_map_;
+
+// actuator gains
+std::vector<double> kp_;
+std::vector<double> kd_;
 
 using Seconds = std::chrono::duration<double>;
 
@@ -265,10 +276,54 @@ mjModel *LoadModel(const char *file, mj::Simulate &sim) {
   return mnew;
 }
 
-// TODO:
 void SetJointAndActuatorMaps(
-    mjModel *m, std::unordered_map<std::string, int> &joint_map,
-    std::unordered_map<std::string, int> &actuator_map) {}
+    mjModel *m, std::unordered_map<std::string, int> &mj_qpos_map,
+    std::unordered_map<std::string, int> &mj_qvel_map,
+    std::unordered_map<std::string, int> &mj_actuator_map,
+    const std::unordered_map<std::string, int> &pin_joint_map,
+    const std::unordered_map<std::string, int> &pin_actuator_map) {
+  // create mujoco joint map
+  for (const auto &[pin_jnt_name, _] : pin_joint_map) {
+    int jnt_idx = mj_name2id(m, mjOBJ_JOINT, pin_jnt_name.c_str());
+    if (jnt_idx == -1) {
+      std::cout << "[MuJoCo Utils] Can't find the joint name: " << pin_jnt_name
+                << " in MuJoCo model" << '\n';
+    }
+    mj_qpos_map[pin_jnt_name] = m->jnt_qposadr[jnt_idx];
+    mj_qvel_map[pin_jnt_name] = m->jnt_dofadr[jnt_idx];
+  }
+  // create mujoco actuator map
+  for (const auto &[pin_act_name, _] : pin_actuator_map) {
+    int act_idx = mj_name2id(m, mjOBJ_ACTUATOR, pin_act_name.c_str());
+    if (act_idx == -1) {
+      std::cout << "[MuJoCo Utils] Can't find the actuator name: "
+                << pin_act_name << " in MuJoCo model" << '\n';
+    }
+    mj_actuator_map[pin_act_name] = act_idx;
+  }
+}
+
+void SetActuatorGains(const std::unordered_map<std::string, int> &mj_act_map) {
+  kp_.clear();
+  kp_.resize(mj_act_map.size());
+  kd_.clear();
+  kd_.resize(mj_act_map.size());
+
+  try {
+    YAML::Node cfg =
+        YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/mujoco_params.yaml");
+    double tmp;
+    for (const auto &[mj_act_name, mj_act_idx] : mj_act_map) {
+      util::ReadParameter(cfg["actuator_gains"][mj_act_name], "kp", tmp);
+      kp_[mj_act_idx] = tmp;
+      util::ReadParameter(cfg["actuator_gains"][mj_act_name], "kd", tmp);
+      kd_[mj_act_idx] = tmp;
+    }
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+}
 
 // TODO:
 void SetInitialConfig(mjData *d) {
@@ -292,104 +347,56 @@ void SetInitialConfig(mjData *d) {
   // d->qpos[32] = -M_PI / 4;
 }
 
-// TODO:
-void MyController(const mjModel *m, mjData *d) {
-  // if (m->nu == m->nv)
-  // mju_scl(d->ctrl, d->qvel, -0.1, m->nv);
-}
-
 bool CopySensorData() {
   //=================================================
   // joint positions
   //=================================================
-  // left leg
-  draco_sensor_data->joint_pos_[0] = d->qpos[20];
-  draco_sensor_data->joint_pos_[1] = d->qpos[21];
-  draco_sensor_data->joint_pos_[2] = d->qpos[22];
-  draco_sensor_data->joint_pos_[3] = d->qpos[23];
-  draco_sensor_data->joint_pos_[4] = d->qpos[24];
-  draco_sensor_data->joint_pos_[5] = d->qpos[25];
-  draco_sensor_data->joint_pos_[6] = d->qpos[26];
-  // left arm
-  draco_sensor_data->joint_pos_[7] = d->qpos[8];
-  draco_sensor_data->joint_pos_[8] = d->qpos[9];
-  draco_sensor_data->joint_pos_[9] = d->qpos[10];
-  draco_sensor_data->joint_pos_[10] = d->qpos[11];
-  draco_sensor_data->joint_pos_[11] = d->qpos[12];
-  draco_sensor_data->joint_pos_[12] = d->qpos[13];
-  // neck
-  draco_sensor_data->joint_pos_[13] = d->qpos[7];
-  // right leg
-  draco_sensor_data->joint_pos_[14] = d->qpos[27];
-  draco_sensor_data->joint_pos_[15] = d->qpos[28];
-  draco_sensor_data->joint_pos_[16] = d->qpos[29];
-  draco_sensor_data->joint_pos_[17] = d->qpos[30];
-  draco_sensor_data->joint_pos_[18] = d->qpos[31];
-  draco_sensor_data->joint_pos_[19] = d->qpos[32];
-  draco_sensor_data->joint_pos_[20] = d->qpos[33];
-  // right arm
-  draco_sensor_data->joint_pos_[21] = d->qpos[14];
-  draco_sensor_data->joint_pos_[22] = d->qpos[15];
-  draco_sensor_data->joint_pos_[23] = d->qpos[16];
-  draco_sensor_data->joint_pos_[24] = d->qpos[17];
-  draco_sensor_data->joint_pos_[25] = d->qpos[18];
-  draco_sensor_data->joint_pos_[26] = d->qpos[19];
+  for (const auto &[mj_qpos_name, mj_qpos_idx] : mj_qpos_map_)
+    draco_sensor_data->joint_pos_[pin_jnt_map_.at(mj_qpos_name)] =
+        d->qpos[mj_qpos_idx];
 
   //=================================================
   // joint velocities
   //=================================================
-  // left leg
-  draco_sensor_data->joint_vel_[0] = d->qvel[19];
-  draco_sensor_data->joint_vel_[1] = d->qvel[20];
-  draco_sensor_data->joint_vel_[2] = d->qvel[21];
-  draco_sensor_data->joint_vel_[3] = d->qvel[22];
-  draco_sensor_data->joint_vel_[4] = d->qvel[23];
-  draco_sensor_data->joint_vel_[5] = d->qvel[24];
-  draco_sensor_data->joint_vel_[6] = d->qvel[25];
-  // left arm
-  draco_sensor_data->joint_vel_[7] = d->qvel[7];
-  draco_sensor_data->joint_vel_[8] = d->qvel[8];
-  draco_sensor_data->joint_vel_[9] = d->qvel[9];
-  draco_sensor_data->joint_vel_[10] = d->qvel[10];
-  draco_sensor_data->joint_vel_[11] = d->qvel[11];
-  draco_sensor_data->joint_vel_[12] = d->qvel[12];
-  // neck
-  draco_sensor_data->joint_vel_[13] = d->qvel[6];
-  // right leg
-  draco_sensor_data->joint_vel_[14] = d->qvel[26];
-  draco_sensor_data->joint_vel_[15] = d->qvel[27];
-  draco_sensor_data->joint_vel_[16] = d->qvel[28];
-  draco_sensor_data->joint_vel_[17] = d->qvel[29];
-  draco_sensor_data->joint_vel_[18] = d->qvel[30];
-  draco_sensor_data->joint_vel_[19] = d->qvel[31];
-  draco_sensor_data->joint_vel_[20] = d->qvel[32];
-  // right arm
-  draco_sensor_data->joint_vel_[21] = d->qvel[13];
-  draco_sensor_data->joint_vel_[22] = d->qvel[14];
-  draco_sensor_data->joint_vel_[23] = d->qvel[15];
-  draco_sensor_data->joint_vel_[24] = d->qvel[16];
-  draco_sensor_data->joint_vel_[25] = d->qvel[17];
-  draco_sensor_data->joint_vel_[26] = d->qvel[18];
+  for (const auto &[mj_qvel_name, mj_qvel_idx] : mj_qvel_map_)
+    draco_sensor_data->joint_vel_[pin_jnt_map_.at(mj_qvel_name)] =
+        d->qvel[mj_qvel_idx];
 
   //==============================================
   // floating base states for ground truth state estimation
   //==============================================
-  draco_sensor_data->base_joint_pos_[0] = d->qpos[0];
-  draco_sensor_data->base_joint_pos_[1] = d->qpos[1];
-  draco_sensor_data->base_joint_pos_[2] = d->qpos[2];
+  const std::string &base_frame_name =
+      draco_interface->GetPinocchioModel()->GetRootFrameName();
+  const int base_frame_idx = mj_name2id(m, mjOBJ_BODY, base_frame_name.c_str());
+  // make sure we have a floating body: it has a single free joint
+  if (base_frame_idx >= 0 && m->body_jntnum[base_frame_idx] == 1 &&
+      m->jnt_type[m->body_jntadr[base_frame_idx]] == mjJNT_FREE) {
+    int qposadr = m->jnt_qposadr[m->body_jntadr[base_frame_idx]];
+    int qveladr = m->jnt_dofadr[m->body_jntadr[base_frame_idx]];
 
-  draco_sensor_data->base_joint_quat_[0] = d->qpos[4]; // q.x
-  draco_sensor_data->base_joint_quat_[1] = d->qpos[5]; // q.y
-  draco_sensor_data->base_joint_quat_[2] = d->qpos[6]; // q.z
-  draco_sensor_data->base_joint_quat_[3] = d->qpos[3]; // q.w
+    draco_sensor_data->base_joint_pos_[0] = d->qpos[qposadr + 0]; // x
+    draco_sensor_data->base_joint_pos_[1] = d->qpos[qposadr + 1]; // y
+    draco_sensor_data->base_joint_pos_[2] = d->qpos[qposadr + 2]; // z
 
-  draco_sensor_data->base_joint_lin_vel_[0] = d->qvel[0];
-  draco_sensor_data->base_joint_lin_vel_[1] = d->qvel[1];
-  draco_sensor_data->base_joint_lin_vel_[2] = d->qvel[2];
+    draco_sensor_data->base_joint_quat_[0] = d->qpos[qposadr + 4]; // q.x
+    draco_sensor_data->base_joint_quat_[1] = d->qpos[qposadr + 5]; // q.y
+    draco_sensor_data->base_joint_quat_[2] = d->qpos[qposadr + 6]; // q.z
+    draco_sensor_data->base_joint_quat_[3] = d->qpos[qposadr + 3]; // q.w
 
-  draco_sensor_data->base_joint_ang_vel_[0] = d->qvel[3];
-  draco_sensor_data->base_joint_ang_vel_[1] = d->qvel[4];
-  draco_sensor_data->base_joint_ang_vel_[2] = d->qvel[5];
+    // world linear vel
+    draco_sensor_data->base_joint_lin_vel_[0] = d->qvel[qveladr + 0];
+    draco_sensor_data->base_joint_lin_vel_[1] = d->qvel[qveladr + 1];
+    draco_sensor_data->base_joint_lin_vel_[2] = d->qvel[qveladr + 2];
+
+    // body angular vel
+    draco_sensor_data->base_joint_ang_vel_[0] = d->qvel[qveladr + 3];
+    draco_sensor_data->base_joint_ang_vel_[1] = d->qvel[qveladr + 4];
+    draco_sensor_data->base_joint_ang_vel_[2] = d->qvel[qveladr + 5];
+  }
+
+  //==============================================
+  // TODO:process IMU data
+  //==============================================
 
   //==============================================
   // TODO:contact states (1. contact normal force, 2. swing foot height)
@@ -399,90 +406,19 @@ bool CopySensorData() {
 }
 
 void CopyCommand() {
-  // left arm
-  d->ctrl[0] = draco_command->joint_trq_cmd_[7] +
-               100 * (draco_command->joint_pos_cmd_[7] - d->qpos[8]) +
-               5 * (draco_command->joint_vel_cmd_[7] - d->qvel[7]);
-  d->ctrl[1] = draco_command->joint_trq_cmd_[8] +
-               100 * (draco_command->joint_pos_cmd_[8] - d->qpos[9]) +
-               5 * (draco_command->joint_vel_cmd_[8] - d->qvel[8]);
-  d->ctrl[2] = draco_command->joint_trq_cmd_[9] +
-               100 * (draco_command->joint_pos_cmd_[9] - d->qpos[10]) +
-               5 * (draco_command->joint_vel_cmd_[9] - d->qvel[9]);
-  d->ctrl[3] = draco_command->joint_trq_cmd_[10] +
-               100 * (draco_command->joint_pos_cmd_[10] - d->qpos[11]) +
-               5 * (draco_command->joint_vel_cmd_[10] - d->qvel[10]);
-  d->ctrl[4] = draco_command->joint_trq_cmd_[11] +
-               100 * (draco_command->joint_pos_cmd_[11] - d->qpos[12]) +
-               5 * (draco_command->joint_vel_cmd_[11] - d->qvel[11]);
-  d->ctrl[5] = draco_command->joint_trq_cmd_[12] +
-               100 * (draco_command->joint_pos_cmd_[12] - d->qpos[13]) +
-               5 * (draco_command->joint_vel_cmd_[12] - d->qvel[12]);
-  // right arm
-  d->ctrl[6] = draco_command->joint_trq_cmd_[21] +
-               100 * (draco_command->joint_pos_cmd_[21] - d->qpos[14]) +
-               5 * (draco_command->joint_vel_cmd_[21] - d->qvel[13]);
-  d->ctrl[7] = draco_command->joint_trq_cmd_[22] +
-               100 * (draco_command->joint_pos_cmd_[22] - d->qpos[15]) +
-               5 * (draco_command->joint_vel_cmd_[22] - d->qvel[14]);
-  d->ctrl[8] = draco_command->joint_trq_cmd_[23] +
-               100 * (draco_command->joint_pos_cmd_[23] - d->qpos[16]) +
-               5 * (draco_command->joint_vel_cmd_[23] - d->qvel[15]);
-  d->ctrl[9] = draco_command->joint_trq_cmd_[24] +
-               100 * (draco_command->joint_pos_cmd_[24] - d->qpos[17]) +
-               5 * (draco_command->joint_vel_cmd_[24] - d->qvel[16]);
-  d->ctrl[10] = draco_command->joint_trq_cmd_[25] +
-                100 * (draco_command->joint_pos_cmd_[25] - d->qpos[18]) +
-                5 * (draco_command->joint_vel_cmd_[25] - d->qvel[17]);
-  d->ctrl[11] = draco_command->joint_trq_cmd_[26] +
-                100 * (draco_command->joint_pos_cmd_[26] - d->qpos[19]) +
-                5 * (draco_command->joint_vel_cmd_[26] - d->qvel[18]);
-  // neck
-  d->ctrl[12] = draco_command->joint_trq_cmd_[13] +
-                100 * (draco_command->joint_pos_cmd_[13] - d->qpos[7]) +
-                5 * (draco_command->joint_vel_cmd_[13] - d->qvel[6]);
-  // left leg
-  d->ctrl[13] = draco_command->joint_trq_cmd_[0] +
-                400 * (draco_command->joint_pos_cmd_[0] - d->qpos[20]) +
-                20 * (draco_command->joint_vel_cmd_[0] - d->qvel[19]);
-  d->ctrl[14] = draco_command->joint_trq_cmd_[1] +
-                500 * (draco_command->joint_pos_cmd_[1] - d->qpos[21]) +
-                20 * (draco_command->joint_vel_cmd_[1] - d->qvel[20]);
-  d->ctrl[15] = draco_command->joint_trq_cmd_[2] +
-                500 * (draco_command->joint_pos_cmd_[2] - d->qpos[22]) +
-                20 * (draco_command->joint_vel_cmd_[2] - d->qvel[21]);
-  d->ctrl[16] = draco_command->joint_trq_cmd_[4] +
-                300 * (draco_command->joint_pos_cmd_[4] - d->qpos[24]) +
-                10 * (draco_command->joint_vel_cmd_[4] - d->qvel[23]);
-  d->ctrl[17] = draco_command->joint_trq_cmd_[5] +
-                70 * (draco_command->joint_pos_cmd_[5] - d->qpos[25]) +
-                4 * (draco_command->joint_vel_cmd_[5] - d->qvel[24]);
-  d->ctrl[18] = draco_command->joint_trq_cmd_[6] +
-                70 * (draco_command->joint_pos_cmd_[6] - d->qpos[26]) +
-                4 * (draco_command->joint_vel_cmd_[6] - d->qvel[25]);
-  // right leg
-  d->ctrl[19] = draco_command->joint_trq_cmd_[14] +
-                400 * (draco_command->joint_pos_cmd_[14] - d->qpos[27]) +
-                20 * (draco_command->joint_vel_cmd_[14] - d->qvel[26]);
-  d->ctrl[20] = draco_command->joint_trq_cmd_[15] +
-                500 * (draco_command->joint_pos_cmd_[15] - d->qpos[28]) +
-                20 * (draco_command->joint_vel_cmd_[15] - d->qvel[27]);
-  d->ctrl[21] = draco_command->joint_trq_cmd_[16] +
-                500 * (draco_command->joint_pos_cmd_[16] - d->qpos[29]) +
-                20 * (draco_command->joint_vel_cmd_[16] - d->qvel[28]);
-  d->ctrl[22] = draco_command->joint_trq_cmd_[18] +
-                300 * (draco_command->joint_pos_cmd_[18] - d->qpos[31]) +
-                10 * (draco_command->joint_vel_cmd_[18] - d->qvel[30]);
-  d->ctrl[23] = draco_command->joint_trq_cmd_[19] +
-                70 * (draco_command->joint_pos_cmd_[19] - d->qpos[32]) +
-                4 * (draco_command->joint_vel_cmd_[19] - d->qvel[31]);
-  d->ctrl[24] = draco_command->joint_trq_cmd_[20] +
-                70 * (draco_command->joint_pos_cmd_[20] - d->qpos[33]) +
-                4 * (draco_command->joint_vel_cmd_[20] - d->qvel[32]);
-  // std::cout << "----------------------------------------" << std::endl;
-  // for (int i = 0; i < 25; ++i) {
-  // std::cout << d->ctrl[i] << ", " << '\n';
-  //}
+  // joint impednace control law
+  for (const auto &[mj_act_name, mj_act_idx] : mj_act_map_) {
+    int pin_act_idx = pin_act_map_.at(mj_act_name);
+    int mj_qpos_idx = mj_qpos_map_.at(mj_act_name);
+    int mj_qvel_idx = mj_qvel_map_.at(mj_act_name);
+
+    d->ctrl[mj_act_idx] =
+        draco_command->joint_trq_cmd_[pin_act_idx] +
+        kp_[mj_act_idx] * (draco_command->joint_pos_cmd_[pin_act_idx] -
+                           d->qpos[mj_qpos_idx]) +
+        kd_[mj_act_idx] *
+            (draco_command->joint_vel_cmd_[pin_act_idx] - d->qvel[mj_qvel_idx]);
+  }
 }
 
 // simulate in background thread (while rendering in main thread)
@@ -715,10 +651,22 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
       sim->Load(m, d, filename, draco_interface->interrupt_handler_);
       //**********************************************
 
-      // Set up mujoco joint & actuator maps
+      // Set up mujoco joint & actuator maps based on the mujoco model
+      pin_jnt_map_ =
+          draco_interface->GetPinocchioModel()->GetJointNameAndIndexMap();
+      pin_act_map_ =
+          draco_interface->GetPinocchioModel()->GetActuatorNameAndIndexMap();
       // ********************************************
-      SetJointAndActuatorMaps(m, mj_jnt_map_, mj_act_map_);
+      SetJointAndActuatorMaps(m, mj_qpos_map_, mj_qvel_map_, mj_act_map_,
+                              pin_jnt_map_,
+                              pin_act_map_); // TODO: make this function
+                                             // mujoco_utils (static method)
       // ********************************************
+
+      // Set actuator gains
+      //**********************************************
+      SetActuatorGains(mj_act_map_);
+      //**********************************************
 
       // Set initial configuration
       //**********************************************

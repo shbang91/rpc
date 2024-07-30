@@ -13,6 +13,7 @@ public:
 
   virtual void GetCommand(void *sensor_data, void *command) = 0;
 
+  PinocchioRobotSystem *GetPinocchioModel() { return robot_; }
   InterruptHandler *interrupt_handler_;
 
 protected:

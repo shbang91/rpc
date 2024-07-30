@@ -1,19 +1,20 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
 
-PinocchioRobotSystem::PinocchioRobotSystem(const std::string &urdf_file,
-                                           const std::string &package_dir,
-                                           const bool b_fixed_base,
-                                           const bool b_print_info)
+PinocchioRobotSystem::PinocchioRobotSystem(
+    const std::string &urdf_file, const std::string &package_dir,
+    const bool b_fixed_base, const bool b_print_info,
+    std::vector<std::string> *unactuated_joint_list)
     : urdf_file_(urdf_file), package_dir_(package_dir),
       b_fixed_base_(b_fixed_base), b_print_info_(b_print_info) {
   util::PrettyConstructor(1, "PinocchioRobotSystem");
-  this->_Initialize();
+  this->_Initialize(unactuated_joint_list);
   if (b_print_info)
     this->_PrintRobotInfo();
 }
 
-void PinocchioRobotSystem::_Initialize() {
+void PinocchioRobotSystem::_Initialize(
+    std::vector<std::string> *unactuated_joint_list) {
   if (b_fixed_base_) {
     pinocchio::urdf::buildModel(urdf_file_, model_);
     pinocchio::urdf::buildGeom(model_, urdf_file_, pinocchio::COLLISION,
@@ -57,9 +58,20 @@ void PinocchioRobotSystem::_Initialize() {
        i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
     // total_mass_ += model_.inertias[i].mass();
     std::string joint_name = model_.names[i];
-    if (joint_name != "universe" && joint_name != "root_joint")
+    if (joint_name != "universe" && joint_name != "root_joint") {
       joint_idx_map_[i - 2] = joint_name; // joint map excluding fixed joint
+      joint_name_idx_map_[joint_name] = i - 2;
+      actuator_name_idx_map_[joint_name] = i - 2;
+    }
   }
+
+  // remove unactuated joint list from actuator map
+  if (unactuated_joint_list) {
+    for (const std::string &joint_name : *unactuated_joint_list) {
+      actuator_name_idx_map_.erase(joint_name);
+    }
+  }
+
   assert(n_adof_ == joint_idx_map_.size());
 
   joint_pos_limits_.resize(n_adof_, 2);
