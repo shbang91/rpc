@@ -22,9 +22,9 @@ jobs:
           conda activate rpc
           conda install conda-forge::eigenpy
           conda list
-          echo "PATH: " $PATH
-          echo "PKG_CONFIG_PATH: " $PKG_CONFIG_PATH
           ./dependency/scripts/install_gtest.sh
           ./dependency/scripts/install_gh_pinocchio.sh
+          echo "PATH: " $PATH
+          echo "PKG_CONFIG_PATH: " $PKG_CONFIG_PATH
           export CMAKE_PREFIX_PATH=/usr/local/include:$CMAKE_PREFIX_PATH
           mkdir build && cd build && cmake .. && make 
