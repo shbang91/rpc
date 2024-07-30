@@ -24,7 +24,7 @@ Initialize::~Initialize() {
 }
 
 void Initialize::FirstVisit() {
-  std::cout << "optimo_states::kInitialize" << std::endl;
+  std::cout << "optimo_states::kInitialize::FirstVisit" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
   init_joint_pos_ = robot_->GetJointPos();
   min_jerk_curves_ = new MinJerkCurveVec(
@@ -37,7 +37,7 @@ void Initialize::FirstVisit() {
 
 void Initialize::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
-
+  std::cout << "optimo_states::kInitialize::OneStep" << std::endl;
   Eigen::VectorXd des_joint_pos =
       Eigen::VectorXd::Zero(target_joint_pos_.size());
   Eigen::VectorXd des_joint_vel =
@@ -71,7 +71,7 @@ bool Initialize::EndOfState() {
 }
 
 StateId Initialize::GetNextState() {
-  return optimo_states::kStandUp;
+  return 0;
 }
 
 void Initialize::SetParameters(const YAML::Node &node) {

@@ -49,6 +49,8 @@ def get_sensor_data_from_pybullet(robot):
     joint_vel[5] = pb.getJointState(robot, OptimoJointIdx.joint6)[1]
     joint_vel[6] = pb.getJointState(robot, OptimoJointIdx.joint7)[1]
     
+    return joint_pos, joint_vel
+    
 def apply_control_inpit_to_pybullet(robot, command):
     mode = pb.TORQUE_CONTROL
     
@@ -100,7 +102,28 @@ def add_tf_visualization(robot, link_index):
     pb.addUserDebugLine(pos, y_ending, green, lineWidth=4, lifeTime=0)
     pb.addUserDebugLine(pos, z_ending, blue, lineWidth=4, lifeTime=0)
 
+def apply_control_input_to_pybullet(robot, command):
+    mode = pb.TORQUE_CONTROL
+    
+    # Optimo Arm
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint1, controlMode=mode, force=command[0])
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint2, controlMode=mode, force=command[1])
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint3, controlMode=mode, force=command[2])
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint4, controlMode=mode, force=command[3])
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint5, controlMode=mode, force=command[4])
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint6, controlMode=mode, force=command[5])
+    pb.setJointMotorControl2(robot, OptimoJointIdx.joint7, controlMode=mode, force=command[6])
 
+    # Plato Hand
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint1, controlMode=mode, force=command[7])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint2, controlMode=mode, force=command[8])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint3, controlMode=mode, force=command[9])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint4, controlMode=mode, force=command[10])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint5, controlMode=mode, force=command[11])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint6, controlMode=mode, force=command[12])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint7, controlMode=mode, force=command[13])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint8, controlMode=mode, force=command[14])
+    # pb.setJointMotorControl2(robot, PlatoJointIdx.joint9, controlMode=mode, force=command[15])
     
 
 def main():
@@ -113,6 +136,8 @@ def main():
     # Simulation Physics
     pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT, numSubSteps=1)
     pb.setGravity(0, 0, -9.81)
+    
+    ## robot spawn & initial kinematics and dynamics setting
     
     # Sim parameters
     dt = Config.CONTROLLER_DT
@@ -127,8 +152,10 @@ def main():
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=True)
     
     
+    # Initial joint configuration
     set_init_config_pybullet(robot)
     
+    # Add End-effector Visualization for initial configuration
     add_tf_visualization(robot, OptimoLinkIdx.ee)
     add_tf_visualization(robot, PlatoLinkIdx.ee1)
     add_tf_visualization(robot, PlatoLinkIdx.ee2)
@@ -138,11 +165,12 @@ def main():
     robot, Config.INITIAL_BASE_JOINT_POS,
     Config.INITIAL_BASE_JOINT_QUAT, Config.PRINT_ROBOT_INFO)
 
+    # Joint Friction and Damping
     pybullet_util.set_joint_friction(robot, joint_id_dict, 0)
     pybullet_util.set_link_damping(robot, link_id_dict, 0., 0.)
 
     # Initialize RPC Interface
-    rpc_optimo_command = optimo_interface_py.OptimoInterface()
+    rpc_optimo_interface = optimo_interface_py.OptimoInterface()
     rpc_optimo_command = optimo_interface_py.OptimoCommand()
     rpc_optimo_sensor_data = optimo_interface_py.OptimoSensorData()
     
@@ -152,15 +180,29 @@ def main():
     
     #  Simulation Main Loop
     while True:
+        
+        
+        # get sensor data from pybullet
+        joint_pos, joint_vel = get_sensor_data_from_pybullet(robot)
+        
+        # copy sensor data to rpc_optimo_sensor_data
+        rpc_optimo_sensor_data.joint_pos_ = joint_pos
+        rpc_optimo_sensor_data.joint_vel_ = joint_vel
+        
+        rpc_optimo_interface.GetCommand(rpc_optimo_sensor_data, rpc_optimo_command)
+        
+        rpc_trq_command = rpc_optimo_command.joint_trq_cmd_
+        rpc_joint_pos_command = rpc_optimo_command.joint_pos_cmd_
+        rpc_joint_vel_command = rpc_optimo_command.joint_vel_cmd_
+        
+
+        # print("Command Torque: ", rpc_trq_command, end="\r")
+        apply_control_input_to_pybullet(robot, rpc_trq_command)
+        
+        
         pb.stepSimulation()
-        
-
-
-        
         # print without newline
-        print("Simulation Time: ", count * dt, end="\r")
-        
-        
+        # print("Simulation Time: ", count * dt, end="\r")
 
         
         

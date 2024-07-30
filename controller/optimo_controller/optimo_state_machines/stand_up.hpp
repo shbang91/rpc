@@ -11,14 +11,14 @@ public:
              OptimoControlArchitecture *ctrl_arch);
   ~StandUp();
 
-//   void FirstVisit() override;
-//   void OneStep() override;
-//   void LastVisit() override;
-//   bool EndOfState() override;
+  void FirstVisit() override;
+  void OneStep() override;
+  void LastVisit() override;
+  bool EndOfState() override;
 
-//   StateId GetNextState() override;
+  StateId GetNextState() override;
 
-//   void SetParameters(const YAML::Node &node) override;
+  void SetParameters(const YAML::Node &node) override;
 
 private:
   OptimoControlArchitecture *ctrl_arch_;

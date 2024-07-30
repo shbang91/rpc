@@ -189,6 +189,8 @@ void OptimoController::GetCommand(void *command){
   static_cast<OptimoCommand *>(command)->joint_trq_cmd_ = joint_trq_cmd_;
 
 
+
+
   // TODO: save data
   // if (sp_->count_ % sp_->data_save_freq_ == 0) {
   //   this->_SaveData();

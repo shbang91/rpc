@@ -37,6 +37,7 @@ void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   OptimoSensorData *optimo_sensor_data =
       static_cast<OptimoSensorData *>(sensor_data);
+
   OptimoCommand *optimo_command = static_cast<OptimoCommand *>(command_data);
 
   // TODO:update sensor data to pinocchio model using state estimator class
@@ -49,6 +50,11 @@ void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
   // if (interrupt_handler_->IsSignalReceived()) {
   //     interrupt_handler_->Process();
   // }
+
+  // get control command
+  ctrl_arch_->GetCommand(optimo_command);
+
+  count_++;
 }
 
 void OptimoInterface::_SafeCommand(OptimoSensorData *data, OptimoCommand *command) {

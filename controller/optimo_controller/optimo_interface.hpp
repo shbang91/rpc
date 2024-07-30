@@ -33,12 +33,11 @@ public:
 
 class OptimoCommand {
 public:
-  OptimoCommand() {
-    joint_pos_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
-    joint_vel_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
-    joint_trq_cmd_ = Eigen::VectorXd::Zero(optimo::n_adof);
-  }
-  ~OptimoCommand() = default;
+  OptimoCommand()
+      : joint_pos_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
+        joint_vel_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
+        joint_trq_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)){};
+  virtual ~OptimoCommand() = default;
 
   Eigen::VectorXd joint_pos_cmd_;
   Eigen::VectorXd joint_vel_cmd_;

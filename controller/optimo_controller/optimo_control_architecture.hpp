@@ -2,10 +2,9 @@
 #include "controller/control_architecture.hpp"
 
 namespace optimo_states{
-    constexpr int kInitialize = 1;
-    constexpr int kStandUp = 2;
-    constexpr int kFreeMotion = 3;
-    constexpr int kStopMotion = 4;
+    constexpr int kInitialize = 0;
+    constexpr int kStandUp = 1;
+
 }
 
 

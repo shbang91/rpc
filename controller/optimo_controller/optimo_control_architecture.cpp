@@ -5,6 +5,8 @@
 #include "controller/optimo_controller/optimo_definition.hpp"
 
 #include "controller/optimo_controller/optimo_state_machines/initialize.hpp"
+#include "controller/optimo_controller/optimo_state_machines/stand_up.hpp"
+
 
 #include "controller/optimo_controller/optimo_state_provider.hpp"
 #include "controller/optimo_controller/optimo_tci_container.hpp"
@@ -31,7 +33,8 @@ OptimoControlArchitecture::OptimoControlArchitecture(PinocchioRobotSystem *robot
 
         bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
 
-        //set starting state
+ 
+
         prev_state_ =
             b_sim ? optimo_states::kStandUp : optimo_states::kInitialize;
         state_ =
@@ -171,9 +174,15 @@ OptimoControlArchitecture::OptimoControlArchitecture(PinocchioRobotSystem *robot
         state_machine_container_[optimo_states::kInitialize] =
         new Initialize(optimo_states::kInitialize, robot_, this);
 
+        state_machine_container_[optimo_states::kStandUp] =
+        new StandUp(optimo_states::kStandUp, robot_, this);
+
     }
 
     void OptimoControlArchitecture::GetCommand(void *command) {
+
+
+
         if (b_state_first_visit_) {
             state_machine_container_[state_]->FirstVisit();
             b_state_first_visit_ = false;
@@ -230,4 +239,5 @@ OptimoControlArchitecture::~OptimoControlArchitecture() {
 
     // state machines
     delete state_machine_container_[optimo_states::kInitialize];
+    delete state_machine_container_[optimo_states::kStandUp];
 }
