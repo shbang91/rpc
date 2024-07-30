@@ -32,8 +32,8 @@ jobs:
       - name: Run rpc tests
         shell: bash -l {0}
         run: |
-          ./bin/ihwbc_test
-          ./bin/friction_compensator_test
-          ./bin/dcm_planner_test
-          ./bin/lmpc_handler_test
-          ./bin/pin_robot_system_test
+          ./build/bin/ihwbc_test
+          ./build/bin/friction_compensator_test
+          ./build/bin/dcm_planner_test
+          ./build/bin/lmpc_handler_test
+          ./build/bin/pin_robot_system_test
