@@ -10,7 +10,7 @@ dependencies:
   - pip
   - pip:
       - certifi==2021.5.30
-      - eigenpy==3.0.0
+      - eigenpy
       - imageio==2.9.0
       - ipdb==0.13.9
       - matplotlib==3.4.2

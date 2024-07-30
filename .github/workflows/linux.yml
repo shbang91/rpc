@@ -13,7 +13,7 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v3
         with: 
           activate-environment: rpc
-          audo-update-conda: true
+          auto-update-conda: true
           environment-file: rpc.yml
           auto-activate-base: false
       - name: Activate and build rpc
