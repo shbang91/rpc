@@ -1,69 +1,122 @@
 import os
 import sys
-
-cwd = os.getcwd()
-sys.path.append(cwd)
 import pickle
-
-from scipy.spatial.transform import Rotation as rot
 import numpy as np
-import matplotlib
-
-# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-
-from plot.helper import plot_joints, plot_task, plot_weights, plot_rf_z_max, plot_rf, plot_vector_traj, plot_momentum_task
-
 # import pandas as pd
 # import seaborn as sns
 
 from matplotlib.animation import FFMpegWriter
 
+# matplotlib.use('TkAgg')
+cwd = os.getcwd()
+sys.path.append(cwd)
+
 # plt.rcParams[
 # 'animation.ffmpeg_path'] = '/Users/seunghyeonbang/anaconda3/envs/pink/bin/ffmpeg'
-plt.rcParams['animation.ffmpeg_path'] = 'ffmpeg'
+plt.rcParams["animation.ffmpeg_path"] = "ffmpeg"
 
 tasks = [
-    'task_com_pos', 'task_com_vel', 'icp', 'icp_dot', 'task_cam_vel',
-    'task_torso_ori_pos', 'task_torso_ori_vel', 'task_rfoot_lin_pos',
-    'task_rfoot_lin_vel', 'task_rfoot_ori_pos', 'task_rfoot_ori_vel',
-    'task_lfoot_lin_pos', 'task_lfoot_lin_vel', 'task_lfoot_ori_pos',
-    'task_lfoot_ori_vel', 'task_upper_body_pos', 'task_upper_body_vel'
+    "task_com_pos",
+    "task_com_vel",
+    "icp",
+    "icp_dot",
+    "task_cam_vel",
+    "task_torso_ori_pos",
+    "task_torso_ori_vel",
+    "task_rfoot_lin_pos",
+    "task_rfoot_lin_vel",
+    "task_rfoot_ori_pos",
+    "task_rfoot_ori_vel",
+    "task_lfoot_lin_pos",
+    "task_lfoot_lin_vel",
+    "task_lfoot_ori_pos",
+    "task_lfoot_ori_vel",
+    "task_upper_body_pos",
+    "task_upper_body_vel",
 ]
 
 local_tasks = [
-    'task_com_pos', 'task_com_vel', 'task_torso_ori_pos', 'task_torso_ori_vel',
-    'task_rfoot_lin_pos', 'task_rfoot_lin_vel', 'task_rfoot_ori_pos',
-    'task_rfoot_ori_vel', 'task_lfoot_lin_pos', 'task_lfoot_lin_vel',
-    'task_lfoot_ori_pos', 'task_lfoot_ori_vel'
+    "task_com_pos",
+    "task_com_vel",
+    "task_torso_ori_pos",
+    "task_torso_ori_vel",
+    "task_rfoot_lin_pos",
+    "task_rfoot_lin_vel",
+    "task_rfoot_ori_pos",
+    "task_rfoot_ori_vel",
+    "task_lfoot_lin_pos",
+    "task_lfoot_lin_vel",
+    "task_lfoot_ori_pos",
+    "task_lfoot_ori_vel",
 ]
 
 neck_pos_label = ["neck_pitch"]
 
 rfoot_label = [
-    "r_hip_ie", "r_hip_aa", "r_hip_fe", "r_knee_fe_jp", "r_knee_fe_jd",
-    "r_ankle_fe", "r_ankle_ie"
+    "r_hip_ie",
+    "r_hip_aa",
+    "r_hip_fe",
+    "r_knee_fe_jp",
+    "r_knee_fe_jd",
+    "r_ankle_fe",
+    "r_ankle_ie",
 ]
 
 lfoot_label = [
-    "l_hip_ie", "l_hip_aa", "l_hip_fe", "l_knee_fe_jp", "l_knee_fe_jd",
-    "l_ankle_fe", "l_ankle_ie"
+    "l_hip_ie",
+    "l_hip_aa",
+    "l_hip_fe",
+    "l_knee_fe_jp",
+    "l_knee_fe_jd",
+    "l_ankle_fe",
+    "l_ankle_ie",
 ]
 
 upper_body_pos_label = [
-    "neck_pitch", "l_shoulder_fe", "l_shoulder_aa", "l_shoulder_ie",
-    "l_elbow_fe", "l_wrist_ps", "l_wrist_pitch", "r_shoulder_fe",
-    "r_shoulder_aa", "r_shoulder_ie", "r_elbow_fe", "r_wrist_ps",
-    "r_wrist_pitch"
+    "neck_pitch",
+    "l_shoulder_fe",
+    "l_shoulder_aa",
+    "l_shoulder_ie",
+    "l_elbow_fe",
+    "l_wrist_ps",
+    "l_wrist_pitch",
+    "r_shoulder_fe",
+    "r_shoulder_aa",
+    "r_shoulder_ie",
+    "r_elbow_fe",
+    "r_wrist_ps",
+    "r_wrist_pitch",
 ]
 
 joint_label = [
-    "l_hip_ie", "l_hip_aa", "l_hip_fe", "l_knee_fe_jp", "l_knee_fe_jd",
-    "l_ankle_fe", "l_ankle_ie", "l_shoulder_fe", "l_shoulder_aa",
-    "l_shoulder_ie", "l_elbow_fe", "l_wrist_ps", "l_wrist_pitch", "neck_pitch",
-    "r_hip_ie", "r_hip_aa", "r_hip_fe", "r_knee_fe_jp", "r_knee_fe_jd",
-    "r_ankle_fe", "r_ankle_ie", "r_shoulder_fe", "r_shoulder_aa",
-    "r_shoulder_ie", "r_elbow_fe", "r_wrist_ps", "r_wrist_pitch"
+    "l_hip_ie",
+    "l_hip_aa",
+    "l_hip_fe",
+    "l_knee_fe_jp",
+    "l_knee_fe_jd",
+    "l_ankle_fe",
+    "l_ankle_ie",
+    "l_shoulder_fe",
+    "l_shoulder_aa",
+    "l_shoulder_ie",
+    "l_elbow_fe",
+    "l_wrist_ps",
+    "l_wrist_pitch",
+    "neck_pitch",
+    "r_hip_ie",
+    "r_hip_aa",
+    "r_hip_fe",
+    "r_knee_fe_jp",
+    "r_knee_fe_jd",
+    "r_ankle_fe",
+    "r_ankle_ie",
+    "r_shoulder_fe",
+    "r_shoulder_aa",
+    "r_shoulder_ie",
+    "r_elbow_fe",
+    "r_wrist_ps",
+    "r_wrist_pitch",
 ]
 
 time = []
@@ -95,27 +148,27 @@ for topic in local_tasks:
 
 w = dict()
 
-with open('experiment_data/pnc.pkl', 'rb') as file:
+with open("experiment_data/pnc.pkl", "rb") as file:
     while True:
         try:
             d = pickle.load(file)
-            time.append(d['time'])
-            phase.append(d['phase'])
-            l_knee_int_frc_cmd.append(d['l_knee_int_frc_cmd'])
-            r_knee_int_frc_cmd.append(d['r_knee_int_frc_cmd'])
+            time.append(d["time"])
+            phase.append(d["phase"])
+            l_knee_int_frc_cmd.append(d["l_knee_int_frc_cmd"])
+            r_knee_int_frc_cmd.append(d["r_knee_int_frc_cmd"])
             for topic in tasks:
-                des[topic].append(d[topic + '_des'])
+                des[topic].append(d[topic + "_des"])
                 act[topic].append(d[topic])
             for topic in local_tasks:
-                local_des[topic].append(d[topic + '_des_local'])
-                local_act[topic].append(d[topic + '_local'])
-            cmd_lfoot_rf.append(d['cmd_lfoot_rf'])
-            cmd_rfoot_rf.append(d['cmd_rfoot_rf'])
-            cmd_joint_positions.append(d['cmd_joint_positions'])
-            cmd_joint_velocities.append(d['cmd_joint_velocities'])
-            cmd_joint_torques.append(d['cmd_joint_torques'])
-            joint_positions.append(d['joint_positions'])
-            joint_velocities.append(d['joint_velocities'])
+                local_des[topic].append(d[topic + "_des_local"])
+                local_act[topic].append(d[topic + "_local"])
+            cmd_lfoot_rf.append(d["cmd_lfoot_rf"])
+            cmd_rfoot_rf.append(d["cmd_rfoot_rf"])
+            cmd_joint_positions.append(d["cmd_joint_positions"])
+            cmd_joint_velocities.append(d["cmd_joint_velocities"])
+            cmd_joint_torques.append(d["cmd_joint_torques"])
+            joint_positions.append(d["joint_positions"])
+            joint_velocities.append(d["joint_velocities"])
             # nominal_stance_foot_quat.append(d['base_joint_quat'])
         except EOFError:
             break
@@ -163,17 +216,17 @@ joint_velocities = np.stack(joint_velocities, axis=0)
 # plt.show()
 
 fig = plt.figure(figsize=(10, 5))
-base_height_des_plt, = plt.plot([], [], 'r--', label='desired')
-base_height_act_plt, = plt.plot([], [], 'b', label='actual')
+(base_height_des_plt,) = plt.plot([], [], "r--", label="desired")
+(base_height_act_plt,) = plt.plot([], [], "b", label="actual")
 
 plt.xlim(np.min(time), np.max(time))
 # plt.ylim(np.min(local_des['task_com_pos'][:, 2]),
 # np.max(local_des['task_com_pos'][:, 2]))
 
 plt.ylim(0.75, 1.05)
-plt.xlabel('time (s)', fontsize=20)
-plt.ylabel('base height (m)', fontsize=20)
-plt.title('base height tracking performance', fontsize=20)
+plt.xlabel("time (s)", fontsize=20)
+plt.ylabel("base height (m)", fontsize=20)
+plt.title("base height tracking performance", fontsize=20)
 plt.grid()
 plt.legend(loc="upper right")
 
@@ -191,8 +244,8 @@ writer = FFMpegWriter(fps=30)
 with writer.saving(fig, "baseHeight2.mp4", 100):
     for i in range(len(time)):
         xlist.append(time[i])
-        des_list.append(local_des['task_com_pos'][:, 2][i])
-        act_list.append(local_act['task_com_pos'][:, 2][i])
+        des_list.append(local_des["task_com_pos"][:, 2][i])
+        act_list.append(local_act["task_com_pos"][:, 2][i])
 
         base_height_des_plt.set_data(xlist, des_list)
         base_height_act_plt.set_data(xlist, act_list)

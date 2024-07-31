@@ -19,9 +19,9 @@ DoubleSupportSwaying::DoubleSupportSwaying(const StateId state_id,
 
   try {
     YAML::Node cfg =
-            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
-                                                      "b_use_const_desired_foot_pos");
+        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
+        cfg["state_machine"], "b_use_const_desired_foot_pos");
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

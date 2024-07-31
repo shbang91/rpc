@@ -13,19 +13,20 @@ def load_params_store() -> Dict[str, Any]:
         "n_steps": 3,
         "t_ss": 0.8,
         "t_ds": 1.2,
-        "torso_ori_task_weight": [100., 100., 10.],     # simulation values
-        "torso_ori_task_kp": [200., 200., 100.],        # simulation values
-        "torso_ori_task_kd": [14., 14., 10.],           # simulation values
-        "foot_pos_task_weight": [5000., 5000., 5000.],  # simulation values
-        "foot_pos_task_weight_at_swing": [8000., 8000., 8000.],  # simulation values
-        "foot_pos_task_kp": [300., 300., 300.],         # simulation values
-        "foot_pos_task_kd": [30., 30., 30.],            # simulation values
-        "foot_ori_task_weight": [5000., 5000., 5000.],  # simulation values
-        "foot_ori_task_weight_at_swing": [5000., 5000., 5000.],  # simulation values
-        "foot_ori_task_kp": [80., 80., 80.],            # simulation values
-        "foot_ori_task_kd": [4., 4., 4.],               # simulation values
+        "torso_ori_task_weight": [100.0, 100.0, 10.0],  # simulation values
+        "torso_ori_task_kp": [200.0, 200.0, 100.0],  # simulation values
+        "torso_ori_task_kd": [14.0, 14.0, 10.0],  # simulation values
+        "foot_pos_task_weight": [5000.0, 5000.0, 5000.0],  # simulation values
+        "foot_pos_task_weight_at_swing": [8000.0, 8000.0, 8000.0],  # simulation values
+        "foot_pos_task_kp": [300.0, 300.0, 300.0],  # simulation values
+        "foot_pos_task_kd": [30.0, 30.0, 30.0],  # simulation values
+        "foot_ori_task_weight": [5000.0, 5000.0, 5000.0],  # simulation values
+        "foot_ori_task_weight_at_swing": [5000.0, 5000.0, 5000.0],  # simulation values
+        "foot_ori_task_kp": [80.0, 80.0, 80.0],  # simulation values
+        "foot_ori_task_kd": [4.0, 4.0, 4.0],  # simulation values
     }
     return param_store
+
 
 class Listener(FoxgloveServerListener):
     def __init__(self, param_store: Dict[str, Any]) -> None:
@@ -34,10 +35,10 @@ class Listener(FoxgloveServerListener):
         self.b_modified = False
 
     async def on_get_parameters(
-            self,
-            server: FoxgloveServer,
-            param_names: List[str],
-            request_id: Optional[str],
+        self,
+        server: FoxgloveServer,
+        param_names: List[str],
+        request_id: Optional[str],
     ) -> List[Parameter]:
         return [
             Parameter(name=k, value=v, type="float64")
@@ -46,14 +47,13 @@ class Listener(FoxgloveServerListener):
         ]
 
     async def on_set_parameters(
-            self,
-            server: FoxgloveServer,
-            params: List[Parameter],
-            request_id: Optional[str],
+        self,
+        server: FoxgloveServer,
+        params: List[Parameter],
+        request_id: Optional[str],
     ):
         for param in params:
             if not param["name"].startswith("read_only"):
-
                 # save the parameter that changed
                 if self._param_store[param["name"]] != param["value"]:
                     self.modified_param = param["name"]
@@ -87,27 +87,40 @@ class Listener(FoxgloveServerListener):
 
 async def run(step_listener: Listener):
     async with FoxgloveServer(
-            "0.0.0.0",
-            8766,
-            "Control param server",
-            capabilities=["parameters", "parametersSubscribe"]) as server:
+        "0.0.0.0",
+        8766,
+        "Control param server",
+        capabilities=["parameters", "parametersSubscribe"],
+    ) as server:
         param_store = step_listener._param_store
         server.set_listener(step_listener)
-        param_chan_id = await SceneChannel(True, "n_steps", "json", "n_steps",
-                                           ["n_steps"]).add_chan(server)
+        param_chan_id = await SceneChannel(
+            True, "n_steps", "json", "n_steps", ["n_steps"]
+        ).add_chan(server)
 
         while True:
             # check every two seconds if the parameters have been modified
             await asyncio.sleep(2.0)
             await server.update_parameters(
-                [Parameter(name="n_steps", value=param_store["n_steps"], type="float64")]
+                [
+                    Parameter(
+                        name="n_steps", value=param_store["n_steps"], type="float64"
+                    )
+                ]
             )
 
             if step_listener.has_been_modified():
                 print("Parameters have been modified")
                 print(f"Modified parameter: {step_listener.get_param_modified()}")
-                print(f"New value: {step_listener.get_val(step_listener.get_param_modified())}")
+                print(
+                    f"New value: {step_listener.get_val(step_listener.get_param_modified())}"
+                )
                 now = time.time_ns()
-                await server.send_message(param_chan_id, now, json.dumps(
-                    {"n_steps": step_listener.get_val("n_steps")}).encode("utf8"))
+                await server.send_message(
+                    param_chan_id,
+                    now,
+                    json.dumps({"n_steps": step_listener.get_val("n_steps")}).encode(
+                        "utf8"
+                    ),
+                )
                 step_listener.reset()

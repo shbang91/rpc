@@ -6,7 +6,7 @@ Software Framework is developed by Seung Hyeon Bang based on the [PnC](https://g
 ## Dependencies
 The controller has been tested on Ubuntu 18.04 and Mac OSX Ventura. It builds on the shoulders of the following software:<br/>
 - [anaconda](https://docs.anaconda.com/anaconda/install/): For Pybullet simulator<br/>
-- python dependencies: 
+- python dependencies:
 ```
 $ conda env create -f rpc.yml
 ```
@@ -25,7 +25,7 @@ $ conda activate rpc
 - Compile:<br/>
 ```
 $ mkdir build
-$ cd build 
+$ cd build
 $ cmake ..
 $ make -j4
 ```

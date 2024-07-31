@@ -1,8 +1,8 @@
 #pragma once
 
+#include "controller/filter/digital_filters.hpp"
 #include "controller/whole_body_controller/task.hpp"
 #include "util/util.hpp"
-#include "controller/filter/digital_filters.hpp"
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>

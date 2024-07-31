@@ -10,6 +10,7 @@ public:
   virtual ~DracoInterruptHandler() = default;
 
   void Process() override;
+
 private:
   DracoControlArchitecture *ctrl_arch_;
 };

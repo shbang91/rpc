@@ -36,8 +36,8 @@ DracoInterface::DracoInterface() : Interface() {
     sp_->data_save_freq_ = util::ReadParameter<int>(cfg, "data_save_freq");
     sp_->b_use_kf_state_estimator_ =
         util::ReadParameter<bool>(cfg["state_estimator"], "kf");
-    com_offset = util::ReadParameter<Eigen::Vector3d>(
-            cfg["controller"], "com_offset");
+    com_offset =
+        util::ReadParameter<Eigen::Vector3d>(cfg["controller"], "com_offset");
 
 #if B_USE_ZMQ
     if (!DracoDataManager::GetDataManager()->IsInitialized()) {

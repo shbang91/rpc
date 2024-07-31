@@ -1,23 +1,19 @@
 import zmq
 import sys
 import os
-
-import time
-
 import ruamel.yaml as yaml
 import numpy as np
-
-cwd = os.getcwd()
-sys.path.append(cwd + '/build')
-sys.path.append(cwd)
+import pinocchio as pin
+import argparse
 
 from messages.fixed_draco_pb2 import *
 from plot.data_saver import *
 
-import pinocchio as pin
 from pinocchio.visualize import MeshcatVisualizer
 
-import argparse
+cwd = os.getcwd()
+sys.path.append(cwd + "/build")
+sys.path.append(cwd)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_visualize", type=bool, default=False)
@@ -44,8 +40,10 @@ data_saver = DataSaver()
 ##meshcat visualizer
 if args.b_visualize:
     model, collision_model, visual_model = pin.buildModelsFromUrdf(
-        "robot_model/draco/draco_modified.urdf", "robot_model/draco",
-        pin.JointModelFreeFlyer())
+        "robot_model/draco/draco_modified.urdf",
+        "robot_model/draco",
+        pin.JointModelFreeFlyer(),
+    )
     viz = MeshcatVisualizer(model, collision_model, visual_model)
     try:
         viz.initViewer(open=True)
@@ -67,16 +65,16 @@ while True:
     # print(msg)
 
     ##save data in pkl file
-    data_saver.add('time', msg.time)
-    data_saver.add('base_com_pos', list(msg.base_com_pos))
-    data_saver.add('base_com_ori', list(msg.base_com_ori))
-    data_saver.add('base_com_lin_vel', list(msg.base_com_lin_vel))
-    data_saver.add('base_com_ang_vel', list(msg.base_com_ang_vel))
+    data_saver.add("time", msg.time)
+    data_saver.add("base_com_pos", list(msg.base_com_pos))
+    data_saver.add("base_com_ori", list(msg.base_com_ori))
+    data_saver.add("base_com_lin_vel", list(msg.base_com_lin_vel))
+    data_saver.add("base_com_ang_vel", list(msg.base_com_ang_vel))
 
-    data_saver.add('base_joint_pos', list(msg.base_joint_pos))
-    data_saver.add('base_joint_ori', list(msg.base_joint_ori))
-    data_saver.add('base_joint_lin_vel', list(msg.base_joint_lin_vel))
-    data_saver.add('base_joint_ang_vel', list(msg.base_joint_ang_vel))
+    data_saver.add("base_joint_pos", list(msg.base_joint_pos))
+    data_saver.add("base_joint_ori", list(msg.base_joint_ori))
+    data_saver.add("base_joint_lin_vel", list(msg.base_joint_lin_vel))
+    data_saver.add("base_joint_ang_vel", list(msg.base_joint_ang_vel))
 
     data_saver.advance()
 

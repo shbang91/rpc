@@ -5,54 +5,55 @@
 #endif
 
 DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot)
-  : robot_(_robot) {
+    : robot_(_robot) {
   util::PrettyConstructor(1, "DracoKFStateEstimator");
   sp_ = DracoStateProvider::GetStateProvider();
 
   iso_imu_to_base_com_ =
-          robot_->GetLinkIsometry(draco_link::torso_imu).inverse() *
-          robot_->GetLinkIsometry(draco_link::torso_com_link);
-  Eigen::Vector3d rpy = util::RPYFromSO3(iso_imu_to_base_com_.linear().transpose());
+      robot_->GetLinkIsometry(draco_link::torso_imu).inverse() *
+      robot_->GetLinkIsometry(draco_link::torso_com_link);
+  Eigen::Vector3d rpy =
+      util::RPYFromSO3(iso_imu_to_base_com_.linear().transpose());
   quat_imu_to_base_com_ = util::EulerZYXtoQuat(rpy(0), rpy(1), rpy(2));
 
-  try{
+  try {
     YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
 
     bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
     std::string prefix = b_sim ? "sim" : "exp";
 
     Eigen::Vector3d sigma_base_vel = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_sigma_base_vel");
+        cfg["state_estimator"], prefix + "_sigma_base_vel");
     Eigen::Vector3d sigma_base_acc = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_sigma_base_acc");
+        cfg["state_estimator"], prefix + "_sigma_base_acc");
     Eigen::Vector3d sigma_pos_lfoot = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_sigma_pos_lfoot");
+        cfg["state_estimator"], prefix + "_sigma_pos_lfoot");
     Eigen::Vector3d sigma_pos_rfoot = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_sigma_pos_rfoot");
+        cfg["state_estimator"], prefix + "_sigma_pos_rfoot");
     Eigen::Vector3d sigma_vel_lfoot = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_sigma_vel_lfoot");
+        cfg["state_estimator"], prefix + "_sigma_vel_lfoot");
     Eigen::Vector3d sigma_vel_rfoot = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_sigma_vel_rfoot");
+        cfg["state_estimator"], prefix + "_sigma_vel_rfoot");
     Eigen::Vector3d imu_accel_bias = util::ReadParameter<Eigen::Vector3d>(
-            cfg["state_estimator"], prefix + "_imu_accel_bias");
+        cfg["state_estimator"], prefix + "_imu_accel_bias");
     Eigen::VectorXd n_data_com_vel = util::ReadParameter<Eigen::VectorXd>(
-            cfg["state_estimator"], prefix + "_num_data_com_vel");
+        cfg["state_estimator"], prefix + "_num_data_com_vel");
     //  Eigen::VectorXd n_data_cam = util::ReadParameter<Eigen::VectorXd>(
     //      cfg["state_estimator"], prefix + "n_data_cam");
     Eigen::VectorXd n_data_base_accel = util::ReadParameter<Eigen::VectorXd>(
-            cfg["state_estimator"], prefix + "_num_data_base_accel");
+        cfg["state_estimator"], prefix + "_num_data_base_accel");
     Eigen::VectorXd n_data_ang_vel = util::ReadParameter<Eigen::VectorXd>(
-            cfg["state_estimator"], prefix + "_num_data_ang_vel");
+        cfg["state_estimator"], prefix + "_num_data_ang_vel");
     double time_constant_base_accel = util::ReadParameter<double>(
-            cfg["state_estimator"], prefix + "_base_accel_time_constant");
+        cfg["state_estimator"], prefix + "_base_accel_time_constant");
     double time_constant_ang_vel = util::ReadParameter<double>(
-            cfg["state_estimator"], prefix + "_ang_vel_time_constant");
-    double cut_off_period = util::ReadParameter<double>(
-            cfg["state_estimator"], "cut_off_period");
-    int foot_frame = util::ReadParameter<int>(
-            cfg["state_estimator"], "foot_reference_frame");
-    b_use_marg_filter = util::ReadParameter<bool>(cfg["state_estimator"],
-            "b_use_marg_filter");
+        cfg["state_estimator"], prefix + "_ang_vel_time_constant");
+    double cut_off_period =
+        util::ReadParameter<double>(cfg["state_estimator"], "cut_off_period");
+    int foot_frame = util::ReadParameter<int>(cfg["state_estimator"],
+                                              "foot_reference_frame");
+    b_use_marg_filter =
+        util::ReadParameter<bool>(cfg["state_estimator"], "b_use_marg_filter");
     // Eigen::VectorXd base_accel_limits = util::ReadParameter<Eigen::VectorXd>(
     // cfg["state_estimator"], prefix + "_base_accel_limits");
 
@@ -76,13 +77,15 @@ DracoKFStateEstimator::DracoKFStateEstimator(PinocchioRobotSystem *_robot)
     //-base_accel_limits, base_accel_limits);
     base_accel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
                                                    time_constant_base_accel, 3);
-    imu_ang_vel_filt_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
-                                                    time_constant_ang_vel, 3);
-    com_vel_filt_ = new LowPassVelocityFilter(sp_->servo_dt_, cut_off_period, 3);
+    imu_ang_vel_filt_ =
+        new FirstOrderLowPassFilter(sp_->servo_dt_, time_constant_ang_vel, 3);
+    com_vel_filt_ =
+        new LowPassVelocityFilter(sp_->servo_dt_, cut_off_period, 3);
 
     system_model_.initialize(deltat, sigma_base_vel, sigma_base_acc,
                              sigma_vel_lfoot, sigma_vel_rfoot);
-    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot, imu_accel_bias);
+    base_pose_model_.initialize(sigma_pos_lfoot, sigma_pos_rfoot,
+                                imu_accel_bias);
 
     // set-up MARG filter for robot orientation estimation
     if (b_use_marg_filter) {
@@ -135,12 +138,12 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
       sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
   Eigen::Matrix3d rot_world_to_imu = imu_quat.normalized().toRotationMatrix();
 
-  if (b_use_marg_filter){
+  if (b_use_marg_filter) {
     // orientation estimation
     Eigen::Quaterniond torso_quat;
     torso_quat = rot_world_to_imu * quat_imu_to_base_com_;
-    margFilter_.initialize(torso_quat.w(), torso_quat.x(),
-                           torso_quat.y(), torso_quat.z());
+    margFilter_.initialize(torso_quat.w(), torso_quat.x(), torso_quat.y(),
+                           torso_quat.z());
   }
   rot_world_to_base = compute_world_to_base_rot(sensor_data, rot_world_to_imu,
                                                 b_use_marg_filter);
@@ -159,7 +162,8 @@ void DracoKFStateEstimator::Initialize(DracoSensorData *sensor_data) {
 
   // update contact filter data
   Eigen::Vector2d contact_normal = Eigen::Vector2d::Zero();
-  contact_normal << sensor_data->lf_contact_normal_, sensor_data->rf_contact_normal_;
+  contact_normal << sensor_data->lf_contact_normal_,
+      sensor_data->rf_contact_normal_;
   contact_manager_->UpdateForceMeasurements(contact_normal);
 
   // update system without base linear states
@@ -201,8 +205,8 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     // orientation estimation
     Eigen::Quaterniond torso_quat;
     torso_quat = rot_world_to_imu * quat_imu_to_base_com_;
-    margFilter_.initialize(torso_quat.w(), torso_quat.x(),
-                           torso_quat.y(), torso_quat.z());
+    margFilter_.initialize(torso_quat.w(), torso_quat.x(), torso_quat.y(),
+                           torso_quat.z());
   }
   rot_world_to_base = compute_world_to_base_rot(sensor_data, rot_world_to_imu,
                                                 b_use_marg_filter);
@@ -216,7 +220,8 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
   // update contact filter data
   Eigen::Vector2d contact_normal = Eigen::Vector2d::Zero();
-  contact_normal << sensor_data->lf_contact_normal_, sensor_data->rf_contact_normal_;
+  contact_normal << sensor_data->lf_contact_normal_,
+      sensor_data->rf_contact_normal_;
   contact_manager_->UpdateForceMeasurements(contact_normal);
 
   // update system without base linear states
@@ -230,9 +235,8 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   Eigen::Vector3d world_to_base;
   // initialize Kalman filter state xhat =[0_pos_b, 0_vel_b, 0_pos_LF, 0_pos_RF]
   if (b_first_visit_) {
-    world_to_base =
-        global_linear_offset_ -
-        robot_->GetLinkIsometry(est_ref_foot_frame_).translation();
+    world_to_base = global_linear_offset_ -
+                    robot_->GetLinkIsometry(est_ref_foot_frame_).translation();
 
     x_hat_.initialize(world_to_base,
                       robot_->GetLinkIsometry(est_ref_foot_frame_),
@@ -351,7 +355,6 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   Eigen::Vector3d base_velocity_estimate(
       x_hat_.base_vel_x(), x_hat_.base_vel_y(), x_hat_.base_vel_z());
 
-
   // Update robot model with full estimate
   robot_->UpdateRobotModel(base_position_estimate,
                            Eigen::Quaterniond(rot_world_to_base).normalized(),
@@ -362,7 +365,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
   // filter com velocity, cam
   Eigen::Vector3d com_pos;
   com_pos << robot_->GetRobotComPos();
-  if(b_first_visit_) {
+  if (b_first_visit_) {
     com_vel_filt_->Reset(com_pos);
     b_first_visit_ = false;
   }
@@ -389,8 +392,10 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     dm->data_->rfoot_volt_normal_raw_ = sensor_data->rf_contact_normal_;
     dm->data_->lfoot_rf_normal_ = contact_manager_->GetLFootNormalForceRaw();
     dm->data_->rfoot_rf_normal_ = contact_manager_->GetRFootNormalForceRaw();
-    dm->data_->lfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::LFoot);
-    dm->data_->rfoot_rf_normal_filt_ = contact_manager_->GetFootNormalForceFilt(end_effector::RFoot);
+    dm->data_->lfoot_rf_normal_filt_ =
+        contact_manager_->GetFootNormalForceFilt(end_effector::LFoot);
+    dm->data_->rfoot_rf_normal_filt_ =
+        contact_manager_->GetFootNormalForceFilt(end_effector::RFoot);
 
     // Local frame
     dm->data_->quat_world_local_ = Eigen::Quaterniond(sp_->rot_world_local_);
@@ -406,9 +411,10 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     logger_->add("base_joint_pos_kf", base_position_estimate);
     logger_->add("base_joint_rpy_kf", util::RPYFromSO3(rot_world_to_base));
     Eigen::Quaterniond base_quat = Eigen::Quaterniond(
-            sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
-            sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
-//    logger_->add("base_joint_rpy_raw", base_quat.toRotationMatrix().eulerAngles(2, 1, 0));
+        sensor_data->imu_frame_quat_[3], sensor_data->imu_frame_quat_[0],
+        sensor_data->imu_frame_quat_[1], sensor_data->imu_frame_quat_[2]);
+    //    logger_->add("base_joint_rpy_raw",
+    //    base_quat.toRotationMatrix().eulerAngles(2, 1, 0));
     logger_->add("base_joint_ypr_raw", util::QuatToEulerZYX(base_quat));
     logger_->add("base_joint_rpy_error", margFilter_.getGyroscopeError());
     logger_->add("base_joint_lin_vel_kf", base_velocity_estimate);
@@ -430,14 +436,22 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
 
     // save feet contact information (leave for when we integrate contact
     // sensor)
-    logger_->add("b_lf_contact_touchdown", contact_manager_->HasContactSensorTouchdown(end_effector::LFoot));
-    logger_->add("b_rf_contact_touchdown", contact_manager_->HasContactSensorTouchdown(end_effector::RFoot));
-    logger_->add("b_lf_heel_toe_touchdown", contact_manager_->HasHeelToeTouchdown(end_effector::LFoot));
-    logger_->add("b_rf_heel_toe_touchdown", contact_manager_->HasHeelToeTouchdown(end_effector::RFoot));
+    logger_->add(
+        "b_lf_contact_touchdown",
+        contact_manager_->HasContactSensorTouchdown(end_effector::LFoot));
+    logger_->add(
+        "b_rf_contact_touchdown",
+        contact_manager_->HasContactSensorTouchdown(end_effector::RFoot));
+    logger_->add("b_lf_heel_toe_touchdown",
+                 contact_manager_->HasHeelToeTouchdown(end_effector::LFoot));
+    logger_->add("b_rf_heel_toe_touchdown",
+                 contact_manager_->HasHeelToeTouchdown(end_effector::RFoot));
     logger_->add("b_rf_contact", sp_->b_rf_contact_);
     logger_->add("b_lf_contact", sp_->b_lf_contact_);
-    logger_->add("act_rf_z_lfoot", contact_manager_->GetFootNormalForceFilt(end_effector::LFoot));
-    logger_->add("act_rf_z_rfoot", contact_manager_->GetFootNormalForceFilt(end_effector::RFoot));
+    logger_->add("act_rf_z_lfoot",
+                 contact_manager_->GetFootNormalForceFilt(end_effector::LFoot));
+    logger_->add("act_rf_z_rfoot",
+                 contact_manager_->GetFootNormalForceFilt(end_effector::RFoot));
 //    dm->data_->lfoot_contact_ = sp_->stance_foot_ == "l_foot_contact";
 //    dm->data_->rfoot_contact_ = sp_->stance_foot_ == "r_foot_contact";
 //    dm->data_->lf_contact_ = sp_->b_lf_contact_;
@@ -463,16 +477,17 @@ void DracoKFStateEstimator::updateSupportState(DracoStateProvider *sp,
 }
 
 Eigen::Matrix3d DracoKFStateEstimator::compute_world_to_base_rot(
-    DracoSensorData *data, Eigen::Matrix3d& rot_world_to_imu,
+    DracoSensorData *data, Eigen::Matrix3d &rot_world_to_imu,
     bool use_marg_filter) {
   if (use_marg_filter) {
     Eigen::Vector3d se_ang_vel, se_lin_acc;
-    se_ang_vel = margFilter_.getBaseRotation().transpose() * imu_ang_vel_filt_->Output();
-    se_lin_acc = margFilter_.getBaseRotation().transpose() * (base_acceleration_ + grav_vec_3D_);
+    se_ang_vel =
+        margFilter_.getBaseRotation().transpose() * imu_ang_vel_filt_->Output();
+    se_lin_acc = margFilter_.getBaseRotation().transpose() *
+                 (base_acceleration_ + grav_vec_3D_);
 
-    margFilter_.filterUpdate(se_ang_vel[0], se_ang_vel[1],
-                             se_ang_vel[2], se_lin_acc[0], se_lin_acc[1],
-                             se_lin_acc[2]);
+    margFilter_.filterUpdate(se_ang_vel[0], se_ang_vel[1], se_ang_vel[2],
+                             se_lin_acc[0], se_lin_acc[1], se_lin_acc[2]);
     return margFilter_.getBaseRotation();
   } else {
     return rot_world_to_imu * iso_imu_to_base_com_.linear();

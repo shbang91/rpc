@@ -7,12 +7,7 @@ from util.python_utils import util
 
 
 class RobotSystem(abc.ABC):
-
-    def __init__(self,
-                 urdf_file,
-                 package_name,
-                 b_fixed_base,
-                 b_print_robot_info=False):
+    def __init__(self, urdf_file, package_name, b_fixed_base, b_print_robot_info=False):
         """
         Base RobotSystem Class
 
@@ -30,7 +25,7 @@ class RobotSystem(abc.ABC):
         self._n_q_dot = 0
         self._n_a = 0
 
-        self._total_mass = 0.
+        self._total_mass = 0.0
 
         self._joint_pos_limit = None
         self._joint_vel_limit = None
@@ -44,8 +39,16 @@ class RobotSystem(abc.ABC):
         if b_print_robot_info:
             print("=" * 80)
             print("RpcRobot")
-            print("nq: ", self._n_q, ", nv: ", self._n_q_dot, ", na: ",
-                  self._n_a, ", nvirtual: ", self._n_floating)
+            print(
+                "nq: ",
+                self._n_q,
+                ", nv: ",
+                self._n_q_dot,
+                ", na: ",
+                self._n_a,
+                ", nvirtual: ",
+                self._n_floating,
+            )
             print("+" * 80)
             print("Joint Infos")
             util.pretty_print([*self._joint_id.keys()])
@@ -209,8 +212,7 @@ class RobotSystem(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def create_cmd_ordered_dict(self, joint_pos_cmd, joint_vel_cmd,
-                                joint_trq_cmd):
+    def create_cmd_ordered_dict(self, joint_pos_cmd, joint_vel_cmd, joint_trq_cmd):
         """
         Create command ordered dict
 
@@ -230,14 +232,16 @@ class RobotSystem(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def update_system(self,
-                      base_joint_pos,
-                      base_joint_quat,
-                      base_joint_lin_vel,
-                      base_joint_ang_vel,
-                      joint_pos,
-                      joint_vel,
-                      b_cent=False):
+    def update_system(
+        self,
+        base_joint_pos,
+        base_joint_quat,
+        base_joint_lin_vel,
+        base_joint_ang_vel,
+        joint_pos,
+        joint_vel,
+        b_cent=False,
+    ):
         """
         Update generalized coordinate
 

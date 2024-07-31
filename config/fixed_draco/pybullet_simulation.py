@@ -9,8 +9,8 @@ class Config(object):
 
     KP, KD = dict(), dict()
 
-    KP["neck_pitch"] = 20.
-    KD["neck_pitch"] = 2.
+    KP["neck_pitch"] = 20.0
+    KD["neck_pitch"] = 2.0
 
     KP["r_hip_ie"] = 300
     KD["r_hip_ie"] = 2
@@ -34,40 +34,40 @@ class Config(object):
 
     KP["r_ankle_fe"] = 150
     KD["r_ankle_fe"] = 2
-    KP["l_ankle_fe"] = 150.
+    KP["l_ankle_fe"] = 150.0
     KD["l_ankle_fe"] = 2
 
-    KP["r_ankle_ie"] = 150.
+    KP["r_ankle_ie"] = 150.0
     KD["r_ankle_ie"] = 2
-    KP["l_ankle_ie"] = 150.
+    KP["l_ankle_ie"] = 150.0
     KD["l_ankle_ie"] = 2
 
-    KP["r_shoulder_fe"] = 200.
-    KD["r_shoulder_fe"] = 2.
-    KP["l_shoulder_fe"] = 200.
-    KD["l_shoulder_fe"] = 2.
+    KP["r_shoulder_fe"] = 200.0
+    KD["r_shoulder_fe"] = 2.0
+    KP["l_shoulder_fe"] = 200.0
+    KD["l_shoulder_fe"] = 2.0
 
-    KP["r_shoulder_aa"] = 200.
-    KD["r_shoulder_aa"] = 2.
-    KP["l_shoulder_aa"] = 200.
-    KD["l_shoulder_aa"] = 2.
+    KP["r_shoulder_aa"] = 200.0
+    KD["r_shoulder_aa"] = 2.0
+    KP["l_shoulder_aa"] = 200.0
+    KD["l_shoulder_aa"] = 2.0
 
-    KP["r_shoulder_ie"] = 200.
-    KD["r_shoulder_ie"] = 2.
-    KP["l_shoulder_ie"] = 200.
-    KD["l_shoulder_ie"] = 2.
+    KP["r_shoulder_ie"] = 200.0
+    KD["r_shoulder_ie"] = 2.0
+    KP["l_shoulder_ie"] = 200.0
+    KD["l_shoulder_ie"] = 2.0
 
-    KP["r_elbow_fe"] = 200.
+    KP["r_elbow_fe"] = 200.0
     KD["r_elbow_fe"] = 2
-    KP["l_elbow_fe"] = 200.
+    KP["l_elbow_fe"] = 200.0
     KD["l_elbow_fe"] = 2
 
-    KP["r_wrist_ps"] = 200.
+    KP["r_wrist_ps"] = 200.0
     KD["r_wrist_ps"] = 2
-    KP["l_wrist_ps"] = 200.
+    KP["l_wrist_ps"] = 200.0
     KD["l_wrist_ps"] = 2
 
-    KP["r_wrist_pitch"] = 200.
+    KP["r_wrist_pitch"] = 200.0
     KD["r_wrist_pitch"] = 2
-    KP["l_wrist_pitch"] = 200.
+    KP["l_wrist_pitch"] = 200.0
     KD["l_wrist_pitch"] = 2

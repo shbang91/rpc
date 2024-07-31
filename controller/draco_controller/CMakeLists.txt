@@ -48,5 +48,3 @@ install(FILES ${state_machines_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/draco_controller/draco_state_machines")
 install(FILES ${draco_task_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/draco_controller/draco_task")
-
-

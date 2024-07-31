@@ -17,4 +17,3 @@ install(FILES ${wbc_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/whole_body_controller")
 install(FILES ${manager_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/whole_body_controller/managers")
-

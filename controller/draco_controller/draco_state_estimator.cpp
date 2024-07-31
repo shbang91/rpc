@@ -34,8 +34,8 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
     bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
 
     std::string prefix = b_sim ? "sim" : "exp";
-    int foot_frame = util::ReadParameter<int>(
-            cfg["state_estimator"], "foot_reference_frame");
+    int foot_frame = util::ReadParameter<int>(cfg["state_estimator"],
+                                              "foot_reference_frame");
 
     // set the foot that will be used to estimate base in first_visit
     if (foot_frame == 0) {

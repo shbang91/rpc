@@ -15,8 +15,7 @@
 
 DracoCoMXYTask::DracoCoMXYTask(PinocchioRobotSystem *robot)
     : Task(robot, 2), b_sim_(false),
-      feedback_source_(feedback_source::kCoMFeedback),
-      icp_integrator_(nullptr),
+      feedback_source_(feedback_source::kCoMFeedback), icp_integrator_(nullptr),
       icp_lpf_(nullptr) {
   util::PrettyConstructor(3, "DracoCoMXYTask");
 
@@ -133,16 +132,16 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
     // calculate operational space command
     //=============================================================
     Eigen::Vector2d des_cmp =
-            icp - des_icp_dot / omega -
-            rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err)) -
-            rot_link_w.transpose() * (ki_.cwiseProduct(local_icp_avg_err));
+        icp - des_icp_dot / omega -
+        rot_link_w.transpose() * (kp_.cwiseProduct(local_icp_err)) -
+        rot_link_w.transpose() * (ki_.cwiseProduct(local_icp_avg_err));
 
     // op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
     // omega * omega * ki_.cwiseProduct(icp_avg_err);
 
-//    op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
-//              omega * omega * rot_link_w.transpose() *
-//                  (ki_.cwiseProduct(local_icp_avg_err));
+    //    op_cmd_ = omega * omega * (com_xy_pos - des_cmp) +
+    //              omega * omega * rot_link_w.transpose() *
+    //                  (ki_.cwiseProduct(local_icp_avg_err));
     op_cmd_ = omega * omega * (com_xy_pos - des_cmp);
 
 #if B_USE_ZMQ
@@ -193,13 +192,13 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
       util::ReadParameter(node, prefix + "_icp_weight", weight_);
 
       double time_constant =
-              util::ReadParameter<double>(node, prefix + "_time_constant");
+          util::ReadParameter<double>(node, prefix + "_time_constant");
       Eigen::VectorXd average_icp_error_limit =
-              util::ReadParameter<Eigen::VectorXd>(
-                      node, prefix + "_avg_icp_error_limit");
+          util::ReadParameter<Eigen::VectorXd>(node,
+                                               prefix + "_avg_icp_error_limit");
       icp_integrator_ = new ExponentialMovingAverageFilter(
-              sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(2),
-              -average_icp_error_limit, average_icp_error_limit);
+          sp_->servo_dt_, time_constant, Eigen::VectorXd::Zero(2),
+          -average_icp_error_limit, average_icp_error_limit);
 
       icp_integrator_type_ =
           util::ReadParameter<int>(node, "icp_integrator_type");
@@ -210,10 +209,10 @@ void DracoCoMXYTask::SetParameters(const YAML::Node &node, const bool b_sim) {
         leaky_integrator_limit_ = util::ReadParameter<Eigen::Vector2d>(
             node, prefix + "_leaky_integrator_limit");
 
-        double lpf_time_constant = util::ReadParameter<double>(
-            node, prefix + "_lpf_time_constant");
-        icp_lpf_ = new FirstOrderLowPassFilter(sp_->servo_dt_,
-            lpf_time_constant, 2);
+        double lpf_time_constant =
+            util::ReadParameter<double>(node, prefix + "_lpf_time_constant");
+        icp_lpf_ =
+            new FirstOrderLowPassFilter(sp_->servo_dt_, lpf_time_constant, 2);
       }
     } else
       throw std::invalid_argument("No Matching CoM Feedback Source");

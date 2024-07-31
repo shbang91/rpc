@@ -6,7 +6,7 @@
 class RobotSystem {
 public:
   RobotSystem(const bool _b_fixed_base, const bool _b_print_info)
-      : b_fixed_base_(_b_fixed_base), b_print_info_(_b_print_info){};
+      : b_fixed_base_(_b_fixed_base), b_print_info_(_b_print_info) {};
 
   virtual ~RobotSystem() = default;
 

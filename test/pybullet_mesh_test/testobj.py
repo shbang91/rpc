@@ -1,10 +1,11 @@
 import pybullet as p
-#import pybullet_data as pd
+
+# import pybullet_data as pd
 import time
 
 p.connect(p.GUI)
-dt = p.getPhysicsEngineParameters()['fixedTimeStep']
-#p.setAdditionalSearchPath(pd.getDataPath())
+dt = p.getPhysicsEngineParameters()["fixedTimeStep"]
+# p.setAdditionalSearchPath(pd.getDataPath())
 
 # husky = p.loadURDF("husky.urdf")
 # husky = p.loadURDF("husky.urdf", flags=p.URDF_INITIALIZE_SAT_FEATURES)

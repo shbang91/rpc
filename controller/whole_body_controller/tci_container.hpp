@@ -19,8 +19,10 @@ public:
   std::unordered_map<std::string, InternalConstraint *>
       internal_constraint_map_;
   std::map<std::string, ForceTask *> force_task_map_;
-  std::unordered_map<std::string, double> task_unweighted_cost_map_;   // unweighted task costs
-  std::unordered_map<std::string, double> task_weighted_cost_map_;   // unweighted task costs
+  std::unordered_map<std::string, double>
+      task_unweighted_cost_map_; // unweighted task costs
+  std::unordered_map<std::string, double>
+      task_weighted_cost_map_; // unweighted task costs
 
 protected:
   PinocchioRobotSystem *robot_;

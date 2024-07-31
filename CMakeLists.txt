@@ -131,4 +131,3 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/config.h.cmake
     ${PROJECT_SOURCE_DIR}/configuration.hpp)
 install(FILES ${PROJECT_SOURCE_DIR}/configuration.hpp DESTINATION
     "${INSTALL_INCLUDE_DIR}")
-

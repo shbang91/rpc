@@ -1,16 +1,18 @@
 import asyncio
 import json
 import time
-from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
+from foxglove_websocket.server import FoxgloveServerListener
 from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
+
 
 def SubtopicGen(names):
     subs = {}
     for i in names:
         subs[i] = {"type": "number"}
-    return json.dumps({"type": "object","properties": subs})
+    return json.dumps({"type": "object", "properties": subs})
 
-class SceneChannel():
+
+class SceneChannel:
     def __init__(self, scdata, topic, encoding, schemaName, schema):
         self.data = scdata
         self.topic = topic
@@ -20,32 +22,40 @@ class SceneChannel():
 
     def add_chan(self, server):
         if self.data is True:
-            return server.add_channel({
-                "topic": self.topic,
-                "encoding": self.encoding,
-                "schemaName": self.schemaName,
-                "schema": SubtopicGen(self.schema),
-                "schemaEncoding": "jsonschema"})
+            return server.add_channel(
+                {
+                    "topic": self.topic,
+                    "encoding": self.encoding,
+                    "schemaName": self.schemaName,
+                    "schema": SubtopicGen(self.schema),
+                    "schemaEncoding": "jsonschema",
+                }
+            )
         else:
-            return server.add_channel({
-                "topic": self.topic,
-                "encoding": self.encoding,
-                "schemaName": self.schemaName,
-                "schema": self.schema,})
+            return server.add_channel(
+                {
+                    "topic": self.topic,
+                    "encoding": self.encoding,
+                    "schemaName": self.schemaName,
+                    "schema": self.schema,
+                }
+            )
+
 
 def FormHandler(entity, shape, size):
     shape_get = getattr(entity, shape)
     nodel = shape_get.add()
-    if(shape == "spheres"):
+    if shape == "spheres":
         nodel.size.x = size[0]
         nodel.size.y = size[1]
         nodel.size.z = size[2]
-    if(shape == "arrows"):
-        nodel.shaft_length = size[0];
-        nodel.shaft_diameter = size[1];
-        nodel.head_length = size[2];
-        nodel.head_diameter = size[3];
+    if shape == "arrows":
+        nodel.shaft_length = size[0]
+        nodel.shaft_diameter = size[1]
+        nodel.head_length = size[2]
+        nodel.head_diameter = size[3]
     return nodel
+
 
 class FoxgloveShapeListener(FoxgloveServerListener):
     def __init__(self, scene_chanel_id, shape, name, size, color):
@@ -70,9 +80,9 @@ class FoxgloveShapeListener(FoxgloveServerListener):
                 entity.id = x
                 entity.frame_id = x
                 entity.frame_locked = True
-                #shape_get = getattr(entity, self.shape)
-                #nodel = shape_get.add()
-                nodel = FormHandler(entity,self.shape,size)
+                # shape_get = getattr(entity, self.shape)
+                # nodel = shape_get.add()
+                nodel = FormHandler(entity, self.shape, size)
                 nodel.color.r = rgb[0]
                 nodel.color.g = rgb[1]
                 nodel.color.b = rgb[2]

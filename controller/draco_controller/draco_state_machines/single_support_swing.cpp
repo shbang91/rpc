@@ -1,4 +1,5 @@
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
+#include "configuration.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
@@ -6,7 +7,6 @@
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
-#include "configuration.hpp"
 
 SingleSupportSwing::SingleSupportSwing(StateId state_id,
                                        PinocchioRobotSystem *robot,
@@ -20,9 +20,9 @@ SingleSupportSwing::SingleSupportSwing(StateId state_id,
 
   try {
     YAML::Node cfg =
-            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
-                                                      "b_use_const_desired_foot_pos");
+        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
+        cfg["state_machine"], "b_use_const_desired_foot_pos");
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -114,10 +114,12 @@ void SingleSupportSwing::LastVisit() {
 
 bool SingleSupportSwing::EndOfState() {
   bool b_early_contact = false;
-  if ((state_id_ == draco_states::kLFSingleSupportSwing) && (sp_->b_lf_contact_)) {
+  if ((state_id_ == draco_states::kLFSingleSupportSwing) &&
+      (sp_->b_lf_contact_)) {
     b_early_contact = true;
     std::cout << "Early Touchdown [LFoot]" << std::endl;
-  } else if ((state_id_ == draco_states::kRFSingleSupportSwing) && (sp_->b_rf_contact_)) {
+  } else if ((state_id_ == draco_states::kRFSingleSupportSwing) &&
+             (sp_->b_rf_contact_)) {
     b_early_contact = true;
     std::cout << "Early Touchdown [RFoot]" << std::endl;
   }

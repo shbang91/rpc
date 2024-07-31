@@ -51,4 +51,3 @@ if(BUILD_GTESTS)
     add_executable(friction_compensator_test karnopp_compensator_test.cpp)
     target_link_libraries(friction_compensator_test ${GTEST_LIBRARIES} rpc-friction-compensator)
 endif()
-

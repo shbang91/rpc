@@ -25,8 +25,8 @@
 // kalman filter files
 #include "controller/state_estimator/FloatingBaseSystemModel.hpp"
 #include "controller/state_estimator/PoseMeasurementModel.hpp"
-#include "third_party/kalman_filters/ExtendedKalmanFilter.hpp"
 #include "controller/whole_body_controller/managers/contact_detection_manager.hpp"
+#include "third_party/kalman_filters/ExtendedKalmanFilter.hpp"
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
@@ -49,7 +49,7 @@ public:
 private:
   void updateSupportState(DracoStateProvider *sp, SupportState &support_state);
   Eigen::Matrix3d compute_world_to_base_rot(DracoSensorData *data,
-                                            Eigen::Matrix3d& rot_world_to_imu,
+                                            Eigen::Matrix3d &rot_world_to_imu,
                                             bool use_marg_filter);
 
 protected:

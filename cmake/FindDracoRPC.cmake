@@ -11,15 +11,15 @@ find_path(DRACO_RPC_INCLUDE_DIR
           PATHS "/usr/local/include/rpc"
           )
 find_library(DRACO_RPC_LIBRARY
-             NAMES rpc-draco-controller 
+             NAMES rpc-draco-controller
              PATHS "/usr/local/lib"
              )
 #find_library(ROBOT_SYSTEM_LIBRARY
-             #NAMES rpc-pin-robot-system 
+             #NAMES rpc-pin-robot-system
              #PATHS "/usr/local/lib"
              #)
 #find_library(DRACO_MSG
-             #NAMES rpc-draco-msg 
+             #NAMES rpc-draco-msg
              #PATHS "/usr/local/lib"
              #)
 #find_library(DRACO_FILTER

@@ -6,4 +6,3 @@ show_joint_frame: true
 control_configuration:
   kp: 0
   kd: 0
-

@@ -7,8 +7,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton,
-                                        cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -18,14 +17,14 @@ class DataSaver(metaclass=Singleton):
         add topics --> advance
     """
 
-    def __init__(self, filename='pnc.pkl'):
+    def __init__(self, filename="pnc.pkl"):
         self._history = dict()
-        if not os.path.exists('experiment_data'):
-            os.makedirs('experiment_data')
-        for f in os.listdir('experiment_data'):
+        if not os.path.exists("experiment_data"):
+            os.makedirs("experiment_data")
+        for f in os.listdir("experiment_data"):
             if f == filename:
-                os.remove('experiment_data/' + f)
-        self._file = open('experiment_data/' + filename, 'ab')
+                os.remove("experiment_data/" + f)
+        self._file = open("experiment_data/" + filename, "ab")
 
     def add(self, key, value):
         self._history[key] = value

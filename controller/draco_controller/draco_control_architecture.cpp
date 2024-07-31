@@ -9,12 +9,12 @@
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
-//#include
+// #include
 //"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
-//#include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
+// #include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
@@ -138,27 +138,21 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_force_tm_ = new ForceTrajectoryManager(
       tci_container_->force_task_map_["rf_force_task"], robot_);
 
-  //=============================================================
-  // attach Foxglove Clients to control parameters
-  //=============================================================
-  #if B_USE_FOXGLOVE
-  param_map_int_ = {{
-      {"n_steps", dcm_tm_->GetNumSteps()}
-  }};
-  param_map_double_ = {{
-        {"t_ss", dcm_planner_->GetTssPtr()},
-        {"t_ds", dcm_planner_->GetTdsPtr()}
-  }};
-  param_map_hm_ = {{
-      {"lf_pos_task", lf_pos_hm_},
-      {"rf_pos_task", rf_pos_hm_},
-      {"lf_ori_task", lf_ori_hm_},
-      {"rf_ori_task", rf_ori_hm_}
-  }};
-  param_subscriber_ = new FoxgloveParameterSubscriber(param_map_int_, param_map_double_,
-                                                      tci_container_->task_map_,
-                                                      param_map_hm_);
-  #endif
+//=============================================================
+// attach Foxglove Clients to control parameters
+//=============================================================
+#if B_USE_FOXGLOVE
+  param_map_int_ = {{{"n_steps", dcm_tm_->GetNumSteps()}}};
+  param_map_double_ = {{{"t_ss", dcm_planner_->GetTssPtr()},
+                        {"t_ds", dcm_planner_->GetTdsPtr()}}};
+  param_map_hm_ = {{{"lf_pos_task", lf_pos_hm_},
+                    {"rf_pos_task", rf_pos_hm_},
+                    {"lf_ori_task", lf_ori_hm_},
+                    {"rf_ori_task", rf_ori_hm_}}};
+  param_subscriber_ =
+      new FoxgloveParameterSubscriber(param_map_int_, param_map_double_,
+                                      tci_container_->task_map_, param_map_hm_);
+#endif
 
   //=============================================================
   // initialize state machines

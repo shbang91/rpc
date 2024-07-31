@@ -1,10 +1,8 @@
-from collections import OrderedDict
 from scipy.spatial.transform import Rotation as R
-from scipy.spatial.transform import Slerp
 import numpy as np
 import json
 import multiprocessing as mp
-# from tqdm import tqdm
+from tqdm import tqdm
 
 
 def pretty_print(ob):
@@ -17,16 +15,19 @@ def euler_to_rot(angles):
     x = angles[0]
     y = angles[1]
     z = angles[2]
-    ret = np.array([
-        np.cos(y) * np.cos(z),
-        np.cos(z) * np.sin(x) * np.sin(y) - np.cos(x) * np.sin(z),
-        np.sin(x) * np.sin(z) + np.cos(x) * np.cos(z) * np.sin(y),
-        np.cos(y) * np.sin(z),
-        np.cos(x) * np.cos(z) + np.sin(x) * np.sin(y) * np.sin(z),
-        np.cos(x) * np.sin(y) * np.sin(z) - np.cos(z) * np.sin(x), -np.sin(y),
-        np.cos(y) * np.sin(x),
-        np.cos(x) * np.cos(y)
-    ]).reshape(3, 3)
+    ret = np.array(
+        [
+            np.cos(y) * np.cos(z),
+            np.cos(z) * np.sin(x) * np.sin(y) - np.cos(x) * np.sin(z),
+            np.sin(x) * np.sin(z) + np.cos(x) * np.cos(z) * np.sin(y),
+            np.cos(y) * np.sin(z),
+            np.cos(x) * np.cos(z) + np.sin(x) * np.sin(y) * np.sin(z),
+            np.cos(x) * np.sin(y) * np.sin(z) - np.cos(z) * np.sin(x),
+            -np.sin(y),
+            np.cos(y) * np.sin(x),
+            np.cos(x) * np.cos(y),
+        ]
+    ).reshape(3, 3)
     return np.copy(ret)
 
 
@@ -45,11 +46,11 @@ def quat_to_rot(quat):
 
 
 def quat_to_rpy(quat):
-    if np.linalg.norm(quat) > 1.e-2:
+    if np.linalg.norm(quat) > 1.0e-2:
         quat_copy = np.copy(quat)
         quat_copy[0:3] = quat_copy[1:]
         quat_copy[3] = quat[0]
-        return np.copy((R.from_quat(quat_copy)).as_euler('xyz'))
+        return np.copy((R.from_quat(quat_copy)).as_euler("xyz"))
     else:
         return np.array([0, 0, 0])
 
@@ -70,10 +71,12 @@ def rot_to_quat(rot):
 
 def QuatToExp(quat):
     img_vec = np.array([quat[0], quat[1], quat[2]])
-    w = quat[3]
+    # w = quat[3]
     theta = 2.0 * np.arcsin(
-        np.sqrt(img_vec[0] * img_vec[0] + img_vec[1] * img_vec[1] +
-                img_vec[2] * img_vec[2]))
+        np.sqrt(
+            img_vec[0] * img_vec[0] + img_vec[1] * img_vec[1] + img_vec[2] * img_vec[2]
+        )
+    )
 
     if np.abs(theta) < 1e-4:
         return np.zeros(3)
@@ -101,18 +104,22 @@ def ExpToQuat(exp):
 def weighted_pinv(A, W, rcond=1e-15):
     return np.dot(
         W,
-        np.dot(A.transpose(),
-               np.linalg.pinv(np.dot(np.dot(A, W), A.transpose()), rcond)))
+        np.dot(
+            A.transpose(), np.linalg.pinv(np.dot(np.dot(A, W), A.transpose()), rcond)
+        ),
+    )
 
 
 def get_sinusoid_trajectory(start_time, mid_point, amp, freq, eval_time):
     dim = amp.shape[0]
     p, v, a = np.zeros(dim), np.zeros(dim), np.zeros(dim)
     p = amp * np.sin(2 * np.pi * freq * (eval_time - start_time)) + mid_point
-    v = amp * 2 * np.pi * freq * np.cos(2 * np.pi * freq *
-                                        (eval_time - start_time))
-    a = -amp * (2 * np.pi * freq)**2 * np.sin(2 * np.pi * freq *
-                                              (eval_time - start_time))
+    v = amp * 2 * np.pi * freq * np.cos(2 * np.pi * freq * (eval_time - start_time))
+    a = (
+        -amp
+        * (2 * np.pi * freq) ** 2
+        * np.sin(2 * np.pi * freq * (eval_time - start_time))
+    )
 
     return p, v, a
 
@@ -165,19 +172,21 @@ def try_multiprocess(args_list, num_cpu, f, max_timeouts=1):
     if num_cpu == 1:
         return [f(args_list)]
     else:
-        pool = mp.Pool(processes=num_cpu,
-                       maxtasksperchild=1,
-                       initargs=(mp.RLock(), ),
-                       initializer=tqdm.set_lock)
+        pool = mp.Pool(
+            processes=num_cpu,
+            maxtasksperchild=1,
+            initargs=(mp.RLock(),),
+            initializer=tqdm.set_lock,
+        )
         pruns = []
         for i in range(num_cpu):
             rseed = np.random.randint(1000000)
-            pruns.append(pool.apply_async(f, args=(args_list + [rseed, i], )))
+            pruns.append(pool.apply_async(f, args=(args_list + [rseed, i],)))
         try:
             results = [p.get(timeout=36000) for p in pruns]
         except Exception as e:
             print(str(e))
-            print('WARNING: error raised in multiprocess, trying again')
+            print("WARNING: error raised in multiprocess, trying again")
 
             pool.close()
             pool.terminate()

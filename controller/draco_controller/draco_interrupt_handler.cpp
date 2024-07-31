@@ -130,15 +130,15 @@ void DracoInterruptHandler::Process() {
       std::cout << "Wait Until Balance State" << std::endl;
   }
 
-//  if (b_step_num) {
-//    std::cout << "-----------------------------------" << std::endl;
-//    std::cout << "New n_step entered  " << std::endl;
-//    std::cout << "-----------------------------------" << std::endl;
-//    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
-//      ctrl_arch_->dcm_tm_->SetNumSteps(new_steps_num_);
-//    } else
-//      std::cout << "Wait Until Balance State" << std::endl;
-//  }
+  //  if (b_step_num) {
+  //    std::cout << "-----------------------------------" << std::endl;
+  //    std::cout << "New n_step entered  " << std::endl;
+  //    std::cout << "-----------------------------------" << std::endl;
+  //    if (ctrl_arch_->state() == draco_states::kDoubleSupportBalance) {
+  //      ctrl_arch_->dcm_tm_->SetNumSteps(new_steps_num_);
+  //    } else
+  //      std::cout << "Wait Until Balance State" << std::endl;
+  //  }
 
   this->_ResetFlags();
 }

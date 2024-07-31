@@ -125,5 +125,3 @@ void DracoDataManager::SendData() {
   memcpy((void *)zmq_msg.data(), encoded_msg.c_str(), encoded_msg.size());
   socket_->send(zmq_msg);
 }
-
-

@@ -69,7 +69,7 @@ state_estimator:
 
   ## IF 0: simple moving average filter parameter
   sim_num_data_com_vel: [20, 20, 20]
-  exp_num_data_com_vel: [200, 200, 200] 
+  exp_num_data_com_vel: [200, 200, 200]
 
   ## IF 1: exponential smoother filter parameter
   com_vel_time_constant: 0.05
@@ -119,7 +119,7 @@ wbc:
       exp_icp_weight : [3000., 3000.] # only used when feedback source : 1
       exp_icp_kp : [0.5, 0.5]
       exp_icp_kd : [0., 0.] # x, y will be ignored
-      exp_icp_ki : [0.5, 0.5] 
+      exp_icp_ki : [0.5, 0.5]
 
       ## IF icp_integrator_type == 0:
       #exp_time_constant : 0.35
@@ -360,5 +360,3 @@ lmpc_walking:
   nominal_strafe_distance: 0.02
   n_steps: 1
   first_swing_leg: 0 ## 0: left leg ## 1: right leg
-
-

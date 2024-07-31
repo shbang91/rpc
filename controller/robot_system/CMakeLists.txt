@@ -15,7 +15,7 @@ target_link_libraries(rpc-pin-robot-system PUBLIC pinocchio::pinocchio
 
 if(BUILD_WITH_DART)
     add_library(rpc-dart-robot-system ${dart_robot_system_source} ${dart_robot_system_header})
-    target_link_libraries(rpc-dart-robot-system PUBLIC ${DART_LIBRARIES} 
+    target_link_libraries(rpc-dart-robot-system PUBLIC ${DART_LIBRARIES}
                                                 PUBLIC rpc-util)
 endif()
 
