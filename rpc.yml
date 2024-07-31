@@ -15,6 +15,7 @@ dependencies:
       - matplotlib==3.4.2
       - meshcat==0.1.1
       - opencv-python==4.5.2.54
+      - pre-commit
       - protobuf==3.17.3
       - pybullet==3.0.8
       - scipy==1.7.0
