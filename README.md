@@ -1,4 +1,7 @@
 # Robot Planning and Control (rpc)
+
+[![Build](https://img.shields.io/github/actions/workflow/status/shbang91/rpc/linux.yml?branch=feature/add-ci-workflows)](https://github.com/shbang91/rpc/actions)
+
 rpc is a software framework designed for generating task trajectories (planning) and tracking the trajectories (control) for legged systems.<br/>
 
 Software Framework is developed by Seung Hyeon Bang based on the [PnC](https://github.com/junhyeokahn/PnC) Repository.<br/>
