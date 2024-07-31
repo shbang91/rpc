@@ -6,7 +6,12 @@ on:
       - 'feature/add-ci-workflows'
 jobs:
   build-simple-and-test:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -37,17 +42,17 @@ jobs:
           ./build/bin/dcm_planner_test
           ./build/bin/lmpc_handler_test
           ./build/bin/pin_robot_system_test
-      - name: Build rpc with debug tools
-        shell: bash -l {0}
-        run: |
-          export PATH=/opt/openrobots/bin:$PATH
-          export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
-          export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
-          export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH
-          export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
-          rm -rf build/
-          ./dependency/scripts/install_zmq.sh
-          ./dependency/scripts/install_protobuf.sh
-          pip install conan
-          mkdir -p ~/.conan2/profiles/ && cp .github/conan_profile ~/.conan2/profiles/default
-          conan install conanfile.txt --build=missing && cd build/ && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=ON -DBUILD_WITH_FOXGLOVE=ON && make
+#      - name: Build rpc with debug tools
+#        shell: bash -l {0}
+#        run: |
+#          export PATH=/opt/openrobots/bin:$PATH
+#          export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
+#          export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
+#          export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH
+#          export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
+#          rm -rf build/
+#          ./dependency/scripts/install_zmq.sh
+#          ./dependency/scripts/install_protobuf.sh
+#          pip install conan
+#          mkdir -p ~/.conan2/profiles/ && cp .github/conan_profile ~/.conan2/profiles/default
+#          conan install conanfile.txt --build=missing && cd build/ && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=ON -DBUILD_WITH_FOXGLOVE=ON && make
