@@ -81,6 +81,11 @@ std::unordered_map<std::string, int> mj_qpos_map_;
 std::unordered_map<std::string, int> mj_qvel_map_;
 std::unordered_map<std::string, int> mj_act_map_;
 
+// imu sensor address (framequat, gyro, accelerometer)
+int imu_orientation_adr_;
+int imu_ang_vel_adr_;
+int imu_lin_acc_adr_;
+
 // actuator gains
 std::vector<double> kp_;
 std::vector<double> kd_;
@@ -303,6 +308,36 @@ void SetJointAndActuatorMaps(
   }
 }
 
+void ConfigureSensors(mjModel *m, int &imu_orientation_adr,
+                      int &imu_ang_vel_adr, int &imu_lin_acc_adr) {
+  // imu orientation sensor
+  const std::string &imu_orientation_sensor = "imu-orientation";
+  int idx = mj_name2id(m, mjOBJ_SENSOR, imu_orientation_sensor.c_str());
+  if (idx == -1)
+    std::cout << "[MuJoCo Utils] Can't find the imu orientation sensor: "
+              << imu_orientation_sensor << " in MuJoCo model" << '\n';
+  imu_orientation_adr = m->sensor_adr[idx];
+
+  // imu angular velocity sensor (gyro)
+  const std::string &imu_ang_vel_sensor = "imu-angular-velocity";
+  idx = mj_name2id(m, mjOBJ_SENSOR, imu_ang_vel_sensor.c_str());
+  if (idx == -1)
+    std::cout << "[MuJoCo Utils] Can't find the imu angular velocity sensor: "
+              << imu_ang_vel_sensor << " in MuJoCo model" << '\n';
+  imu_ang_vel_adr = m->sensor_adr[idx];
+  // imu_ang_vel_noise_adr = m->sensor_noise[idx];
+
+  // imu linear acceleration sensor (accelerometer)
+  const std::string &imu_lin_acc_sensor = "imu-linear-acceleration";
+  idx = mj_name2id(m, mjOBJ_SENSOR, imu_lin_acc_sensor.c_str());
+  if (idx == -1)
+    std::cout
+        << "[MuJoCo Utils] Can't find the imu linear acceleration sensor: "
+        << imu_lin_acc_sensor << " in MuJoCo model" << '\n';
+  imu_lin_acc_adr = m->sensor_adr[idx];
+  // imu_lin_acc_noise_adr = m->sensor_noise[idx];
+}
+
 void SetActuatorGains(const std::unordered_map<std::string, int> &mj_act_map) {
   kp_.clear();
   kp_.resize(mj_act_map.size());
@@ -395,8 +430,26 @@ bool CopySensorData() {
   }
 
   //==============================================
-  // TODO:process IMU data
+  // process IMU data
   //==============================================
+  // imu orienation
+  mjtNum *imu_quat = &d->sensordata[imu_orientation_adr_];
+  Eigen::Quaterniond world_Q_imu(imu_quat[0], imu_quat[1], imu_quat[2],
+                                 imu_quat[3]); // q.w, q.x, q.y, q.z
+  draco_sensor_data->imu_frame_quat_ << world_Q_imu.coeffs();
+
+  // imu angular velocity
+  mjtNum *imu_ang_vel = &d->sensordata[imu_ang_vel_adr_];
+  Eigen::Vector3d imu_ang_vel_in_imu(imu_ang_vel[0], imu_ang_vel[1],
+                                     imu_ang_vel[2]);
+  draco_sensor_data->imu_ang_vel_ = world_Q_imu * imu_ang_vel_in_imu;
+
+  // imu linear acceleration
+  mjtNum *imu_lin_acc = &d->sensordata[imu_lin_acc_adr_];
+  Eigen::Vector3d imu_lin_acc_in_imu(imu_lin_acc[0], imu_lin_acc[1],
+                                     imu_lin_acc[2]);
+  draco_sensor_data->imu_dvel_ =
+      world_Q_imu * imu_lin_acc_in_imu / m->opt.timestep;
 
   //==============================================
   // TODO:contact states (1. contact normal force, 2. swing foot height)
@@ -652,15 +705,21 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
       //**********************************************
 
       // Set up mujoco joint & actuator maps based on the mujoco model
+      // ********************************************
       pin_jnt_map_ =
           draco_interface->GetPinocchioModel()->GetJointNameAndIndexMap();
       pin_act_map_ =
           draco_interface->GetPinocchioModel()->GetActuatorNameAndIndexMap();
-      // ********************************************
       SetJointAndActuatorMaps(m, mj_qpos_map_, mj_qvel_map_, mj_act_map_,
                               pin_jnt_map_,
                               pin_act_map_); // TODO: make this function
                                              // mujoco_utils (static method)
+      // ********************************************
+
+      // Configure sensor (imu)
+      // ********************************************
+      ConfigureSensors(m, imu_orientation_adr_, imu_ang_vel_adr_,
+                       imu_lin_acc_adr_);
       // ********************************************
 
       // Set actuator gains

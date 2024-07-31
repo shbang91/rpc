@@ -270,12 +270,15 @@
      <!--<motor name="r_knee_fe_jd"   gear="1"  joint="r_knee_fe_jd"  ctrlrange="-40.85 40.85"/>-->
      <!--<motor name="r_ankle_fe"     gear="1"  joint="r_ankle_fe"    ctrlrange="-44 44"/>-->
      <!--<motor name="r_ankle_ie"     gear="1"  joint="r_ankle_ie"    ctrlrange="-30 30"/>-->
-
   </actuator>
 
   <sensor>
-      <accelerometer name="accel" site="imu"/>
-      <gyro name="gyro" site="imu"/>
+      <framequat name="imu-orientation" objtype="site" objname="imu"/>
+      <gyro name="imu-angular-velocity" site="imu" />
+      <accelerometer name="imu-linear-acceleration" site="imu"/>
+      <!--<gyro name="imu-angular-velocity" site="imu" noise="5e-4" cutoff="34.9"/>-->
+      <!--<accelerometer name="imu-linear-acceleration" site="imu" noise="1e-4" cutoff="157"/>-->
+      <magnetometer name="imu-magnetometer" site="imu"/>
   </sensor>
 
   <!--start with the fixed base pose-->
