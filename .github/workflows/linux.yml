@@ -40,7 +40,6 @@ jobs:
       - name: Build rpc with debug tools
         shell: bash -l {0}
         run: |
-          ./dependency/scripts/install_protobuf.sh
           ./dependency/scripts/install_zmq.sh
           export PATH=/opt/openrobots/bin:$PATH
           export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
