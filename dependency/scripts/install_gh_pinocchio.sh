@@ -9,7 +9,8 @@ if [ "$(uname)" == "Darwin" ]; then
     brew tap gepetto/homebrew-gepetto
     brew install pinocchio
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    sudo apt install -qqy lsb-release curl
+    sudo apt install -qqy lsb-release curl libeigen3-dev libassimp-dev libccd-dev
+    sudo apt-get install libfcl-dev libboost-all-dev libboost-regex-dev libboost-system-dev
     sudo mkdir -p /etc/apt/keyrings
     curl http://robotpkg.openrobots.org/packages/debian/robotpkg.asc \
          | sudo tee /etc/apt/keyrings/robotpkg.asc

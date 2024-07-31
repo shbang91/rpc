@@ -5,7 +5,7 @@ on:
       - main
       - 'feature/add-ci-workflows'
 jobs:
-  build-simple-and-test:
+  build-base-and-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -48,7 +48,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
+        os: [ubuntu-20.04, ubuntu-22.04]
 
     steps:
       - name: Check out repository
@@ -68,7 +68,6 @@ jobs:
           ./dependency/scripts/install_zmq.sh
           ./dependency/scripts/install_gtest.sh
           ./dependency/scripts/install_gh_pinocchio.sh
-          sudo apt-get install libeigen3-dev libassimp-dev libccd-dev libfcl-dev libboost-regex-dev libboost-system-dev libboost-all-dev
           export PATH=/opt/openrobots/bin:$PATH
           export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
           export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
