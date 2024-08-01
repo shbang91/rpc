@@ -10,6 +10,7 @@
 #include "controller/whole_body_controller/force_task.hpp"
 #include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "convex_mpc/convex_mpc_locomotion.hpp"
+#include "planner/locomotion/dcm_planner/foot_step.hpp"
 
 #if B_USE_ZMQ
 #include "controller/draco_controller/draco_data_manager.hpp"
@@ -125,12 +126,7 @@ void MPCLocomotion::OneStep() {
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
   task_vector.clear();
 
-  // std::cout << "-------------------------------------------------" <<
-  // std::endl; std::cout << "contact state: " <<
-  // mpc_interface->contact_state_.transpose()
-  //<< std::endl;
-
-  // update foot task & contact for WBC
+  // update foot task & foot contact for WBC
   for (int foot = 0; foot < foot_side::NumFoot; foot++) {
     if (mpc_interface->contact_state_[foot] > 0.0) // in contact
     {
@@ -145,13 +141,13 @@ void MPCLocomotion::OneStep() {
 
         // TEST
         if (prev_contact_states_[foot] == 0.0) {
-          contact_map["lf_contact"]->SetDesiredPos(
-              robot_->GetLinkIsometry(draco_link::l_foot_contact)
-                  .translation());
+          Eigen::Isometry3d lfoot_iso =
+              robot_->GetLinkIsometry(draco_link::l_foot_contact);
+          FootStep::MakeHorizontal(lfoot_iso);
+
+          contact_map["lf_contact"]->SetDesiredPos(lfoot_iso.translation());
           contact_map["lf_contact"]->SetDesiredOri(
-              Eigen::Quaterniond(
-                  robot_->GetLinkIsometry(draco_link::l_foot_contact).linear())
-                  .normalized());
+              Eigen::Quaterniond(lfoot_iso.linear()).normalized());
         }
         // TEST
 
@@ -176,13 +172,13 @@ void MPCLocomotion::OneStep() {
         //
         // TEST
         if (prev_contact_states_[foot] == 0.0) {
-          contact_map["rf_contact"]->SetDesiredPos(
-              robot_->GetLinkIsometry(draco_link::r_foot_contact)
-                  .translation());
+          Eigen::Isometry3d rfoot_iso =
+              robot_->GetLinkIsometry(draco_link::r_foot_contact);
+          FootStep::MakeHorizontal(rfoot_iso);
+
+          contact_map["rf_contact"]->SetDesiredPos(rfoot_iso.translation());
           contact_map["rf_contact"]->SetDesiredOri(
-              Eigen::Quaterniond(
-                  robot_->GetLinkIsometry(draco_link::r_foot_contact).linear())
-                  .normalized());
+              Eigen::Quaterniond(rfoot_iso.linear()).normalized());
         }
         // TEST
       }

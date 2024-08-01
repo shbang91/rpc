@@ -1567,22 +1567,23 @@ void UiEvent(mjuiState *state) {
       break;
 
     case '[': // cycle down fixed cameras
-      if ((sim->m_ || sim->is_passive_) && sim->ncam_) {
-        sim->cam.type = mjCAMERA_FIXED;
-        // camera = {0 or 1} are reserved for the free and tracking cameras
-        if (sim->camera <= 2) {
-          sim->camera = 2 + sim->ncam_ - 1;
-        } else {
-          sim->camera -= 1;
-        }
-        sim->cam.fixedcamid = sim->camera - 2;
-        mjui0_update_section(sim, SECT_RENDERING);
-      }
-      // if (sim->interrupt_handler_) {
-      // sim->interrupt_handler_->PressFive();
+      // if ((sim->m_ || sim->is_passive_) && sim->ncam_) {
+      // sim->cam.type = mjCAMERA_FIXED;
+      // camera = {0 or 1} are reserved for the free and tracking cameras
+      // if (sim->camera <= 2) {
+      // sim->camera = 2 + sim->ncam_ - 1;
       //} else {
-      // std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      // sim->camera -= 1;
       //}
+      // sim->cam.fixedcamid = sim->camera - 2;
+      // mjui0_update_section(sim, SECT_RENDERING);
+      //}
+      if (sim->interrupt_handler_) {
+        // sim->interrupt_handler_->PressFive(); // in-place stepping
+        sim->interrupt_handler_->PressM(); // MPC walking
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
       break;
 
     case mjKEY_F6: // cycle frame visualisation

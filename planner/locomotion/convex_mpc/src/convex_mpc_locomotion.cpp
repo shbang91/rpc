@@ -327,6 +327,7 @@ void ConvexMPCLocomotion::Solve() {
   //===================================================================
   // solve convex mpc with fixed control frequency
   // if (iteration_counter_ % iterations_btw_mpc_ == 0) {
+  // run 200 Hz
   if (iteration_counter_ % 4 == 0) {
     clock_.Start();
     _SolveConvexMPC(contact_schedule_table);

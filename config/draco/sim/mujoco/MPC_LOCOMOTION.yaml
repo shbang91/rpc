@@ -1,6 +1,6 @@
 b_save_mpc_solution: true
 
-iterations_btw_mpc: 40
+iterations_btw_mpc: 30
 
 mpc_params:
   mpc_cost:
@@ -68,13 +68,13 @@ mpc_params:
 
 
 swing_foot:
-  height: 0.10
+  height: 0.05
   raibert_gain: 0.02
   high_speed_turning_gain: 1.0
   landing_foot_offset: [0.0, 0.0, 0.0]
 
 gait:
-  x_vel_cmd: 0.0 ## 0.5
+  x_vel_cmd: 0.0
   y_vel_cmd: 0.0
   yaw_rate_cmd: 0.0
 
