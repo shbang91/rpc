@@ -21,7 +21,7 @@ $ conda env create -f rpc.yml
 - [protobuf](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_protobuf.sh): logging numeric data
 
 ## Usage
-- source conda environment:<br/>
+- Source conda environment:<br/>
 ```
 $ conda activate rpc
 ```
