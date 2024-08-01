@@ -7,7 +7,7 @@ rpc is a software framework designed for generating task trajectories (planning)
 Software Framework is developed by Seung Hyeon Bang based on the [PnC](https://github.com/junhyeokahn/PnC) Repository.<br/>
 
 ## Dependencies
-The controller has been tested on Ubuntu 18.04 and Mac OSX Ventura. It builds on the shoulders of the following software:<br/>
+The controller has been tested on Ubuntu 18.04, Ubuntu 20.04, and Mac OSX Ventura. It builds on the shoulders of the following software:<br/>
 - [anaconda](https://docs.anaconda.com/anaconda/install/): For Pybullet simulator<br/>
 - python dependencies:
 ```
