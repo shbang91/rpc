@@ -14,6 +14,10 @@
     <color rgba="0.52 0.73 1 1"/>
   </material>
 
+  <material name = "light_red">
+    <color rgba="0.8 0.1 0.1 0.1"/>
+  </material>
+
   <material name = "black">
     <color rgba="0 0 0 1"/>
   </material>
@@ -32,6 +36,14 @@
       </geometry>
       <!--<material name="white"/>-->
     </visual>
+    <!-- Torso collision capsule -->
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.005 0 0.08375"/>
+      <geometry>
+        <box size="0.122 0.191 0.3575"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>          
     <inertial>
       <origin rpy="0 0 0" xyz="-31.658e-03 -0.03865e-03 125.19e-03"/>
       <!--<origin rpy="0 0 0" xyz="-31.658e-03 -0.14 125.19e-03"/>-->
@@ -147,6 +159,21 @@
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
+    <!-- shoulder collision capsule -->
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.03 -0.11"/>
+      <geometry>
+        <sphere radius="0.064"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>            
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.008 -0.18"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.2"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00404627 0.029987 -0.137257"/>
       <mass value="1.21235"/>
@@ -171,6 +198,13 @@
       </geometry>
       <material name="black"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.017 0 -0.083"/>
+      <geometry>
+        <sphere radius="0.076"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>            
     <inertial>
       <origin rpy="0 0 0" xyz="-0.0190443 0 -0.0633779"/>
       <mass value="0.990031"/>
@@ -233,6 +267,13 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.006 -0.0975"/>
+      <geometry>
+        <box size="0.06 0.11 0.223"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="5.4498e-05 0.000382544 -0.061"/>
       <mass value="0.498"/>
@@ -347,6 +388,21 @@
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
+    <!-- shoulder collision capsule -->
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.03 -0.11"/>
+      <geometry>
+        <sphere radius="0.064"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>            
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.008 -0.18"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.2"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>    
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00404627 -0.029987 -0.137257"/>
       <mass value="1.21235"/>
@@ -371,6 +427,13 @@
       </geometry>
       <material name="black"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="-0.017 0 -0.083"/>
+      <geometry>
+        <sphere radius="0.076"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>        
     <inertial>
       <origin rpy="0 0 0" xyz="-0.0190415 1.75896e-05 -0.0633849"/>
       <mass value="0.990031"/>
@@ -433,6 +496,13 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.006 -0.0975"/>
+      <geometry>
+        <box size="0.06 0.11 0.223"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>    
     <inertial>
       <origin rpy="0 0 0" xyz="5.4498e-05 0.000382544 -0.061"/>
       <mass value="0.498"/>
@@ -548,6 +618,28 @@
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
+    <!-- Thigh collision capsule -->
+    <collision>
+      <origin rpy="0 0 0" xyz="0.05 0 -0.087"/>
+      <geometry>
+        <sphere radius="0.055"/>        
+      </geometry>
+      <material name="light_red"/>
+    </collision>          
+    <collision>
+      <origin rpy="0 0.13 0" xyz="0.025 0 -0.206"/>
+      <geometry>
+        <cylinder radius="0.049" length="0.243"/>        
+      </geometry>
+      <material name="light_red"/>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.324"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="0.00193727 -0.00408989 -0.1636"/>
       <mass value="5.0"/>
@@ -592,7 +684,7 @@
         <mesh filename="package://meshes/l_knee_adj_link.stl"/>
       </geometry>
       <material name="black"/>
-    </visual>
+    </visual>  
     <inertial>
       <origin rpy="0 0 0" xyz="0.00907506 -0.006495 -0.017049"/>
       <mass value="0.156"/>
@@ -619,6 +711,27 @@
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.065"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>      
+    <collision>
+      <origin rpy="0 0 0" xyz="0.046 0.006 -0.095"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>
+    <collision>
+      <origin rpy="0 0.2904 0" xyz="0.023 0.006 -0.162"/>
+      <geometry>
+        <cylinder radius="0.055" length="0.16"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>                     
     <inertial>
       <origin rpy="0 0 0" xyz="0.00588785 0.0041898 -0.0805522"/>
       <mass value="2.5"/>
@@ -645,6 +758,13 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>
     <inertial>
       <origin rpy="0 0 0" xyz="-0.000143954 0.0286126 -0.000732972"/>
       <mass value="0.172"/>
@@ -674,9 +794,17 @@
     <collision>
       <origin rpy="0 -0 0" xyz="0 -0.008432 -0.0832995"/>
       <geometry>
-        <box size="0.22 0.092012 0.0045015"/>
+        <box size="0.22 0.092012 0.009"/>
       </geometry>
+      <material name="light_red"/>      
     </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 -0.01 -0.06"/>
+      <geometry>
+        <sphere radius="0.03"/>
+      </geometry>
+      <material name="light_red"/>      
+    </collision>        
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00051 -0.012552 -0.054344"/>
       <!--<origin rpy="0 0 0" xyz="-0.00321864 -0.00678326 -0.0513152"/>-->
@@ -769,6 +897,28 @@
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
+    <!-- Thigh collision capsule -->
+    <collision>
+      <origin rpy="0 0 0" xyz="0.05 0 -0.087"/>
+      <geometry>
+        <sphere radius="0.055"/>        
+      </geometry>
+      <material name="light_red"/>
+    </collision>          
+    <collision>
+      <origin rpy="0 0.13 0" xyz="0.025 0 -0.206"/>
+      <geometry>
+        <cylinder radius="0.049" length="0.243"/>        
+      </geometry>
+      <material name="light_red"/>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 -0.324"/>
+      <geometry>
+        <sphere radius="0.06"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>    
     <inertial>
       <origin rpy="0 0 0" xyz="0.00193727 0.00408989 -0.1636"/>
       <mass value="5.0"/>
@@ -792,7 +942,7 @@
         <mesh filename="package://meshes/r_knee_fe_lp.stl"/>
       </geometry>
       <material name="black"/>
-    </visual>
+    </visual>  
     <inertial>
       <origin rpy="0 0 0" xyz="4.68497e-09 -0.0147631 -0.0260394"/>
       <mass value="0.211"/>
@@ -841,6 +991,27 @@
       </geometry>
       <!--<material name="gray"/>-->
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.065"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>      
+    <collision>
+      <origin rpy="0 0 0" xyz="0.046 -0.006 -0.095"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>
+    <collision>
+      <origin rpy="0 0.2904 0" xyz="0.023 -0.006 -0.162"/>
+      <geometry>
+        <cylinder radius="0.055" length="0.16"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>      
     <inertial>
       <origin rpy="0 0 0" xyz="0.00590237 -0.00420298 -0.0805676"/>
       <mass value="2.5"/>
@@ -867,6 +1038,13 @@
       </geometry>
       <material name="white"/>
     </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <sphere radius="0.055"/>
+      </geometry>
+      <material name="light_red"/>
+    </collision>    
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00026965 -0.0286127 -0.000732675"/>
       <mass value="0.172"/>
@@ -897,9 +1075,17 @@
       <!--<origin rpy="0 -0 0" xyz="0 0.005 -0.046"/>-->
       <origin rpy="0 -0 0" xyz="0 0.008432 -0.0832995"/>
       <geometry>
-        <box size="0.22 0.092012 0.0045015"/>
+        <box size="0.22 0.092012 0.009"/>
       </geometry>
+      <material name="light_red"/>      
     </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0.01 -0.06"/>
+      <geometry>
+        <sphere radius="0.03"/>
+      </geometry>
+      <material name="light_red"/>      
+    </collision>    
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00051 0.012552 -0.054344"/>
 <!--      <origin rpy="0 0 0" xyz="-0.00321562 0.00678152 -0.0440164"/>-->
