@@ -20,14 +20,11 @@ public:
 
   void SetParameters(const YAML::Node &node) override;
 
-  // boolean setter
+  // boolean variables setter
   void DoComSwaying() { b_com_swaying_ = true; }
-  void DoComSwayingWithLMPC() { b_lmpc_swaying_ = true; }
-  void DoComSwayingWithNMPC() { b_nmpc_swaying_ = true; }
 
   void DoDcmWalking() { b_dcm_walking_ = true; }
-  void DoMPCWalking() { b_lmpc_walking_ = true; }
-  void DoDcmWalkingWithNMPC() { b_nmpc_walking_ = true; }
+  void DoMPCWalking() { b_convex_mpc_walking_ = true; }
 
   void DoStaticWalking() { b_static_walking_ = true; }
 
@@ -37,12 +34,9 @@ private:
   DracoStateProvider *sp_;
 
   bool b_com_swaying_;
-  bool b_lmpc_swaying_;
-  bool b_nmpc_swaying_;
 
   bool b_dcm_walking_;
-  bool b_lmpc_walking_;
-  bool b_nmpc_walking_;
+  bool b_convex_mpc_walking_;
 
   bool b_static_walking_;
 };

@@ -10,7 +10,7 @@
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
-#include "controller/draco_controller/draco_state_machines/locomotion.hpp"
+#include "controller/draco_controller/draco_state_machines/mpc_locomotion.hpp"
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
@@ -236,9 +236,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
       cfg);
 
-  state_machine_container_[draco_states::kLocomotion] =
-      new Locomotion(draco_states::kLocomotion, robot_, this);
-  state_machine_container_[draco_states::kLocomotion]->SetParameters(cfg);
+  state_machine_container_[draco_states::kMPCLocomotion] =
+      new MPCLocomotion(draco_states::kMPCLocomotion, robot_, this);
+  state_machine_container_[draco_states::kMPCLocomotion]->SetParameters(cfg);
 }
 
 DracoControlArchitecture::~DracoControlArchitecture() {
@@ -276,7 +276,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
 
-  delete state_machine_container_[draco_states::kLocomotion];
+  delete state_machine_container_[draco_states::kMPCLocomotion];
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {

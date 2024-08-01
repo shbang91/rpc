@@ -1,4 +1,4 @@
-#include "controller/draco_controller/draco_state_machines/locomotion.hpp"
+#include "controller/draco_controller/draco_state_machines/mpc_locomotion.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
@@ -15,10 +15,11 @@
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
-Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture *ctrl_arch)
+MPCLocomotion::MPCLocomotion(const StateId state_id,
+                             PinocchioRobotSystem *robot,
+                             DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
-  util::PrettyConstructor(2, "Locomotion");
+  util::PrettyConstructor(2, "MPCLocomotion");
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -29,8 +30,8 @@ Locomotion::Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
   prev_contact_states_ << 1.0, 1.0; // both feet in contact
 }
 
-void Locomotion::FirstVisit() {
-  std::cout << "draco_states: kLocomotion" << std::endl;
+void MPCLocomotion::FirstVisit() {
+  std::cout << "draco_states: kMPCLocomotion" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
   // wbc reaction wrench smoother
@@ -46,7 +47,8 @@ void Locomotion::FirstVisit() {
   gait_command_->vel_xy_des[0] = ctrl_arch_->mpc_gait_params_->x_vel_cmd_;
   gait_command_->vel_xy_des[1] = ctrl_arch_->mpc_gait_params_->y_vel_cmd_;
   gait_command_->yaw_rate = ctrl_arch_->mpc_gait_params_->yaw_rate_cmd_;
-  double des_height = robot_->GetRobotComPos()[2]; // CoM height
+  // double des_height = robot_->GetRobotComPos()[2]; // CoM height
+  double des_height = sp_->des_com_height_; // CoM height
   ctrl_arch_->convex_mpc_locomotion_->Initialize(*gait_command_, des_height);
   ctrl_arch_->convex_mpc_locomotion_->SetGait(
       ctrl_arch_->mpc_gait_params_->gait_number_);
@@ -63,7 +65,7 @@ void Locomotion::FirstVisit() {
       robot_->GetBaseToFootXYOffset());
 }
 
-void Locomotion::OneStep() {
+void MPCLocomotion::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
@@ -296,13 +298,13 @@ void Locomotion::OneStep() {
 #endif
 }
 
-bool Locomotion::EndOfState() { return false; }
+bool MPCLocomotion::EndOfState() { return false; }
 
-void Locomotion::LastVisit() {}
+void MPCLocomotion::LastVisit() {}
 
-StateId Locomotion::GetNextState() {}
+StateId MPCLocomotion::GetNextState() {}
 
-void Locomotion::SetParameters(const YAML::Node &node) {
+void MPCLocomotion::SetParameters(const YAML::Node &node) {
   try {
     // wbc params setting
     util::ReadParameter(node["wbc"]["qp"], "W_force_rate_of_change_left_foot",

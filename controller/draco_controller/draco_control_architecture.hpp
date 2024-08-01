@@ -13,7 +13,7 @@ constexpr int kLFSingleSupportSwing = 7;
 constexpr int kRFContactTransitionStart = 8;
 constexpr int kRFContactTransitionEnd = 9;
 constexpr int kRFSingleSupportSwing = 10;
-constexpr int kLocomotion = 11;
+constexpr int kMPCLocomotion = 11;
 } // namespace draco_states
 
 class DracoController;

@@ -6,11 +6,11 @@ class DracoControlArchitecture;
 class DracoStateProvider;
 class GaitCommand;
 
-class Locomotion : public StateMachine {
+class MPCLocomotion : public StateMachine {
 public:
-  Locomotion(const StateId state_id, PinocchioRobotSystem *robot,
-             DracoControlArchitecture *ctrl_arch);
-  virtual ~Locomotion() = default;
+  MPCLocomotion(const StateId state_id, PinocchioRobotSystem *robot,
+                DracoControlArchitecture *ctrl_arch);
+  virtual ~MPCLocomotion() = default;
 
   void FirstVisit() override;
   void OneStep() override;
