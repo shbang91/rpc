@@ -22,7 +22,7 @@ state_estimator:
   num_data_ang_vel: [5, 5, 5]
 
   ## for simulation please use 0
-  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+  com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
 
   ## IF 0: simple moving average filter parameter
   num_data_com_vel: [10, 10, 10]
@@ -52,12 +52,11 @@ wbc:
       kp : [400, 400]
       kd : [80., 80.]
 
-      icp_kp : [2.0, 2.0]
+      icp_kp : [4.0, 4.0]
       icp_kd : [0., 0.] # x, y will be ignored
       icp_ki : [0.0, 0.0] 
 
       kp_ik : [1.0, 1.0]
-      #kp_ik : [0.7, 0.7]
 
       ## IF icp_integrator_type == 0:
       time_constant : 0.1
@@ -72,8 +71,8 @@ wbc:
       com_kp : [1.0]
       com_kd : [1.0]
 
-      base_kp : [1000.0]
-      base_kd : [100.0] # x, y will be ignored
+      base_kp : [2000.0]
+      base_kd : [200.0] # x, y will be ignored
 
       kp_ik : [1.0]
 
@@ -83,8 +82,6 @@ wbc:
     wbo_task:
       kp : [0.0, 0.0, 1.0]
       kd : [0.0, 0.0, 2.0]
-      #kp : [0.0, 0.0, 0.0]
-      #kd : [0.0, 0.0, 0.0]
       kp_ik : [0., 0., 1]
 
     torso_ori_task:
@@ -96,33 +93,29 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      #kp : [10., 10., 10., 7., 5., 5., 5., 10., 10., 10., 7., 5., 5.]
       kp : [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
       kd : [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
       kp_ik : [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
 
     foot_pos_task:
       kp : [3000., 3000., 3000.]
-      kd : [150, 150, 150]
+      kd : [100, 100, 100]
       kp_ik : [1., 1., 1.]
 
     foot_ori_task:
       kp : [3000., 3000., 3000.]
-      kd : [150, 150, 150]
+      kd : [100, 100, 100]
       kp_ik : [1., 1., 1.]
 
     foot_rf_task:
       weight : [0., 0., 0., 0., 0., 0.]
-      #weight : [0., 0., 0., 0., 0., 1e-4]
 
   contact:
-    max_rf_z: 600.
+    max_rf_z: 800.
 
     mu: 0.5
     foot_half_length: 0.08
     foot_half_width: 0.04
-    #foot_half_length: 0.125
-    #foot_half_width: 0.075
     kp: [2500, 2500, 2500, 2500, 2500, 2500] ## ori, pos order
     kd: [100, 100, 100, 100, 100, 100]
 
@@ -132,12 +125,6 @@ wbc:
     ## for DCM Walking
     W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_left_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_right_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_left_foot_in_contact: [1, 1, 1, 1, 1, 1]
-    #W_delta_rf_right_foot_in_contact: [1, 1, 1, 1, 1, 1]
-    #W_delta_rf_left_foot_in_contact: [100, 100, 100, 100, 100, 100]
-    #W_delta_rf_right_foot_in_contact: [100, 100, 100, 100, 100, 100]
 
     ## for MPC walking
     #Old one

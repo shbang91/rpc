@@ -86,6 +86,9 @@ int imu_orientation_adr_;
 int imu_ang_vel_adr_;
 int imu_lin_acc_adr_;
 
+// yaml node
+YAML::Node cfg_;
+
 // actuator gains
 std::vector<double> kp_;
 std::vector<double> kd_;
@@ -338,6 +341,16 @@ void ConfigureSensors(mjModel *m, int &imu_orientation_adr,
   // imu_lin_acc_noise_adr = m->sensor_noise[idx];
 }
 
+void SetYamlNode(YAML::Node &node) {
+  try {
+    node =
+        YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/mujoco_params.yaml");
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+}
+
 void SetActuatorGains(const std::unordered_map<std::string, int> &mj_act_map) {
   kp_.clear();
   kp_.resize(mj_act_map.size());
@@ -345,13 +358,11 @@ void SetActuatorGains(const std::unordered_map<std::string, int> &mj_act_map) {
   kd_.resize(mj_act_map.size());
 
   try {
-    YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/mujoco_params.yaml");
     double tmp;
     for (const auto &[mj_act_name, mj_act_idx] : mj_act_map) {
-      util::ReadParameter(cfg["actuator_gains"][mj_act_name], "kp", tmp);
+      util::ReadParameter(cfg_["actuator_gains"][mj_act_name], "kp", tmp);
       kp_[mj_act_idx] = tmp;
-      util::ReadParameter(cfg["actuator_gains"][mj_act_name], "kd", tmp);
+      util::ReadParameter(cfg_["actuator_gains"][mj_act_name], "kd", tmp);
       kd_[mj_act_idx] = tmp;
     }
   } catch (const std::runtime_error &ex) {
@@ -360,26 +371,44 @@ void SetActuatorGains(const std::unordered_map<std::string, int> &mj_act_map) {
   }
 }
 
-// TODO:
-void SetInitialConfig(mjData *d) {
-  d->qpos[2] = 0.95;
-  // map (joint name -> joint idx)
-  // d->qpos[9] = M_PI / 6;   // l_shoulder_aa
-  // d->qpos[11] = -M_PI / 2; // l_elbow_fe
-  // d->qpos[15] = -M_PI / 6; // r_shouler_aa
-  // d->qpos[17] = -M_PI / 2; // r_elbow_fe
+void SetInitialConfig(mjModel *m, mjData *d,
+                      const std::unordered_map<std::string, int> &mj_qpos_map) {
+  try {
+    // set floating base pose
+    const std::string &base_frame_name =
+        draco_interface->GetPinocchioModel()->GetRootFrameName();
+    const int base_frame_idx =
+        mj_name2id(m, mjOBJ_BODY, base_frame_name.c_str());
+    // make sure we have a floating body: it has a single free joint
+    if (base_frame_idx >= 0 && m->body_jntnum[base_frame_idx] == 1 &&
+        m->jnt_type[m->body_jntadr[base_frame_idx]] == mjJNT_FREE) {
+      int qposadr = m->jnt_qposadr[m->body_jntadr[base_frame_idx]];
 
-  // left leg
-  // d->qpos[22] = -M_PI / 4;
-  // d->qpos[23] = M_PI / 4;
-  // d->qpos[24] = M_PI / 4;
-  // d->qpos[25] = -M_PI / 4;
+      const std::vector<std::string> base_pose = {
+          "base_pos_x",  "base_pos_y",  "base_pos_z", "base_quat_w",
+          "base_quat_x", "base_quat_y", "base_quat_z"};
 
-  // right leg
-  // d->qpos[29] = -M_PI / 4;
-  // d->qpos[30] = M_PI / 4;
-  // d->qpos[31] = M_PI / 4;
-  // d->qpos[32] = -M_PI / 4;
+      for (int i = 0; i < base_pose.size(); ++i) {
+        d->qpos[qposadr + i] = util::ReadParameter<double>(
+            cfg_["initial_config"], base_pose.at(i));
+      }
+    }
+
+    // set joint pos
+    for (const auto &[joint_name, qpos_adr] : mj_qpos_map) {
+      // if (joint_name == "l_knee_fe_jp" || joint_name == "r_knee_fe_jp")
+      // continue;
+      d->qpos[qpos_adr] =
+          util::ReadParameter<double>(cfg_["initial_config"], joint_name);
+    }
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
+  // optiona for setting the initial config with keyframe tag specified in xml
+  // if (m->nkey != 0)
+  // mju_copy(d->qpos, m->key_qpos, m->nq);
 }
 
 bool CopySensorData() {
@@ -728,6 +757,11 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
                        imu_lin_acc_adr_);
       // ********************************************
 
+      // Set YAML Node
+      //**********************************************
+      SetYamlNode(cfg_);
+      //**********************************************
+
       // Set actuator gains
       //**********************************************
       SetActuatorGains(mj_act_map_);
@@ -735,7 +769,7 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
 
       // Set initial configuration
       //**********************************************
-      SetInitialConfig(d);
+      SetInitialConfig(m, d, mj_qpos_map_);
       //**********************************************
 
       // lock the sim mutex
