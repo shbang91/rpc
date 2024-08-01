@@ -7,7 +7,7 @@ stance_foot: 0 # 0: left_foot 1: right_foot
 
 state_estimator:
   b_cheater_mode: true ## true: use simulation groundtruth states
-  state_estimator_type: default ## 1. default (IMU + Leg kinematics) 2. kf 
+  state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf 
 
   sigma_base_vel: [0.0, 0.0, 0.0]
   sigma_base_acc: [0.5, 0.5, 0.5]
@@ -83,8 +83,6 @@ wbc:
     wbo_task:
       kp : [0.0, 0.0, 1.0]
       kd : [0.0, 0.0, 2.0]
-      #kp : [0.0, 0.0, 0.0]
-      #kd : [0.0, 0.0, 0.0]
       kp_ik : [0., 0., 1]
 
     torso_ori_task:
@@ -101,18 +99,12 @@ wbc:
       ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
       ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
       ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
-      #kp : [10., 10., 10., 10.,10., 10., 10., 10., 10., 10., 10., 10., 10.]
-      #kp : [20., 20., 20., 14., 10., 10., 10., 20., 20., 20., 14., 10., 10.]
       kp : [200., 200., 200., 140., 500., 200., 100., 200., 200., 200., 140., 500., 200.]
       kd : [50., 50., 50., 40., 10., 30., 40., 50., 50., 50., 40., 10., 30.]
 
-      #kp_ik : [0.01, 0.01, 0.01,1., 1., 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 1., 1.]
       kp_ik : [1., 1., 1.,1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]
-      #kp_ik : [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 
     foot_pos_task:
-      #kp : [350., 350., 450.]
-      #kd : [20, 20, 25]
       kp : [1000., 1500., 2500.]
       kd : [50, 70, 100]
       kp_ik : [1., 1., 1.]
@@ -120,12 +112,9 @@ wbc:
     foot_ori_task:
       kp : [1000., 1000., 2500.]
       kd : [100, 100, 250]
-      #kp : [0., 0., 0.]
-      #kd : [0.00, 0.00, 0.00]
       kp_ik : [1., 1., 1.]
 
     foot_rf_task:
-      #weight : [0., 0., 0., 0.001, 0.001, 0.001] ## trq, force order
       weight : [0., 0., 0., 0., 0., 0.] ## trq, force order
 
   contact:
@@ -134,12 +123,12 @@ wbc:
     mu: 0.5
     foot_half_length: 0.08
     foot_half_width: 0.04 ## 0.04
-    #foot_half_length: 0.125
-    #foot_half_width: 0.075
-    kp: [1000, 1000, 1000, 5000, 5000, 5000] ## ori, pos order
-    kd: [50, 50, 50, 50, 50, 50]
-    #kp: [0, 0, 0, 0, 0, 0] ## ori, pos order
-    #kd: [0, 0, 0, 0, 0, 0]
+    #kp: [100, 100, 100, 100, 100, 100] ## ori, pos order
+    #kd: [20, 20, 20, 20, 20, 20]
+    #kp: [1000, 1000, 1000, 5000, 5000, 5000] ## ori, pos order
+    #kd: [50, 50, 50, 50, 50, 50]
+    kp: [0, 0, 0, 0, 0, 0] ## ori, pos order
+    kd: [0, 0, 0, 0, 0, 0]
 
   qp:
     W_delta_qddot: 1e5 #1e5
@@ -147,12 +136,6 @@ wbc:
     ## for DCM Walking
     W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_left_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_right_foot_in_contact: [1, 1e-1, 1, 1e-3, 1e-3, 1e-4]
-    #W_delta_rf_left_foot_in_contact: [1, 1, 1, 1, 1, 1]
-    #W_delta_rf_right_foot_in_contact: [1, 1, 1, 1, 1, 1]
-    #W_delta_rf_left_foot_in_contact: [100, 100, 100, 100, 100, 100]
-    #W_delta_rf_right_foot_in_contact: [100, 100, 100, 100, 100, 100]
 
     ## for MPC walking
     #Old one
@@ -277,23 +260,3 @@ dcm_walking:
   nominal_strafe_distance: 0.05
   n_steps: 5
   first_swing_leg: 1 ## 0: left leg ## 1: right leg
-
-
-lmpc_walking:
-  ##dcm related params
-  t_additional_init_trans: 0.
-  t_contact_trans: 0.45
-  t_swing: 0.55
-  percentage_settle: 0.9
-  alpha_ds: 0.5
-
-  ##footstep related params
-  nominal_footwidth: 0.2
-  nominal_forward_step: 0.1
-  nominal_backward_step: -0.1
-  nominal_turn_radians: 0.3
-  nominal_strafe_distance: 0.02
-  n_steps: 1
-  first_swing_leg: 0 ## 0: left leg ## 1: right leg
-
-

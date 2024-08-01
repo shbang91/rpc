@@ -130,7 +130,7 @@ void DracoController::GetCommand(void *command) {
 
       // for real experiment smoothing command
       smoothing_command_start_time_ = sp_->current_time_;
-      b_smoothing_command_ = true;
+      // b_smoothing_command_ = true;
 
       // change flag
       b_first_visit_wbc_ctrl_ = false;
