@@ -125,14 +125,14 @@ void DracoController::GetCommand(void *command) {
   } else {
     // first visit for feedforward torque command
     if (b_first_visit_wbc_ctrl_) {
-      // for smoothing
+      // initial joint pos
       init_joint_pos_ = robot_->GetJointPos();
 
-      // for real experiment smoothing command
+      // for smoothing command
       smoothing_command_start_time_ = sp_->current_time_;
-      // b_smoothing_command_ = true;
+      b_smoothing_command_ = true;
 
-      // change flag
+      // change flag for finishing first visit
       b_first_visit_wbc_ctrl_ = false;
     }
     // whole body controller (feedforward torque computation) with contact

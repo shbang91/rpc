@@ -21,10 +21,7 @@ DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
       rf_z_max_interp_duration_(0.), W_delta_qddot_(0.),
       W_xc_ddot_in_contact_(Eigen::VectorXd::Zero(6)),
       W_delta_rf_left_foot_in_contact_(Eigen::VectorXd::Zero(6)),
-      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6))
-// W_force_rate_of_change_left_foot_(Eigen::VectorXd::Zero(6)),
-// W_force_rate_of_change_right_foot_(Eigen::VectorXd::Zero(6)) {
-{
+      W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6)) {
   util::PrettyConstructor(2, "DoubleSupportStandUp");
 
   sp_ = DracoStateProvider::GetStateProvider();
@@ -60,13 +57,14 @@ void DoubleSupportStandUp::FirstVisit() {
 
   Eigen::Vector3d target_com_pos =
       (lfoot_iso.translation() + rfoot_iso.translation()) / 2.;
-  // TEST
+  //========================================================================
+  // TEST: Set current base / CoM height as desired height
   if (sp_->b_use_base_height_)
     target_height_ =
         robot_->GetLinkIsometry(draco_link::torso_com_link).translation()[2];
-  else
-    target_height_ = robot_->GetRobotComPos()[2];
-  // TEST
+  // else
+  // target_height_ = robot_->GetRobotComPos()[2];
+  //========================================================================
   target_com_pos[2] = target_height_;
 
   Eigen::Quaterniond lfoot_quat(lfoot_iso.linear());
@@ -79,13 +77,13 @@ void DoubleSupportStandUp::FirstVisit() {
       init_com_pos, target_com_pos, init_torso_quat, target_torso_quat,
       end_time_);
 
-  //  increase maximum normal reaction force
+  // increase maximum normal reaction force
   ctrl_arch_->lf_max_normal_froce_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
   ctrl_arch_->rf_max_normal_froce_tm_->InitializeRampToMax(
       rf_z_max_interp_duration_);
 
-  // QP params
+  // WBIC QP params
   ctrl_arch_->tci_container_->qp_params_->W_delta_qddot_ =
       Eigen::VectorXd::Constant(6, W_delta_qddot_);
   ctrl_arch_->tci_container_->qp_params_->W_delta_rf_
@@ -93,19 +91,12 @@ void DoubleSupportStandUp::FirstVisit() {
       W_delta_rf_right_foot_in_contact_;
   ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_ << W_xc_ddot_in_contact_,
       W_xc_ddot_in_contact_;
-  ctrl_arch_->tci_container_->qp_params_->W_force_rate_of_change_
-      << W_force_rate_of_change_left_foot_,
-      W_force_rate_of_change_right_foot_;
-
-  // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[5] = 1e8;
-  // ctrl_arch_->tci_container_->qp_params_->W_xc_ddot_[11] = 1e8;
 
   // initialize reaction force tasks
   // smoothly increase the fz in world frame
   Eigen::VectorXd init_reaction_force = Eigen::VectorXd::Zero(6);
-  // init_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   Eigen::VectorXd des_reaction_force = Eigen::VectorXd::Zero(6);
-  // des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
+  des_reaction_force[5] = kGravity * robot_->GetTotalMass() / 2.;
   ctrl_arch_->lf_force_tm_->InitializeInterpolation(
       init_reaction_force, des_reaction_force, end_time_);
   ctrl_arch_->rf_force_tm_->InitializeInterpolation(
@@ -171,10 +162,6 @@ void DoubleSupportStandUp::SetParameters(const YAML::Node &cfg) {
                         W_delta_rf_left_foot_in_contact_);
     util::ReadParameter(cfg["wbc"]["qp"], "W_delta_rf_right_foot_in_contact",
                         W_delta_rf_right_foot_in_contact_);
-    // util::ReadParameter(cfg["wbc"]["qp"], "W_force_rate_of_change_left_foot",
-    // W_force_rate_of_change_left_foot_);
-    // util::ReadParameter(cfg["wbc"]["qp"],
-    // "W_force_rate_of_change_right_foot", W_force_rate_of_change_right_foot_);
 
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["

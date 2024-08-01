@@ -37,16 +37,16 @@ state_estimator:
 
 
 controller:
-  b_smoothing_command: false 
-  smoothing_command_duration: 3. ## this will filter the control command at the beginning
+  b_smoothing_command: true 
+  smoothing_command_duration: 0.01 ## this will filter the control command at the beginning
   b_use_modified_swing_foot_jac: true
   b_use_filtered_torque: false
-  alpha_cmd: 1.0
+  alpha_cmd: 0.5
 
 wbc:
   task:
     com_xy_task:
-      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
+      com_feedback_source: 0 # 0: com feedback / 1: icp feedback
       icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
 
       kp : [500., 500.]
@@ -68,7 +68,7 @@ wbc:
       leaky_integrator_limit: [0.03, 0.03]
 
     com_z_task:
-      com_height_target_source: 1 # 0: com height / 1: base height
+      com_height_target_source: 0 # 0: com height / 1: base height
       com_kp : [1000.]
       com_kd : [100.]
 
@@ -123,21 +123,31 @@ wbc:
     mu: 0.5
     foot_half_length: 0.08
     foot_half_width: 0.04 ## 0.04
+    kp: [0, 0, 0, 0, 0, 0] ## ori, pos order 
+    kd: [0, 0, 0, 0, 0, 0]
     #kp: [100, 100, 100, 100, 100, 100] ## ori, pos order
     #kd: [20, 20, 20, 20, 20, 20]
     #kp: [1000, 1000, 1000, 5000, 5000, 5000] ## ori, pos order
     #kd: [50, 50, 50, 50, 50, 50]
-    kp: [0, 0, 0, 0, 0, 0] ## ori, pos order
-    kd: [0, 0, 0, 0, 0, 0]
 
   qp:
     W_delta_qddot: 1e5 #1e5
 
     ## for DCM Walking
+    ########################################################################
     W_delta_rf_left_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
     W_delta_rf_right_foot_in_contact: [1, 1, 1e-4, 1e-3, 1e-3, 1e-4]
 
+    W_xc_ddot_in_contact: [0, 0, 0, 0, 0, 0]
+    W_xc_ddot_in_swing: 0
+    #W_xc_ddot_in_contact: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
+    #W_xc_ddot_in_contact: 15e4
+    #W_xc_ddot_in_contact: 5e4
+    #W_xc_ddot_in_swing: 1e-3
+    #W_xc_ddot_in_contact: 0
+
     ## for MPC walking
+    ########################################################################
     #Old one
     #W_delta_rf_left_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
     #W_delta_rf_right_foot_in_contact_mpc: [0.0001, 0.0001, 100000, 1000, 1000, 1000]
@@ -167,31 +177,10 @@ wbc:
     #W_delta_rf_left_foot_in_swing: [5, 5, 5, 5, 5, 5]
     #W_delta_rf_right_foot_in_swing: [5, 5, 5, 5, 5, 5]
 
-    #W_xc_ddot_in_contact: [1e5, 1e5, 1e5, 1e5, 1e5, 1e5]
-    W_xc_ddot_in_contact: [0, 0, 0, 0, 0, 0]
-    #W_xc_ddot_in_contact: 15e4
-    #W_xc_ddot_in_contact: 5e4
-    #W_xc_ddot_in_swing: 1e-3
-    #W_xc_ddot_in_contact: 0
-    W_xc_ddot_in_swing: 0
-
-
     #W_force_rate_of_change_left_foot: [5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
     #W_force_rate_of_change_right_foot: [5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
     W_force_rate_of_change_left_foot: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     W_force_rate_of_change_right_foot: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-
-    #W_delta_rf_left_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
-    #W_delta_rf_right_foot_in_contact: [1, 1, 0.1, 0.1, 0.1, 0.001] ## experiment
-
-    #W_delta_qddot: 1e5
-    #W_delta_rf_left_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
-    #W_delta_rf_right_foot_in_contact: [1e3, 1e3, 1, 1e2, 1e2, 1]
-    #W_delta_rf_left_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
-    #W_delta_rf_right_foot_in_swing: [5e3, 5e3, 5, 5e2, 5e2, 5]
-    #W_xc_ddot_in_contact: 1e7
-    #W_xc_ddot_in_swing: 1e-3
 
 state_machine:
     initialize:
