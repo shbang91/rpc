@@ -27,10 +27,10 @@ import numpy as np
 
 
 def __attach_axes(
-        handle: meshcat.Visualizer,
-        length: float = 0.05,
-        thickness: float = 0.002,
-        opacity: float = 1.0,
+    handle: meshcat.Visualizer,
+    length: float = 0.05,
+    thickness: float = 0.002,
+    opacity: float = 1.0,
 ) -> None:
     """Attach a set of three basis axes to a MeshCat handle.
 
@@ -63,12 +63,12 @@ def __attach_axes(
 
 
 def frame(
-        handle: meshcat.Visualizer,
-        axis_length: float = 0.1,
-        axis_thickness: float = 0.005,
-        opacity: float = 1.0,
-        origin_color: int = 0x000000,
-        origin_radius: float = 0.01,
+    handle: meshcat.Visualizer,
+    axis_length: float = 0.1,
+    axis_thickness: float = 0.005,
+    opacity: float = 1.0,
+    origin_color: int = 0x000000,
+    origin_radius: float = 0.01,
 ) -> None:
     """Set MeshCat handle to a frame, represented by an origin and three axes.
 
@@ -84,9 +84,7 @@ def frame(
         As per the de-facto standard (Blender, OpenRAVE, RViz, ...), the
         x-axis is red, the y-axis is green and the z-axis is blue.
     """
-    material = meshcat.geometry.MeshLambertMaterial(
-        color=origin_color, opacity=opacity
-    )
+    material = meshcat.geometry.MeshLambertMaterial(color=origin_color, opacity=opacity)
     sphere = meshcat.geometry.Sphere(origin_radius)
     handle.set_object(sphere, material)
     __attach_axes(handle, axis_length, axis_thickness, opacity)
