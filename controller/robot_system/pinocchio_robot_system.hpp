@@ -33,6 +33,8 @@ public:
       std::vector<std::string> *unactuated_joint_list = nullptr);
   virtual ~PinocchioRobotSystem() = default;
 
+  // note that base_joint_lin_vel & base_joint_ang_vel should be in the world
+  // frame
   void UpdateRobotModel(const Eigen::Vector3d &base_joint_pos,
                         const Eigen::Quaterniond &base_joint_quat,
                         const Eigen::Vector3d &base_joint_lin_vel,

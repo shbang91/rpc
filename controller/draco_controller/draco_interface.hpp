@@ -24,8 +24,8 @@ public:
   virtual ~DracoSensorData() = default;
 
   Eigen::Vector4d imu_frame_quat_; // x, y, z, w order
-  Eigen::Vector3d imu_ang_vel_;
-  Eigen::Vector3d imu_dvel_;
+  Eigen::Vector3d imu_ang_vel_;    // in world frame
+  Eigen::Vector3d imu_dvel_;       // in world frame
   Eigen::VectorXd joint_pos_;
   Eigen::VectorXd joint_vel_;
   bool b_lf_contact_;

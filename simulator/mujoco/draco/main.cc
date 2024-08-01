@@ -417,16 +417,19 @@ bool CopySensorData() {
     draco_sensor_data->base_joint_quat_[1] = d->qpos[qposadr + 5]; // q.y
     draco_sensor_data->base_joint_quat_[2] = d->qpos[qposadr + 6]; // q.z
     draco_sensor_data->base_joint_quat_[3] = d->qpos[qposadr + 3]; // q.w
+    Eigen::Quaterniond world_Q_body(d->qpos[qposadr + 3], d->qpos[qposadr + 4],
+                                    d->qpos[qposadr + 5], d->qpos[qposadr + 6]);
 
     // world linear vel
     draco_sensor_data->base_joint_lin_vel_[0] = d->qvel[qveladr + 0];
     draco_sensor_data->base_joint_lin_vel_[1] = d->qvel[qveladr + 1];
     draco_sensor_data->base_joint_lin_vel_[2] = d->qvel[qveladr + 2];
 
-    // body angular vel
-    draco_sensor_data->base_joint_ang_vel_[0] = d->qvel[qveladr + 3];
-    draco_sensor_data->base_joint_ang_vel_[1] = d->qvel[qveladr + 4];
-    draco_sensor_data->base_joint_ang_vel_[2] = d->qvel[qveladr + 5];
+    // convert to world angular vel
+    Eigen::Vector3d body_ang_vel(d->qvel[qveladr + 3], d->qvel[qveladr + 4],
+                                 d->qvel[qveladr + 5]);
+    draco_sensor_data->base_joint_ang_vel_ =
+        world_Q_body.normalized() * body_ang_vel;
   }
 
   //==============================================
@@ -436,23 +439,26 @@ bool CopySensorData() {
   mjtNum *imu_quat = &d->sensordata[imu_orientation_adr_];
   Eigen::Quaterniond world_Q_imu(imu_quat[0], imu_quat[1], imu_quat[2],
                                  imu_quat[3]); // q.w, q.x, q.y, q.z
-  draco_sensor_data->imu_frame_quat_ << world_Q_imu.coeffs();
+  draco_sensor_data->imu_frame_quat_ = Eigen::Vector4d(
+      world_Q_imu.x(), world_Q_imu.y(), world_Q_imu.z(), world_Q_imu.w());
 
   // imu angular velocity
   mjtNum *imu_ang_vel = &d->sensordata[imu_ang_vel_adr_];
   Eigen::Vector3d imu_ang_vel_in_imu(imu_ang_vel[0], imu_ang_vel[1],
                                      imu_ang_vel[2]);
-  draco_sensor_data->imu_ang_vel_ = world_Q_imu * imu_ang_vel_in_imu;
+  draco_sensor_data->imu_ang_vel_ =
+      world_Q_imu.normalized() * imu_ang_vel_in_imu;
 
   // imu linear acceleration
   mjtNum *imu_lin_acc = &d->sensordata[imu_lin_acc_adr_];
   Eigen::Vector3d imu_lin_acc_in_imu(imu_lin_acc[0], imu_lin_acc[1],
                                      imu_lin_acc[2]);
   draco_sensor_data->imu_dvel_ =
-      world_Q_imu * imu_lin_acc_in_imu / m->opt.timestep;
+      world_Q_imu.normalized() * imu_lin_acc_in_imu * m->opt.timestep;
 
   //==============================================
-  // TODO:contact states (1. contact normal force, 2. swing foot height)
+  // TODO(optional): contact sensor (1. contact normal force, 2. swing foot
+  // height)
   //==============================================
 
   return true;
