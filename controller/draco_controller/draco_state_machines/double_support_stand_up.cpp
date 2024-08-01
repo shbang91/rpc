@@ -104,14 +104,12 @@ void DoubleSupportStandUp::FirstVisit() {
 
   // contact PD controller
   auto &contact_map = ctrl_arch_->tci_container_->contact_map_;
-  contact_map["lf_contact"]->SetDesiredPos(
-      robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
-  contact_map["rf_contact"]->SetDesiredPos(
-      robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
-  contact_map["lf_contact"]->SetDesiredOri(Eigen::Quaterniond(
-      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear()));
-  contact_map["rf_contact"]->SetDesiredOri(Eigen::Quaterniond(
-      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear()));
+  contact_map["lf_contact"]->SetDesiredPos(lfoot_iso.translation());
+  contact_map["rf_contact"]->SetDesiredPos(rfoot_iso.translation());
+  contact_map["lf_contact"]->SetDesiredOri(
+      Eigen::Quaterniond(lfoot_iso.linear()));
+  contact_map["rf_contact"]->SetDesiredOri(
+      Eigen::Quaterniond(rfoot_iso.linear()));
 }
 
 void DoubleSupportStandUp::OneStep() {

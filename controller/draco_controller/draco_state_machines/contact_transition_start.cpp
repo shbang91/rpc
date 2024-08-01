@@ -102,14 +102,18 @@ void ContactTransitionStart::FirstVisit() {
   contact_vector.clear();
   contact_vector.push_back(contact_map["lf_contact"]);
   contact_vector.push_back(contact_map["rf_contact"]);
-  contact_map["lf_contact"]->SetDesiredPos(
-      robot_->GetLinkIsometry(draco_link::l_foot_contact).translation());
-  contact_map["rf_contact"]->SetDesiredPos(
-      robot_->GetLinkIsometry(draco_link::r_foot_contact).translation());
-  contact_map["lf_contact"]->SetDesiredOri(Eigen::Quaterniond(
-      robot_->GetLinkIsometry(draco_link::l_foot_contact).linear()));
-  contact_map["rf_contact"]->SetDesiredOri(Eigen::Quaterniond(
-      robot_->GetLinkIsometry(draco_link::r_foot_contact).linear()));
+  Eigen::Isometry3d lfoot_iso =
+      robot_->GetLinkIsometry(draco_link::l_foot_contact);
+  Eigen::Isometry3d rfoot_iso =
+      robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  FootStep::MakeHorizontal(lfoot_iso);
+  FootStep::MakeHorizontal(rfoot_iso);
+  contact_map["lf_contact"]->SetDesiredPos(lfoot_iso.translation());
+  contact_map["rf_contact"]->SetDesiredPos(rfoot_iso.translation());
+  contact_map["lf_contact"]->SetDesiredOri(
+      Eigen::Quaterniond(lfoot_iso.linear()));
+  contact_map["rf_contact"]->SetDesiredOri(
+      Eigen::Quaterniond(rfoot_iso.linear()));
 
   auto &task_vector = ctrl_arch_->tci_container_->task_vector_;
   auto &task_map = ctrl_arch_->tci_container_->task_map_;
