@@ -1266,6 +1266,128 @@ void UiModify(mjUI *ui, mjuiState *state, mjrContext *con) {
 void UiEvent(mjuiState *state) {
   mj::Simulate *sim = static_cast<mj::Simulate *>(state->userdata);
 
+  std::cout << "=================================" << std::endl;
+  std::cout << "state type: " << state->type << "state key: " << state->key
+            << std::endl;
+  std::cout << "=================================" << std::endl;
+
+  //====================================================================
+  // add custom keyboard event shortcut
+  //====================================================================
+  if (state->type == mjEVENT_KEY && state->key != 0) {
+    switch (state->key) {
+    case mjKEY_D:
+      for (int i = 0; i < sim->m_->neq; ++i) {
+        if (sim->m_->eq_type[i] == mjEQ_WELD) {
+          std::cout << "[Mujoco sim] lowering down the base z pos by 1cm!"
+                    << '\n';
+          sim->m_->eq_data[5 + 3 * i] -= 0.01;
+        }
+      }
+      return;
+
+    case mjKEY_R:
+      for (int i = 0; i < sim->m_->neq; ++i) {
+        if (sim->m_->eq_type[i] == mjEQ_WELD) {
+          std::cout << "[Mujoco sim] Remove the Weld constraint!" << '\n';
+          sim->d_->eq_active[i] = false;
+        }
+      }
+      return;
+
+    case mjKEY_M:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressM(); // MPC walking
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_X:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressX(); // MPC walking forward +
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_Y:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressY(); // MPC walking lateral +
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_Z:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressZ(); // MPC turning yaw +
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_2:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressTwo(); // DCM backward walking
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_4:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressFour(); // DCM left strafing
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_5:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressFive(); // DCM in-place stepping
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_6:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressSix(); // DCM right strafing
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_7:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressSeven(); // DCM Left turning
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_8:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressEight(); // DCM forward walking
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+    case mjKEY_9:
+      if (sim->interrupt_handler_) {
+        sim->interrupt_handler_->PressNine(); // DCM Right turning
+      } else {
+        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      }
+      return;
+
+      // default:
+      // break;
+    }
+  }
+
   // call UI 0 if event is directed to it
   if ((state->dragrect == sim->ui0.rectid) ||
       (state->dragrect == 0 && state->mouserect == sim->ui0.rectid) ||
@@ -1326,6 +1448,7 @@ void UiEvent(mjuiState *state) {
 
     // simulation section
     else if (it && it->sectionid == SECT_SIMULATION) {
+
       switch (it->itemid) {
       case 1: // Reset
         sim->pending_.reset = true;
@@ -1497,7 +1620,8 @@ void UiEvent(mjuiState *state) {
       if (!sim->is_passive_ && sim->m_ && !sim->run) {
         ClearTimers(sim->d_);
 
-        // currently in scrubber: increment scrub, load state, update slider UI
+        // currently in scrubber: increment scrub, load state, update slider
+        // UI
         if (sim->scrub_index < 0) {
           sim->scrub_index++;
           sim->pending_.load_from_history = true;
@@ -1558,32 +1682,22 @@ void UiEvent(mjuiState *state) {
         sim->cam.fixedcamid = sim->camera - 2;
         mjui0_update_section(sim, SECT_RENDERING);
       }
-      if (sim->interrupt_handler_) {
-        // trigger walking
-        sim->interrupt_handler_->PressEight();
-      } else {
-        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
-      }
+
       break;
 
     case '[': // cycle down fixed cameras
-      // if ((sim->m_ || sim->is_passive_) && sim->ncam_) {
-      // sim->cam.type = mjCAMERA_FIXED;
-      // camera = {0 or 1} are reserved for the free and tracking cameras
-      // if (sim->camera <= 2) {
-      // sim->camera = 2 + sim->ncam_ - 1;
-      //} else {
-      // sim->camera -= 1;
-      //}
-      // sim->cam.fixedcamid = sim->camera - 2;
-      // mjui0_update_section(sim, SECT_RENDERING);
-      //}
-      if (sim->interrupt_handler_) {
-        // sim->interrupt_handler_->PressFive(); // in-place stepping
-        sim->interrupt_handler_->PressM(); // MPC walking
-      } else {
-        std::cout << "[Mujoco Sim] Interrupt Handler Error!" << '\n';
+      if ((sim->m_ || sim->is_passive_) && sim->ncam_) {
+        sim->cam.type = mjCAMERA_FIXED;
+        // camera = {0 or 1} are reserved for the free and tracking cameras
+        if (sim->camera <= 2) {
+          sim->camera = 2 + sim->ncam_ - 1;
+        } else {
+          sim->camera -= 1;
+        }
+        sim->cam.fixedcamid = sim->camera - 2;
+        mjui0_update_section(sim, SECT_RENDERING);
       }
+
       break;
 
     case mjKEY_F6: // cycle frame visualisation
@@ -1607,33 +1721,19 @@ void UiEvent(mjuiState *state) {
       break;
 
     case '-': // slow down
-      // if (!sim->is_passive_) {
-      // int numclicks =
-      // sizeof(sim->percentRealTime) / sizeof(sim->percentRealTime[0]);
-      // if (sim->real_time_index < numclicks - 1 && !state->shift) {
-      // sim->real_time_index++;
-      // sim->speed_changed = true;
-      //}
-      //}
-      for (int i = 0; i < sim->m_->neq; ++i) {
-        if (sim->m_->eq_type[i] == mjEQ_WELD) {
-          std::cout << "[Mujoco sim] lowering down the base z pos by 1cm!"
-                    << '\n';
-          sim->m_->eq_data[5 + 3 * i] -= 0.01;
+      if (!sim->is_passive_) {
+        int numclicks =
+            sizeof(sim->percentRealTime) / sizeof(sim->percentRealTime[0]);
+        if (sim->real_time_index < numclicks - 1 && !state->shift) {
+          sim->real_time_index++;
+          sim->speed_changed = true;
         }
       }
-      break;
 
     case '=': // speed up
-      // if (!sim->is_passive_ && sim->real_time_index > 0 && !state->shift) {
-      // sim->real_time_index--;
-      // sim->speed_changed = true;
-      //}
-      for (int i = 0; i < sim->m_->neq; ++i) {
-        if (sim->m_->eq_type[i] == mjEQ_WELD) {
-          std::cout << "[Mujoco sim] Remove the Weld constraint!" << '\n';
-          sim->d_->eq_active[i] = false;
-        }
+      if (!sim->is_passive_ && sim->real_time_index > 0 && !state->shift) {
+        sim->real_time_index--;
+        sim->speed_changed = true;
       }
 
       break;
@@ -2569,9 +2669,10 @@ void Simulate::Render() {
 
     // save as PNG
     // TODO(b/241577466): Parse the stem of the filename and use a .PNG
-    // extension. Unfortunately, if we just yank ".xml"/".mjb" from the filename
-    // and append .PNG, the macOS file dialog does not automatically open that
-    // location. Thus, we defer to a default "screenshot.png" for now.
+    // extension. Unfortunately, if we just yank ".xml"/".mjb" from the
+    // filename and append .PNG, the macOS file dialog does not automatically
+    // open that location. Thus, we defer to a default "screenshot.png" for
+    // now.
     const std::string path = GetSavePath("screenshot.png");
     if (!path.empty()) {
       if (lodepng::encode(path, rgb.get(), w, h, LCT_RGB)) {

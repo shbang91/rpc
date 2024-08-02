@@ -59,9 +59,19 @@
 
 // custom key stroke
 //**********************************************************
-#define mjKEY_5 53
 #define mjKEY_D 68
 #define mjKEY_R 82
+#define mjKEY_M 77
+#define mjKEY_X 88
+#define mjKEY_Y 89
+#define mjKEY_Z 90
+#define mjKEY_2 50
+#define mjKEY_4 52
+#define mjKEY_5 53
+#define mjKEY_6 54
+#define mjKEY_7 55
+#define mjKEY_8 56
+#define mjKEY_9 57
 //**********************************************************
 
 //---------------------------------- primitive types (mjt)
