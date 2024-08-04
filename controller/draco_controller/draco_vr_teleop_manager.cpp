@@ -38,7 +38,7 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   // std::endl;
   DracoVRCommands result;
   if (!success) {
-    // std::cout << "No commands received" << std::endl;
+    std::cout << "No commands received" << std::endl;
     return prev_commands;
   }
 
@@ -51,26 +51,33 @@ DracoVRCommands DracoVRTeleopManager::ReceiveCommands() {
   std::cout << s << std::endl;
   */
 
-  result.l_bump = m.l_bump();
-  result.l_trigger = m.l_trigger();
-  result.l_button = m.l_button();
+  // result.l_bump = m.l_bump();
+  // result.l_trigger = m.l_trigger();
+  // result.l_button = m.l_button();
   result.l_pad = m.l_pad();
 
   result.r_bump = m.r_bump();
-  result.r_trigger = m.r_trigger();
-  result.r_button = m.r_button();
-  result.r_pad = m.r_pad();
+  // result.r_trigger = m.r_trigger();
+  // result.r_button = m.r_button();
+  // result.r_pad = m.r_pad();
 
-  result.vr_timestamp = m.vr_timestamp();
+  // result.vr_timestamp = m.vr_timestamp();
 
+  // for (int i = 0; i < 3; ++i) {
+  // result.lh_pos[i] = m.lh_pos(i);
+  // result.rh_pos[i] = m.rh_pos(i);
+  // for (int j = 0; j < 3; ++j) {
+  // result.lh_ori(i, j) = m.lh_ori(i * 3 + j);
+  // result.rh_ori(i, j) = m.rh_ori(i * 3 + j);
+  //}
+  //}
   for (int i = 0; i < 3; ++i) {
-    result.lh_pos[i] = m.lh_pos(i);
     result.rh_pos[i] = m.rh_pos(i);
-    for (int j = 0; j < 3; ++j) {
-      result.lh_ori(i, j) = m.lh_ori(i * 3 + j);
-      result.rh_ori(i, j) = m.rh_ori(i * 3 + j);
-    }
   }
+  result.rh_ori.x() = m.rh_ori(0);
+  result.rh_ori.y() = m.rh_ori(1);
+  result.rh_ori.z() = m.rh_ori(2);
+  result.rh_ori.w() = m.rh_ori(3);
 
   if (result.l_pad) {
     std::cout << "l pad pressed" << result.l_pad << std::endl;

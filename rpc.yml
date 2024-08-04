@@ -1,4 +1,4 @@
-name: rpc
+name: rpc-teleop
 channels:
   - conda-forge
 dependencies:

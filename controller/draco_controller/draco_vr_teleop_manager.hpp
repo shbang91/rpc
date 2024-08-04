@@ -15,8 +15,10 @@ public:
   Eigen::Vector3d lh_pos = Eigen::Vector3d::Zero();
   Eigen::Vector3d rh_pos = Eigen::Vector3d::Zero();
 
-  Eigen::Matrix3d lh_ori = Eigen::Matrix3d::Zero();
-  Eigen::Matrix3d rh_ori = Eigen::Matrix3d::Zero();
+  // Eigen::Matrix3d lh_ori = Eigen::Matrix3d::Zero();
+  // Eigen::Matrix3d rh_ori = Eigen::Matrix3d::Zero();
+  Eigen::Quaterniond lh_ori = Eigen::Quaterniond::Identity();
+  Eigen::Quaterniond rh_ori = Eigen::Quaterniond::Identity();
 
   bool l_trigger = 0;
   bool l_bump = 0;
@@ -48,7 +50,7 @@ private:
   std::unique_ptr<zmq::context_t> context_;
   std::unique_ptr<zmq::socket_t> teleop_socket_;
   std::unique_ptr<zmq::socket_t> streaming_socket_;
-  bool ready_; // After clicking a button, the VR operator is ready to stream
-               // commands.
-  bool l_pad_held_;
+  bool ready_ = false; // After clicking a button, the VR operator is ready to
+                       // stream commands.
+  bool l_pad_held_ = false;
 };

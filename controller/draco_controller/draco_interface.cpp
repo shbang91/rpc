@@ -120,10 +120,14 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
     Eigen::Quaterniond local_lh_quat;
     vr_ready = DracoVRTeleopManager::GetVRTeleopManager()->isReady();
     if (vr_ready) {
+      local_lh_pos << 0.25, 0.25, 0.05;
+      local_lh_quat = Eigen::AngleAxisd(
+          0.0,
+          Eigen::Vector3d::UnitZ()); // TEST VALUES WITH UnitX, UnitY, UnitZ
       local_rh_pos = cmd.rh_pos;
-      local_lh_pos = cmd.lh_pos;
+      // local_lh_pos = cmd.lh_pos;
       local_rh_quat = cmd.rh_ori;
-      local_lh_quat = cmd.lh_ori;
+      // local_lh_quat = cmd.lh_ori;
     } else {
       local_rh_pos << 0.25, -0.25, 0.05;
       local_lh_pos << 0.25, 0.25, 0.05;

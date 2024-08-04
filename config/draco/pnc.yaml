@@ -2,14 +2,15 @@ servo_dt: 0.00125
 
 ip_address: "tcp://*:5557"
 #vr_ip_address: "tcp://192.168.50.50:5555"
-vr_ip_address: "tcp://192.168.1.217:5555"
+#vr_ip_address: "tcp://192.168.1.217:5555"
+vr_ip_address: "tcp://10.157.137.100:5555"
 
 #data_save_freq: 1
 data_save_freq: 40
 vr_teleop_freq: 40
 
-#b_sim: true ## if false, all the "exp_" parameters are used
-b_sim: false ## if false, all the "exp_" parameters are used
+b_sim: true ## if false, all the "exp_" parameters are used
+#b_sim: false ## if false, all the "exp_" parameters are used
 
 
 state_estimator:
@@ -294,7 +295,7 @@ state_machine:
       wait_time: 10.
 
     stand_up:
-      standup_duration: 15.
+      standup_duration: 3.
       target_com_height: 0.658
       #target_base_height: 0.90
       target_base_height: 0.86
