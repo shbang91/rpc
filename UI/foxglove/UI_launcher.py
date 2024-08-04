@@ -4,17 +4,21 @@ import zmq
 import time
 import ruamel.yaml as yaml
 import numpy as np
+
+cwd = os.getcwd()
+sys.path.append(cwd)
+sys.path.append(cwd + "/build")
+
+#NEED TO GET THIS BACK --- FIX LATER
 from util.python_utils.util import rot_to_quat, quat_to_rot
 from messages.draco_pb2 import *
+
 from plot.data_saver import *
 import pinocchio as pin
 import json
 import argparse
 from scipy.spatial.transform import Rotation as R
 
-cwd = os.getcwd()
-sys.path.append(cwd)
-sys.path.append(cwd + "/build")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
@@ -93,6 +97,16 @@ xyz_scene_names = [
 ]
 xyz_scenes = []
 
+def foot_dimensions():
+    pnc_path = "config/draco/pnc.yaml"
+    with open(pnc_path, "r") as pnc_stream:
+        try:
+            pnc_cfg = yaml.safe_load(pnc_stream)
+            foot_half_length = pnc_cfg["wbc"]["contact"]["sim_foot_half_length"]
+            foot_half_width = pnc_cfg["wbc"]["contact"]["sim_foot_half_width"]
+        except yaml.YAMLError as exc:
+            print(exc)
+    return foot_half_length, foot_half_width
 
 async def sceneinitman(name, server):
     x = await SceneChannel(True, name, "json", name, ["x", "y", "z"]).add_chan(server)
@@ -137,12 +151,22 @@ async def main():
                 "rfoot_rf_normal_filt",
             ],
         ).add_chan(server)
+
         icpS_chan_id = await SceneChannel(
             False, "icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
         ).add_chan(server)
         icp_chan_id = await SceneChannel(
             True, "icp", "json", "icp", ["est_x", "est_y", "des_x", "des_y"]
         ).add_chan(server)
+        proj_footstepS_chan_id = await SceneChannel(
+            False, "proj_footstep_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
+        ).add_chan(server)
+        proj_footstep_chan_id = await SceneChannel(
+            True, "proj_footstep", "json", "proj_footstep",
+            ["rf_pos_x","rf_pos_y","rf_pos_z","rf_ori_x","rf_ori_y","rf_ori_z","rf_ori_q",
+             "lf_pos_x","lf_pos_y","lf_pos_z","lf_ori_x","lf_ori_y","lf_ori_z","lf_ori_q"]
+        ).add_chan(server)
+
         for scn in range(len(xyz_scene_names)):
             await sceneinitman(xyz_scene_names[scn], server)
 
@@ -171,6 +195,7 @@ async def main():
             },
         )
         scenes.append(norm_listener)
+
         icp_listener = FoxgloveShapeListener(
             icpS_chan_id,
             "spheres",
@@ -179,6 +204,17 @@ async def main():
             {"est_icp": [1, 0, 1, 1], "des_icp": [0, 1, 0, 1]},
         )
         scenes.append(icp_listener)
+
+        hfoot_length, hfoot_width = foot_dimensions()
+        proj_footstep_listener = FoxgloveShapeListener(
+            proj_footstepS_chan_id,
+            "cubes",
+            ["proj_rf","proj_lf"],
+            {"proj_rf": [2*hfoot_length, 2*hfoot_width, 0.001], "proj_lf": [2*hfoot_length, 2*hfoot_width, 0.001]},
+            {"proj_rf": [1, 0, 0, 1], "proj_lf": [1, 0, 0, 1]},
+        )
+        scenes.append(proj_footstep_listener)
+
         arrows_scene = ScalableArrowsScene()
         arrows_scene.add_arrow("lfoot_rf_cmd", [0, 0, 1, 0.5])  # blue arrow
         arrows_scene.add_arrow("rfoot_rf_cmd", [0, 0, 1, 0.5])  # blue arrow
@@ -236,6 +272,19 @@ async def main():
                         "des_y": list(msg.des_icp)[1],
                     }
                 ).encode("utf8"),
+            )
+
+            await server.send_message(
+                proj_footstep_chan_id,
+                now,
+                json.dumps(
+                    {
+                        "rf_pos_x": list(msg.rfoot_pos)[0],"rf_pos_y": list(msg.rfoot_pos)[1],"rf_pos_z": list(msg.rfoot_pos)[2],
+                        "rf_ori_x": 1,"rf_ori_y": 1,"rf_ori_z": 1,"rf_ori_q": 1,
+                        "lf_pos_x": list(msg.lfoot_pos)[0],"lf_pos_y": list(msg.lfoot_pos)[1],"lf_pos_z": list(msg.lfoot_pos)[2],
+                        "lf_ori_x": 1,"lf_ori_y": 1,"lf_ori_z": 1,"lf_ori_q": 1
+                    }
+                ).encode("utf8")
             )
 
             for scn in xyz_scenes:
@@ -319,6 +368,21 @@ async def main():
                 transform.timestamp.FromNanoseconds(now)
                 transform.translation.x = list(getattr(msg, obj))[0]
                 transform.translation.y = list(getattr(msg, obj))[1]
+                await server.send_message(
+                    tf_chan_id, now, transform.SerializeToString()
+                )
+
+            # update projected footsteps on the grid
+            for obj in ["proj_rf", "proj_lf"]:
+                transform.parent_frame_id = "world"
+                transform.child_frame_id = obj
+                transform.timestamp.FromNanoseconds(now)
+                sqx = list(msg.lfoot_pos)
+                if obj == "proj_rf":
+                    sqx = list(msg.rfoot_pos)
+                transform.translation.x = sqx[0]
+                transform.translation.y = sqx[1]
+                transform.translation.z = 0
                 await server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
                 )

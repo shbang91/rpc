@@ -4,6 +4,10 @@ import os
 import sys
 import numpy as np
 
+cwd = os.getcwd()
+sys.path.append(cwd)
+sys.path.append(cwd + "/build/lib")  # include pybind module
+
 from config.draco.pybullet_simulation import *
 from util.python_utils import pybullet_util
 from util.python_utils import util
@@ -13,10 +17,6 @@ import signal
 import shutil
 import cv2
 import draco_interface_py
-
-cwd = os.getcwd()
-sys.path.append(cwd)
-sys.path.append(cwd + "/build/lib")  # include pybind module
 
 if Config.MEASURE_COMPUTATION_TIME:
     from pytictoc import TicToc

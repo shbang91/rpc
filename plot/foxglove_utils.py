@@ -84,7 +84,7 @@ class SceneChannel:
 def FormHandler(entity, shape, size):
     shape_get = getattr(entity, shape)
     nodel = shape_get.add()
-    if shape == "spheres":
+    if shape == "spheres" or "cubes":
         nodel.size.x = size[0]
         nodel.size.y = size[1]
         nodel.size.z = size[2]
