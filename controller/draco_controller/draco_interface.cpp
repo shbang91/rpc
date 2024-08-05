@@ -89,8 +89,8 @@ DracoInterface::~DracoInterface() {
 void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
   sp_->count_ = count_;
   sp_->current_time_ = static_cast<double>(count_) * sp_->servo_dt_;
-  sp_->state_ = ctrl_arch_->state();
-  sp_->prev_state_ = ctrl_arch_->prev_state();
+  sp_->state_ = ctrl_arch_->locostate();
+  sp_->prev_state_ = ctrl_arch_->prev_locostate();
 
   DracoSensorData *draco_sensor_data =
       static_cast<DracoSensorData *>(sensor_data);

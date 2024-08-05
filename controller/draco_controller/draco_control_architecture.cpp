@@ -8,16 +8,15 @@
 #include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
-#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
-// #include
-//"controller/draco_controller/draco_state_machines/double_support_swaying_lmpc.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
+#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
+#include "controller/draco_controller/draco_state_machines/teleop_manipulation.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
-// #include "controller/model_predictive_controller/lmpc/lmpc_handler.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/hand_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
@@ -45,10 +44,12 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   bool b_sim = util::ReadParameter<bool>(cfg_, "b_sim");
 
   // set starting state
-  prev_state_ =
+  prev_loco_state_ =
       b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
-  state_ =
+  loco_state_ =
       b_sim ? draco_states::kDoubleSupportStandUp : draco_states::kInitialize;
+  prev_manip_state_ = draco_states::kTeleopManipulation;
+  manip_state_ = draco_states::kTeleopManipulation;
 
   std::string prefix = b_sim ? "sim" : "exp";
 
@@ -59,13 +60,6 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   controller_ = new DracoController(tci_container_, robot_);
 
   dcm_planner_ = new DCMPlanner();
-
-  // mpc handler
-  // lmpc_handler_ = new LMPCHandler(
-  // dcm_planner_, robot_, tci_container_->com_task_,
-  // tci_container_->torso_ori_task_, tci_container_->lf_reaction_force_task_,
-  // tci_container_->rf_reaction_force_task_, draco_link::l_foot_contact,
-  // draco_link::r_foot_contact);
 
   //=============================================================
   // trajectory Managers
@@ -89,7 +83,16 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_SE3_tm_ = new EndEffectorTrajectoryManager(
       tci_container_->task_map_["rf_pos_task"],
       tci_container_->task_map_["rf_ori_task"], robot_);
+  lh_SE3_tm_ = new HandTrajectoryManager(
+      tci_container_->task_map_["lh_pos_task"],
+      tci_container_->task_map_["lh_ori_task"], robot_);
+  rh_SE3_tm_ = new HandTrajectoryManager(
+      tci_container_->task_map_["rh_pos_task"],
+      tci_container_->task_map_["rh_ori_task"], robot_);
 
+  //=============================================================
+  // foot task hierarchy manager
+  //=============================================================
   Eigen::VectorXd weight_at_contact, weight_at_swing;
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
@@ -97,8 +100,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     util::ReadParameter(cfg_["wbc"]["task"]["foot_pos_task"],
                         prefix + "_weight_at_swing", weight_at_swing);
   } catch (const std::runtime_error &ex) {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
+    std::cerr << "Error reading foot pos task parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
   lf_pos_hm_ =
@@ -114,8 +117,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
     util::ReadParameter(cfg_["wbc"]["task"]["foot_ori_task"],
                         prefix + "_weight_at_swing", weight_at_swing);
   } catch (const std::runtime_error &ex) {
-    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
+    std::cerr << "Error reading foot ori task parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
   lf_ori_hm_ =
@@ -124,6 +127,43 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_ori_hm_ =
       new TaskHierarchyManager(tci_container_->task_map_["rf_ori_task"],
                                weight_at_contact, weight_at_swing);
+
+  //=============================================================
+  // hand task hierarchy manager
+  //=============================================================
+  Eigen::VectorXd weight_at_balance, weight_at_walking;
+  try {
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
+                        prefix + "_weight", weight_at_balance);
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
+                        prefix + "_weight_at_walking", weight_at_walking);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading hand pos task parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  lh_pos_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["lh_pos_task"],
+                               weight_at_balance, weight_at_walking);
+  rh_pos_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["rh_pos_task"],
+                               weight_at_balance, weight_at_walking);
+  try {
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
+                        prefix + "_weight", weight_at_balance);
+    util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
+                        prefix + "_weight_at_walking", weight_at_walking);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading hand ori task parameter [" << ex.what()
+              << "] at file: [" << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+  lh_ori_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["lh_ori_task"],
+                               weight_at_balance, weight_at_walking);
+  rh_ori_hm_ =
+      new TaskHierarchyManager(tci_container_->task_map_["rh_ori_task"],
+                               weight_at_balance, weight_at_walking);
 
   // initialize dynamics manager
   double max_rf_z;
@@ -138,9 +178,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   rf_force_tm_ = new ForceTrajectoryManager(
       tci_container_->force_task_map_["rf_force_task"], robot_);
 
-//=============================================================
-// attach Foxglove Clients to control parameters
-//=============================================================
+  //=============================================================
+  // attach Foxglove Clients to control parameters
+  //=============================================================
 #if B_USE_FOXGLOVE
   param_map_int_ = {{{"n_steps", dcm_tm_->GetNumSteps()}}};
   param_map_double_ = {{{"t_ss", dcm_planner_->GetTssPtr()},
@@ -157,37 +197,39 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   //=============================================================
   // initialize state machines
   //=============================================================
-  state_machine_container_[draco_states::kInitialize] =
+  // Locomotion
+  locomotion_state_machine_container_[draco_states::kInitialize] =
       new Initialize(draco_states::kInitialize, robot_, this);
-  state_machine_container_[draco_states::kDoubleSupportStandUp] =
+  locomotion_state_machine_container_[draco_states::kDoubleSupportStandUp] =
       new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
                                this);
-  state_machine_container_[draco_states::kDoubleSupportBalance] =
+  locomotion_state_machine_container_[draco_states::kDoubleSupportBalance] =
       new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_,
                                this);
-  state_machine_container_[draco_states::kDoubleSupportSwaying] =
+  locomotion_state_machine_container_[draco_states::kDoubleSupportSwaying] =
       new DoubleSupportSwaying(draco_states::kDoubleSupportSwaying, robot_,
                                this);
-  // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc] =
-  // new DoubleSupportSwayingLmpc(draco_states::kDoubleSupportSwayingLmpc,
-  // robot_, this);
-  state_machine_container_[draco_states::kLFContactTransitionStart] =
+  locomotion_state_machine_container_[draco_states::kLFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kLFContactTransitionStart,
                                  robot_, this);
-  state_machine_container_[draco_states::kLFContactTransitionEnd] =
+  locomotion_state_machine_container_[draco_states::kLFContactTransitionEnd] =
       new ContactTransitionEnd(draco_states::kLFContactTransitionEnd, robot_,
                                this);
-  state_machine_container_[draco_states::kLFSingleSupportSwing] =
+  locomotion_state_machine_container_[draco_states::kLFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kLFSingleSupportSwing, robot_, this);
 
-  state_machine_container_[draco_states::kRFContactTransitionStart] =
+  locomotion_state_machine_container_[draco_states::kRFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kRFContactTransitionStart,
                                  robot_, this);
-  state_machine_container_[draco_states::kRFContactTransitionEnd] =
+  locomotion_state_machine_container_[draco_states::kRFContactTransitionEnd] =
       new ContactTransitionEnd(draco_states::kRFContactTransitionEnd, robot_,
                                this);
-  state_machine_container_[draco_states::kRFSingleSupportSwing] =
+  locomotion_state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
+
+  // Manipulation
+  manipulation_state_machine_container_[draco_states::kTeleopManipulation] =
+      new TeleopManipulation(draco_states::kTeleopManipulation, robot_, this);
 
   this->_InitializeParameters();
 }
@@ -215,17 +257,27 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete rf_ori_hm_;
 
   // state machines
-  delete state_machine_container_[draco_states::kInitialize];
-  delete state_machine_container_[draco_states::kDoubleSupportStandUp];
-  delete state_machine_container_[draco_states::kDoubleSupportBalance];
-  delete state_machine_container_[draco_states::kDoubleSupportSwaying];
-  // delete state_machine_container_[draco_states::kDoubleSupportSwayingLmpc];
-  delete state_machine_container_[draco_states::kLFContactTransitionStart];
-  delete state_machine_container_[draco_states::kRFContactTransitionStart];
-  delete state_machine_container_[draco_states::kLFContactTransitionEnd];
-  delete state_machine_container_[draco_states::kRFContactTransitionEnd];
-  delete state_machine_container_[draco_states::kLFSingleSupportSwing];
-  delete state_machine_container_[draco_states::kRFSingleSupportSwing];
+  delete locomotion_state_machine_container_[draco_states::kInitialize];
+  delete locomotion_state_machine_container_
+      [draco_states::kDoubleSupportStandUp];
+  delete locomotion_state_machine_container_
+      [draco_states::kDoubleSupportBalance];
+  delete locomotion_state_machine_container_
+      [draco_states::kDoubleSupportSwaying];
+  delete locomotion_state_machine_container_
+      [draco_states::kLFContactTransitionStart];
+  delete locomotion_state_machine_container_
+      [draco_states::kRFContactTransitionStart];
+  delete locomotion_state_machine_container_
+      [draco_states::kLFContactTransitionEnd];
+  delete locomotion_state_machine_container_
+      [draco_states::kRFContactTransitionEnd];
+  delete locomotion_state_machine_container_
+      [draco_states::kLFSingleSupportSwing];
+  delete locomotion_state_machine_container_
+      [draco_states::kRFSingleSupportSwing];
+  delete manipulation_state_machine_container_
+      [draco_states::kTeleopManipulation];
 
 #if B_USE_FOXGLOVE
   delete param_subscriber_;
@@ -233,43 +285,55 @@ DracoControlArchitecture::~DracoControlArchitecture() {
 }
 
 void DracoControlArchitecture::GetCommand(void *command) {
-  if (b_state_first_visit_) {
-    state_machine_container_[state_]->FirstVisit();
-    b_state_first_visit_ = false;
+  if (b_loco_state_first_visit_) {
+    locomotion_state_machine_container_[loco_state_]->FirstVisit();
+    b_loco_state_first_visit_ = false;
+  }
+  if (b_manip_state_first_visit_) {
+    manipulation_state_machine_container_[manip_state_]->FirstVisit();
+    b_manip_state_first_visit_ = false;
   }
 
 #if B_USE_FOXGLOVE
   param_subscriber_->UpdateParameters();
 #endif
 
-  state_machine_container_[state_]->OneStep();
-  upper_body_tm_->UseNominalUpperBodyJointPos(
-      sp_->nominal_jpos_);          // state independent upper body traj setting
-  controller_->GetCommand(command); // get control command
+  // desired trajectory update in state machine
+  locomotion_state_machine_container_[loco_state_]->OneStep();
+  manipulation_state_machine_container_[manip_state_]->OneStep();
+  // state independent upper body traj setting
+  upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
+  // get control command
+  controller_->GetCommand(command);
 
-  if (state_machine_container_[state_]->EndOfState()) {
-    state_machine_container_[state_]->LastVisit();
-    prev_state_ = state_;
-    state_ = state_machine_container_[state_]->GetNextState();
-    b_state_first_visit_ = true;
+  if (locomotion_state_machine_container_[loco_state_]->EndOfState()) {
+    locomotion_state_machine_container_[loco_state_]->LastVisit();
+    prev_loco_state_ = loco_state_;
+    loco_state_ =
+        locomotion_state_machine_container_[loco_state_]->GetNextState();
+    b_loco_state_first_visit_ = true;
+  }
+  if (manipulation_state_machine_container_[manip_state_]->EndOfState()) {
+    manipulation_state_machine_container_[manip_state_]->LastVisit();
+    prev_manip_state_ = manip_state_;
+    manip_state_ =
+        manipulation_state_machine_container_[manip_state_]->GetNextState();
+    b_manip_state_first_visit_ = true;
   }
 }
 
 void DracoControlArchitecture::_InitializeParameters() {
   // state machine initialization
-  state_machine_container_[draco_states::kInitialize]->SetParameters(
+  locomotion_state_machine_container_[draco_states::kInitialize]->SetParameters(
       cfg_["state_machine"]["initialize"]);
-  state_machine_container_[draco_states::kDoubleSupportStandUp]->SetParameters(
-      cfg_["state_machine"]["stand_up"]);
-  state_machine_container_[draco_states::kLFSingleSupportSwing]->SetParameters(
-      cfg_["state_machine"]["single_support_swing"]);
-  state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
-      cfg_["state_machine"]["single_support_swing"]);
-  state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
-      cfg_["state_machine"]["com_swaying"]);
-
-  // state_machine_container_[draco_states::kDoubleSupportSwayingLmpc]
-  //->SetParameters(cfg_["state_machine"]["lmpc_com_swaying"]);
+  locomotion_state_machine_container_[draco_states::kDoubleSupportStandUp]
+      ->SetParameters(cfg_["state_machine"]["stand_up"]);
+  locomotion_state_machine_container_[draco_states::kLFSingleSupportSwing]
+      ->SetParameters(cfg_["state_machine"]["single_support_swing"]);
+  locomotion_state_machine_container_[draco_states::kRFSingleSupportSwing]
+      ->SetParameters(cfg_["state_machine"]["single_support_swing"]);
+  locomotion_state_machine_container_[draco_states::kDoubleSupportSwaying]
+      ->SetParameters(cfg_["state_machine"]["com_swaying"]);
 
   // dcm planner params initialization
   dcm_tm_->InitializeParameters(cfg_["dcm_walking"]);
