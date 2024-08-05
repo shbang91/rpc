@@ -70,19 +70,29 @@ message pnc_msg {
   bool b_rfoot = 48;
 
   repeated float quat_world_local = 49;
-
+}
+message rs_teleop_msg {
+  repeated float pos = 1;
+  repeated float quat = 2;
+  bool b_grasp = 3;
+  bool b_teleop_toggled = 4;
 }
 
-// TODO:
-// message msg_list {
-// optional float time = 1;
-// repeated fb_msg fb = 2;
-//}
+message vr_teleop_msg {
+  repeated float lh_pos = 1;
+  repeated float rh_pos = 2;
+  repeated float lh_ori = 3;
+  repeated float rh_ori = 4;
 
-// message fb_msg {
-// message base_joint_pos { repeated float xyz = 1; }
-// message base_joint_ori { repeated float xyzw = 1; }
+  bool l_trigger = 5;
+  bool l_bump = 6;
+  bool l_button = 7;
+  bool l_pad = 8;
 
-// repeated base_joint_pos bjoint_pos = 1;
-// repeated base_joint_ori bjoint_ori = 2;
-//}
+  bool r_trigger = 9;
+  bool r_bump = 10;
+  bool r_button = 11;
+  bool r_pad = 12;
+
+  int64 vr_timestamp = 13;
+}
