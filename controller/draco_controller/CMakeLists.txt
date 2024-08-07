@@ -33,7 +33,6 @@ target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-wbc
                                            PUBLIC rpc-util
                                            PUBLIC rpc-dcm-planner
-                                           PUBLIC rpc-lmpc-handler
                                            PUBLIC rpc-filter
                                            PUBLIC rpc-state-estimator
                                            PUBLIC rpc-model
