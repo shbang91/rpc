@@ -5,6 +5,7 @@
 class PinocchioRobotSystem;
 class DracoControlArchitecture;
 class DracoStateProvider;
+class TeleopHandler;
 
 class TeleopManipulation : public StateMachine {
 public:
@@ -30,6 +31,7 @@ private:
   DracoControlArchitecture *ctrl_arch_;
 
   DracoStateProvider *sp_;
+  std::unique_ptr<TeleopHandler> teleop_handler_;
 
   bool b_transitted_;
   bool b_initialized_;

@@ -14,10 +14,11 @@ public:
   };
   virtual ~TeleopHandler() = default;
 
-  void InitializeSocket(const std::string &ip_address) {
+  bool InitializeSocket(const std::string &ip_address) {
     std::cout << "teleop ip address: " << ip_address << '\n';
     teleop_socket_->connect(ip_address);
     teleop_socket_->setsockopt(ZMQ_RCVTIMEO, 2);
+    return true;
   };
   virtual void ReceiveCommands(void *command) = 0;
 

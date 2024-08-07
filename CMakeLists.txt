@@ -32,6 +32,8 @@ option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 
 option(BUILD_WITH_FOXGLOVE "compile with foxglove" OFF)
 
+option(BUILD_WITH_TELEOP "compile with teleop" OFF)
+
 # unit-testing tools
 option(BUILD_GTESTS "build google tests" ON)
 option(FETCH_GTEST_PKG "use fetch pkg to clone google test" OFF)
@@ -81,7 +83,7 @@ else()
 endif()
 
 #Protobuf & ZMQ
-if (BUILD_WITH_ZMQ_PROTOBUF)
+if (BUILD_WITH_ZMQ_PROTOBUF OR BUILD_WITH_TELEOP)
     find_package(ZMQ REQUIRED)
     find_package(Protobuf REQUIRED)
     if(Protobuf_FOUND AND ZMQ_FOUND)
@@ -92,6 +94,12 @@ if (BUILD_WITH_ZMQ_PROTOBUF)
     set(B_USE_ZMQ true)
 else()
     set(B_USE_ZMQ false)
+endif()
+
+if (BUILD_WITH_TELEOP)
+    set(B_USE_TELEOP true)
+else()
+    set(B_USE_TELEOP false)
 endif()
 
 #Boost
@@ -112,6 +120,8 @@ if(BUILD_WITH_FOXGLOVE)
 else()
     set(B_USE_FOXGLOVE false)
 endif()
+
+
 
 ##==================================================
 ## Subdirectories

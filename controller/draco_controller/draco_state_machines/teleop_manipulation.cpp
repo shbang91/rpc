@@ -1,6 +1,7 @@
 #include "controller/draco_controller/draco_state_machines/teleop_manipulation.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_rs_teleop_handler.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
@@ -16,13 +17,29 @@ TeleopManipulation::TeleopManipulation(StateId state_id,
   util::PrettyConstructor(2, "TeleopManipulation");
   sp_ = DracoStateProvider::GetStateProvider();
 
-  target_rh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  try {
+    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+
+    // construct teleop handler
+    teleop_handler_ = std::make_unique<DracoRSTeleopHandler>();
+    std::cout << "Connecting to Teleop Socket...." << std::endl;
+    const std::string ip_address =
+        util::ReadParameter<std::string>(cfg, "teleop_ip_address");
+    if (teleop_handler_->InitializeSocket(ip_address))
+      std::cout << "Connected to Teleop Socket!" << std::endl;
+
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+
+  target_rh_pos_ = Eigen::VectorXd::Zero(3);
   target_rh_pos_ << 0.3, -0.3, 0.3;
 
   target_rh_ori_ = Eigen::VectorXd::Zero(4);
   target_rh_ori_ << 0, -0.707, 0, 0.707;
 
-  target_lh_pos_ = Eigen::VectorXd::Zero(3); // TODO: make 0 0 0
+  target_lh_pos_ = Eigen::VectorXd::Zero(3);
   target_lh_pos_ << 0.3, 0.3, 0.3;
 
   target_lh_ori_ = Eigen::VectorXd::Zero(4);

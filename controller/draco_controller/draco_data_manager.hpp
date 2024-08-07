@@ -8,7 +8,7 @@
 
 struct DracoData {
 public:
-  DracoData() {};
+  DracoData(){};
   ~DracoData() = default;
 
   double time_ = 0;

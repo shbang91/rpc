@@ -10,7 +10,6 @@
 #include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
 #include "controller/draco_controller/draco_state_machines/initialize.hpp"
 #include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
-#include "controller/draco_controller/draco_state_machines/teleop_manipulation.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
@@ -23,6 +22,10 @@
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 #include "util/util.hpp"
+
+#if B_USE_TELEOP
+#include "controller/draco_controller/draco_state_machines/teleop_manipulation.hpp"
+#endif
 
 #if B_USE_FOXGLOVE
 #include "UI/foxglove/client/parameter_subscriber.hpp"
@@ -227,9 +230,11 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   locomotion_state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
 
+#if B_USE_TELEOP
   // Manipulation
   manipulation_state_machine_container_[draco_states::kTeleopManipulation] =
       new TeleopManipulation(draco_states::kTeleopManipulation, robot_, this);
+#endif
 
   this->_InitializeParameters();
 }
@@ -276,8 +281,10 @@ DracoControlArchitecture::~DracoControlArchitecture() {
       [draco_states::kLFSingleSupportSwing];
   delete locomotion_state_machine_container_
       [draco_states::kRFSingleSupportSwing];
+#if B_USE_TELEOP
   delete manipulation_state_machine_container_
       [draco_states::kTeleopManipulation];
+#endif
 
 #if B_USE_FOXGLOVE
   delete param_subscriber_;
@@ -289,18 +296,22 @@ void DracoControlArchitecture::GetCommand(void *command) {
     locomotion_state_machine_container_[loco_state_]->FirstVisit();
     b_loco_state_first_visit_ = false;
   }
+  //#if B_USE_TELEOP
   if (b_manip_state_first_visit_) {
     manipulation_state_machine_container_[manip_state_]->FirstVisit();
     b_manip_state_first_visit_ = false;
   }
+  //#endif
 
 #if B_USE_FOXGLOVE
   param_subscriber_->UpdateParameters();
 #endif
 
+#if B_USE_TELEOP
+  manipulation_state_machine_container_[manip_state_]->OneStep();
+#endif
   // desired trajectory update in state machine
   locomotion_state_machine_container_[loco_state_]->OneStep();
-  manipulation_state_machine_container_[manip_state_]->OneStep();
   // state independent upper body traj setting
   upper_body_tm_->UseNominalUpperBodyJointPos(sp_->nominal_jpos_);
   // get control command
@@ -313,6 +324,8 @@ void DracoControlArchitecture::GetCommand(void *command) {
         locomotion_state_machine_container_[loco_state_]->GetNextState();
     b_loco_state_first_visit_ = true;
   }
+
+#if B_USE_TELEOP
   if (manipulation_state_machine_container_[manip_state_]->EndOfState()) {
     manipulation_state_machine_container_[manip_state_]->LastVisit();
     prev_manip_state_ = manip_state_;
@@ -320,6 +333,7 @@ void DracoControlArchitecture::GetCommand(void *command) {
         manipulation_state_machine_container_[manip_state_]->GetNextState();
     b_manip_state_first_visit_ = true;
   }
+#endif
 }
 
 void DracoControlArchitecture::_InitializeParameters() {
