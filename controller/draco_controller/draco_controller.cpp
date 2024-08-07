@@ -28,13 +28,18 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
       wbc_qddot_cmd_(Eigen::VectorXd::Zero(draco::n_qdot)), b_sim_(false),
       b_int_constraint_first_visit_(true), b_first_visit_pos_ctrl_(true),
       b_first_visit_wbc_ctrl_(true), b_smoothing_command_(false),
-      b_use_modified_swing_foot_jac_(false), smoothing_command_duration_(0.),
+      b_use_modified_swing_foot_jac_(false), b_use_modified_hand_jac_(false),
+      smoothing_command_duration_(0.),
       init_joint_pos_(Eigen::VectorXd::Zero(draco::n_adof)) {
   util::PrettyConstructor(2, "DracoController");
   sp_ = DracoStateProvider::GetStateProvider();
 
 #if B_USE_MATLOGGER
   logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_controller_data");
+  logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
+  appender_ = XBot::MatAppender::MakeInstance();
+  appender_->add_logger(logger_);
+  appender_->start_flush_thread();
 #endif
 
   // set virtual & actuated selection matrix
@@ -98,6 +103,8 @@ DracoController::DracoController(DracoTCIContainer *tci_container,
 
     b_use_modified_swing_foot_jac_ = util::ReadParameter<bool>(
         cfg["controller"], "b_use_modified_swing_foot_jac");
+    b_use_modified_hand_jac_ =
+        util::ReadParameter<bool>(cfg["controller"], "b_use_modified_hand_jac");
 
     // initialize iwbc qp params
     ihwbc_->SetParameters(cfg["wbc"]["qp"]);
@@ -187,6 +194,17 @@ void DracoController::GetCommand(void *command) {
       tci_container_->task_map_["rf_pos_task"]->ModifyJacobian(
           sp_->floating_base_jidx_);
       tci_container_->task_map_["rf_ori_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+    }
+
+    if (b_use_modified_hand_jac_) {
+      tci_container_->task_map_["lh_pos_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+      tci_container_->task_map_["rh_pos_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+      tci_container_->task_map_["lh_ori_task"]->ModifyJacobian(
+          sp_->floating_base_jidx_);
+      tci_container_->task_map_["rh_ori_task"]->ModifyJacobian(
           sp_->floating_base_jidx_);
     }
 

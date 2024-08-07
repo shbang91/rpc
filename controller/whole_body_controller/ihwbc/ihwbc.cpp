@@ -468,8 +468,13 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
   // qddot_cmd = sa_ * qddot_sol_;
   // rf_cmd = rf_sol_;
   qddot_cmd = qddot_sol_;
-  force_task_map["lf_force_task"]->UpdateCmd(rf_sol_.head(dim_contact_ / 2));
-  force_task_map["rf_force_task"]->UpdateCmd(rf_sol_.tail(dim_contact_ / 2));
+  // force_task_map["lf_force_task"]->UpdateCmd(rf_sol_.head(dim_contact_ / 2));
+  // force_task_map["rf_force_task"]->UpdateCmd(rf_sol_.tail(dim_contact_ / 2));
+  int i(0);
+  for (const auto &kv : force_task_map) {
+    kv.second->UpdateCmd(rf_sol_.segment(i, dim_contact_ / 2));
+    i += dim_contact_ / 2;
+  }
 }
 
 void IHWBC::ComputeTaskCosts(

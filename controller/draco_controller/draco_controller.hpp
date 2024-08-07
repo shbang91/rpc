@@ -4,6 +4,7 @@
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
+#include <matlogger2/utils/mat_appender.h>
 #endif
 
 class PinocchioRobotSystem;
@@ -36,6 +37,7 @@ private:
 
   bool b_sim_;
   bool b_use_modified_swing_foot_jac_;
+  bool b_use_modified_hand_jac_;
   bool b_int_constraint_first_visit_;
 
   bool b_first_visit_wbc_ctrl_;
@@ -51,5 +53,6 @@ private:
 
 #if B_USE_MATLOGGER
   XBot::MatLogger2::Ptr logger_;
+  XBot::MatAppender::Ptr appender_;
 #endif
 };
