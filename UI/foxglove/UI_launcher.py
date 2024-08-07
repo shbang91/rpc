@@ -41,6 +41,8 @@ elif args.visualizer == "foxglove":
     from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
     from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
     from mcap_protobuf.schema import build_file_descriptor_set
+    import footstep_planner as fp
+    from watchdog.observers import Observer
 
     # local tools to manage Foxglove scenes
     from plot.foxglove_utils import (
@@ -210,7 +212,7 @@ async def main():
             proj_footstepS_chan_id,
             "cubes",
             ["proj_rf","proj_lf"],
-            {"proj_rf": [2*hfoot_length, 2*hfoot_width, 0.001], "proj_lf": [2*hfoot_length, 2*hfoot_width, 0.001]},
+            {"proj_rf": [2*hfoot_length, 2*hfoot_width, 0.01], "proj_lf": [2*hfoot_length, 2*hfoot_width, 0.01]},
             {"proj_rf": [1, 0, 0, 1], "proj_lf": [1, 0, 0, 1]},
         )
         scenes.append(proj_footstep_listener)
@@ -231,6 +233,15 @@ async def main():
 
         print("foxglove websocket initiated")
         r_foot, l_foot = [0, 0, 0], [0, 0, 0]
+
+        # Clear experiment_data to start new footstep planning
+        fp.remove_yaml_files(fp.WATCHED_DIR)
+        # Initialization for footstep planning  -- interrupts upon yaml creation
+        event_handler = fp.yamlHandler()
+        observer = Observer()
+        observer.schedule(event_handler, path=fp.WATCHED_DIR, recursive=False)
+        observer.start()
+
         while True:
             # cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
             server.set_listener(scenes[scenecount])
@@ -374,15 +385,23 @@ async def main():
 
             # update projected footsteps on the grid
             for obj in ["proj_rf", "proj_lf"]:
+                step = fp.step_num
+                if(len(fp.lfoot_contact_pos) != 0 and len(fp.lfoot_contact_ori) != 0):
+                    f_pos = getattr(fp, obj[5] + "foot_contact_pos")[step][0]
+                    f_ori = getattr(fp, obj[5] + "foot_contact_ori")[step][0]
+                else:
+                    f_pos = [0,0,0]
+                    f_ori = [0,0,0,0]
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
                 transform.timestamp.FromNanoseconds(now)
-                sqx = list(msg.lfoot_pos)
-                if obj == "proj_rf":
-                    sqx = list(msg.rfoot_pos)
-                transform.translation.x = sqx[0]
-                transform.translation.y = sqx[1]
-                transform.translation.z = 0
+                transform.translation.x = f_pos[0]
+                transform.translation.y = f_pos[1]
+                transform.translation.z = f_pos[2]
+                transform.rotation.x = f_ori[0]
+                transform.rotation.y = f_ori[1]
+                transform.rotation.z = f_ori[2]
+                transform.rotation.w = f_ori[3]
                 await server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
                 )
