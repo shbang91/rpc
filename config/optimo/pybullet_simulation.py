@@ -8,12 +8,11 @@ class Config(object):
     N_SUBSTEP = 1
     INITIAL_BASE_JOINT_POS = [0, 0, 0]
     INITIAL_BASE_JOINT_QUAT = [0, 0, 0, 1]
-    # INITIAL_JOINT_POSITION = [0.0, 3.14, 0.0, 1.57, 0.0, 1.57, 0.0]
     INITIAL_JOINT_POSITION = [
         deg2rad(0),
-        deg2rad(210), 0.0,
-        deg2rad(-120), 0.0,
-        deg2rad(-60), 0.0
+        deg2rad(180), 0.0,
+        deg2rad(-90), 0.0,
+        deg2rad(-90), 0.0
     ]
 
     PRINT_ROBOT_INFO = True

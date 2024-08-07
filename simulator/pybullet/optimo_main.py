@@ -73,6 +73,10 @@ def set_init_config_pybullet(robot):
 
 from scipy.spatial.transform import Rotation as R
 
+def every_time_step(count, interval):
+    if count % interval == 0:
+        return True
+
 
 def add_tf_visualization(robot, link_index):
     #Add a visualization of the desired frame of the robot.
@@ -96,9 +100,9 @@ def add_tf_visualization(robot, link_index):
     blue = [0, 0, 1]  # RGB values for blue
     green = [0, 1, 0]  # RGB values for green
 
-    pb.addUserDebugLine(pos, x_ending, red, lineWidth=4, lifeTime=0)
-    pb.addUserDebugLine(pos, y_ending, green, lineWidth=4, lifeTime=0)
-    pb.addUserDebugLine(pos, z_ending, blue, lineWidth=4, lifeTime=0)
+    pb.addUserDebugLine(pos, x_ending, red, lineWidth=4, lifeTime=1)
+    pb.addUserDebugLine(pos, y_ending, green, lineWidth=4, lifeTime=1)
+    pb.addUserDebugLine(pos, z_ending, blue, lineWidth=4, lifeTime=1)
 
 
 def apply_control_input_to_pybullet(robot, command):
@@ -180,11 +184,7 @@ def main():
     # Initial joint configuration
     set_init_config_pybullet(robot)
 
-    # Add End-effector Visualization for initial configuration
-    add_tf_visualization(robot, OptimoLinkIdx.ee)
-    # add_tf_visualization(robot, PlatoLinkIdx.ee1)
-    # add_tf_visualization(robot, PlatoLinkIdx.ee2)
-    # add_tf_visualization(robot, PlatoLinkIdx.ee3)
+
 
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
@@ -238,6 +238,10 @@ def main():
         pb.stepSimulation()
         # print without newline
         # print("Simulation Time: ", count * dt, end="\r")
+        
+        # End Effector Visualization every 1000 steps
+ 
+            
 
         count += 1
         rate.sleep()

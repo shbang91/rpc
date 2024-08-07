@@ -244,3 +244,5 @@ state_machine:
     wait_time: 0. 
     target_joint_pos: [0.0, 3.665191429188092, 0.0, -2.0943951023931953, 0.0, -1.0471975511965976, 0.0]
     b_only_joint_pos_control: true
+
+  joint_jog

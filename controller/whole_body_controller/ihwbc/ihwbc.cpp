@@ -335,7 +335,7 @@ void IHWBC::Solve(const std::unordered_map<std::string, Task *> &task_map,
         // floating base: x, internal constraint: x, contact: x
         eq_mat.setZero(0, num_qdot_);
         eq_vec.setZero(0);
-        std::cout << "No contact" << std::endl;
+
       }
     }
   }
