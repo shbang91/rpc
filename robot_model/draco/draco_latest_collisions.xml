@@ -277,6 +277,7 @@
       <framequat name="imu-orientation" objtype="site" objname="imu"/>
       <gyro name="imu-angular-velocity" site="imu" />
       <accelerometer name="imu-linear-acceleration" site="imu"/>
+      <framelinvel name="imu-linear-velocity" objtype="site" objname="imu"/>
       <!--<gyro name="imu-angular-velocity" site="imu" noise="5e-4" cutoff="54.9"/>-->
       <!--<accelerometer name="imu-linear-acceleration" site="imu" noise="1e-4" cutoff="157"/>-->
       <magnetometer name="imu-magnetometer" site="imu"/>

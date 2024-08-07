@@ -1266,11 +1266,6 @@ void UiModify(mjUI *ui, mjuiState *state, mjrContext *con) {
 void UiEvent(mjuiState *state) {
   mj::Simulate *sim = static_cast<mj::Simulate *>(state->userdata);
 
-  std::cout << "=================================" << std::endl;
-  std::cout << "state type: " << state->type << "state key: " << state->key
-            << std::endl;
-  std::cout << "=================================" << std::endl;
-
   //====================================================================
   // add custom keyboard event shortcut
   //====================================================================

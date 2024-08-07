@@ -35,6 +35,7 @@ PYBIND11_MODULE(draco_interface_py, m) {
       .def_readwrite("b_lf_contact_", &DracoSensorData::b_lf_contact_)
       .def_readwrite("b_rf_contact_", &DracoSensorData::b_rf_contact_)
       .def_readwrite("imu_dvel_", &DracoSensorData::imu_dvel_)
+      .def_readwrite("imu_lin_acc_", &DracoSensorData::imu_lin_acc_)
 
       // Debug
       .def_readwrite("base_joint_pos_", &DracoSensorData::base_joint_pos_)

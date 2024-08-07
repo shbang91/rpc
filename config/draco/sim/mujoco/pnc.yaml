@@ -6,20 +6,26 @@ data_save_freq: 1
 stance_foot: 0 # 0: left_foot 1: right_foot
 
 state_estimator:
-  b_cheater_mode: true ## true: use simulation groundtruth states
+  b_cheater_mode: false ## true: use simulation groundtruth states
   state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf 
+  b_use_marg_filter: false   # only used when kf is set to true
+
+  foot_reference_frame: 1 #0: left foot, 1: right foot
 
   sigma_base_vel: [0.0, 0.0, 0.0]
-  sigma_base_acc: [0.5, 0.5, 0.5]
+  #sigma_base_acc: [0.5, 0.5, 0.5]
+  sigma_base_acc: [0.1, 0.1, 0.1]
   sigma_pos_lfoot: [0.001, 0.001, 0.001]
   sigma_pos_rfoot: [0.001, 0.001, 0.001]
   sigma_vel_lfoot: [0.005, 0.005, 0.002]
   sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  imu_accel_bias: [0.0, 0.0, 0.0]
   base_accel_time_constant: 0.02
   base_accel_limits: [1., 1., 1.]
   base_com_vel_time_constant: 1.0
   num_data_base_accel: [10, 10, 10]
   num_data_ang_vel: [5, 5, 5]
+  ang_vel_time_constant: 0.01
 
   ## for simulation please use 0
   com_vel_filter_type: 0 ## 0: moving average // 1: exponential smoother // 2: low pass filter
@@ -46,11 +52,13 @@ controller:
 wbc:
   task:
     com_xy_task:
-      com_feedback_source: 0 # 0: com feedback / 1: icp feedback
+      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
       icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
 
       kp : [400, 400]
       kd : [80., 80.]
+      #kp : [2000, 2000]
+      #kd : [200., 200.]
 
       icp_kp : [4.0, 4.0]
       icp_kd : [0., 0.] # x, y will be ignored
@@ -67,7 +75,7 @@ wbc:
       leaky_integrator_limit: [0.03, 0.03]
 
     com_z_task:
-      com_height_target_source: 0 # 0: com height / 1: base height
+      com_height_target_source: 1 # 0: com height / 1: base height
       com_kp : [2000.0]
       com_kd : [200.0]
 
@@ -169,7 +177,7 @@ wbc:
 
 state_machine:
     initialize:
-      init_duration: 5.
+      init_duration: 3.
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
       #target_joint_pos: [0., 0.020, -0.785, 0.785, 0.785, -0.785, -0.020, 0., 0.1, 0., -1.57, 0., 0., 0., 0., -0.020, -0.785, 0.785, 0.785, -0.785, 0.020, 0., -0.1, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
@@ -179,7 +187,7 @@ state_machine:
       wait_time: 2.
 
     stand_up:
-      standup_duration: 1.
+      standup_duration: 2.
       #target_com_height: 0.658
       target_com_height: 0.7
       #target_base_height: 0.88

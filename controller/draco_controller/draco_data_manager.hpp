@@ -39,6 +39,11 @@ public:
 
   Eigen::Vector2d est_icp_ = Eigen::Vector2d::Zero();
 
+  bool b_lfoot_ = false;
+  bool b_rfoot_ = false;
+
+  Eigen::Quaterniond quat_world_local_ = Eigen::Quaterniond::Identity();
+
   // mpc data
   std::vector<Eigen::Vector3d> des_com_traj;
   std::vector<Eigen::Vector3d> des_torso_ori_traj;

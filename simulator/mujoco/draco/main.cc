@@ -85,6 +85,10 @@ std::unordered_map<std::string, int> mj_act_map_;
 int imu_orientation_adr_;
 int imu_ang_vel_adr_;
 int imu_lin_acc_adr_;
+int imu_lin_vel_adr_;
+
+// for calculating dvel
+Eigen::Vector3d prev_imu_lin_vel_in_world_ = Eigen::Vector3d::Zero();
 
 // yaml node
 YAML::Node cfg_;
@@ -312,7 +316,8 @@ void SetJointAndActuatorMaps(
 }
 
 void ConfigureSensors(mjModel *m, int &imu_orientation_adr,
-                      int &imu_ang_vel_adr, int &imu_lin_acc_adr) {
+                      int &imu_ang_vel_adr, int &imu_lin_acc_adr,
+                      int &imu_lin_vel_adr) {
   // imu orientation sensor
   const std::string &imu_orientation_sensor = "imu-orientation";
   int idx = mj_name2id(m, mjOBJ_SENSOR, imu_orientation_sensor.c_str());
@@ -339,6 +344,15 @@ void ConfigureSensors(mjModel *m, int &imu_orientation_adr,
         << imu_lin_acc_sensor << " in MuJoCo model" << '\n';
   imu_lin_acc_adr = m->sensor_adr[idx];
   // imu_lin_acc_noise_adr = m->sensor_noise[idx];
+
+  // imu linear velocity sensor (imu frame lin vel)
+  const std::string &imu_lin_vel_sensor = "imu-linear-velocity";
+  idx = mj_name2id(m, mjOBJ_SENSOR, imu_lin_vel_sensor.c_str());
+  if (idx == -1)
+    std::cout << "[MuJoCo Utils] Can't find the imu linear velocity sensor: "
+              << imu_lin_vel_sensor << " in MuJoCo model" << '\n';
+  imu_lin_vel_adr = m->sensor_adr[idx];
+  // imu_frame_lin_acc_noise_adr = m->sensor_noise[idx];
 }
 
 void SetYamlNode(YAML::Node &node) {
@@ -479,12 +493,29 @@ bool CopySensorData() {
       world_Q_imu.normalized() * imu_ang_vel_in_imu;
 
   // imu linear acceleration
+  const double grav_acc = 9.81;
   mjtNum *imu_lin_acc = &d->sensordata[imu_lin_acc_adr_];
   Eigen::Vector3d imu_lin_acc_in_imu(imu_lin_acc[0], imu_lin_acc[1],
-                                     imu_lin_acc[2]);
+                                     imu_lin_acc[2] + grav_acc);
+  world_Q_imu.normalized() * imu_lin_acc_in_imu * m->opt.timestep;
+  draco_sensor_data->imu_lin_acc_ =
+      world_Q_imu.normalized() * imu_lin_acc_in_imu;
   draco_sensor_data->imu_dvel_ =
       world_Q_imu.normalized() * imu_lin_acc_in_imu * m->opt.timestep;
+  // std::cout << "-------------------------------------------------------"
+  //<< std::endl;
+  // std::cout << "imu_dvel from accelerometer: "
+  //<< draco_sensor_data->imu_dvel_.transpose() << std::endl;
 
+  // imu frame lin acc
+  mjtNum *imu_lin_vel = &d->sensordata[imu_lin_vel_adr_];
+  Eigen::Vector3d imu_lin_vel_in_world(imu_lin_vel[0], imu_lin_vel[1],
+                                       imu_lin_vel[2]);
+  // draco_sensor_data->imu_dvel_ =
+  // imu_lin_vel_in_world - prev_imu_lin_vel_in_world_;
+  // prev_imu_lin_vel_in_world_ = imu_lin_vel_in_world;
+  // std::cout << "imu_dvel from imu lin vel: "
+  //<< draco_sensor_data->imu_dvel_.transpose() << std::endl;
   //==============================================
   // TODO(optional): contact sensor (1. contact normal force, 2. swing foot
   // height)
@@ -754,7 +785,7 @@ void PhysicsThread(mj::Simulate *sim, const char *filename) {
       // Configure sensor (imu)
       // ********************************************
       ConfigureSensors(m, imu_orientation_adr_, imu_ang_vel_adr_,
-                       imu_lin_acc_adr_);
+                       imu_lin_acc_adr_, imu_lin_vel_adr_);
       // ********************************************
 
       // Set YAML Node
