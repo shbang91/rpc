@@ -12,7 +12,32 @@ WATCHED_DIR = 'experiment_data'
 t_ini_footsteps_planned, t_end_footsteps_planned = [], []
 rfoot_contact_pos, rfoot_contact_ori = [], []
 lfoot_contact_pos, lfoot_contact_ori = [], []
-step_num = 0
+
+class StepData:
+    def __init__(self, yaml_num, rf_steps_taken, rf_steps_total, lf_steps_taken, lf_steps_total):
+        self.yaml_num = yaml_num
+        self.rf_steps_taken = rf_steps_taken
+        self.rf_steps_total = rf_steps_total
+        self.lf_steps_taken = lf_steps_taken
+        self.lf_steps_total = lf_steps_total
+    def step_update(self, res, r_len, l_len):
+        self.yaml_num = res
+        self.rf_steps_taken = self.rf_steps_total
+        self.lf_steps_taken = self.lf_steps_total
+        self.rf_steps_total += r_len
+        self.lf_steps_total += l_len
+    def steps_to_update(self):
+        # Returns dict of projections mapped to the yaml index
+        feet = {}
+        for i in range(self.rf_steps_taken, self.rf_steps_total):
+            rf = "proj_rf"+str(i)
+            feet[rf] = i-self.rf_steps_taken
+        for i in range(self.lf_steps_taken, self.lf_steps_total):
+            lf = "proj_lf"+str(i)
+            feet[lf] = i-self.lf_steps_taken
+        return feet
+
+sd = StepData(0,0,0,0,0)
 
 def yaml_check(file_path, search_line):
     try:
@@ -66,8 +91,7 @@ class yamlHandler(FileSystemEventHandler):
                 lfoot_contact_pos.append(np.array(cfg["contact"]["left_foot"]["pos"]))
                 lfoot_contact_ori.append(np.array(cfg["contact"]["left_foot"]["ori"]))
                 res = ''.join(filter(lambda i: i.isdigit(), str(file_path)))
-                global step_num
-                step_num = int(res)
+                sd.step_update(int(res), len(rfoot_contact_pos[int(res)]), len(lfoot_contact_pos[int(res)]))
             except yaml.YAMLError as exc:
                 print(exc)
 

@@ -27,6 +27,9 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+# Set max number of planned footstep visuals
+STEP_MAX = 20
+
 if args.visualizer == "meshcat":
     from pinocchio.visualize import MeshcatVisualizer
     import meshcat
@@ -163,11 +166,6 @@ async def main():
         proj_footstepS_chan_id = await SceneChannel(
             False, "proj_footstep_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
         ).add_chan(server)
-        proj_footstep_chan_id = await SceneChannel(
-            True, "proj_footstep", "json", "proj_footstep",
-            ["rf_pos_x","rf_pos_y","rf_pos_z","rf_ori_x","rf_ori_y","rf_ori_z","rf_ori_q",
-             "lf_pos_x","lf_pos_y","lf_pos_z","lf_ori_x","lf_ori_y","lf_ori_z","lf_ori_q"]
-        ).add_chan(server)
 
         for scn in range(len(xyz_scene_names)):
             await sceneinitman(xyz_scene_names[scn], server)
@@ -207,14 +205,32 @@ async def main():
         )
         scenes.append(icp_listener)
 
+        # STEP_MAX available footstep plans
         hfoot_length, hfoot_width = foot_dimensions()
-        proj_footstep_listener = FoxgloveShapeListener(
-            proj_footstepS_chan_id,
-            "cubes",
-            ["proj_rf","proj_lf"],
-            {"proj_rf": [2*hfoot_length, 2*hfoot_width, 0.01], "proj_lf": [2*hfoot_length, 2*hfoot_width, 0.01]},
-            {"proj_rf": [1, 0, 0, 1], "proj_lf": [1, 0, 0, 1]},
-        )
+        x = 2*hfoot_length
+        y = 2*hfoot_width
+        msgs, size, color = [], {}, {}
+        proj_footstep_chan_ids = []
+        proj_foot_pos, proj_foot_ori = {}, {}   # Stores step position
+        for i in range(STEP_MAX):
+            rf = "proj_rf"+str(i)
+            lf = "proj_lf"+str(i)
+            msgs.append(rf)
+            msgs.append(lf)
+            size[rf], size[lf] = [x, y, 0.001], [x, y, 0.001]
+            color[rf] = [1, 0, 0, 1]
+            color[lf] = [.1, .5, 1, 1]
+            proj_foot_pos[rf], proj_foot_pos[lf] = [0, 0, 0], [0, 0.184, 0]
+            proj_foot_ori[rf], proj_foot_ori[lf] = [0, 0, 0, 0], [0, 0, 0, 0]
+            name = "projected_footsteps_" + str(i)
+            foot_scene = await SceneChannel(
+                True, name, "json", name,
+                ["rf_pos_x","rf_pos_y","rf_pos_z","rf_ori_x","rf_ori_y","rf_ori_z","rf_ori_q",
+                        "lf_pos_x","lf_pos_y","lf_pos_z","lf_ori_x","lf_ori_y","lf_ori_z","lf_ori_q"]
+            ).add_chan(server)
+            proj_footstep_chan_ids.append(foot_scene)
+
+        proj_footstep_listener = FoxgloveShapeListener(proj_footstepS_chan_id, "cubes", msgs, size, color)
         scenes.append(proj_footstep_listener)
 
         arrows_scene = ScalableArrowsScene()
@@ -285,18 +301,25 @@ async def main():
                 ).encode("utf8"),
             )
 
-            await server.send_message(
-                proj_footstep_chan_id,
-                now,
-                json.dumps(
-                    {
-                        "rf_pos_x": list(msg.rfoot_pos)[0],"rf_pos_y": list(msg.rfoot_pos)[1],"rf_pos_z": list(msg.rfoot_pos)[2],
-                        "rf_ori_x": 1,"rf_ori_y": 1,"rf_ori_z": 1,"rf_ori_q": 1,
-                        "lf_pos_x": list(msg.lfoot_pos)[0],"lf_pos_y": list(msg.lfoot_pos)[1],"lf_pos_z": list(msg.lfoot_pos)[2],
-                        "lf_ori_x": 1,"lf_ori_y": 1,"lf_ori_z": 1,"lf_ori_q": 1
-                    }
-                ).encode("utf8")
-            )
+            for idx in range(STEP_MAX):
+                rf = "proj_rf" + str(idx)
+                lf = "proj_lf" + str(idx)
+                r_pos = proj_foot_pos[rf]
+                l_pos = proj_foot_pos[lf]
+                r_ori = proj_foot_ori[rf]
+                l_ori = proj_foot_ori[lf]
+                await server.send_message(
+                    proj_footstep_chan_ids[idx],
+                    now,
+                    json.dumps(
+                        {
+                            "rf_pos_x": r_pos[0],"rf_pos_y": r_pos[1],"rf_pos_z": r_pos[2],
+                            "rf_ori_x": r_ori[1],"rf_ori_y": r_ori[2],"rf_ori_z": r_ori[3],"rf_ori_q": r_ori[0],
+                            "lf_pos_x": l_pos[0],"lf_pos_y": l_pos[1],"lf_pos_z": l_pos[2],
+                            "lf_ori_x": l_ori[1],"lf_ori_y": l_ori[2],"lf_ori_z": l_ori[3],"lf_ori_q": l_ori[0]
+                        }
+                    ).encode("utf8")
+                )
 
             for scn in xyz_scenes:
                 await server.send_message(
@@ -383,25 +406,23 @@ async def main():
                     tf_chan_id, now, transform.SerializeToString()
                 )
 
-            # update projected footsteps on the grid
-            for obj in ["proj_rf", "proj_lf"]:
-                step = fp.step_num
-                if(len(fp.lfoot_contact_pos) != 0 and len(fp.lfoot_contact_ori) != 0):
-                    f_pos = getattr(fp, obj[5] + "foot_contact_pos")[step][0]
-                    f_ori = getattr(fp, obj[5] + "foot_contact_ori")[step][0]
-                else:
-                    f_pos = [0,0,0]
-                    f_ori = [0,0,0,0]
+            update = fp.sd.steps_to_update()
+            for obj in msgs:
+                if obj in update:
+                    yaml = fp.sd.yaml_num
+                    setattr(fp.sd, obj[5] + "f_steps_taken", getattr(fp.sd, obj[5] + "f_steps_taken") + 1)
+                    proj_foot_pos[obj] = getattr(fp, obj[5] + "foot_contact_pos")[yaml][update[obj]]
+                    proj_foot_ori[obj] = getattr(fp, obj[5] + "foot_contact_ori")[yaml][update[obj]]
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
                 transform.timestamp.FromNanoseconds(now)
-                transform.translation.x = f_pos[0]
-                transform.translation.y = f_pos[1]
-                transform.translation.z = f_pos[2]
-                transform.rotation.x = f_ori[0]
-                transform.rotation.y = f_ori[1]
-                transform.rotation.z = f_ori[2]
-                transform.rotation.w = f_ori[3]
+                transform.translation.x = proj_foot_pos[obj][0]
+                transform.translation.y = proj_foot_pos[obj][1]
+                transform.translation.z = proj_foot_pos[obj][2]
+                transform.rotation.x = proj_foot_ori[obj][1]
+                transform.rotation.y = proj_foot_ori[obj][2]
+                transform.rotation.z = proj_foot_ori[obj][3]
+                transform.rotation.w = proj_foot_ori[obj][0]
                 await server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
                 )
