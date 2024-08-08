@@ -6,12 +6,19 @@ file(GLOB draco_task_headers "draco_task/*.hpp")
 list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
 list(REMOVE_ITEM controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
 
+list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.cpp")
+list(REMOVE_ITEM controller_headers
+    "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.hpp")
 
 if(BUILD_WITH_ZMQ_PROTOBUF)
     list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
     list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
 endif()
 
+if(BUILD_WITH_TELEOP)
+    list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.cpp")
+    list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.hpp")
+endif()
 #include(CMakePrintHelpers)
 #cmake_print_variables(sources)
 #cmake_print_variables(controller_headers)
