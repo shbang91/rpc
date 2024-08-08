@@ -14,6 +14,22 @@ rfoot_contact_pos, rfoot_contact_ori = [], []
 lfoot_contact_pos, lfoot_contact_ori = [], []
 step_num = 0
 
+def yaml_check(file_path, search_line):
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+        # Check if the search_line exists in the list of lines
+        for line in lines:
+            if search_line in line:
+                return True
+        return False
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
+
 def remove_yaml_files(directory):
     if not os.path.isdir(directory):
         raise ValueError(f"The directory {directory} does not exist")
@@ -40,7 +56,8 @@ class yamlHandler(FileSystemEventHandler):
     def process_file(self, file_path):
         with open(file_path, "r") as stream:
             try:
-                time.sleep(0.01)    #wait for yaml to be generated  -- might want to replace with a function to check when it's actually been written
+                while not yaml_check(file_path, "  vrp:"):  # Wait until yaml data is generated
+                    time.sleep(0.01)
                 cfg = yaml.load(stream, Loader=yaml.FullLoader)
                 t_ini_footsteps_planned.append(np.array(cfg["temporal_parameters"]["initial_time"]))
                 t_end_footsteps_planned.append(np.array(cfg["temporal_parameters"]["final_time"]))
