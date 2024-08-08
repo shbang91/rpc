@@ -210,14 +210,39 @@ def main():
 
     #  Simulation Main Loop
     while True:
+        
+        ########################## Keyboard Interrupt ##########################
+        keys = pb.getKeyboardEvents()
+        if pybullet_util.is_key_triggered(keys, '1'):
+            rpc_optimo_interface.interrupt_.PressOne()
+            print("Python: 1 Pressed")
+        elif pybullet_util.is_key_triggered(keys, '2'):
+            rpc_optimo_interface.interrupt_.PressTwo()
+        elif pybullet_util.is_key_triggered(keys, '4'):
+            rpc_optimo_interface.interrupt_.PressFour()
+        elif pybullet_util.is_key_triggered(keys, '5'):
+            rpc_optimo_interface.interrupt_.PressFive()
+        elif pybullet_util.is_key_triggered(keys, '6'):
+            rpc_optimo_interface.interrupt_.PressSix()
+        elif pybullet_util.is_key_triggered(keys, '7'):
+            rpc_optimo_interface.interrupt_.PressSeven()
+        elif pybullet_util.is_key_triggered(keys, '8'):
+            rpc_optimo_interface.interrupt_.PressEight()
+        elif pybullet_util.is_key_triggered(keys, '9'):
+            rpc_optimo_interface.interrupt_.PressNine()
+
+        
+
+        ########################## Sensor Update ##############################
         # get sensor data from pybullet
         joint_pos, joint_vel = get_sensor_data_from_pybullet(robot)
-
-        # copy sensor data to rpc_optimo_sensor_data
         rpc_optimo_sensor_data.joint_pos_ = joint_pos
         rpc_optimo_sensor_data.joint_vel_ = joint_vel
         rpc_optimo_interface.GetCommand(rpc_optimo_sensor_data,
                                         rpc_optimo_command)
+        ######################################################################
+        
+        ########################## Command Update ##############################
 
         rpc_trq_command = rpc_optimo_command.joint_trq_cmd_
         rpc_joint_pos_command = rpc_optimo_command.joint_pos_cmd_
@@ -234,6 +259,7 @@ def main():
             rpc_joint_pos_command -
             joint_pos) + ActuatorGains.KD * (rpc_joint_vel_command - joint_vel)
         apply_control_input_to_pybullet(robot, joint_impedance_command)
+        ######################################################################
 
         pb.stepSimulation()
         # print without newline

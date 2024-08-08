@@ -21,6 +21,7 @@ void JointTask::UpdateJacobian() {
   jacobian_.block(0, robot_->NumFloatDof(), dim_, robot_->NumActiveDof()) =
       Eigen::MatrixXd::Identity(robot_->NumActiveDof(), robot_->NumActiveDof());
       
+      
 }
 
 void JointTask::UpdateJacobianDotQdot() {
@@ -95,7 +96,7 @@ void LinkPosTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
 }
 
 void LinkPosTask::UpdateJacobian() {
-
+ 
   jacobian_ = robot_->GetLinkJacobian(target_idx_)
                   .block(dim_, 0, dim_, robot_->NumQdot());
 }

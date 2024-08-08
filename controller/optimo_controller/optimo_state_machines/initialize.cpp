@@ -27,12 +27,22 @@ void Initialize::FirstVisit() {
   std::cout << "optimo_states::kInitialize" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
   init_joint_pos_ = robot_->GetJointPos();
+
+    //          MinJerkCurveVec(
+    //               const Eigen::VectorXd &start_pos,
+    //               const Eigen::VectorXd &start_vel,
+    //               const Eigen::VectorXd &start_acc,
+    //               const Eigen::VectorXd &end_pos,
+    //               const Eigen::VectorXd &end_vel,
+    //               const Eigen::VectorXd &end_acc, const double duration);
+
   min_jerk_curves_ = new MinJerkCurveVec(
-      init_joint_pos_, Eigen::VectorXd::Zero(init_joint_pos_.size()),
-      Eigen::VectorXd::Zero(init_joint_pos_.size()), target_joint_pos_,
+      init_joint_pos_, 
+      Eigen::VectorXd::Zero(init_joint_pos_.size()),
+      Eigen::VectorXd::Zero(init_joint_pos_.size()), 
+      target_joint_pos_,
       Eigen::VectorXd::Zero(target_joint_pos_.size()),
-      Eigen::VectorXd::Zero(target_joint_pos_.size()),
-      end_time_); // min jerk curve initialization
+      Eigen::VectorXd::Zero(target_joint_pos_.size()), end_time_); // min jerk curve initialization
 }
 
 void Initialize::OneStep() {
@@ -69,7 +79,7 @@ bool Initialize::EndOfState() {
   }
 }
 
-StateId Initialize::GetNextState() { return optimo_states::kStandUp; }
+StateId Initialize::GetNextState() { return optimo_states::kEETraj; }
 
 void Initialize::SetParameters(const YAML::Node &node) {
   try {
