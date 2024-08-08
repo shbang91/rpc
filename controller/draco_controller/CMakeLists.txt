@@ -9,6 +9,9 @@ list(REMOVE_ITEM controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_mana
 list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.cpp")
 list(REMOVE_ITEM controller_headers
     "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.hpp")
+list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines/teleop_manipulation.cpp")
+list(REMOVE_ITEM state_machines_headers
+    "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines/teleop_manipulation.hpp")
 
 if(BUILD_WITH_ZMQ_PROTOBUF)
     list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
@@ -18,6 +21,9 @@ endif()
 if(BUILD_WITH_TELEOP)
     list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.cpp")
     list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_rs_teleop_handler.hpp")
+    list(APPEND sources
+        "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines/teleop_manipulation.cpp")
+    list(APPEND state_machines_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines/teleop_manipulation.hpp")
 endif()
 #include(CMakePrintHelpers)
 #cmake_print_variables(sources)
