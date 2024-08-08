@@ -4,11 +4,16 @@
 
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
+#include "controller/optimo_controller/optimo_state_estimator.hpp"
+
 #include "controller/optimo_controller/optimo_control_architecture.hpp"
 #include "controller/optimo_controller/optimo_interface.hpp"
-#include "controller/optimo_controller/optimo_state_estimator.hpp"
+#include "controller/optimo_controller/optimo_interrupt_handler.hpp"
 #include "controller/optimo_controller/optimo_state_provider.hpp"
 #include "controller/optimo_controller/optimo_task_gain_handler.hpp"
+
+
+#include "controller/optimo_controller/optimo_definition.hpp"
 
 OptimoInterface::OptimoInterface() : Interface() {
   std::string border = "=";
@@ -35,8 +40,7 @@ OptimoInterface::OptimoInterface() : Interface() {
 
   ctrl_arch_ = new OptimoControlArchitecture(robot_);
 
-  // interrupt_handler_ = new
-  // InterruptHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
+  interrupt_handler_ = new OptimoInterruptHandler(static_cast<OptimoControlArchitecture *>(ctrl_arch_));
   task_gain_handler_ = new OptimoTaskGainHandler(
       static_cast<OptimoControlArchitecture *>(ctrl_arch_));
 }
@@ -66,11 +70,11 @@ void OptimoInterface::GetCommand(void *sensor_data, void *command_data) {
   // TODO:get control command through control architecture class
 
   // process interrupt & task gains
-
-  // TODO: interrupt handler
-  // if (interrupt_handler_->IsSignalReceived()) {
-  //     interrupt_handler_->Process();
-  // }
+  if (interrupt_handler_->IsSignalReceived()) {
+      interrupt_handler_->Process();
+  }
+  if (task_gain_handler_->IsSignalReceived())
+    task_gain_handler_->Process();
 
   // get control command
   ctrl_arch_->GetCommand(optimo_command);

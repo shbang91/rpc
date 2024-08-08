@@ -4,11 +4,13 @@
 namespace optimo_states {
 constexpr int kInitialize = 0;
 constexpr int kStandUp = 1;
+constexpr int kEETraj = 2;
 } // namespace optimo_states
 
 class OptimoController;
 class OptimoTCIContainer;
 class EndEffectorTrajectoryManager;
+class ArmTrajectoryManager;
 class OptimoStateProvider;
 class TaskHierarchyManager;
 class ForceTrajectoryManager;
@@ -29,11 +31,11 @@ public:
 
   ////////////////////////// End Effector Trajectory Manager
   ///////////////////////////
-  EndEffectorTrajectoryManager *ee_SE3_tm_;
+ ArmTrajectoryManager *ee_SE3_tm_;
 
-  EndEffectorTrajectoryManager *f1_SE3_tm_;
-  EndEffectorTrajectoryManager *f2_SE3_tm_;
-  EndEffectorTrajectoryManager *f3_SE3_tm_;
+  // EndEffectorTrajectoryManager *f1_SE3_tm_;
+  // EndEffectorTrajectoryManager *f2_SE3_tm_;
+  // EndEffectorTrajectoryManager *f3_SE3_tm_;
 
   ////////////////////////// Force Trajectory Manager ////////////////////////
   ForceTrajectoryManager *ee_force_tm_;

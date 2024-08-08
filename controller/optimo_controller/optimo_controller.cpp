@@ -138,13 +138,16 @@ void OptimoController::GetCommand(void *command) {
     // wbc command with contact (feedforward torque)
     // task and contact update
 
+
     for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
-      std::cout << "seg 1" << std::endl;
+      // print task string
+
       task_ptr->UpdateJacobian();
-      std::cout << "seg 2" << std::endl;
       task_ptr->UpdateJacobianDotQdot();
       task_ptr->UpdateOpCommand(sp_->rot_world_local_);
+
     }
+
 
     int rf_dim(0);
     for (const auto &[contact_str, contact_ptr] :

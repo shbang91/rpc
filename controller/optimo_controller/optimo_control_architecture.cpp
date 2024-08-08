@@ -6,11 +6,13 @@
 
 #include "controller/optimo_controller/optimo_state_machines/initialize.hpp"
 #include "controller/optimo_controller/optimo_state_machines/stand_up.hpp"
+#include "controller/optimo_controller/optimo_state_machines/ee_traj.hpp"
 
 #include "controller/optimo_controller/optimo_state_provider.hpp"
 #include "controller/optimo_controller/optimo_tci_container.hpp"
 
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/arm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
@@ -52,9 +54,12 @@ OptimoControlArchitecture::OptimoControlArchitecture(
   // upper_body_tm_ = new UpperBodyTrajetoryManager(
   // tci_container_->task_map_["upper_body_task"], robot_);
 
-//   ee_SE3_tm_ = new EndEffectorTrajectoryManager(
-//       tci_container_->task_map_["ee_pos_task"],
-//       tci_container_->task_map_["ee_ori_task"], robot_);
+  ee_SE3_tm_ = new ArmTrajectoryManager(
+      tci_container_->task_map_["ee_pos_task"],
+      tci_container_->task_map_["ee_ori_task"], robot_);
+
+  
+
 
 //   f1_SE3_tm_ = new EndEffectorTrajectoryManager(
 //       tci_container_->task_map_["f1_ee_pos_task"],
@@ -97,8 +102,8 @@ OptimoControlArchitecture::OptimoControlArchitecture(
     std::exit(EXIT_FAILURE);
   }
 
-//   ee_pos_hm_ = new TaskHierarchyManager(
-    //   tci_container_->task_map_["ee_pos_task"], weight, weight_at_contact);
+  ee_pos_hm_ = new TaskHierarchyManager(
+      tci_container_->task_map_["ee_pos_task"], weight, weight_at_contact);
 
   // f1_pos_hm_ = new TaskHierarchyManager(
   // tci_container_->task_map_["f1_pos_task"], weight, weight_at_contact);
@@ -135,8 +140,8 @@ OptimoControlArchitecture::OptimoControlArchitecture(
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
-//   ee_ori_hm_ = new TaskHierarchyManager(
-    //   tci_container_->task_map_["ee_ori_task"], weight, weight_at_contact);
+  ee_ori_hm_ = new TaskHierarchyManager(
+      tci_container_->task_map_["ee_ori_task"], weight, weight_at_contact);
 
   // f1_ori_hm_ = new TaskHierarchyManager(
   // tci_container_->task_map_["f1_ori_task"], weight, weight_at_contact);
@@ -166,8 +171,8 @@ OptimoControlArchitecture::OptimoControlArchitecture(
   state_machine_container_[optimo_states::kInitialize] =
       new Initialize(optimo_states::kInitialize, robot_, this);
 
-  // state_machine_container_[optimo_states::kStandUp] =
-  // new StandUp(optimo_states::kStandUp, robot_, this);
+  state_machine_container_[optimo_states::kEETraj] =
+      new EETraj(optimo_states::kEETraj, robot_, this);
 
   this->_InitializeParameters();
 }
@@ -193,6 +198,8 @@ void OptimoControlArchitecture::_InitializeParameters() {
   // state machine initialization
   state_machine_container_[optimo_states::kInitialize]->SetParameters(
       cfg_["state_machine"]["initialize"]);
+  state_machine_container_[optimo_states::kEETraj]->SetParameters(
+      cfg_["state_machine"]["ee_traj"]);
 }
 
 OptimoControlArchitecture::~OptimoControlArchitecture() {
@@ -201,7 +208,7 @@ OptimoControlArchitecture::~OptimoControlArchitecture() {
 
   // tm
   // delete upper_body_tm_;
-//   delete ee_SE3_tm_;
+  delete ee_SE3_tm_;
 //   delete f1_SE3_tm_;
 //   delete f2_SE3_tm_;
 //   delete f3_SE3_tm_;
@@ -223,5 +230,5 @@ OptimoControlArchitecture::~OptimoControlArchitecture() {
 
   // state machines
   delete state_machine_container_[optimo_states::kInitialize];
-  // delete state_machine_container_[optimo_states::kStandUp];
+  delete state_machine_container_[optimo_states::kEETraj];
 }
