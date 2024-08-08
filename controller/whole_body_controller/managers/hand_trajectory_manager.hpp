@@ -32,4 +32,6 @@ private:
   double duration_ = 0.;
   double start_time_ = 0.;
   double delta_pos_speed_ = 0.;
+
+  bool b_trajectory_initialized_;
 };

@@ -34,7 +34,8 @@ class DracoZMQServer(object):
         self._verbose = verbose
         self._logger_fn = logger_fn
         self._logger_fn("TESTING SPOT LOGGING...")
-        self._msg = vr_teleop_msg()
+        self._msg = rs_teleop_msg()
+        # self._msg = vr_teleop_msg()
 
     def _publish(self):
         context = zmq.Context()
@@ -46,10 +47,10 @@ class DracoZMQServer(object):
             if not self._cmd:
                 continue
             cmd = {key: value for key, value in self._cmd.items()}
-            self._msg.rh_pos[:] = cmd['pos']
-            self._msg.rh_ori[:] = cmd['quat']
-            self._msg.r_bump = cmd['grasp']
-            self._msg.l_pad = cmd['vr_ready']
+            self._msg.pos[:] = cmd['pos']
+            self._msg.quat[:] = cmd['quat']
+            self._msg.b_grasp = cmd['b_grasp']
+            self._msg.b_teleop_toggled = cmd['b_teleop_toggled']
             pub_socket.send(self._msg.SerializeToString())
             if self._verbose:
                 self._logger_fn(

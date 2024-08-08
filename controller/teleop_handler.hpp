@@ -5,7 +5,7 @@
 
 class TeleopHandler {
 public:
-  TeleopHandler() {
+  TeleopHandler() : b_teleop_ready_(false) {
     context_ = std::make_unique<zmq::context_t>(1);
     teleop_socket_ = std::make_unique<zmq::socket_t>(*context_, ZMQ_SUB);
     teleop_socket_->setsockopt(ZMQ_CONFLATE, 1); // discards stale msg

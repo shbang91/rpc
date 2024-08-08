@@ -6,12 +6,13 @@ class PinocchioRobotSystem;
 class DracoControlArchitecture;
 class DracoStateProvider;
 class TeleopHandler;
+class DracoRSCommands;
 
 class TeleopManipulation : public StateMachine {
 public:
   TeleopManipulation(StateId state_id, PinocchioRobotSystem *robot,
                      DracoControlArchitecture *ctrl_arch);
-  ~TeleopManipulation() = default;
+  ~TeleopManipulation();
 
   void FirstVisit() override;
   void OneStep() override;
@@ -21,11 +22,10 @@ public:
 
   void SetParameters(const YAML::Node &node) override;
 
-  Eigen::VectorXd target_rh_pos_;
-  Eigen::VectorXd target_rh_ori_;
-
-  Eigen::VectorXd target_lh_pos_;
-  Eigen::VectorXd target_lh_ori_;
+  Eigen::Isometry3d target_rh_iso_;
+  Eigen::Isometry3d target_lh_iso_;
+  Eigen::Isometry3d initial_torso_to_rh_iso_;
+  Eigen::Isometry3d initial_torso_to_lh_iso_;
 
 private:
   DracoControlArchitecture *ctrl_arch_;
@@ -33,13 +33,14 @@ private:
   DracoStateProvider *sp_;
   std::unique_ptr<TeleopHandler> teleop_handler_;
 
-  bool b_transitted_;
+  int teleop_freq_;
+
+  DracoRSCommands *rs_commands_;
+  bool b_first_visit_;
+  bool b_transition_;
+  bool b_teleop_mode_;
   bool b_initialized_;
 
   double moving_duration_;
   double transition_duration_;
-  double initialization_duration_;
-
-  double transition_time_;
-  double transition_start_time_;
 };

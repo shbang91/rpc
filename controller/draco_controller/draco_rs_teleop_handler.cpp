@@ -40,17 +40,6 @@ void DracoRSTeleopHandler::ReceiveCommands(void *command) {
     rs_command->b_grasp_ = m.b_grasp();
     rs_command->b_teleop_toggled_ = m.b_teleop_toggled();
 
-    // if (rs_command->b_teleop_toggled_) {
-    // std::cout << "Teleop Toggled!" << std::endl;
-    // if (l_pad_held_ == false) {
-    // b_teleop_ready_ = true;
-    // std::cout << "Teleop Ready!" << std::endl;
-    //}
-    // l_pad_held_ = true;
-    //} else {
-    // l_pad_held_ = false;
-    //}
-
     // update prev command
     prev_command_.pos_ = rs_command->pos_;
     prev_command_.quat_ = rs_command->quat_;

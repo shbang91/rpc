@@ -203,14 +203,14 @@ def record(path, ros_socket=None):
             trk_mat_se3 = mat_trans @ mat_se3 @ mat_se3_base
             pos = trk_mat_se3[:3, 3]
             quat = util.rot_to_quat(trk_mat_se3[:3, :3])
-            grasp = keyboard.grasp
-            vr_ready = keyboard.enable
+            b_grasp = keyboard.grasp
+            b_teleop_toggled = keyboard.enable
 
             ros_socket.update({
                 "pos": pos,
                 "quat": quat,
-                "grasp": grasp,
-                "vr_ready": vr_ready
+                "b_grasp": b_grasp,
+                "b_teleop_toggled": b_teleop_toggled
             })
 
             # state['time'] += [t265.time]

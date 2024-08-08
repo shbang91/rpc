@@ -134,12 +134,13 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   //=============================================================
   // hand task hierarchy manager
   //=============================================================
-  Eigen::VectorXd weight_at_balance, weight_at_walking;
+  Eigen::VectorXd weight_at_initial, weight_at_teleop_triggered;
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
-                        prefix + "_weight", weight_at_balance);
+                        prefix + "_weight", weight_at_initial);
     util::ReadParameter(cfg_["wbc"]["task"]["hand_pos_task"],
-                        prefix + "_weight_at_walking", weight_at_walking);
+                        prefix + "_weight_at_teleop",
+                        weight_at_teleop_triggered);
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading hand pos task parameter [" << ex.what()
               << "] at file: [" << __FILE__ << "]" << std::endl;
@@ -147,15 +148,16 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   }
   lh_pos_hm_ =
       new TaskHierarchyManager(tci_container_->task_map_["lh_pos_task"],
-                               weight_at_balance, weight_at_walking);
+                               weight_at_teleop_triggered, weight_at_initial);
   rh_pos_hm_ =
       new TaskHierarchyManager(tci_container_->task_map_["rh_pos_task"],
-                               weight_at_balance, weight_at_walking);
+                               weight_at_teleop_triggered, weight_at_initial);
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
-                        prefix + "_weight", weight_at_balance);
+                        prefix + "_weight", weight_at_initial);
     util::ReadParameter(cfg_["wbc"]["task"]["hand_ori_task"],
-                        prefix + "_weight_at_walking", weight_at_walking);
+                        prefix + "_weight_at_teleop",
+                        weight_at_teleop_triggered);
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading hand ori task parameter [" << ex.what()
               << "] at file: [" << __FILE__ << "]" << std::endl;
@@ -163,10 +165,10 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot)
   }
   lh_ori_hm_ =
       new TaskHierarchyManager(tci_container_->task_map_["lh_ori_task"],
-                               weight_at_balance, weight_at_walking);
+                               weight_at_teleop_triggered, weight_at_initial);
   rh_ori_hm_ =
       new TaskHierarchyManager(tci_container_->task_map_["rh_ori_task"],
-                               weight_at_balance, weight_at_walking);
+                               weight_at_teleop_triggered, weight_at_initial);
 
   // initialize dynamics manager
   double max_rf_z;
@@ -296,12 +298,12 @@ void DracoControlArchitecture::GetCommand(void *command) {
     locomotion_state_machine_container_[loco_state_]->FirstVisit();
     b_loco_state_first_visit_ = false;
   }
-  //#if B_USE_TELEOP
+#if B_USE_TELEOP
   if (b_manip_state_first_visit_) {
     manipulation_state_machine_container_[manip_state_]->FirstVisit();
     b_manip_state_first_visit_ = false;
   }
-  //#endif
+#endif
 
 #if B_USE_FOXGLOVE
   param_subscriber_->UpdateParameters();

@@ -1,6 +1,6 @@
 #pragma once
+#include "controller/whole_body_controller/basic_task.hpp"
 #include <Eigen/Dense>
-class Task;
 
 class TaskHierarchyManager {
 public:
@@ -15,10 +15,14 @@ public:
   void UpdateRampToMin(const double state_machine_time);
 
   // Helper methods for gain tuning (e.g., via Foxglove)
+  // setter
   void SetWeightMax(const Eigen::Vector3d &w_max);
   void SetWeightMin(const Eigen::Vector3d &w_min);
   void SetTaskKp(const Eigen::Vector3d &kp);
   void SetTaskKd(const Eigen::Vector3d &kd);
+
+  // getter
+  Eigen::VectorXd GetWeight() { return task_->Weight(); }
 
 private:
   Task *task_;

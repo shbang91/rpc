@@ -1,5 +1,4 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
-#include "controller/whole_body_controller/basic_task.hpp"
 
 TaskHierarchyManager::TaskHierarchyManager(Task *task, Eigen::VectorXd w_max,
                                            Eigen::VectorXd w_min)
