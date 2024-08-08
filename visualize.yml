@@ -75,5 +75,6 @@ dependencies:
     - tornado==6.2
     - traitlets==5.8.1
     - u-msgpack-python==2.7.2
+    - watchdog
     - wcwidth==0.2.6
     - zmq==0.0.0
