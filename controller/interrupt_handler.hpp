@@ -17,6 +17,7 @@ public:
   void PressOne() {
     b_signal_received_ = true;
     b_button_one = true;
+    std::cout << "Handler: Button 1 pressed" << std::endl;
   }
   void PressTwo() {
     b_signal_received_ = true;
