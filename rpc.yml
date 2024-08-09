@@ -26,3 +26,4 @@ dependencies:
       - zmq==0.0.0
       - tensorboard
       - loop-rate-limiters
+      - conan
