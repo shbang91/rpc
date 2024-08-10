@@ -1,8 +1,11 @@
 #include "controller/draco_controller/draco_interrupt_handler.hpp"
 #include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_state_machines_wbic/double_support_balance.hpp"
-#include "controller/draco_controller/draco_state_machines_wbic/mpc_locomotion.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
+
+#if B_USE_HPIPM
+#include "controller/draco_controller/draco_state_machines_wbic/mpc_locomotion.hpp"
+#endif
 
 DracoInterruptHandler::DracoInterruptHandler(
     DracoControlArchitecture_WBIC *ctrl_arch)
@@ -131,6 +134,7 @@ void DracoInterruptHandler::Process() {
       std::cout << "Wait Until Balance State" << std::endl;
   }
 
+#if B_USE_HPIPM
   if (b_button_m) {
     std::cout << "-----------------------------------" << std::endl;
     std::cout << "button M pressed: MPC Locomotion " << std::endl;
@@ -188,6 +192,7 @@ void DracoInterruptHandler::Process() {
     } else
       std::cout << "Wait Until Locomotion State" << std::endl;
   }
+#endif
 
   this->_ResetFlags();
 }

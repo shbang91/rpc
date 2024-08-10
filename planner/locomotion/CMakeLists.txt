@@ -1,2 +1,5 @@
 add_subdirectory(dcm_planner)
-add_subdirectory(convex_mpc)
+
+if (BUILD_WITH_HPIPM)
+    add_subdirectory(convex_mpc)
+endif()

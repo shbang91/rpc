@@ -1,5 +1,6 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
+#include "configuration.hpp"
 #include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_crbi/draco_composite_rigid_body_inertia.hpp"
@@ -10,7 +11,6 @@
 #include "controller/draco_controller/draco_state_machines_wbic/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_machines_wbic/double_support_swaying.hpp"
 #include "controller/draco_controller/draco_state_machines_wbic/initialize.hpp"
-#include "controller/draco_controller/draco_state_machines_wbic/mpc_locomotion.hpp"
 #include "controller/draco_controller/draco_state_machines_wbic/single_support_swing.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
@@ -21,10 +21,14 @@
 #include "controller/whole_body_controller/managers/qp_params_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
-#include "convex_mpc/convex_mpc_locomotion.hpp"
+#include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
-#include "controller/whole_body_controller/task.hpp"
+#if B_USE_HPIPM
+#include "controller/draco_controller/draco_state_machines_wbic/mpc_locomotion.hpp"
+#include "convex_mpc/convex_mpc_locomotion.hpp"
+#endif
+
 DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
     PinocchioRobotSystem *robot, const YAML::Node &cfg)
     : ControlArchitecture(robot) {
@@ -52,6 +56,7 @@ DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
   // dcm planner
   dcm_planner_ = new DCMPlanner();
 
+#if B_USE_HPIPM
   //=============================================================
   // Convex MPC Planner
   //=============================================================
@@ -138,6 +143,7 @@ DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
   convex_mpc_locomotion_ = new ConvexMPCLocomotion(
       sp_->servo_dt_, iterations_between_mpc, robot_, b_save_mpc_solution,
       mpc_params_, draco_crbi_model_);
+#endif
 
   //=============================================================
   // trajectory Managers
@@ -238,9 +244,11 @@ DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
   state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
       cfg);
 
+#if B_USE_HPIPM
   state_machine_container_[draco_states::kMPCLocomotion] =
       new MPCLocomotion(draco_states::kMPCLocomotion, robot_, this);
   state_machine_container_[draco_states::kMPCLocomotion]->SetParameters(cfg);
+#endif
 }
 
 DracoControlArchitecture_WBIC::~DracoControlArchitecture_WBIC() {
@@ -248,11 +256,13 @@ DracoControlArchitecture_WBIC::~DracoControlArchitecture_WBIC() {
   delete controller_;
   delete dcm_planner_;
 
+#if B_USE_HPIPM
   // mpc
   delete mpc_gait_params_;
   delete mpc_params_;
   delete draco_crbi_model_;
   delete convex_mpc_locomotion_;
+#endif
 
   // tm
   delete upper_body_tm_;
@@ -278,7 +288,9 @@ DracoControlArchitecture_WBIC::~DracoControlArchitecture_WBIC() {
   delete state_machine_container_[draco_states::kLFSingleSupportSwing];
   delete state_machine_container_[draco_states::kRFSingleSupportSwing];
 
+#if B_USE_HPIPM
   delete state_machine_container_[draco_states::kMPCLocomotion];
+#endif
 }
 
 void DracoControlArchitecture_WBIC::GetCommand(void *command) {

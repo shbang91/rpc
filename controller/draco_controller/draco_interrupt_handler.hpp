@@ -1,5 +1,6 @@
 #pragma once
 
+#include "configuration.hpp"
 #include "controller/interrupt_handler.hpp"
 
 class DracoControlArchitecture_WBIC;

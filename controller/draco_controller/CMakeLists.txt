@@ -7,6 +7,23 @@ file(GLOB draco_crbi_headers "draco_crbi/*.hpp" "draco_crbi/*.h")
 list(REMOVE_ITEM sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
 list(REMOVE_ITEM controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
 
+if(BUILD_WITH_ZMQ_PROTOBUF)
+    list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
+    list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
+endif()
+
+list(REMOVE_ITEM sources
+    "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines_wbic/mpc_locomotion.cpp")
+list(REMOVE_ITEM state_machines_headers_wbic
+    "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines_wbic/mpc_locomotion.hpp")
+
+if(BUILD_WITH_HPIPM)
+    list(APPEND sources
+    "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines_wbic/mpc_locomotion.cpp")
+list(APPEND state_machines_headers_wbic
+    "${CMAKE_CURRENT_SOURCE_DIR}/draco_state_machines_wbic/mpc_locomotion.hpp")
+endif()
+
 #list(REMOVE_ITEM sources
     #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.cpp")
 #list(REMOVE_ITEM controller_headers
@@ -16,10 +33,6 @@ list(REMOVE_ITEM controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_mana
     #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.cpp")
 #file(GLOB wbo_header
     #"${CMAKE_CURRENT_SOURCE_DIR}/draco_task/draco_wbo_task.hpp")
-if(BUILD_WITH_ZMQ_PROTOBUF)
-    list(APPEND sources "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.cpp")
-    list(APPEND controller_headers "${CMAKE_CURRENT_SOURCE_DIR}/draco_data_manager.hpp")
-endif()
 
 #include(CMakePrintHelpers)
 #cmake_print_variables(sources)
@@ -36,13 +49,16 @@ target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
                                            PUBLIC rpc-filter
                                            PUBLIC rpc-state-estimator
                                            PUBLIC rpc-model
-                                           PUBLIC convex-mpc
                                            )
 
 if(BUILD_WITH_ZMQ_PROTOBUF)
     target_link_libraries(rpc-draco-controller PUBLIC ${Protobuf_LIBRARIES}
                                                PUBLIC ${ZMQ_LIBRARIES}
                                                PUBLIC rpc-draco-msg)
+endif()
+
+if(BUILD_WITH_HPIPM)
+    target_link_libraries(rpc-draco-controller PUBLIC convex-mpc)
 endif()
 
 if(BUILD_WITH_MATLOGGER)

@@ -31,6 +31,8 @@ option(BUILD_WITH_PROXQP "compile with ProxQP" OFF)
 option(BUILD_WITH_MATLOGGER "compile with MatLogger2" OFF)
 option(BUILD_WITH_ZMQ_PROTOBUF "compile with zmq and protobuf" OFF)
 
+option(BUILD_WITH_HPIPM "compile with HPIPM" OFF)
+
 option(BUILD_TEST "build testing" OFF)
 # unit-testing tools
 option(BUILD_GTESTS "build google tests" OFF)
@@ -110,8 +112,12 @@ else()
 endif()
 
 #hpipm-cpp
-#TODO:make it optional
-find_package(hpipm-cpp REQUIRED)
+if (BUILD_WITH_HPIPM)
+    find_package(hpipm-cpp REQUIRED)
+    set(B_USE_HPIPM true)
+else()
+    set(B_USE_HPIPM false)
+endif()
 
 #Boost
 #find_package(Boost QUIET REQUIRED COMPONENTS system thread filesystem)
