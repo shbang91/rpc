@@ -56,15 +56,16 @@ DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
   // Convex MPC Planner
   //=============================================================
   YAML::Node cfg_mpc;
-  if (test_env_name == "mujoco")
+  if (test_env_name == "mujoco") {
+    cfg_mpc = YAML::LoadFile(
+        THIS_COM "config/draco/sim/mujoco/wbic/MPC_LOCOMOTION.yaml");
+  } else if (test_env_name == "pybullet") {
+    cfg_mpc = YAML::LoadFile(
+        THIS_COM "config/draco/sim/pybullet/wbic/MPC_LOCOMOTION.yaml");
+  } else if (test_env_name == "hw") {
     cfg_mpc =
-        YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/MPC_LOCOMOTION.yaml");
-  else if (test_env_name == "pybullet")
-    cfg_mpc = YAML::LoadFile(THIS_COM
-                             "config/draco/sim/pybullet/MPC_LOCOMOTION.yaml");
-  else if (test_env_name == "hw")
-    cfg_mpc = YAML::LoadFile(THIS_COM "config/draco/hw/MPC_LOCOMOTION.yaml");
-  else {
+        YAML::LoadFile(THIS_COM "config/draco/hw/wbic/MPC_LOCOMOTION.yaml");
+  } else {
     std::cout
         << "[DracoControlArchitecture_WBIC] Please check the test_env_name"
         << '\n';

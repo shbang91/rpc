@@ -128,13 +128,30 @@ void DracoInterface::SetParameters() {
     std::cout << "============================================" << '\n';
     std::cout << "TEST ENV: " << test_env_name << '\n';
     std::cout << "============================================" << '\n';
+    std::string wbc_type = util::ReadParameter<std::string>(
+        interface_cfg, "whole_body_controller");
+    std::cout << "============================================" << '\n';
+    std::cout << "WHOLE BODY CONTROLLER: " << wbc_type << '\n';
+    std::cout << "============================================" << '\n';
 
     if (test_env_name == "mujoco") {
-      cfg_ = YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/pnc.yaml");
+      if (wbc_type == "ihwbc")
+        cfg_ =
+            YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/ihwbc/pnc.yaml");
+      else if (wbc_type == "wbic")
+        cfg_ = YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/wbic/pnc.yaml");
     } else if (test_env_name == "pybullet") {
-      cfg_ = YAML::LoadFile(THIS_COM "config/draco/sim/pybullet/pnc.yaml");
+      if (wbc_type == "ihwbc")
+        cfg_ =
+            YAML::LoadFile(THIS_COM "config/draco/sim/pybullet/ihwbc/pnc.yaml");
+      if (wbc_type == "wbic")
+        cfg_ =
+            YAML::LoadFile(THIS_COM "config/draco/sim/pybullet/wbic/pnc.yaml");
     } else if (test_env_name == "hw") {
-      cfg_ = YAML::LoadFile(THIS_COM "config/draco/hw/pnc.yaml");
+      if (wbc_type == "ihwbc")
+        cfg_ = YAML::LoadFile(THIS_COM "config/draco/hw/ihwbc/pnc.yaml");
+      if (wbc_type == "wbic")
+        cfg_ = YAML::LoadFile(THIS_COM "config/draco/hw/wbic/pnc.yaml");
     } else {
       assert(false);
     }

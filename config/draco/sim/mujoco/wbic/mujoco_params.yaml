@@ -1,0 +1,113 @@
+actuator_gains:
+  l_hip_ie: 
+    kp: 400 
+    kd: 20
+  l_hip_aa:
+    kp: 500
+    kd: 20
+  l_hip_fe:
+    kp: 500
+    kd: 20
+  l_knee_fe_jd:
+    kp: 300
+    kd: 10
+  l_ankle_fe:
+    kp: 40
+    kd: 2
+  l_ankle_ie:
+    kp: 40
+    kd: 2
+  l_shoulder_fe:
+    kp: 100 
+    kd: 5
+  l_shoulder_aa:
+    kp: 100
+    kd: 5
+  l_shoulder_ie:
+    kp: 100
+    kd: 5
+  l_elbow_fe:
+    kp: 100
+    kd: 5
+  l_wrist_ps:
+    kp: 100
+    kd: 5
+  l_wrist_pitch:
+    kp: 100
+    kd: 5
+  neck_pitch:
+    kp: 100 
+    kd: 5
+  r_hip_ie:
+    kp: 400
+    kd: 20
+  r_hip_aa:
+    kp: 500
+    kd: 20
+  r_hip_fe:
+    kp: 500
+    kd: 20
+  r_knee_fe_jd:
+    kp: 300
+    kd: 10
+  r_ankle_fe:
+    kp: 40
+    kd: 2
+  r_ankle_ie:
+    kp: 40
+    kd: 2
+  r_shoulder_fe:
+    kp: 100
+    kd: 5
+  r_shoulder_aa:
+    kp: 100
+    kd: 5
+  r_shoulder_ie:
+    kp: 100
+    kd: 5
+  r_elbow_fe:
+    kp: 100
+    kd: 5
+  r_wrist_ps:
+    kp: 100
+    kd: 5
+  r_wrist_pitch:
+    kp: 100
+    kd: 5
+
+initial_config:
+  base_pos_x: 0.
+  base_pos_y: 0.
+  base_pos_z: 1.0
+  base_quat_w: 1.
+  base_quat_x: 0.
+  base_quat_y: 0.
+  base_quat_z: 0.
+  l_hip_ie: 0. 
+  l_hip_aa: 0.
+  l_hip_fe: 0
+  l_knee_fe_jp: 0
+  l_knee_fe_jd: 0
+  l_ankle_fe: 0.
+  l_ankle_ie: 0.
+  l_shoulder_fe: 0.
+  l_shoulder_aa: 0.
+  l_shoulder_ie: 0.
+  l_elbow_fe: 0.
+  l_wrist_ps: 0.
+  l_wrist_pitch: 0.
+  neck_pitch: 0.
+  r_hip_ie: 0.
+  r_hip_aa: 0.
+  r_hip_fe: 0
+  r_knee_fe_jp: 0
+  r_knee_fe_jd: 0
+  r_ankle_fe: 0.
+  r_ankle_ie: 0.
+  r_shoulder_fe: 0.
+  r_shoulder_aa: 0.
+  r_shoulder_ie: 0.
+  r_elbow_fe: 0.
+  r_wrist_ps: 0.
+  r_wrist_pitch: 0.
+

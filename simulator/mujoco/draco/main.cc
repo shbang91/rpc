@@ -357,8 +357,17 @@ void ConfigureSensors(mjModel *m, int &imu_orientation_adr,
 
 void SetYamlNode(YAML::Node &node) {
   try {
-    node =
-        YAML::LoadFile(THIS_COM "config/draco/sim/mujoco/mujoco_params.yaml");
+    YAML::Node interface_cfg =
+        YAML::LoadFile(THIS_COM "config/draco/INTERFACE.yaml");
+    std::string wbc_type = util::ReadParameter<std::string>(
+        interface_cfg, "whole_body_controller");
+    if (wbc_type == "ihwbc")
+      node = YAML::LoadFile(THIS_COM
+                            "config/draco/sim/mujoco/ihwbc/mujoco_params.yaml");
+    else if (wbc_type == "wbic")
+      node = YAML::LoadFile(THIS_COM
+                            "config/draco/sim/mujoco/wbic/mujoco_params.yaml");
+
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

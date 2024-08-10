@@ -1,1 +1,2 @@
-test_env_name: mujoco #hw, mujoco, pybullet
+test_env_name: pybullet # options: (1)hw (2)mujoco (3)pybullet
+whole_body_controller: wbic # options: (1)wbic (2)ihwbc
