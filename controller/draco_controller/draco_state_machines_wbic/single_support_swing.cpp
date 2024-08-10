@@ -9,9 +9,9 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
-SingleSupportSwing::SingleSupportSwing(StateId state_id,
-                                       PinocchioRobotSystem *robot,
-                                       DracoControlArchitecture_WBIC *ctrl_arch)
+SingleSupportSwing_WBIC::SingleSupportSwing_WBIC(
+    StateId state_id, PinocchioRobotSystem *robot,
+    DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), swing_height_(0.) {
 
   if (state_id_ == draco_states::kLFSingleSupportSwing) {
@@ -56,7 +56,7 @@ SingleSupportSwing::SingleSupportSwing(StateId state_id,
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void SingleSupportSwing::FirstVisit() {
+void SingleSupportSwing_WBIC::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
   end_time_ = ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetSwingTime();
 
@@ -149,7 +149,7 @@ void SingleSupportSwing::FirstVisit() {
   }
 }
 
-void SingleSupportSwing::OneStep() {
+void SingleSupportSwing_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   // com pos & torso ori task update
@@ -165,23 +165,23 @@ void SingleSupportSwing::OneStep() {
   }
 }
 
-void SingleSupportSwing::LastVisit() {
+void SingleSupportSwing_WBIC::LastVisit() {
   ctrl_arch_->dcm_tm_->IncrementStepIndex();
   state_machine_time_ = 0.;
 }
 
-bool SingleSupportSwing::EndOfState() {
+bool SingleSupportSwing_WBIC::EndOfState() {
   return state_machine_time_ > end_time_ ? true : false;
 }
 
-StateId SingleSupportSwing::GetNextState() {
+StateId SingleSupportSwing_WBIC::GetNextState() {
   if (state_id_ == draco_states::kLFSingleSupportSwing)
     return draco_states::kRFContactTransitionStart;
   else if (state_id_ == draco_states::kRFSingleSupportSwing)
     return draco_states::kLFContactTransitionStart;
 }
 
-void SingleSupportSwing::SetParameters(const YAML::Node &cfg) {
+void SingleSupportSwing_WBIC::SetParameters(const YAML::Node &cfg) {
   try {
     util::ReadParameter(cfg["state_machine"]["single_support_swing"],
                         "swing_height", swing_height_);

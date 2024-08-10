@@ -5,11 +5,11 @@ class PinocchioRobotSystem;
 class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 
-class DoubleSupportBalance : public StateMachine {
+class DoubleSupportBalance_WBIC : public StateMachine {
 public:
-  DoubleSupportBalance(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture_WBIC *ctrl_arch);
-  ~DoubleSupportBalance() = default;
+  DoubleSupportBalance_WBIC(const StateId state_id, PinocchioRobotSystem *robot,
+                            DracoControlArchitecture_WBIC *ctrl_arch);
+  ~DoubleSupportBalance_WBIC() = default;
 
   void FirstVisit() override;
   void OneStep() override;

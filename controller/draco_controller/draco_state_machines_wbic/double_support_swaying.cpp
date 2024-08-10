@@ -10,17 +10,17 @@
 #include "controller/whole_body_controller/managers/floating_base_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 
-DoubleSupportSwaying::DoubleSupportSwaying(
+DoubleSupportSwaying_WBIC::DoubleSupportSwaying_WBIC(
     const StateId state_id, PinocchioRobotSystem *robot,
     DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
       amp_(Eigen::Vector3d::Zero()), freq_(Eigen::Vector3d::Zero()) {
-  util::PrettyConstructor(2, "DoubleSupportSwaying");
+  util::PrettyConstructor(2, "DoubleSupportSwaying_WBIC");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DoubleSupportSwaying::FirstVisit() {
+void DoubleSupportSwaying_WBIC::FirstVisit() {
   std::cout << "draco_states: kDoubleSupportSwaying" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
@@ -48,7 +48,7 @@ void DoubleSupportSwaying::FirstVisit() {
   // amp_, freq_);
 }
 
-void DoubleSupportSwaying::OneStep() {
+void DoubleSupportSwaying_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   // com task
@@ -63,13 +63,13 @@ void DoubleSupportSwaying::OneStep() {
   // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
-bool DoubleSupportSwaying::EndOfState() { return false; }
+bool DoubleSupportSwaying_WBIC::EndOfState() { return false; }
 
-void DoubleSupportSwaying::LastVisit() {}
+void DoubleSupportSwaying_WBIC::LastVisit() {}
 
-StateId DoubleSupportSwaying::GetNextState() {}
+StateId DoubleSupportSwaying_WBIC::GetNextState() {}
 
-void DoubleSupportSwaying::SetParameters(const YAML::Node &cfg) {
+void DoubleSupportSwaying_WBIC::SetParameters(const YAML::Node &cfg) {
   try {
     util::ReadParameter(cfg["state_machine"]["com_swaying"], "amplitude", amp_);
     util::ReadParameter(cfg["state_machine"]["com_swaying"], "frequency",

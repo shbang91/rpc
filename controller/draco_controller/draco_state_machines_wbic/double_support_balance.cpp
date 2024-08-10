@@ -8,18 +8,18 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 
-DoubleSupportBalance::DoubleSupportBalance(
+DoubleSupportBalance_WBIC::DoubleSupportBalance_WBIC(
     const StateId state_id, PinocchioRobotSystem *robot,
     DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
       b_com_swaying_(false), b_dcm_walking_(false),
       b_convex_mpc_walking_(false), b_static_walking_(false) {
-  util::PrettyConstructor(2, "DoubleSupportBalance");
+  util::PrettyConstructor(2, "DoubleSupportBalance_WBIC");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DoubleSupportBalance::FirstVisit() {
+void DoubleSupportBalance_WBIC::FirstVisit() {
   std::cout << "draco_states: kDoubleSupportBalance" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
@@ -32,7 +32,7 @@ void DoubleSupportBalance::FirstVisit() {
   b_static_walking_ = false;
 }
 
-void DoubleSupportBalance::OneStep() {
+void DoubleSupportBalance_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   // update foot pose task
@@ -40,7 +40,7 @@ void DoubleSupportBalance::OneStep() {
   // ctrl_arch_->rf_SE3_tm_->UseCurrent();
 }
 
-bool DoubleSupportBalance::EndOfState() {
+bool DoubleSupportBalance_WBIC::EndOfState() {
   if (b_com_swaying_ || b_convex_mpc_walking_ || b_static_walking_)
     return true;
 
@@ -51,7 +51,7 @@ bool DoubleSupportBalance::EndOfState() {
   return false;
 }
 
-void DoubleSupportBalance::LastVisit() {
+void DoubleSupportBalance_WBIC::LastVisit() {
   state_machine_time_ = 0.;
 
   // Reset desired com height as the current CoM height
@@ -86,7 +86,7 @@ void DoubleSupportBalance::LastVisit() {
       ctrl_arch_->tci_container_->task_map_["wbo_task"]->CurrentPos();
 }
 
-StateId DoubleSupportBalance::GetNextState() {
+StateId DoubleSupportBalance_WBIC::GetNextState() {
   // double support CoM swaying motions
   if (b_com_swaying_)
     return draco_states::kDoubleSupportSwaying;
@@ -109,4 +109,4 @@ StateId DoubleSupportBalance::GetNextState() {
   }
 }
 
-void DoubleSupportBalance::SetParameters(const YAML::Node &node) {}
+void DoubleSupportBalance_WBIC::SetParameters(const YAML::Node &node) {}

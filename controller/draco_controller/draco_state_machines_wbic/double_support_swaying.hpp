@@ -5,11 +5,11 @@ class PinocchioRobotSystem;
 class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 
-class DoubleSupportSwaying : public StateMachine {
+class DoubleSupportSwaying_WBIC : public StateMachine {
 public:
-  DoubleSupportSwaying(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture_WBIC *ctrl_arch);
-  ~DoubleSupportSwaying() = default;
+  DoubleSupportSwaying_WBIC(const StateId state_id, PinocchioRobotSystem *robot,
+                            DracoControlArchitecture_WBIC *ctrl_arch);
+  ~DoubleSupportSwaying_WBIC() = default;
 
   void FirstVisit() override;
   void OneStep() override;

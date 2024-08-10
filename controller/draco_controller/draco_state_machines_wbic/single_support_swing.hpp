@@ -6,11 +6,11 @@ class PinocchioRobotSystem;
 class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 
-class SingleSupportSwing : public StateMachine {
+class SingleSupportSwing_WBIC : public StateMachine {
 public:
-  SingleSupportSwing(StateId state_id, PinocchioRobotSystem *robot,
-                     DracoControlArchitecture_WBIC *ctrl_arch);
-  ~SingleSupportSwing() = default;
+  SingleSupportSwing_WBIC(StateId state_id, PinocchioRobotSystem *robot,
+                          DracoControlArchitecture_WBIC *ctrl_arch);
+  ~SingleSupportSwing_WBIC() = default;
 
   void FirstVisit() override;
   void OneStep() override;

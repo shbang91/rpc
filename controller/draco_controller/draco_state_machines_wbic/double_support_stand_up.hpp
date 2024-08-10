@@ -8,11 +8,11 @@ constexpr double kGravity = 9.81;
 
 class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
-class DoubleSupportStandUp : public StateMachine {
+class DoubleSupportStandUp_WBIC : public StateMachine {
 public:
-  DoubleSupportStandUp(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture_WBIC *ctrl_arch);
-  ~DoubleSupportStandUp() = default;
+  DoubleSupportStandUp_WBIC(const StateId state_id, PinocchioRobotSystem *robot,
+                            DracoControlArchitecture_WBIC *ctrl_arch);
+  ~DoubleSupportStandUp_WBIC() = default;
 
   void FirstVisit() override;
   void OneStep() override;

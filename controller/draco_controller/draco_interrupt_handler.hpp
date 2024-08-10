@@ -2,6 +2,7 @@
 
 #include "configuration.hpp"
 #include "controller/interrupt_handler.hpp"
+enum class WBCType { IHWBC, WBIC };
 
 class DracoControlArchitecture_WBIC;
 
@@ -14,4 +15,5 @@ public:
 
 private:
   DracoControlArchitecture_WBIC *ctrl_arch_;
+  WBCType wbc_type_;
 };

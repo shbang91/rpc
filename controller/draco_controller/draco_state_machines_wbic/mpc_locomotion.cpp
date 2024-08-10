@@ -16,11 +16,11 @@
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
-MPCLocomotion::MPCLocomotion(const StateId state_id,
-                             PinocchioRobotSystem *robot,
-                             DracoControlArchitecture_WBIC *ctrl_arch)
+MPCLocomotion_WBIC::MPCLocomotion_WBIC(const StateId state_id,
+                                       PinocchioRobotSystem *robot,
+                                       DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
-  util::PrettyConstructor(2, "MPCLocomotion");
+  util::PrettyConstructor(2, "MPCLocomotion_WBIC");
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -31,7 +31,7 @@ MPCLocomotion::MPCLocomotion(const StateId state_id,
   prev_contact_states_ << 1.0, 1.0; // both feet in contact
 }
 
-void MPCLocomotion::FirstVisit() {
+void MPCLocomotion_WBIC::FirstVisit() {
   std::cout << "draco_states: kMPCLocomotion" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
@@ -66,7 +66,7 @@ void MPCLocomotion::FirstVisit() {
       robot_->GetBaseToFootXYOffset());
 }
 
-void MPCLocomotion::OneStep() {
+void MPCLocomotion_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   const auto &mpc_interface = ctrl_arch_->convex_mpc_locomotion_;
@@ -294,13 +294,13 @@ void MPCLocomotion::OneStep() {
 #endif
 }
 
-bool MPCLocomotion::EndOfState() { return false; }
+bool MPCLocomotion_WBIC::EndOfState() { return false; }
 
-void MPCLocomotion::LastVisit() {}
+void MPCLocomotion_WBIC::LastVisit() {}
 
-StateId MPCLocomotion::GetNextState() {}
+StateId MPCLocomotion_WBIC::GetNextState() {}
 
-void MPCLocomotion::SetParameters(const YAML::Node &node) {
+void MPCLocomotion_WBIC::SetParameters(const YAML::Node &node) {
   try {
     // wbc params setting
     util::ReadParameter(node["wbc"]["qp"], "W_force_rate_of_change_left_foot",

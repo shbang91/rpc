@@ -5,11 +5,11 @@ class PinocchioRobotSystem;
 class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 
-class ContactTransitionEnd : public StateMachine {
+class ContactTransitionEnd_WBIC : public StateMachine {
 public:
-  ContactTransitionEnd(StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture_WBIC *ctrl_arch);
-  ~ContactTransitionEnd() = default;
+  ContactTransitionEnd_WBIC(StateId state_id, PinocchioRobotSystem *robot,
+                            DracoControlArchitecture_WBIC *ctrl_arch);
+  ~ContactTransitionEnd_WBIC() = default;
 
   void FirstVisit() override;
   void OneStep() override;

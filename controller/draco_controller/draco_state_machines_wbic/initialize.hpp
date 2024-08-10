@@ -5,11 +5,11 @@ class DracoStateProvider;
 class DracoControlArchitecture_WBIC;
 class MinJerkCurveVec;
 
-class Initialize : public StateMachine {
+class Initialize_WBIC : public StateMachine {
 public:
-  Initialize(const StateId state_id, PinocchioRobotSystem *robot,
-             DracoControlArchitecture_WBIC *ctrl_arch);
-  ~Initialize();
+  Initialize_WBIC(const StateId state_id, PinocchioRobotSystem *robot,
+                  DracoControlArchitecture_WBIC *ctrl_arch);
+  ~Initialize_WBIC();
 
   void FirstVisit() override;
   void OneStep() override;

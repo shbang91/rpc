@@ -14,7 +14,7 @@
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
 
-DoubleSupportStandUp::DoubleSupportStandUp(
+DoubleSupportStandUp_WBIC::DoubleSupportStandUp_WBIC(
     const StateId state_id, PinocchioRobotSystem *robot,
     DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
@@ -22,12 +22,12 @@ DoubleSupportStandUp::DoubleSupportStandUp(
       W_xc_ddot_in_contact_(Eigen::VectorXd::Zero(6)),
       W_delta_rf_left_foot_in_contact_(Eigen::VectorXd::Zero(6)),
       W_delta_rf_right_foot_in_contact_(Eigen::VectorXd::Zero(6)) {
-  util::PrettyConstructor(2, "DoubleSupportStandUp");
+  util::PrettyConstructor(2, "DoubleSupportStandUp_WBIC");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DoubleSupportStandUp::FirstVisit() {
+void DoubleSupportStandUp_WBIC::FirstVisit() {
   std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
@@ -112,7 +112,7 @@ void DoubleSupportStandUp::FirstVisit() {
       Eigen::Quaterniond(rfoot_iso.linear()));
 }
 
-void DoubleSupportStandUp::OneStep() {
+void DoubleSupportStandUp_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   // com & torso ori task update
@@ -131,17 +131,17 @@ void DoubleSupportStandUp::OneStep() {
   // ctrl_arch_->rf_force_tm_->UpdateDesired(state_machine_time_);
 }
 
-void DoubleSupportStandUp::LastVisit() {}
+void DoubleSupportStandUp_WBIC::LastVisit() {}
 
-bool DoubleSupportStandUp::EndOfState() {
+bool DoubleSupportStandUp_WBIC::EndOfState() {
   return (state_machine_time_ > end_time_) ? true : false;
 }
 
-StateId DoubleSupportStandUp::GetNextState() {
+StateId DoubleSupportStandUp_WBIC::GetNextState() {
   return draco_states::kDoubleSupportBalance;
 }
 
-void DoubleSupportStandUp::SetParameters(const YAML::Node &cfg) {
+void DoubleSupportStandUp_WBIC::SetParameters(const YAML::Node &cfg) {
   try {
     util::ReadParameter(cfg["state_machine"]["stand_up"], "standup_duration",
                         end_time_);

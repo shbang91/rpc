@@ -191,62 +191,64 @@ DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
   // initialize state machines
   //=============================================================
   state_machine_container_[draco_states::kInitialize] =
-      new Initialize(draco_states::kInitialize, robot_, this);
+      new Initialize_WBIC(draco_states::kInitialize, robot_, this);
   state_machine_container_[draco_states::kInitialize]->SetParameters(cfg);
 
   state_machine_container_[draco_states::kDoubleSupportStandUp] =
-      new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
-                               this);
+      new DoubleSupportStandUp_WBIC(draco_states::kDoubleSupportStandUp, robot_,
+                                    this);
   state_machine_container_[draco_states::kDoubleSupportStandUp]->SetParameters(
       cfg);
 
   state_machine_container_[draco_states::kDoubleSupportBalance] =
-      new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_,
-                               this);
+      new DoubleSupportBalance_WBIC(draco_states::kDoubleSupportBalance, robot_,
+                                    this);
 
   state_machine_container_[draco_states::kDoubleSupportSwaying] =
-      new DoubleSupportSwaying(draco_states::kDoubleSupportSwaying, robot_,
-                               this);
+      new DoubleSupportSwaying_WBIC(draco_states::kDoubleSupportSwaying, robot_,
+                                    this);
   state_machine_container_[draco_states::kDoubleSupportSwaying]->SetParameters(
       cfg);
 
   state_machine_container_[draco_states::kLFContactTransitionStart] =
-      new ContactTransitionStart(draco_states::kLFContactTransitionStart,
-                                 robot_, this);
+      new ContactTransitionStart_WBIC(draco_states::kLFContactTransitionStart,
+                                      robot_, this);
   state_machine_container_[draco_states::kLFContactTransitionStart]
       ->SetParameters(cfg);
 
   state_machine_container_[draco_states::kLFContactTransitionEnd] =
-      new ContactTransitionEnd(draco_states::kLFContactTransitionEnd, robot_,
-                               this);
+      new ContactTransitionEnd_WBIC(draco_states::kLFContactTransitionEnd,
+                                    robot_, this);
   state_machine_container_[draco_states::kLFContactTransitionEnd]
       ->SetParameters(cfg);
 
   state_machine_container_[draco_states::kLFSingleSupportSwing] =
-      new SingleSupportSwing(draco_states::kLFSingleSupportSwing, robot_, this);
+      new SingleSupportSwing_WBIC(draco_states::kLFSingleSupportSwing, robot_,
+                                  this);
   state_machine_container_[draco_states::kLFSingleSupportSwing]->SetParameters(
       cfg);
 
   state_machine_container_[draco_states::kRFContactTransitionStart] =
-      new ContactTransitionStart(draco_states::kRFContactTransitionStart,
-                                 robot_, this);
+      new ContactTransitionStart_WBIC(draco_states::kRFContactTransitionStart,
+                                      robot_, this);
   state_machine_container_[draco_states::kRFContactTransitionStart]
       ->SetParameters(cfg);
 
   state_machine_container_[draco_states::kRFContactTransitionEnd] =
-      new ContactTransitionEnd(draco_states::kRFContactTransitionEnd, robot_,
-                               this);
+      new ContactTransitionEnd_WBIC(draco_states::kRFContactTransitionEnd,
+                                    robot_, this);
   state_machine_container_[draco_states::kRFContactTransitionEnd]
       ->SetParameters(cfg);
 
   state_machine_container_[draco_states::kRFSingleSupportSwing] =
-      new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
+      new SingleSupportSwing_WBIC(draco_states::kRFSingleSupportSwing, robot_,
+                                  this);
   state_machine_container_[draco_states::kRFSingleSupportSwing]->SetParameters(
       cfg);
 
 #if B_USE_HPIPM
   state_machine_container_[draco_states::kMPCLocomotion] =
-      new MPCLocomotion(draco_states::kMPCLocomotion, robot_, this);
+      new MPCLocomotion_WBIC(draco_states::kMPCLocomotion, robot_, this);
   state_machine_container_[draco_states::kMPCLocomotion]->SetParameters(cfg);
 #endif
 }

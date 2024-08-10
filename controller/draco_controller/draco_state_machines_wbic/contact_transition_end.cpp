@@ -10,7 +10,7 @@
 #include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
-ContactTransitionEnd::ContactTransitionEnd(
+ContactTransitionEnd_WBIC::ContactTransitionEnd_WBIC(
     StateId state_id, PinocchioRobotSystem *robot,
     DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
@@ -23,7 +23,7 @@ ContactTransitionEnd::ContactTransitionEnd(
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void ContactTransitionEnd::FirstVisit() {
+void ContactTransitionEnd_WBIC::FirstVisit() {
   state_machine_start_time_ = sp_->current_time_;
 
   end_time_ =
@@ -74,7 +74,7 @@ void ContactTransitionEnd::FirstVisit() {
   }
 }
 
-void ContactTransitionEnd::OneStep() {
+void ContactTransitionEnd_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   // com pos & torso_ori task update
@@ -96,20 +96,20 @@ void ContactTransitionEnd::OneStep() {
   ctrl_arch_->qp_pm_->UpdateWContactInterpolation(state_machine_time_);
 }
 
-bool ContactTransitionEnd::EndOfState() {
+bool ContactTransitionEnd_WBIC::EndOfState() {
   return state_machine_time_ > end_time_ ? true : false;
 }
 
-void ContactTransitionEnd::LastVisit() { state_machine_time_ = 0.; }
+void ContactTransitionEnd_WBIC::LastVisit() { state_machine_time_ = 0.; }
 
-StateId ContactTransitionEnd::GetNextState() {
+StateId ContactTransitionEnd_WBIC::GetNextState() {
   if (state_id_ == draco_states::kLFContactTransitionEnd)
     return draco_states::kLFSingleSupportSwing;
   else if (state_id_ == draco_states::kRFContactTransitionEnd)
     return draco_states::kRFSingleSupportSwing;
 }
 
-void ContactTransitionEnd::SetParameters(const YAML::Node &cfg) {
+void ContactTransitionEnd_WBIC::SetParameters(const YAML::Node &cfg) {
   try {
     // qp params yaml
     util::ReadParameter(cfg["wbc"]["qp"], "W_xc_ddot_in_swing",

@@ -6,23 +6,24 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "util/interpolation.hpp"
 
-Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture_WBIC *ctrl_arch)
+Initialize_WBIC::Initialize_WBIC(const StateId state_id,
+                                 PinocchioRobotSystem *robot,
+                                 DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false),
       wait_time_(0.), min_jerk_curves_(nullptr) {
-  util::PrettyConstructor(2, "Initialize");
+  util::PrettyConstructor(2, "Initialize_WBIC");
 
   sp_ = DracoStateProvider::GetStateProvider();
   target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
   init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 }
 
-Initialize::~Initialize() {
+Initialize_WBIC::~Initialize_WBIC() {
   if (min_jerk_curves_ != nullptr)
     delete min_jerk_curves_;
 }
 
-void Initialize::FirstVisit() {
+void Initialize_WBIC::FirstVisit() {
   std::cout << "draco_states::kInitialize" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
   init_joint_pos_ = robot_->GetJointPos();
@@ -34,7 +35,7 @@ void Initialize::FirstVisit() {
       end_time_); // min jerk curve initialization
 }
 
-void Initialize::OneStep() {
+void Initialize_WBIC::OneStep() {
   state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
   Eigen::VectorXd des_joint_pos =
@@ -46,7 +47,7 @@ void Initialize::OneStep() {
 
   if (min_jerk_curves_ == nullptr)
     throw std::runtime_error(
-        "Initialize MinJerkCurve in Initialize StateMachine");
+        "Initialize MinJerkCurve in Initialize_WBIC StateMachine");
 
   for (unsigned int i(0); i < target_joint_pos_.size(); ++i) {
     des_joint_pos = min_jerk_curves_->Evaluate(state_machine_time_);
@@ -59,9 +60,9 @@ void Initialize::OneStep() {
       des_joint_pos, des_joint_vel, des_joint_acc);
 }
 
-void Initialize::LastVisit() {}
+void Initialize_WBIC::LastVisit() {}
 
-bool Initialize::EndOfState() {
+bool Initialize_WBIC::EndOfState() {
   if (b_stay_here_) {
     return false;
   } else {
@@ -69,11 +70,11 @@ bool Initialize::EndOfState() {
   }
 }
 
-StateId Initialize::GetNextState() {
+StateId Initialize_WBIC::GetNextState() {
   return draco_states::kDoubleSupportStandUp;
 }
 
-void Initialize::SetParameters(const YAML::Node &cfg) {
+void Initialize_WBIC::SetParameters(const YAML::Node &cfg) {
   try {
     util::ReadParameter(cfg["state_machine"]["initialize"], "init_duration",
                         end_time_);
