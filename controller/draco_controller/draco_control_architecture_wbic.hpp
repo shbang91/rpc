@@ -32,10 +32,11 @@ class GaitParams;
 class MPCParams;
 class CompositeRigidBodyInertia;
 
-class DracoControlArchitecture : public ControlArchitecture {
+class DracoControlArchitecture_WBIC : public ControlArchitecture {
 public:
-  DracoControlArchitecture(PinocchioRobotSystem *robot, const YAML::Node &cfg);
-  virtual ~DracoControlArchitecture();
+  DracoControlArchitecture_WBIC(PinocchioRobotSystem *robot,
+                                const YAML::Node &cfg);
+  virtual ~DracoControlArchitecture_WBIC();
 
   void GetCommand(void *command) override;
 

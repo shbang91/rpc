@@ -1,5 +1,5 @@
-#include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/contact_transition_end.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
@@ -10,9 +10,9 @@
 #include "controller/whole_body_controller/wbic/wbic.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
-ContactTransitionEnd::ContactTransitionEnd(StateId state_id,
-                                           PinocchioRobotSystem *robot,
-                                           DracoControlArchitecture *ctrl_arch)
+ContactTransitionEnd::ContactTransitionEnd(
+    StateId state_id, PinocchioRobotSystem *robot,
+    DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch) {
 
   if (state_id_ == draco_states::kLFContactTransitionEnd)

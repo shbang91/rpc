@@ -7,11 +7,11 @@ namespace {
 constexpr int MAX_COUNT = 800;
 }
 
-class DracoControlArchitecture;
+class DracoControlArchitecture_WBIC;
 
 class DracoTaskGainHandler {
 public:
-  DracoTaskGainHandler(DracoControlArchitecture *ctrl_arch);
+  DracoTaskGainHandler(DracoControlArchitecture_WBIC *ctrl_arch);
   ~DracoTaskGainHandler() = default;
 
   //==========================================================================
@@ -34,7 +34,7 @@ private:
   void _ResetParams();
   bool _TaskExists(const std::string &task_name);
 
-  DracoControlArchitecture *ctrl_arch_;
+  DracoControlArchitecture_WBIC *ctrl_arch_;
   bool b_signal_received_;
   bool b_first_visit_;
   bool b_com_xy_task_;

@@ -1,6 +1,6 @@
 file(GLOB_RECURSE sources "*.cpp" "*.c")
 file(GLOB controller_headers "*.hpp")
-file(GLOB state_machines_headers "draco_state_machines/*.hpp")
+file(GLOB state_machines_headers_wbic "draco_state_machines_wbic/*.hpp")
 file(GLOB draco_task_headers "draco_task/*.hpp" "draco_task/*.h")
 file(GLOB draco_crbi_headers "draco_crbi/*.hpp" "draco_crbi/*.h")
 
@@ -26,7 +26,7 @@ endif()
 #cmake_print_variables(controller_headers)
 
 add_library(rpc-draco-controller SHARED ${sources} ${controller_headers}
-    ${state_machines_headers} ${draco_task_headers} ${draco_crbi_headers})
+    ${state_machines_headers_wbic} ${draco_task_headers} ${draco_crbi_headers})
 
 
 target_link_libraries(rpc-draco-controller PUBLIC rpc-pin-robot-system
@@ -54,8 +54,8 @@ endif()
 install(TARGETS rpc-draco-controller DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${controller_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/draco_controller")
-install(FILES ${state_machines_headers} DESTINATION
-    "${INSTALL_INCLUDE_DIR}/controller/draco_controller/draco_state_machines")
+install(FILES ${state_machines_headers_wbic} DESTINATION
+    "${INSTALL_INCLUDE_DIR}/controller/draco_controller/draco_state_machines_wbic")
 install(FILES ${draco_task_headers} DESTINATION
     "${INSTALL_INCLUDE_DIR}/controller/draco_controller/draco_task")
 install(FILES ${draco_crbi_headers} DESTINATION

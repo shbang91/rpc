@@ -2,13 +2,13 @@
 #include "controller/state_machine.hpp"
 
 class DracoStateProvider;
-class DracoControlArchitecture;
+class DracoControlArchitecture_WBIC;
 class MinJerkCurveVec;
 
 class Initialize : public StateMachine {
 public:
   Initialize(const StateId state_id, PinocchioRobotSystem *robot,
-             DracoControlArchitecture *ctrl_arch);
+             DracoControlArchitecture_WBIC *ctrl_arch);
   ~Initialize();
 
   void FirstVisit() override;
@@ -21,7 +21,7 @@ public:
   void SetParameters(const YAML::Node &node) override;
 
 private:
-  DracoControlArchitecture *ctrl_arch_;
+  DracoControlArchitecture_WBIC *ctrl_arch_;
   DracoStateProvider *sp_;
 
   Eigen::VectorXd target_joint_pos_;

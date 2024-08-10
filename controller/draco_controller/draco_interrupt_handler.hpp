@@ -2,15 +2,15 @@
 
 #include "controller/interrupt_handler.hpp"
 
-class DracoControlArchitecture;
+class DracoControlArchitecture_WBIC;
 
 class DracoInterruptHandler : public InterruptHandler {
 public:
-  DracoInterruptHandler(DracoControlArchitecture *ctrl_arch);
+  DracoInterruptHandler(DracoControlArchitecture_WBIC *ctrl_arch);
   virtual ~DracoInterruptHandler() = default;
 
   void Process() override;
 
 private:
-  DracoControlArchitecture *ctrl_arch_;
+  DracoControlArchitecture_WBIC *ctrl_arch_;
 };

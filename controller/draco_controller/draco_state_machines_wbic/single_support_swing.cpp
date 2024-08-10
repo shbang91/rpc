@@ -1,5 +1,5 @@
-#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/single_support_swing.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
@@ -11,7 +11,7 @@
 
 SingleSupportSwing::SingleSupportSwing(StateId state_id,
                                        PinocchioRobotSystem *robot,
-                                       DracoControlArchitecture *ctrl_arch)
+                                       DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), swing_height_(0.) {
 
   if (state_id_ == draco_states::kLFSingleSupportSwing) {

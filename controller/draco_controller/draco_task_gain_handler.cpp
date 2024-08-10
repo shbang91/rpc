@@ -1,5 +1,5 @@
 #include "controller/draco_controller/draco_task_gain_handler.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_task/draco_com_xy_task.hpp"
 #include "controller/draco_controller/draco_task/draco_com_z_task.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
@@ -7,7 +7,8 @@
 #include "controller/whole_body_controller/task.hpp"
 #include "util/util.hpp"
 
-DracoTaskGainHandler::DracoTaskGainHandler(DracoControlArchitecture *ctrl_arch)
+DracoTaskGainHandler::DracoTaskGainHandler(
+    DracoControlArchitecture_WBIC *ctrl_arch)
     : ctrl_arch_(ctrl_arch), b_signal_received_(false), b_first_visit_(false),
       b_com_xy_task_(false), count_(0) {
 

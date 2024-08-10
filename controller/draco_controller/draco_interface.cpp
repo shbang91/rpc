@@ -4,7 +4,7 @@
 #include "controller/draco_controller/draco_kf_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_estimator.hpp"
 
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_interface.hpp"
 #include "controller/draco_controller/draco_interrupt_handler.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
@@ -55,11 +55,11 @@ DracoInterface::DracoInterface() : Interface() {
   }
 
   // initialize controller
-  ctrl_arch_ = new DracoControlArchitecture(robot_, cfg_);
+  ctrl_arch_ = new DracoControlArchitecture_WBIC(robot_, cfg_);
   interrupt_handler_ = new DracoInterruptHandler(
-      static_cast<DracoControlArchitecture *>(ctrl_arch_));
+      static_cast<DracoControlArchitecture_WBIC *>(ctrl_arch_));
   task_gain_handler_ = new DracoTaskGainHandler(
-      static_cast<DracoControlArchitecture *>(ctrl_arch_));
+      static_cast<DracoControlArchitecture_WBIC *>(ctrl_arch_));
 }
 
 DracoInterface::~DracoInterface() {

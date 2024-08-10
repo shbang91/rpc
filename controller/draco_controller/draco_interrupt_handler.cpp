@@ -1,11 +1,11 @@
 #include "controller/draco_controller/draco_interrupt_handler.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
-#include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
-#include "controller/draco_controller/draco_state_machines/mpc_locomotion.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/double_support_balance.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/mpc_locomotion.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 
 DracoInterruptHandler::DracoInterruptHandler(
-    DracoControlArchitecture *ctrl_arch)
+    DracoControlArchitecture_WBIC *ctrl_arch)
     : InterruptHandler(), ctrl_arch_(ctrl_arch) {
   util::PrettyConstructor(1, "DracoInterruptHandler");
 }

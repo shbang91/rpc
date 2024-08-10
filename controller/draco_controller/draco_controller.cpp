@@ -1,6 +1,6 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_interface.hpp"

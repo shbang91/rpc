@@ -1,17 +1,17 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_controller.hpp"
 #include "controller/draco_controller/draco_crbi/draco_composite_rigid_body_inertia.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
-#include "controller/draco_controller/draco_state_machines/contact_transition_end.hpp"
-#include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
-#include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
-#include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
-#include "controller/draco_controller/draco_state_machines/double_support_swaying.hpp"
-#include "controller/draco_controller/draco_state_machines/initialize.hpp"
-#include "controller/draco_controller/draco_state_machines/mpc_locomotion.hpp"
-#include "controller/draco_controller/draco_state_machines/single_support_swing.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/contact_transition_end.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/contact_transition_start.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/double_support_balance.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/double_support_stand_up.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/double_support_swaying.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/initialize.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/mpc_locomotion.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/single_support_swing.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
@@ -25,10 +25,10 @@
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 #include "controller/whole_body_controller/task.hpp"
-DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
-                                                   const YAML::Node &cfg)
+DracoControlArchitecture_WBIC::DracoControlArchitecture_WBIC(
+    PinocchioRobotSystem *robot, const YAML::Node &cfg)
     : ControlArchitecture(robot) {
-  util::PrettyConstructor(1, "DracoControlArchitecture");
+  util::PrettyConstructor(1, "DracoControlArchitecture_WBIC");
 
   sp_ = DracoStateProvider::GetStateProvider();
 
@@ -65,8 +65,9 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   else if (test_env_name == "hw")
     cfg_mpc = YAML::LoadFile(THIS_COM "config/draco/hw/MPC_LOCOMOTION.yaml");
   else {
-    std::cout << "[DracoControlArchitecture] Please check the test_env_name"
-              << '\n';
+    std::cout
+        << "[DracoControlArchitecture_WBIC] Please check the test_env_name"
+        << '\n';
     assert(false);
   }
 
@@ -241,7 +242,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   state_machine_container_[draco_states::kMPCLocomotion]->SetParameters(cfg);
 }
 
-DracoControlArchitecture::~DracoControlArchitecture() {
+DracoControlArchitecture_WBIC::~DracoControlArchitecture_WBIC() {
   delete tci_container_;
   delete controller_;
   delete dcm_planner_;
@@ -279,7 +280,7 @@ DracoControlArchitecture::~DracoControlArchitecture() {
   delete state_machine_container_[draco_states::kMPCLocomotion];
 }
 
-void DracoControlArchitecture::GetCommand(void *command) {
+void DracoControlArchitecture_WBIC::GetCommand(void *command) {
   if (b_state_first_visit_) {
     state_machine_container_[state_]->FirstVisit();
     b_state_first_visit_ = false;

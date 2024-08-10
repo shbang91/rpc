@@ -1,5 +1,5 @@
-#include "controller/draco_controller/draco_state_machines/double_support_balance.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/double_support_balance.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
@@ -8,9 +8,9 @@
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 
-DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
-                                           PinocchioRobotSystem *robot,
-                                           DracoControlArchitecture *ctrl_arch)
+DoubleSupportBalance::DoubleSupportBalance(
+    const StateId state_id, PinocchioRobotSystem *robot,
+    DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
       b_com_swaying_(false), b_dcm_walking_(false),
       b_convex_mpc_walking_(false), b_static_walking_(false) {

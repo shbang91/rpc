@@ -6,7 +6,7 @@ data_save_freq: 1
 stance_foot: 0 # 0: left_foot 1: right_foot
 
 state_estimator:
-  b_cheater_mode: false ## true: use simulation groundtruth states
+  b_cheater_mode: true ## true: use simulation groundtruth states
   state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf 
   b_use_marg_filter: false   # only used when kf is set to true
 

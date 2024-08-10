@@ -1,5 +1,5 @@
-#include "controller/draco_controller/draco_state_machines/initialize.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/initialize.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
@@ -7,7 +7,7 @@
 #include "util/interpolation.hpp"
 
 Initialize::Initialize(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture *ctrl_arch)
+                       DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false),
       wait_time_(0.), min_jerk_curves_(nullptr) {
   util::PrettyConstructor(2, "Initialize");

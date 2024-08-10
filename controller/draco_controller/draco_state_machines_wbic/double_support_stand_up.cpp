@@ -1,5 +1,5 @@
-#include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
+#include "controller/draco_controller/draco_state_machines_wbic/double_support_stand_up.hpp"
+#include "controller/draco_controller/draco_control_architecture_wbic.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_task/draco_com_task.hpp"
@@ -14,9 +14,9 @@
 #include "planner/locomotion/dcm_planner/foot_step.hpp"
 #include "util/util.hpp"
 
-DoubleSupportStandUp::DoubleSupportStandUp(const StateId state_id,
-                                           PinocchioRobotSystem *robot,
-                                           DracoControlArchitecture *ctrl_arch)
+DoubleSupportStandUp::DoubleSupportStandUp(
+    const StateId state_id, PinocchioRobotSystem *robot,
+    DracoControlArchitecture_WBIC *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), target_height_(0.),
       rf_z_max_interp_duration_(0.), W_delta_qddot_(0.),
       W_xc_ddot_in_contact_(Eigen::VectorXd::Zero(6)),

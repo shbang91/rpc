@@ -2,13 +2,13 @@
 #include "controller/state_machine.hpp"
 
 class PinocchioRobotSystem;
-class DracoControlArchitecture;
+class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 
 class ContactTransitionStart : public StateMachine {
 public:
   ContactTransitionStart(StateId state_id, PinocchioRobotSystem *robot,
-                         DracoControlArchitecture *ctrl_arch);
+                         DracoControlArchitecture_WBIC *ctrl_arch);
   ~ContactTransitionStart() = default;
 
   void FirstVisit() override;
@@ -21,7 +21,7 @@ public:
   void SetParameters(const YAML::Node &node) override;
 
 private:
-  DracoControlArchitecture *ctrl_arch_;
+  DracoControlArchitecture_WBIC *ctrl_arch_;
 
   DracoStateProvider *sp_;
 

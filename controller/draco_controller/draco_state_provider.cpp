@@ -1,5 +1,4 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "util/util.hpp"
 
@@ -31,8 +30,8 @@ DracoStateProvider::DracoStateProvider() {
 
   com_vel_est_.setZero();
 
-  state_ = draco_states::kInitialize;
-  prev_state_ = draco_states::kInitialize;
+  state_ = 1;      // draco_states::kInitialize
+  prev_state_ = 1; // draco_state::kInitialize
 
   b_use_base_height_ = false;
 

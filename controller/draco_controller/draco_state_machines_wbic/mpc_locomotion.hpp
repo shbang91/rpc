@@ -2,14 +2,14 @@
 #include "controller/state_machine.hpp"
 
 class PinocchioRobotSystem;
-class DracoControlArchitecture;
+class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 class GaitCommand;
 
 class MPCLocomotion : public StateMachine {
 public:
   MPCLocomotion(const StateId state_id, PinocchioRobotSystem *robot,
-                DracoControlArchitecture *ctrl_arch);
+                DracoControlArchitecture_WBIC *ctrl_arch);
   virtual ~MPCLocomotion() = default;
 
   void FirstVisit() override;
@@ -28,7 +28,7 @@ public:
   bool b_decrease_yaw_vel_ = false;
 
 private:
-  DracoControlArchitecture *ctrl_arch_;
+  DracoControlArchitecture_WBIC *ctrl_arch_;
   DracoStateProvider *sp_;
 
   // gait

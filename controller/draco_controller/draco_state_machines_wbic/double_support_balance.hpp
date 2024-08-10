@@ -2,13 +2,13 @@
 #include "controller/state_machine.hpp"
 
 class PinocchioRobotSystem;
-class DracoControlArchitecture;
+class DracoControlArchitecture_WBIC;
 class DracoStateProvider;
 
 class DoubleSupportBalance : public StateMachine {
 public:
   DoubleSupportBalance(const StateId state_id, PinocchioRobotSystem *robot,
-                       DracoControlArchitecture *ctrl_arch);
+                       DracoControlArchitecture_WBIC *ctrl_arch);
   ~DoubleSupportBalance() = default;
 
   void FirstVisit() override;
@@ -29,7 +29,7 @@ public:
   void DoStaticWalking() { b_static_walking_ = true; }
 
 private:
-  DracoControlArchitecture *ctrl_arch_;
+  DracoControlArchitecture_WBIC *ctrl_arch_;
 
   DracoStateProvider *sp_;
 
