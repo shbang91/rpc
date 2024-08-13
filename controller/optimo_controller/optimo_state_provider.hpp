@@ -16,6 +16,8 @@ public:
 
     Eigen::VectorXd nominal_jpos_;
 
+    Eigen::Isometry3d des_ee_iso_;
+
     Eigen::Matrix3d rot_world_local_;
 
     bool b_f1_contact_;

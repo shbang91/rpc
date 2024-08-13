@@ -24,6 +24,8 @@ OptimoStateProvider::OptimoStateProvider() {
     state_ = optimo_states::kInitialize;
     prev_state_ = optimo_states::kInitialize;
 
+    des_ee_iso_ = Eigen::Isometry3d::Identity();
+
     planning_id_ = 0;
 
     rot_world_local_ = Eigen::Matrix3d::Identity();
