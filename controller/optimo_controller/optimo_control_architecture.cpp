@@ -7,6 +7,7 @@
 #include "controller/optimo_controller/optimo_state_machines/initialize.hpp"
 #include "controller/optimo_controller/optimo_state_machines/stand_up.hpp"
 #include "controller/optimo_controller/optimo_state_machines/ee_traj.hpp"
+#include "controller/optimo_controller/optimo_state_machines/task_transition.hpp"
 
 #include "controller/optimo_controller/optimo_state_provider.hpp"
 #include "controller/optimo_controller/optimo_tci_container.hpp"
@@ -59,8 +60,6 @@ OptimoControlArchitecture::OptimoControlArchitecture(
       tci_container_->task_map_["ee_ori_task"], robot_);
 
   
-
-
 //   f1_SE3_tm_ = new EndEffectorTrajectoryManager(
 //       tci_container_->task_map_["f1_ee_pos_task"],
 //       tci_container_->task_map_["f1_ee_ori_task"], robot_);
@@ -73,28 +72,49 @@ OptimoControlArchitecture::OptimoControlArchitecture(
 //       tci_container_->task_map_["f3_ee_pos_task"],
 //       tci_container_->task_map_["f3_ee_ori_task"], robot_);
 
-  Eigen::VectorXd weight_at_contact, weight;
+  Eigen::VectorXd weight, weight_min;
+
+
+  // Joint Position Task
+  try{
+    util::ReadParameter(cfg_["wbc"]["task"]["jpos_task"], prefix + "_weight",
+                        weight);
+    util::ReadParameter(cfg_["wbc"]["task"]["jpos_task"],
+                        prefix + "_weight_min", weight_min);
+
+    jpos_hm_ = new TaskHierarchyManager(
+    tci_container_->task_map_["jpos_task"], weight, weight_min);
+    
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
+
 
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["ee_pos_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["ee_pos_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
+
+    ee_pos_hm_ = new TaskHierarchyManager(
+    tci_container_->task_map_["ee_pos_task"], weight, weight_min);
 
     util::ReadParameter(cfg_["wbc"]["task"]["f1_pos_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["f1_pos_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
 
     util::ReadParameter(cfg_["wbc"]["task"]["f2_pos_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["f2_pos_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
 
     util::ReadParameter(cfg_["wbc"]["task"]["f3_pos_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["f3_pos_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
 
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
@@ -102,55 +122,55 @@ OptimoControlArchitecture::OptimoControlArchitecture(
     std::exit(EXIT_FAILURE);
   }
 
-  ee_pos_hm_ = new TaskHierarchyManager(
-      tci_container_->task_map_["ee_pos_task"], weight, weight_at_contact);
+
 
   // f1_pos_hm_ = new TaskHierarchyManager(
-  // tci_container_->task_map_["f1_pos_task"], weight, weight_at_contact);
+  // tci_container_->task_map_["f1_pos_task"], weight, weight_min);
 
   // f2_pos_hm_ = new TaskHierarchyManager(
-  // tci_container_->task_map_["f2_pos_task"], weight, weight_at_contact);
+  // tci_container_->task_map_["f2_pos_task"], weight, weight_min);
 
   // f3_pos_hm_ = new TaskHierarchyManager(
-  // tci_container_->task_map_["f3_pos_task"], weight, weight_at_contact);
+  // tci_container_->task_map_["f3_pos_task"], weight, weight_min);
 
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["ee_ori_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["ee_ori_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
+
+    ee_ori_hm_ = new TaskHierarchyManager(
+    tci_container_->task_map_["ee_ori_task"], weight, weight_min);
 
     util::ReadParameter(cfg_["wbc"]["task"]["f1_ori_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["f1_ori_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
 
     util::ReadParameter(cfg_["wbc"]["task"]["f2_ori_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["f2_ori_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
 
     util::ReadParameter(cfg_["wbc"]["task"]["f3_ori_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["f3_ori_task"],
-                        prefix + "_weight_at_contact", weight_at_contact);
+                        prefix + "_weight_min", weight_min);
 
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
-  ee_ori_hm_ = new TaskHierarchyManager(
-      tci_container_->task_map_["ee_ori_task"], weight, weight_at_contact);
 
   // f1_ori_hm_ = new TaskHierarchyManager(
-  // tci_container_->task_map_["f1_ori_task"], weight, weight_at_contact);
+  // tci_container_->task_map_["f1_ori_task"], weight, weight_min);
 
   // f2_ori_hm_ = new TaskHierarchyManager(
-  // tci_container_->task_map_["f2_ori_task"], weight, weight_at_contact);
+  // tci_container_->task_map_["f2_ori_task"], weight, weight_min);
 
   // f3_ori_hm_ = new TaskHierarchyManager(
-  // tci_container_->task_map_["f3_ori_task"], weight, weight_at_contact);
+  // tci_container_->task_map_["f3_ori_task"], weight, weight_min);
 
   double max_rf_z;
   util::ReadParameter(cfg_["wbc"]["contact"], prefix + "_max_rf_z", max_rf_z);
@@ -171,8 +191,12 @@ OptimoControlArchitecture::OptimoControlArchitecture(
   state_machine_container_[optimo_states::kInitialize] =
       new Initialize(optimo_states::kInitialize, robot_, this);
 
+  state_machine_container_[optimo_states::kTaskTransition] =
+      new TaskTransition(optimo_states::kTaskTransition, robot_, this);
+
   state_machine_container_[optimo_states::kEETraj] =
       new EETraj(optimo_states::kEETraj, robot_, this);
+
 
   this->_InitializeParameters();
 }
@@ -192,12 +216,18 @@ void OptimoControlArchitecture::GetCommand(void *command) {
     state_ = state_machine_container_[state_]->GetNextState();
     b_state_first_visit_ = true;
   }
+
+  //hm weight
+  Eigen::Vector3d ee_ori_hm_weight = ee_ori_hm_->GetWeight();
+  std::cout << "ee_ori_hm_weight: " << ee_ori_hm_weight.transpose() << std::endl;
 }
 
 void OptimoControlArchitecture::_InitializeParameters() {
   // state machine initialization
   state_machine_container_[optimo_states::kInitialize]->SetParameters(
       cfg_["state_machine"]["initialize"]);
+  state_machine_container_[optimo_states::kTaskTransition]->SetParameters(
+      cfg_["state_machine"]["task_transition"]);
   state_machine_container_[optimo_states::kEETraj]->SetParameters(
       cfg_["state_machine"]["ee_traj"]);
 }
@@ -219,8 +249,9 @@ OptimoControlArchitecture::~OptimoControlArchitecture() {
   // delete f3_force_tm_;
 
   // hm
-//   delete ee_pos_hm_;
-//   delete ee_ori_hm_;
+  delete jpos_hm_;
+  delete ee_pos_hm_;
+  delete ee_ori_hm_;
 //   delete f1_pos_hm_;
 //   delete f1_ori_hm_;
 //   delete f2_pos_hm_;
@@ -230,5 +261,7 @@ OptimoControlArchitecture::~OptimoControlArchitecture() {
 
   // state machines
   delete state_machine_container_[optimo_states::kInitialize];
+  delete state_machine_container_[optimo_states::kTaskTransition];
   delete state_machine_container_[optimo_states::kEETraj];
+
 }

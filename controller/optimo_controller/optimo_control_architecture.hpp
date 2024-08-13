@@ -5,6 +5,7 @@ namespace optimo_states {
 constexpr int kInitialize = 0;
 constexpr int kStandUp = 1;
 constexpr int kEETraj = 2;
+constexpr int kTaskTransition = 3;
 } // namespace optimo_states
 
 class OptimoController;
@@ -25,13 +26,11 @@ public:
 
   OptimoTCIContainer *tci_container_;
 
-  ////////////////////////// Upper Body Trajectory Manager
-  ///////////////////////////
+  ////////////////////////// Upper Body Trajectory Manager ///////////////////////////
   // UpperBodyTrajetoryManager *upper_body_tm_;
 
-  ////////////////////////// End Effector Trajectory Manager
-  ///////////////////////////
- ArmTrajectoryManager *ee_SE3_tm_;
+  ////////////////////////// End Effector Trajectory Manager ///////////////////////////
+  ArmTrajectoryManager *ee_SE3_tm_;
 
   // EndEffectorTrajectoryManager *f1_SE3_tm_;
   // EndEffectorTrajectoryManager *f2_SE3_tm_;
@@ -45,6 +44,8 @@ public:
   // ForceTrajectoryManager *f3_force_tm_;
 
   ////////////////////////// Task Hierarchy Manager //////////////////////////
+  TaskHierarchyManager *jpos_hm_;
+
   TaskHierarchyManager *ee_pos_hm_;
   TaskHierarchyManager *ee_ori_hm_;
 
