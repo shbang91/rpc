@@ -40,3 +40,8 @@ void TaskHierarchyManager::UpdateRampToMin(const double state_machine_time) {
 
   task_->SetWeight(w_current);
 }
+
+
+void TaskHierarchyManager::UpdateInstantToMax() { task_->SetWeight(w_max_); }
+
+void TaskHierarchyManager::UpdateInstantToMin() { task_->SetWeight(w_min_); }

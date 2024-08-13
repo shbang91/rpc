@@ -35,6 +35,7 @@ void ArmTrajectoryManager::UseCurrent() {
   des_ang_vel << robot_->GetLinkSpatialVel(ori_task_->TargetIdx()).head<3>();
 
   pos_task_->UpdateDesired(des_pos, des_vel, des_acc);
+
   ori_task_->UpdateDesired(des_ori, des_ang_vel, des_acc);
 }
 
@@ -58,23 +59,25 @@ void ArmTrajectoryManager::InitializeTrajectory(
   duration_ = duration;
 
   Eigen::VectorXd start_pos = Eigen::VectorXd::Zero(3);
-  start_pos << ini_pose.translation();
+  start_pos = ini_pose.translation();
 
   Eigen::VectorXd end_pos = Eigen::VectorXd::Zero(3);
-  end_pos << fin_pose.translation();
+  end_pos = fin_pose.translation();
 
 
-
-  // hermite curve
-    // HermiteCurveVec(const Eigen::VectorXd &start_pos,
-    //                 const Eigen::VectorXd &start_vel,
-    //                 const Eigen::VectorXd &end_pos,
-    //                 const Eigen::VectorXd &end_vel, const double &duration);
   pos_curve_ =
       new HermiteCurveVec(start_pos, 
                           Eigen::VectorXd::Zero(3), 
                           end_pos,
                           Eigen::VectorXd::Zero(3), duration_);
+
+  // pos_curve_ = new MinJerkCurveVec(start_pos, 
+  //                                  Eigen::VectorXd::Zero(3),
+  //                                  Eigen::VectorXd::Zero(3), 
+  //                                  end_pos,
+  //                                  Eigen::VectorXd::Zero(3), 
+  //                                  Eigen::VectorXd::Zero(3), duration_);
+          
 
   Eigen::Quaterniond start_ori(ini_pose.linear());
   Eigen::Quaterniond end_ori(fin_pose.linear());
@@ -82,6 +85,8 @@ void ArmTrajectoryManager::InitializeTrajectory(
   ori_curve_ =
       new HermiteQuaternionCurve(start_ori, Eigen::Vector3d::Zero(), end_ori,
                                  Eigen::Vector3d::Zero(), duration_);
+
+
 }
 
 void ArmTrajectoryManager::UpdateDesired(const double current_time) {
@@ -110,6 +115,11 @@ void ArmTrajectoryManager::UpdateDesired(const double current_time) {
   Eigen::VectorXd des_ori_acc(3);
   des_ori_acc << des_ori_acc_vec;
 
+    
+
+
   ori_task_->UpdateDesired(des_ori, des_ori_vel, des_ori_acc);
+
+  counter_++;
 }
 

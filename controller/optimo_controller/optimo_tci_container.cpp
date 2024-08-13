@@ -35,7 +35,7 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
 
   // WBC Task list w/o joint task
   task_map_.clear();
-  task_map_.insert(std::make_pair("joint_task", jpos_task_));
+  task_map_.insert(std::make_pair("jpos_task", jpos_task_));
 
   task_map_.insert(std::make_pair("ee_pos_task", ee_pos_task_));
   // task_map_.insert(std::make_pair("f1_pos_task", f1_pos_task_));
@@ -49,7 +49,7 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
 
   // initialize WBC cost task list
   task_unweighted_cost_map_.clear();
-  task_unweighted_cost_map_.insert(std::make_pair("joint_task", NAN));
+  task_unweighted_cost_map_.insert(std::make_pair("jpos_task", NAN));
 
   task_unweighted_cost_map_.insert(std::make_pair("ee_pos_task", NAN));
   // task_unweighted_cost_map_.insert(std::make_pair("f1_pos_task", NAN));
@@ -62,7 +62,7 @@ OptimoTCIContainer::OptimoTCIContainer(PinocchioRobotSystem *robot)
   // task_unweighted_cost_map_.insert(std::make_pair("f3_ori_task", NAN));
 
   task_weighted_cost_map_.clear();
-  task_weighted_cost_map_.insert(std::make_pair("joint_task", NAN));
+  task_weighted_cost_map_.insert(std::make_pair("jpos_task", NAN));
 
   task_weighted_cost_map_.insert(std::make_pair("ee_pos_task", NAN));
   // task_weighted_cost_map_.insert(std::make_pair("f1_pos_task", NAN));
@@ -183,7 +183,7 @@ OptimoTCIContainer::~OptimoTCIContainer() {
 
 void OptimoTCIContainer::_InitializeParameters(const bool b_sim) {
   // task
-  jpos_task_->SetParameters(cfg_["wbc"]["task"]["joint_pos_task"], b_sim);
+  jpos_task_->SetParameters(cfg_["wbc"]["task"]["jpos_task"], b_sim);
   ee_pos_task_->SetParameters(cfg_["wbc"]["task"]["ee_pos_task"], b_sim);
   f1_pos_task_->SetParameters(cfg_["wbc"]["task"]["f1_pos_task"], b_sim);
   f2_pos_task_->SetParameters(cfg_["wbc"]["task"]["f2_pos_task"], b_sim);

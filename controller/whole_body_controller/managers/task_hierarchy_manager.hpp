@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Dense>
+#include "controller/whole_body_controller/task.hpp"
 class Task;
 
 class TaskHierarchyManager {
@@ -13,6 +14,14 @@ public:
 
   void UpdateRampToMax(const double state_machine_time);
   void UpdateRampToMin(const double state_machine_time);
+
+  void UpdateInstantToMax();
+  void UpdateInstantToMin();
+
+  Eigen::VectorXd GetWeight() {
+    return task_->Weight();
+  }
+
 
 private:
   Task *task_;

@@ -5,6 +5,8 @@ class Task;
 class PinocchioRobotSystem;
 class HermiteCurveVec;
 class HermiteQuaternionCurve;
+class MinJerkCurveVec;
+class MinJerkCurveQuat;
 
 class ArmTrajectoryManager {
 public:
@@ -26,8 +28,11 @@ private:
   Task *ori_task_;
   PinocchioRobotSystem *robot_;
 
+  // MinJerkCurveVec *pos_curve_;
   HermiteCurveVec *pos_curve_;
   HermiteQuaternionCurve *ori_curve_;
+
+  int counter_ = 0;
 
   double duration_ = 0.;
 };
