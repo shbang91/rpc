@@ -217,9 +217,6 @@ void OptimoControlArchitecture::GetCommand(void *command) {
     b_state_first_visit_ = true;
   }
 
-  //hm weight
-  Eigen::Vector3d ee_ori_hm_weight = ee_ori_hm_->GetWeight();
-  std::cout << "ee_ori_hm_weight: " << ee_ori_hm_weight.transpose() << std::endl;
 }
 
 void OptimoControlArchitecture::_InitializeParameters() {
