@@ -1,6 +1,7 @@
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
@@ -10,7 +11,6 @@
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
-#include "double_support_stand_up.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
 
 ContactTransitionStart::ContactTransitionStart(
@@ -22,16 +22,6 @@ ContactTransitionStart::ContactTransitionStart(
     util::PrettyConstructor(2, "LFContactTransitionStart");
   else if (state_id_ == draco_states::kRFContactTransitionStart)
     util::PrettyConstructor(2, "RFContactTransitionStart");
-
-  try {
-    YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
-        cfg["state_machine"], "b_use_const_desired_foot_pos");
-  } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
 
   nominal_lfoot_iso_.setIdentity();
   nominal_rfoot_iso_.setIdentity();
@@ -157,6 +147,8 @@ void ContactTransitionStart::FirstVisit() {
   // set current foot position as nominal (desired) for rest of this state
   nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
   nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  FootStep::MakeHorizontal(nominal_lfoot_iso_);
+  FootStep::MakeHorizontal(nominal_rfoot_iso_);
 }
 
 void ContactTransitionStart::OneStep() {
@@ -211,4 +203,12 @@ StateId ContactTransitionStart::GetNextState() {
   }
 }
 
-void ContactTransitionStart::SetParameters(const YAML::Node &node) {}
+void ContactTransitionStart::SetParameters(const YAML::Node &node) {
+  try {
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
+        node["state_machine"], "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+}

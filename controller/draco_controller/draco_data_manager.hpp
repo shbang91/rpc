@@ -14,11 +14,6 @@ public:
   double time_ = 0;
   int phase_ = 1;
 
-  // Eigen::Vector3d base_joint_pos_;
-  // Eigen::Vector4d base_joint_ori_;
-  // Eigen::Vector3d base_joint_lin_vel_;
-  // Eigen::Vector3d base_joint_ang_vel_;
-
   Eigen::Vector3d est_base_joint_pos_ = Eigen::Vector3d::Zero();
   Eigen::Vector4d est_base_joint_ori_ = Eigen::Vector4d::Zero();
 
@@ -83,6 +78,14 @@ public:
   Eigen::Vector3d rf_ori_kd = Eigen::Vector3d::Zero();
 
   Eigen::Quaterniond quat_world_local_ = Eigen::Quaterniond::Identity();
+
+  // mpc data
+  std::vector<Eigen::Vector3d> des_com_traj;
+  std::vector<Eigen::Vector3d> des_torso_ori_traj;
+  std::vector<Eigen::Vector3d> des_lf_pos_traj;
+  std::vector<Eigen::Vector3d> des_rf_pos_traj;
+  std::vector<Eigen::Vector3d> des_lf_ori_traj;
+  std::vector<Eigen::Vector3d> des_rf_ori_traj;
 };
 
 // Singleton class

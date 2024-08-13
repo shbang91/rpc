@@ -30,6 +30,10 @@ void DoubleSupportStandUp::FirstVisit() {
   std::cout << "draco_states::kDoubleSupportStandUp" << std::endl;
   state_machine_start_time_ = sp_->current_time_;
 
+  // update contact state
+  sp_->b_lf_contact_ = true;
+  sp_->b_rf_contact_ = true;
+
   Eigen::Isometry3d stance_foot_iso =
       robot_->GetLinkIsometry(sp_->stance_foot_);
   FootStep::MakeHorizontal(stance_foot_iso);

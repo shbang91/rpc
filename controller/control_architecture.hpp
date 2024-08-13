@@ -38,7 +38,4 @@ protected:
   StateId prev_loco_state_;
   StateId manip_state_;
   StateId prev_manip_state_;
-
-  YAML::Node cfg_;
-  virtual void _InitializeParameters() = 0;
 };

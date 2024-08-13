@@ -8,7 +8,7 @@ cwd = os.getcwd()
 sys.path.append(cwd)
 sys.path.append(cwd + "/build/lib")  # include pybind module
 
-from config.draco.pybullet_simulation import *
+from config.draco.sim.pybullet.ihwbc.pybullet_params import *
 from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import liegroup
@@ -341,7 +341,7 @@ if __name__ == "__main__":
     # Config.INITIAL_BASE_JOINT_QUAT,
     # useFixedBase=0)
     draco_humanoid = pb.loadURDF(
-        cwd + "/robot_model/draco/draco_modified.urdf",
+        cwd + "/robot_model/draco/draco_latest_collisions.urdf",
         Config.INITIAL_BASE_JOINT_POS,
         Config.INITIAL_BASE_JOINT_QUAT,
         useFixedBase=0,

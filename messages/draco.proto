@@ -2,6 +2,18 @@ syntax = "proto3";
 
 package draco;
 
+message Pos {
+  optional double x = 1;
+  optional double y = 2;
+  optional double z = 3;
+}
+
+message Euler {
+  optional double x = 1;
+  optional double y = 2;
+  optional double z = 3;
+}
+
 message pnc_msg {
   float time = 1;
   uint32 phase = 2;
@@ -70,7 +82,16 @@ message pnc_msg {
   bool b_rfoot = 48;
 
   repeated float quat_world_local = 49;
+
+  // mpc msg
+  repeated Pos des_com_traj = 50;
+  repeated Euler des_torso_ori_traj = 51;
+  repeated Pos des_lf_pos_traj = 52;
+  repeated Pos des_rf_pos_traj = 53;
+  repeated Euler des_lf_ori_traj = 54;
+  repeated Euler des_rf_ori_traj = 55;
 }
+
 message rs_teleop_msg {
   repeated float pos = 1;
   repeated float quat = 2;

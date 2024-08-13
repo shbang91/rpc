@@ -8,17 +8,17 @@ DracoCAMTask::DracoCAMTask(PinocchioRobotSystem *robot) : Task(robot, 3) {
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoCAMTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+void DracoCAMTask::UpdateOpCommand(const Eigen::Matrix3d &world_R_local) {
   vel_ = sp_->cam_est_;
   // std::cout << "cam: " << vel_.transpose() << std::endl;
 
   vel_err_ = des_vel_ - vel_;
 
-  local_des_vel_ = rot_world_local.transpose() * des_vel_;
-  local_vel_ = rot_world_local.transpose() * vel_;
+  local_des_vel_ = world_R_local.transpose() * des_vel_;
+  local_vel_ = world_R_local.transpose() * vel_;
   local_vel_err_ = local_des_vel_ - local_vel_;
 
-  op_cmd_ = des_acc_ + rot_world_local * kd_.cwiseProduct(local_vel_err_);
+  op_cmd_ = des_acc_ + world_R_local * kd_.cwiseProduct(local_vel_err_);
 }
 
 void DracoCAMTask::UpdateJacobian() {
@@ -32,11 +32,12 @@ void DracoCAMTask::UpdateJacobianDotQdot() {
   jacobian_dot_q_dot_ = Eigen::VectorXd::Zero(dim_);
 }
 
-void DracoCAMTask::SetParameters(const YAML::Node &node, const bool b_sim) {
+void DracoCAMTask::SetParameters(const YAML::Node &node,
+                                 const WBC_TYPE wbc_type) {
   try {
-    std::string prefix = b_sim ? "sim" : "exp";
-    util::ReadParameter(node, prefix + "_kd", kd_);
-    util::ReadParameter(node, prefix + "_weight", weight_);
+    util::ReadParameter(node, "kd", kd_);
+    if (wbc_type == WBC_TYPE::IHWBC)
+      util::ReadParameter(node, "weight", weight_);
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

@@ -8,8 +8,6 @@ endif()
 
 add_library(rpc-pin-robot-system ${pin_robot_system_source}
     ${pin_robot_system_header})
-#target_link_libraries(rpc-pin-robot-system ${pinocchio_LIBRARIES}
-                                            #rpc-util)
 target_link_libraries(rpc-pin-robot-system PUBLIC pinocchio::pinocchio
                                            PUBLIC rpc-util)
 

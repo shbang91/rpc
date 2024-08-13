@@ -19,11 +19,10 @@
 const float deltat = 0.00125f; // sampling period in seconds (shown as 800 Hz)
 const float gyroMeasError =
     3.14159265358979 *
-    (0.3f /
-     180.0f); // gyroscope measurement error in rad/s (shown as 0.3 deg/s)
+    (5.0f / 180.0f); // gyroscope measurement error in rad/s (shown as 5 deg/s)
 const float gyroMeasDrift =
     3.14159265358979 *
-    (0.0001f /
+    (0.2f /
      180.0f); // gyroscope measurement error in rad/s/s (shown as 0.2f deg/s/s)
 const float beta = sqrt(3.0f / 4.0f) * gyroMeasError; // compute beta
 const float zeta = sqrt(3.0f / 4.0f) * gyroMeasDrift; // compute zeta
@@ -45,12 +44,12 @@ public:
 
   Eigen::Quaterniond getQuaternion(void);
 
-  const Eigen::Vector3d getGyroscopeError();
+  Eigen::Vector3d getGyroscopeError() const;
 
 private:
   // Global system variables
-  //    float a_x, a_y, a_z; // accelerometer measurements
-  //    float w_x, w_y, w_z; // gyroscope measurements in rad/s
+  // float a_x, a_y, a_z; // accelerometer measurements
+  // float w_x, w_y, w_z; // gyroscope measurements in rad/s
   float m_x, m_y, m_z;              // magnetometer measurements
   float SEq_1, SEq_2, SEq_3, SEq_4; // estimated orientation quaternion elements
   float b_x, b_z;         // reference direction of flux in earth frame

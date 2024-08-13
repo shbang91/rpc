@@ -11,6 +11,7 @@
 
 # Compiled Dynamic libraries
 *.so
+*.so.*
 *.dylib
 *.dll
 
@@ -49,3 +50,4 @@ note.txt
 .idea/*
 cmake-build-debug/*
 .vscode/*
+*.asv

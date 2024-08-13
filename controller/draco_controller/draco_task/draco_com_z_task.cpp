@@ -11,10 +11,10 @@ DracoCoMZTask::DracoCoMZTask(PinocchioRobotSystem *robot) : Task(robot, 1) {
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoCoMZTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+void DracoCoMZTask::UpdateOpCommand(const Eigen::Matrix3d &world_R_local) {
   if (com_height_ == com_height::kCoM) {
     pos_ << robot_->GetRobotComPos()[2];
-    vel_ << robot_->GetRobotComLinVel()[2];
+    vel_ << sp_->com_vel_est_[2];
 
   } else if (com_height_ == com_height::kBase) {
     pos_
@@ -59,22 +59,26 @@ void DracoCoMZTask::UpdateJacobianDotQdot() {
   }
 }
 
-void DracoCoMZTask::SetParameters(const YAML::Node &node, const bool b_sim) {
+void DracoCoMZTask::SetParameters(const YAML::Node &node,
+                                  const WBC_TYPE wbc_type) {
   try {
-
     util::ReadParameter(node, "com_height_target_source", com_height_);
-
     sp_->b_use_base_height_ = com_height_ == com_height::kBase ? true : false;
 
-    std::string prefix = b_sim ? "sim" : "exp";
+    if (wbc_type == WBC_TYPE::IHWBC) {
+      if (com_height_ == com_height::kCoM)
+        util::ReadParameter(node, "com_weight", weight_);
+      else if (com_height_ == com_height::kBase)
+        util::ReadParameter(node, "base_weight", weight_);
+    } else if (wbc_type == WBC_TYPE::WBIC)
+      util::ReadParameter(node, "kp_ik", kp_ik_);
+
     if (com_height_ == com_height::kCoM) {
-      util::ReadParameter(node, prefix + "_com_kp", kp_);
-      util::ReadParameter(node, prefix + "_com_kd", kd_);
-      util::ReadParameter(node, prefix + "_com_weight", weight_);
+      util::ReadParameter(node, "com_kp", kp_);
+      util::ReadParameter(node, "com_kd", kd_);
     } else if (com_height_ == com_height::kBase) {
-      util::ReadParameter(node, prefix + "_base_kp", kp_);
-      util::ReadParameter(node, prefix + "_base_kd", kd_);
-      util::ReadParameter(node, prefix + "_base_weight", weight_);
+      util::ReadParameter(node, "base_kp", kp_);
+      util::ReadParameter(node, "base_kd", kd_);
     } else
       throw std::invalid_argument("No Matching CoM Height Target Source");
 

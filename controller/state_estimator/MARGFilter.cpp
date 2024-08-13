@@ -285,7 +285,7 @@ Eigen::Matrix3d MARGFilter::getBaseRotation() {
 
 Eigen::Quaterniond MARGFilter::getQuaternion() { return quat; }
 
-const Eigen::Vector3d MARGFilter::getGyroscopeError() {
+Eigen::Vector3d MARGFilter::getGyroscopeError() const {
   Eigen::Quaterniond quat_hat_dot =
       Eigen::Quaterniond(SEqHatDot_1, SEqHatDot_2, SEqHatDot_3, SEqHatDot_4);
   return util::QuatToEulerZYX(quat_hat_dot);

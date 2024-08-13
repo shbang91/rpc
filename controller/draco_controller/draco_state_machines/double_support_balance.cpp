@@ -10,20 +10,8 @@ DoubleSupportBalance::DoubleSupportBalance(const StateId state_id,
                                            PinocchioRobotSystem *robot,
                                            DracoControlArchitecture *ctrl_arch)
     : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch),
-      b_com_swaying_(false), b_lmpc_swaying_(false), b_nmpc_swaying_(false),
-      b_dcm_walking_(false), b_lmpc_walking_(false), b_nmpc_walking_(false),
-      b_static_walking_(false) {
+      b_com_swaying_(false), b_dcm_walking_(false), b_static_walking_(false) {
   util::PrettyConstructor(2, "DoubleSupportBalance");
-
-  try {
-    YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
-        cfg["state_machine"], "b_use_const_desired_foot_pos");
-  } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
 
   sp_ = DracoStateProvider::GetStateProvider();
   nominal_lfoot_iso_.setIdentity();
@@ -36,13 +24,7 @@ void DoubleSupportBalance::FirstVisit() {
 
   // reset flags
   b_com_swaying_ = false;
-  b_lmpc_swaying_ = false;
-  b_nmpc_swaying_ = false;
-
   b_dcm_walking_ = false;
-  b_lmpc_walking_ = false;
-  b_nmpc_walking_ = false;
-
   b_static_walking_ = false;
 
   // set current foot position as nominal (desired) for rest of this state
@@ -66,8 +48,7 @@ void DoubleSupportBalance::OneStep() {
 }
 
 bool DoubleSupportBalance::EndOfState() {
-  if (b_com_swaying_ || b_lmpc_swaying_ || b_nmpc_swaying_ || b_lmpc_walking_ ||
-      b_nmpc_walking_ || b_static_walking_)
+  if (b_com_swaying_ || b_static_walking_)
     return true;
 
   if (b_dcm_walking_ && ctrl_arch_->dcm_tm_->GetFootStepList().size() > 0 &&
@@ -96,10 +77,6 @@ void DoubleSupportBalance::LastVisit() {
 StateId DoubleSupportBalance::GetNextState() {
   if (b_com_swaying_)
     return draco_states::kDoubleSupportSwaying;
-  // if (b_lmpc_swaying_)
-  // return draco_states::kComSwayingLmpc;
-  // if (b_nmpc_swaying_)
-  // return draco_states::kComSwayingNmpc;
 
   if (b_dcm_walking_) {
     if (ctrl_arch_->dcm_tm_->GetSwingLeg() == end_effector::LFoot) {
@@ -111,14 +88,6 @@ StateId DoubleSupportBalance::GetNextState() {
     }
   }
 
-  //}
-  //}
-
-  // if (b_lmpc_walking_)
-  // return;
-  // if (b_nmpc_walking_)
-  // return;
-
   // if (b_static_walking_) {
   // if (true) {
   // return draco_states::kMoveComToLFoot;
@@ -128,4 +97,12 @@ StateId DoubleSupportBalance::GetNextState() {
   //}
 }
 
-void DoubleSupportBalance::SetParameters(const YAML::Node &node) {}
+void DoubleSupportBalance::SetParameters(const YAML::Node &node) {
+  try {
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
+        node["state_machine"], "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+}

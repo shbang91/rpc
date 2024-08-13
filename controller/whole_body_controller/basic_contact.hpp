@@ -10,7 +10,8 @@ public:
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
   void UpdateConeConstraint() override;
-  void SetParameters(const YAML::Node &node, const bool b_sim) override;
+  void UpdateOpCommand() override;
+  void SetParameters(const YAML::Node &node) override;
 };
 
 class SurfaceContact : public Contact {
@@ -22,7 +23,8 @@ public:
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
   void UpdateConeConstraint() override;
-  void SetParameters(const YAML::Node &node, const bool b_sim) override;
+  void UpdateOpCommand() override;
+  void SetParameters(const YAML::Node &node) override;
 
 private:
   double x_;

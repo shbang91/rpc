@@ -73,7 +73,7 @@ void ForceTrajectoryManager::UpdateDesired(double query_time) {
 
     _ConvertToLocalDesired(des_rf);
 
-    force_task_->UpdateDesired(des_rf);
+    force_task_->UpdateDesiredToLocal(des_rf);
   }
 }
 

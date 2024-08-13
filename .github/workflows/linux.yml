@@ -34,14 +34,13 @@ jobs:
           export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH
           export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
-          mkdir build && cd build && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=OFF -DBUILD_WITH_FOXGLOVE=OFF && make
+          mkdir build && cd build && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=OFF -DBUILD_WITH_FOXGLOVE=OFF -DBUILD_WITH_GTESTS=ON && make
       - name: Run base rpc tests
         shell: bash -l {0}
         run: |
           ./build/bin/ihwbc_test
           ./build/bin/friction_compensator_test
           ./build/bin/dcm_planner_test
-          ./build/bin/lmpc_handler_test
           ./build/bin/pin_robot_system_test
 
   build-with-ui:

@@ -1,5 +1,4 @@
 #include "controller/draco_controller/draco_state_provider.hpp"
-#include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
 #include "util/util.hpp"
 
@@ -20,6 +19,8 @@ DracoStateProvider::DracoStateProvider() {
   stance_foot_ = draco_link::l_foot_contact;
   prev_stance_foot_ = draco_link::l_foot_contact;
 
+  rot_world_local_ = Eigen::Matrix3d::Identity();
+
   dcm_.setZero();
   prev_dcm_.setZero();
   dcm_vel_.setZero();
@@ -31,13 +32,14 @@ DracoStateProvider::DracoStateProvider() {
 
   com_vel_est_.setZero();
 
-  state_ = draco_states::kInitialize;
-  prev_state_ = draco_states::kInitialize;
+  state_ = 1; // draco_states::kInitialize or draco_states::wbic::kInitialize
+  prev_state_ =
+      1; // draco_states::kInitialize or draco_states::wbic::kInitialize
 
   b_use_base_height_ = false;
-  b_use_kf_state_estimator_ = false;
 
   des_com_height_ = 0.;
+  // des_body_height_ = 0.;
   des_torso_quat_ = Eigen::Quaterniond::Identity();
 
   planning_id_ = 0;
@@ -47,4 +49,7 @@ DracoStateProvider::DracoStateProvider() {
   cam_est_ = Eigen::Vector3d::Zero();
 
   rot_world_local_ = Eigen::Matrix3d::Identity();
+  wbo_ypr_ = Eigen::Vector3d::Zero();
+  wbo_ang_vel_ = Eigen::Vector3d::Zero();
+  wbo_des_ = Eigen::VectorXd::Zero(4);
 }

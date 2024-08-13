@@ -3,6 +3,7 @@
 #if B_USE_FOXGLOVE
 #include "UI/foxglove/client/parameter_subscriber.hpp"
 #endif
+#include "util/util.hpp"
 #include <any>
 
 namespace draco_states {
@@ -16,6 +17,7 @@ constexpr int kLFSingleSupportSwing = 7;
 constexpr int kRFContactTransitionStart = 8;
 constexpr int kRFContactTransitionEnd = 9;
 constexpr int kRFSingleSupportSwing = 10;
+// constexpr int kMPCLocomotion = 11;
 constexpr int kTeleopManipulation = 20;
 } // namespace draco_states
 
@@ -34,7 +36,7 @@ class ForceTrajectoryManager;
 
 class DracoControlArchitecture : public ControlArchitecture {
 public:
-  DracoControlArchitecture(PinocchioRobotSystem *robot);
+  DracoControlArchitecture(PinocchioRobotSystem *robot, const YAML::Node &cfg);
   virtual ~DracoControlArchitecture();
 
   void GetCommand(void *command) override;
@@ -66,8 +68,6 @@ private:
   DracoController *controller_;
   DracoStateProvider *sp_;
   DCMPlanner *dcm_planner_;
-
-  void _InitializeParameters() override;
 
 #if B_USE_FOXGLOVE
   std::unordered_map<std::string, int *> param_map_int_;

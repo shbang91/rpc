@@ -4,7 +4,10 @@ import os
 import sys
 import numpy as np
 
-from config.fixed_draco.pybullet_simulation import Config
+np.set_printoptions(precision=4)
+import ipdb
+
+from config.fixed_draco.pybullet.pybullet_params import Config
 from util.python_utils import pybullet_util
 import copy
 import fixed_draco_interface_pybind
@@ -24,30 +27,34 @@ def set_initial_config(robot, joint_id):
 
     # Lowerbody
     hip_yaw_angle = 5
-    pb.resetJointState(robot, joint_id["l_hip_aa"], np.radians(hip_yaw_angle), 0.0)
+    pb.resetJointState(robot, joint_id["l_hip_aa"], np.radians(hip_yaw_angle),
+                       0.0)
     pb.resetJointState(robot, joint_id["l_hip_fe"], -np.pi / 4, 0.0)
     pb.resetJointState(robot, joint_id["l_knee_fe_jp"], np.pi / 4, 0.0)
     pb.resetJointState(robot, joint_id["l_knee_fe_jd"], np.pi / 4, 0.0)
     pb.resetJointState(robot, joint_id["l_ankle_fe"], -np.pi / 4, 0.0)
-    pb.resetJointState(robot, joint_id["l_ankle_ie"], np.radians(-hip_yaw_angle), 0.0)
+    pb.resetJointState(robot, joint_id["l_ankle_ie"],
+                       np.radians(-hip_yaw_angle), 0.0)
 
-    pb.resetJointState(robot, joint_id["r_hip_aa"], np.radians(-hip_yaw_angle), 0.0)
+    pb.resetJointState(robot, joint_id["r_hip_aa"], np.radians(-hip_yaw_angle),
+                       0.0)
     pb.resetJointState(robot, joint_id["r_hip_fe"], -np.pi / 4, 0.0)
     pb.resetJointState(robot, joint_id["r_knee_fe_jp"], np.pi / 4, 0.0)
     pb.resetJointState(robot, joint_id["r_knee_fe_jd"], np.pi / 4, 0.0)
     pb.resetJointState(robot, joint_id["r_ankle_fe"], -np.pi / 4, 0.0)
-    pb.resetJointState(robot, joint_id["r_ankle_ie"], np.radians(hip_yaw_angle), 0.0)
+    pb.resetJointState(robot, joint_id["r_ankle_ie"],
+                       np.radians(hip_yaw_angle), 0.0)
 
 
 pb.connect(pb.GUI)
 
-pb.resetDebugVisualizerCamera(
-    cameraDistance=1.5, cameraYaw=90, cameraPitch=0, cameraTargetPosition=[0, 0, 0.8]
-)
+pb.resetDebugVisualizerCamera(cameraDistance=1.5,
+                              cameraYaw=90,
+                              cameraPitch=0,
+                              cameraTargetPosition=[0, 0, 0.8])
 ## sim physics setting
-pb.setPhysicsEngineParameter(
-    fixedTimeStep=Config.CONTROLLER_DT, numSubSteps=Config.N_SUBSTEP
-)
+pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
+                             numSubSteps=Config.N_SUBSTEP)
 pb.setGravity(0, 0, -9.81)
 
 ## robot spawn & initial kinematics and dynamics setting
@@ -67,8 +74,7 @@ nq, nv, na, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_baseco
         Config.INITIAL_BASE_JOINT_POS,
         Config.INITIAL_BASE_JOINT_QUAT,
         Config.PRINT_ROBOT_INFO,
-    )
-)
+    ))
 
 # robot initial config setting
 set_initial_config(fixed_draco, joint_id)
@@ -113,8 +119,8 @@ dt = Config.CONTROLLER_DT
 count = 0
 
 pybullet_nominal_sensor_data_dict = pybullet_util.get_sensor_data(
-    fixed_draco, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom
-)
+    fixed_draco, joint_id, link_id, pos_basejoint_to_basecom,
+    rot_basejoint_to_basecom)
 
 ##TEST for plot
 while True:
@@ -128,46 +134,42 @@ while True:
     )
 
     pybullet_sensor_data_dict["imu_frame_iso"] = pybullet_util.get_link_iso(
-        fixed_draco, link_id["torso_imu"]
-    )
+        fixed_draco, link_id["torso_imu"])
     pybullet_sensor_data_dict["imu_frame_vel"] = pybullet_util.get_link_vel(
-        fixed_draco, link_id["torso_imu"]
-    )
+        fixed_draco, link_id["torso_imu"])
     base_com_pos_ = pybullet_sensor_data_dict["base_com_pos"]
     base_com_quat_ = pybullet_sensor_data_dict["base_com_quat"]
     base_joint_pos_ = pybullet_sensor_data_dict["base_joint_pos"]
     base_joint_quat_ = pybullet_sensor_data_dict["base_joint_quat"]
 
     ##copy pybullet sensor data to pnc sensor data
-    pnc_draco_sensor_data.joint_positions_ = pybullet_sensor_data_dict["joint_pos"]
-    pnc_draco_sensor_data.joint_velocities_ = pybullet_sensor_data_dict["joint_vel"]
+    pnc_draco_sensor_data.joint_positions_ = pybullet_sensor_data_dict[
+        "joint_pos"]
+    pnc_draco_sensor_data.joint_velocities_ = pybullet_sensor_data_dict[
+        "joint_vel"]
     pnc_draco_sensor_data.imu_frame_isometry_ = pybullet_sensor_data_dict[
-        "imu_frame_iso"
-    ]
+        "imu_frame_iso"]
     pnc_draco_sensor_data.imu_frame_velocities_ = pybullet_sensor_data_dict[
-        "imu_frame_vel"
-    ]
+        "imu_frame_vel"]
 
     ##debugging
-    pnc_draco_sensor_data.base_com_pos_ = pybullet_sensor_data_dict["base_com_pos"]
-    pnc_draco_sensor_data.base_com_quat_ = pybullet_sensor_data_dict["base_com_quat"]
+    pnc_draco_sensor_data.base_com_pos_ = pybullet_sensor_data_dict[
+        "base_com_pos"]
+    pnc_draco_sensor_data.base_com_quat_ = pybullet_sensor_data_dict[
+        "base_com_quat"]
     pnc_draco_sensor_data.base_com_lin_vel_ = pybullet_sensor_data_dict[
-        "base_com_lin_vel"
-    ]
+        "base_com_lin_vel"]
     pnc_draco_sensor_data.base_com_ang_vel_ = pybullet_sensor_data_dict[
-        "base_com_ang_vel"
-    ]
+        "base_com_ang_vel"]
 
-    pnc_draco_sensor_data.base_joint_pos_ = pybullet_sensor_data_dict["base_joint_pos"]
+    pnc_draco_sensor_data.base_joint_pos_ = pybullet_sensor_data_dict[
+        "base_joint_pos"]
     pnc_draco_sensor_data.base_joint_quat_ = pybullet_sensor_data_dict[
-        "base_joint_quat"
-    ]
+        "base_joint_quat"]
     pnc_draco_sensor_data.base_joint_lin_vel_ = pybullet_sensor_data_dict[
-        "base_joint_lin_vel"
-    ]
+        "base_joint_lin_vel"]
     pnc_draco_sensor_data.base_joint_ang_vel_ = pybullet_sensor_data_dict[
-        "base_joint_ang_vel"
-    ]
+        "base_joint_ang_vel"]
 
     ##Debugging purpose
     # print("==================")
@@ -196,11 +198,12 @@ while True:
     pnc_draco_interface.GetCommand(pnc_draco_sensor_data, pnc_draco_command)
 
     ##copy command
-    pybullet_joint_positions_cmd = copy.deepcopy(pnc_draco_command.joint_positions_cmd_)
+    pybullet_joint_positions_cmd = copy.deepcopy(
+        pnc_draco_command.joint_positions_cmd_)
     pybullet_joint_velocities_cmd = copy.deepcopy(
-        pnc_draco_command.joint_velocities_cmd_
-    )
-    pybullet_joint_torques_cmd = copy.deepcopy(pnc_draco_command.joint_torques_cmd_)
+        pnc_draco_command.joint_velocities_cmd_)
+    pybullet_joint_torques_cmd = copy.deepcopy(
+        pnc_draco_command.joint_torques_cmd_)
 
     ##delete passive joint command
     del pybullet_joint_positions_cmd["l_knee_fe_jp"]
@@ -218,9 +221,8 @@ while True:
     ##apply motor torque
     # pybullet_util.set_motor_trq(fixed_draco, joint_id,
     # pybullet_joint_torques_cmd)
-    pybullet_util.set_motor_impedance(
-        fixed_draco, joint_id, command_dict, Config.KP, Config.KD
-    )
+    pybullet_util.set_motor_impedance(fixed_draco, joint_id, command_dict,
+                                      Config.KP, Config.KD)
 
     ## initial pos control
     # pos_cmd_dict = copy.deepcopy(

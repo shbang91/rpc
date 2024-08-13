@@ -7,37 +7,34 @@
 #include "controller/draco_controller/draco_state_estimator.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 
-#include "util/util.hpp"
-
 #if B_USE_ZMQ
 #include "controller/draco_controller/draco_data_manager.hpp"
 #endif
 
 #include <string>
 
-DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
-    : robot_(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
+DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot,
+                                         const YAML::Node &cfg)
+    : StateEstimator(robot), R_imu_base_com_(Eigen::Matrix3d::Identity()),
       global_leg_odometry_(Eigen::Vector3d::Zero()),
       prev_base_joint_pos_(Eigen::Vector3d::Zero()), b_first_visit_(true),
       com_vel_exp_filter_(nullptr) {
   util::PrettyConstructor(1, "DracoStateEstimator");
+
   sp_ = DracoStateProvider::GetStateProvider();
+
+  // assume start with double support
+  sp_->b_lf_contact_ = true;
+  sp_->b_rf_contact_ = true;
 
   R_imu_base_com_ =
       robot_->GetLinkIsometry(draco_link::torso_imu).linear().transpose() *
       robot_->GetLinkIsometry(draco_link::torso_com_link).linear();
 
   try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-    com_vel_filter_type_ =
-        util::ReadParameter<int>(cfg["state_estimator"], "com_vel_filter_type");
-    bool b_sim = util::ReadParameter<bool>(cfg, "b_sim");
-
-    std::string prefix = b_sim ? "sim" : "exp";
+    // set the foot that will be used to estimate base in first_visit
     int foot_frame = util::ReadParameter<int>(cfg["state_estimator"],
                                               "foot_reference_frame");
-
-    // set the foot that will be used to estimate base in first_visit
     if (foot_frame == 0) {
       sp_->stance_foot_ = draco_link::l_foot_contact;
       sp_->prev_stance_foot_ = draco_link::l_foot_contact;
@@ -46,9 +43,11 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
       sp_->prev_stance_foot_ = draco_link::r_foot_contact;
     }
 
+    com_vel_filter_type_ =
+        util::ReadParameter<int>(cfg["state_estimator"], "com_vel_filter_type");
     if (com_vel_filter_type_ == com_vel_filter::kMovingAverage) {
       Eigen::Vector3d num_data_com_vel = util::ReadParameter<Eigen::Vector3d>(
-          cfg["state_estimator"], prefix + "_num_data_com_vel");
+          cfg["state_estimator"], "num_data_com_vel");
       com_vel_mv_avg_filter_.clear();
       for (int i = 0; i < 3; i++) {
         com_vel_mv_avg_filter_.push_back(
@@ -68,7 +67,6 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
       com_vel_lp_filter_ =
           new LowPassVelocityFilter(sp_->servo_dt_, cut_off_period, 3);
     }
-
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
@@ -76,6 +74,10 @@ DracoStateEstimator::DracoStateEstimator(PinocchioRobotSystem *robot)
 
 #if B_USE_MATLOGGER
   logger_ = XBot::MatLogger2::MakeLogger("/tmp/draco_state_estimator_data");
+  logger_->set_buffer_mode(XBot::VariableBuffer::Mode::producer_consumer);
+  appender_ = XBot::MatAppender::MakeInstance();
+  appender_->add_logger(logger_);
+  appender_->start_flush_thread();
 #endif
 }
 
@@ -175,8 +177,7 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     Eigen::VectorXd output = com_vel_exp_filter_->Output();
     sp_->com_vel_est_ << output[0], output[1], output[2];
   } else if (com_vel_filter_type_ == com_vel_filter::kLowPassFilter) {
-    Eigen::VectorXd com_pos(3);
-    com_pos << robot_->GetRobotComPos();
+    Eigen::Vector3d com_pos = robot_->GetRobotComPos();
 
     if (b_lp_first_visit_) {
       com_vel_lp_filter_->Reset(com_pos);
@@ -200,12 +201,12 @@ void DracoStateEstimator::Update(DracoSensorData *sensor_data) {
     DracoDataManager *dm = DracoDataManager::GetDataManager();
     dm->data_->est_base_joint_pos_ = base_joint_pos;
     Eigen::Quaterniond base_joint_quat(base_joint_ori_rot);
-    dm->data_->est_base_joint_ori_ << base_joint_quat.normalized().coeffs();
+    dm->data_->est_base_joint_ori_ = base_joint_quat.normalized().coeffs();
 
     // Save joint pos data
     dm->data_->joint_positions_ = sensor_data->joint_pos_;
 
-    dm->data_->est_icp = sp_->dcm_.head<2>();
+    dm->data_->est_icp_ = sp_->dcm_.head<2>();
     // for simulation only (ground truth data from simulator)
     // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
     // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
@@ -267,15 +268,40 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
       sensor_data->base_joint_lin_vel_, sensor_data->base_joint_ang_vel_,
       sensor_data->joint_pos_, sensor_data->joint_vel_, true);
 
-  this->_ComputeDCM();
+  // compute DCM
+  Eigen::Vector3d com_pos = robot_->GetRobotComPos();
+  Eigen::Vector3d com_vel = robot_->GetRobotComLinVel();
+  sp_->com_vel_est_ = com_vel;
+  double omega = sqrt(9.81 / com_pos[2]);
+
+  sp_->prev_dcm_ = sp_->dcm_;
+  sp_->dcm_ = com_pos + com_vel / omega;
+
+  double cutoff_period =
+      0.01; // 10ms cut-off period for first-order low pass filter
+  double alpha = sp_->servo_dt_ / cutoff_period;
+
+  sp_->dcm_vel_ = alpha * (sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_ +
+                  (1 - alpha) * sp_->dcm_vel_; // not being used in controller
 
 #if B_USE_ZMQ
-  // DracoDataManager *dm = DracoDataManager::GetDataManager();
-  // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
-  // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
-  // dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
-  // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    // dm->data_->base_joint_pos_ = sensor_data->base_joint_pos_;
+    // dm->data_->base_joint_ori_ = sensor_data->base_joint_quat_;
+    // dm->data_->base_joint_lin_vel_ = sensor_data->base_joint_lin_vel_;
+    // dm->data_->base_joint_ang_vel_ = sensor_data->base_joint_ang_vel_;
 
-  // dm->data_->joint_positions_ = sensor_data->joint_pos_;
+    dm->data_->est_base_joint_pos_ = sensor_data->base_joint_pos_;
+    dm->data_->est_base_joint_ori_ = sensor_data->base_joint_quat_;
+    dm->data_->joint_positions_ = sensor_data->joint_pos_;
+  }
+#endif
+#if B_USE_MATLOGGER
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    // joint encoder data
+    logger_->add("joint_pos_act", sensor_data->joint_pos_);
+    logger_->add("joint_vel_act", sensor_data->joint_vel_);
+  }
 #endif
 }

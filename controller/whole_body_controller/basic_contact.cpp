@@ -5,9 +5,11 @@ PointContact::PointContact(PinocchioRobotSystem *robot,
                            const int target_link_idx, const double mu)
     : Contact(robot, 3, target_link_idx, mu) {
 
+  util::PrettyConstructor(3, "PointContact");
+
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(6, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(6);
-  util::PrettyConstructor(3, "PointContact");
+  rot_w_l_ = Eigen::MatrixXd::Zero(dim_, dim_);
 }
 
 void PointContact::UpdateJacobian() {
@@ -36,19 +38,25 @@ void PointContact::UpdateConeConstraint() {
   cone_constraint_matrix_(4, 2) = mu_;
   cone_constraint_matrix_(5, 2) = -1.;
 
-  // Eigen::Matrix3d rot_world_local =
-  // robot_->GetLinkIsometry(target_link_idx_).linear();
-  // cone_constraint_matrix_ =
-  // cone_constraint_matrix_ * rot_world_local.transpose();
+  // rot_w_l_ = robot_->GetLinkIsometry(target_link_idx_).linear();
+  // cone_constraint_matrix_ = cone_constraint_matrix_ * rot_w_l_.transpose();
 
   // -Fz >= -rf_z_max
   cone_constraint_vector_[5] = -rf_z_max_;
 }
 
-void PointContact::SetParameters(const YAML::Node &node, const bool b_sim) {
+void PointContact::UpdateOpCommand() {
+  Eigen::Vector3d pos_err =
+      des_pos_ - robot_->GetLinkIsometry(target_link_idx_).translation();
+  Eigen::Vector3d vel_err =
+      -robot_->GetLinkSpatialVel(target_link_idx_).tail<3>();
+  op_cmd_ = kp_.cwiseProduct(pos_err) + kd_.cwiseProduct(vel_err);
+}
+void PointContact::SetParameters(const YAML::Node &node) {
   try {
-    mu_ = b_sim ? util::ReadParameter<double>(node, "mu")
-                : util::ReadParameter<double>(node, "exp_mu");
+    mu_ = util::ReadParameter<double>(node, "mu");
+    kp_ = util::ReadParameter<Eigen::VectorXd>(node, "kp");
+    kd_ = util::ReadParameter<Eigen::VectorXd>(node, "kd");
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl
@@ -66,6 +74,7 @@ SurfaceContact::SurfaceContact(PinocchioRobotSystem *robot,
 
   cone_constraint_matrix_ = Eigen::MatrixXd::Zero(16 + 2, dim_);
   cone_constraint_vector_ = Eigen::VectorXd::Zero(16 + 2);
+  rot_w_l_ = Eigen::MatrixXd::Zero(dim_, dim_);
 }
 void SurfaceContact::UpdateJacobian() {
   // jacobian_ = robot_->GetLinkJacobian(target_link_idx_);
@@ -162,24 +171,48 @@ void SurfaceContact::UpdateConeConstraint() {
   // ////////////////////////////////////////////////////
   cone_constraint_matrix_(17, 5) = -1.;
 
-  // Eigen::MatrixXd aug_R_world_local = Eigen::MatrixXd::Zero(dim_, dim_);
-  // aug_R_world_local.block(0, 0, 3, 3) =
+  // rot_w_l_.block(0, 0, 3, 3) =
   // robot_->GetLinkIsometry(target_link_idx_).linear();
-  // aug_R_world_local.block(3, 3, 3, 3) =
+  // rot_w_l_.block(3, 3, 3, 3) =
   // robot_->GetLinkIsometry(target_link_idx_).linear();
-  // cone_constraint_matrix_ =
-  // cone_constraint_matrix_ * aug_R_world_local.transpose();
+  // cone_constraint_matrix_ = cone_constraint_matrix_ * rot_w_l_.transpose();
 
   // -Fz >= -rf_z_max
   cone_constraint_vector_[17] = -rf_z_max_;
 }
+void SurfaceContact::UpdateOpCommand() {
+  // pos err
+  Eigen::Vector3d pos_err =
+      des_pos_ - robot_->GetLinkIsometry(target_link_idx_).translation();
+  Eigen::Vector3d vel_err =
+      -robot_->GetLinkSpatialVel(target_link_idx_).tail<3>();
+  op_cmd_.tail<3>() =
+      kp_.tail<3>().cwiseProduct(pos_err) + kd_.tail<3>().cwiseProduct(vel_err);
 
-void SurfaceContact::SetParameters(const YAML::Node &node, const bool b_sim) {
+  // ori err
+  // quat
+  Eigen::Quaterniond curr_quat =
+      Eigen::Quaterniond(robot_->GetLinkIsometry(target_link_idx_).linear())
+          .normalized();
+  util::AvoidQuatJump(des_quat_, curr_quat);
+  Eigen::Quaterniond quat_err = des_quat_ * curr_quat.inverse();
+  Eigen::Vector3d so3 = Eigen::AngleAxisd(quat_err).axis();
+  so3 *= Eigen::AngleAxisd(quat_err).angle();
+
+  // ang vel
+  Eigen::Vector3d ang_vel_err =
+      -robot_->GetLinkSpatialVel(target_link_idx_).head<3>();
+  op_cmd_.head<3>() =
+      kp_.head<3>().cwiseProduct(so3) + kd_.head<3>().cwiseProduct(ang_vel_err);
+}
+
+void SurfaceContact::SetParameters(const YAML::Node &node) {
   try {
-    std::string prefix = b_sim ? "sim" : "exp";
-    util::ReadParameter(node, prefix + "_mu", mu_);
-    util::ReadParameter(node, prefix + "_foot_half_length", x_);
-    util::ReadParameter(node, prefix + "_foot_half_width", y_);
+    util::ReadParameter(node, "mu", mu_);
+    util::ReadParameter(node, "foot_half_length", x_);
+    util::ReadParameter(node, "foot_half_width", y_);
+    util::ReadParameter<Eigen::VectorXd>(node, "kp", kp_);
+    util::ReadParameter<Eigen::VectorXd>(node, "kd", kd_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl

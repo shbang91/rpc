@@ -1,5 +1,5 @@
 #pragma once
-// #include "controller/interrupt.hpp"
+#include "util/util.hpp"
 
 class PinocchioRobotSystem;
 class ControlArchitecture;
@@ -7,12 +7,13 @@ class InterruptHandler;
 
 class Interface {
 public:
-  Interface() : count_(0), running_time_(0.) {};
+  Interface() : count_(0), running_time_(0.){};
 
   virtual ~Interface() = default;
 
   virtual void GetCommand(void *sensor_data, void *command) = 0;
 
+  PinocchioRobotSystem *GetPinocchioModel() { return robot_; }
   InterruptHandler *interrupt_handler_;
 
 protected:
@@ -21,4 +22,5 @@ protected:
 
   PinocchioRobotSystem *robot_;
   ControlArchitecture *ctrl_arch_;
+  YAML::Node cfg_;
 };

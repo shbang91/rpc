@@ -9,28 +9,41 @@ import pinocchio as pin
 violet = [1.0, 0.0, 1.0, 0.3]
 
 
+class Color(object):
+    RED = 0xff0000
+    GREEN = 0x00ff00
+    BLUE = 0x0000ff
+    GREY = 0x888888
+    BLACK = 0x000000
+    CYAN = 0x00ffff
+    YELLOW = 0xffff00
+    VIOLET = 0x8f00ff
+
+
 def add_arrow(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
     arrow_shaft = g.Cylinder(height, 0.01)
     arrow_head = g.Cylinder(0.04, 0.04, radiusTop=0.001, radiusBottom=0.04)
     material = g.MeshPhongMaterial()
-    material.color = (
-        int(color[0] * 255) * 256**2 + int(color[1] * 255) * 256 + int(color[2] * 255)
-    )
+    material.color = (int(color[0] * 255) * 256**2 +
+                      int(color[1] * 255) * 256 + int(color[2] * 255))
 
     meshcat_visualizer[obj_name].set_object(arrow_shaft, material)
     meshcat_visualizer[obj_name]["head"].set_object(arrow_head, material)
 
 
-def add_arrow_composite(meshcat_visualizer, obj_name, color=[1, 0, 0], height=0.1):
+def add_arrow_composite(meshcat_visualizer,
+                        obj_name,
+                        color=[1, 0, 0],
+                        height=0.1):
     arrow_shaft = g.Cylinder(height, 0.01)
     arrow_head = g.Cylinder(0.04, 0.04, radiusTop=0.001, radiusBottom=0.04)
     material = g.MeshPhongMaterial()
-    material.color = (
-        int(color[0] * 255) * 256**2 + int(color[1] * 255) * 256 + int(color[2] * 255)
-    )
+    material.color = (int(color[0] * 255) * 256**2 +
+                      int(color[1] * 255) * 256 + int(color[2] * 255))
 
     shaft_offset = tf.translation_matrix([0.0, height / 2.0, 0.0])
-    meshcat_visualizer[obj_name]["arrow/shaft"].set_object(arrow_shaft, material)
+    meshcat_visualizer[obj_name]["arrow/shaft"].set_object(
+        arrow_shaft, material)
     meshcat_visualizer[obj_name]["arrow/head"].set_object(arrow_head, material)
     meshcat_visualizer[obj_name]["arrow/head"].set_transform(shaft_offset)
 
@@ -46,14 +59,14 @@ def add_footsteps(
     # create footstep
     footstep = g.Box([foot_length, foot_width, 0.01])
     material = g.MeshPhongMaterial()
-    material.color = (
-        int(color[0] * 255) * 256**2 + int(color[1] * 255) * 256 + int(color[2] * 255)
-    )
+    material.color = (int(color[0] * 255) * 256**2 +
+                      int(color[1] * 255) * 256 + int(color[2] * 255))
     material.opacity = 0.4
 
     # add all footsteps to visualizer
     for step in range(footsteps_to_add):
-        meshcat_visualizer[obj_name]["step" + str(step)].set_object(footstep, material)
+        meshcat_visualizer[obj_name]["step" + str(step)].set_object(
+            footstep, material)
 
 
 def add_sphere(
@@ -64,11 +77,9 @@ def add_sphere(
     color=[0.0, 0.0, 1.0, 0.5],
 ):
     sphere_model, sphere_collision_model, sphere_visual_model = pin.buildModelsFromUrdf(
-        urdf_path, visuals_path, pin.JointModelFreeFlyer()
-    )
-    sphere_viz = MeshcatVisualizer(
-        sphere_model, sphere_collision_model, sphere_visual_model
-    )
+        urdf_path, visuals_path, pin.JointModelFreeFlyer())
+    sphere_viz = MeshcatVisualizer(sphere_model, sphere_collision_model,
+                                   sphere_visual_model)
     sphere_viz.initViewer(parent_visualizer)
     sphere_viz.loadViewerModel(rootNodeName=node_name, color=color)
 
@@ -154,16 +165,14 @@ def display_visualizer_frames(meshcat_visualizer, frame):
     for visual in meshcat_visualizer.visual_model.geometryObjects:
         # Get mesh pose.
         M = meshcat_visualizer.visual_data.oMg[
-            meshcat_visualizer.visual_model.getGeometryId(visual.name)
-        ]
+            meshcat_visualizer.visual_model.getGeometryId(visual.name)]
         # Manage scaling
         scale = np.asarray(visual.meshScale).flatten()
         S = np.diag(np.concatenate((scale, [1.0])))
         T = np.array(M.homogeneous).dot(S)
         # Update viewer configuration.
-        frame[
-            meshcat_visualizer.getViewerNodeName(visual, pin.GeometryType.VISUAL)
-        ].set_transform(T)
+        frame[meshcat_visualizer.getViewerNodeName(
+            visual, pin.GeometryType.VISUAL)].set_transform(T)
 
 
 def display_coordinate_frame(viz_name, frame_quat, viz_frame):
