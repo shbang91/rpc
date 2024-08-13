@@ -27,8 +27,12 @@ private:
   Eigen::VectorXd target_joint_pos_;
   Eigen::VectorXd init_joint_pos_;
 
+  Eigen::Isometry3d init_iso_;
+  Eigen::Isometry3d target_iso_;
+
   bool b_stay_here_;
   double wait_time_;
+  double task_transit_time_;
 
   MinJerkCurveVec *min_jerk_curves_;
 };

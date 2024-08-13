@@ -6,6 +6,8 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "controller/whole_body_controller/managers/arm_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
+
 #include "util/interpolation.hpp"
 
 EETraj::EETraj(const StateId state_id, PinocchioRobotSystem *robot,
@@ -14,15 +16,15 @@ EETraj::EETraj(const StateId state_id, PinocchioRobotSystem *robot,
       wait_time_(0.) {
   util::PrettyConstructor(2, "EETraj");
 
-  sp_ = OptimoStateProvider::GetStateProvider();
+    sp_ = OptimoStateProvider::GetStateProvider();
 
     // Initialize Target Position and Orientation
     target_pos_ = Eigen::Vector3d::Zero();
     target_ori_ = Eigen::Vector4d::Zero();
 
     // Construct Initial and Target Isometric Matrix
-  init_iso_ = Eigen::Isometry3d::Identity();
-  target_iso_ = Eigen::Isometry3d::Identity();
+    init_iso_ = robot_->GetLinkIsometry(optimo_link::ee);
+    target_iso_ = Eigen::Isometry3d::Identity();
   
 }
 
@@ -31,29 +33,31 @@ EETraj::~EETraj() {
 }
 
 void EETraj::FirstVisit(){
+    state_machine_start_time_ = sp_->current_time_;
     std::cout << "optimo_states::kEETraj" << std::endl;
-
     init_iso_ = robot_->GetLinkIsometry(optimo_link::ee);
-    
-
 
     // Construct Target Isometric Matrix from target position and quaternion
     Eigen::Quaterniond quat(target_ori_(0), target_ori_(1), target_ori_(2), target_ori_(3));
     target_iso_.linear() = quat.toRotationMatrix();
     target_iso_.translation() = target_pos_;
 
-   
-    //Initialize EE traj
+    // Initialize EE traj
     ctrl_arch_->ee_SE3_tm_->InitializeTrajectory(init_iso_, target_iso_, end_time_);
-                                             
 
+    // print target orientation
+    Eigen::Vector3d rpy = util::RPYFromSO3(init_iso_.linear());
+    std::cout << "Initial Orientation: " << rpy.transpose() << std::endl;
+
+    
 
 }
 
 void EETraj::OneStep() {
-  state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
+    state_machine_time_ = sp_->current_time_ - state_machine_start_time_;
 
-  ctrl_arch_->ee_SE3_tm_->UpdateDesired(state_machine_time_);
+    // update EE trajectory
+    ctrl_arch_->ee_SE3_tm_->UpdateDesired(state_machine_time_);
 }
 
 void EETraj::LastVisit() {
