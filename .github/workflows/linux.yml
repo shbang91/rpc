@@ -33,7 +33,7 @@ jobs:
           export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH
           export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
-          sudo apt-get install -y libglfw3
+          sudo apt-get install -y libglfw3 libglfw3-dev
           mkdir build && cd build && cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=OFF -DBUILD_WITH_FOXGLOVE=OFF -DBUILD_WITH_GTESTS=ON && make
       - name: Run base rpc tests
         shell: bash -l {0}
@@ -73,7 +73,7 @@ jobs:
           export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=/opt/openrobots/lib/python3.9/site-packages:$PYTHONPATH
           export CMAKE_PREFIX_PATH=/opt/openrobots:/usr/local/include:$CMAKE_PREFIX_PATH
-          sudo apt-get install -y libglfw3
+          sudo apt-get install -y libglfw3 libglfw3-dev
           ./dependency/scripts/install_zmq.sh
           ./dependency/scripts/install_protobuf.sh
           pip install conan
