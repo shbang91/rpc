@@ -19,32 +19,10 @@ TeleopManipulation::TeleopManipulation(StateId state_id,
   util::PrettyConstructor(2, "TeleopManipulation");
   sp_ = DracoStateProvider::GetStateProvider();
 
-  try {
-    YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
-
-    teleop_freq_ = util::ReadParameter<int>(cfg, "teleop_freq");
-
-    // construct teleop handler
-    teleop_handler_ = std::make_unique<DracoRSTeleopHandler>();
-    std::cout << "Connecting to Teleop Socket...." << std::endl;
-    const std::string ip_address =
-        util::ReadParameter<std::string>(cfg, "teleop_ip_address");
-    if (teleop_handler_->InitializeSocket(ip_address))
-      std::cout << "Connected to Teleop Socket!" << std::endl;
-
-  } catch (const std::runtime_error &ex) {
-    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
-
   rs_commands_ = new DracoRSCommands();
 
   target_rh_iso_.setIdentity();
   target_lh_iso_.setIdentity();
-
-  // TODO: yaml for these hard coded temporal params
-  transition_duration_ = 0.3;
-  moving_duration_ = 0.05;
 }
 
 TeleopManipulation::~TeleopManipulation() { delete rs_commands_; }
@@ -154,4 +132,23 @@ StateId TeleopManipulation::GetNextState() {
   return draco_states::kTeleopManipulation;
 }
 
-void TeleopManipulation::SetParameters(const YAML::Node &node) {}
+void TeleopManipulation::SetParameters(const YAML::Node &node) {
+  try {
+    util::ReadParameter(node, "teleop_freq", teleop_freq_);
+    // construct teleop handler
+    teleop_handler_ = std::make_unique<DracoRSTeleopHandler>();
+    std::cout << "Connecting to Teleop Socket...." << std::endl;
+    const std::string ip_address =
+        util::ReadParameter<std::string>(node, "teleop_ip_address");
+    if (teleop_handler_->InitializeSocket(ip_address))
+      std::cout << "Connected to Teleop Socket!" << std::endl;
+
+    util::ReadParameter(node["state_machine"]["teleop_manipulation"],
+                        "transition_duration", transition_duration_);
+    util::ReadParameter(node["state_machine"]["teleop_manipulation"],
+                        "moving_duration", moving_duration_);
+  } catch (const std::runtime_error &ex) {
+    std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+}

@@ -201,13 +201,13 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   locomotion_state_machine_container_[draco_states::kInitialize] =
       new Initialize(draco_states::kInitialize, robot_, this);
   locomotion_state_machine_container_[draco_states::kInitialize]->SetParameters(
-      cfg["state_machine"]["initialize"]);
+      cfg);
 
   locomotion_state_machine_container_[draco_states::kDoubleSupportStandUp] =
       new DoubleSupportStandUp(draco_states::kDoubleSupportStandUp, robot_,
                                this);
   locomotion_state_machine_container_[draco_states::kDoubleSupportStandUp]
-      ->SetParameters(cfg["state_machine"]["stand_up"]);
+      ->SetParameters(cfg);
 
   locomotion_state_machine_container_[draco_states::kDoubleSupportBalance] =
       new DoubleSupportBalance(draco_states::kDoubleSupportBalance, robot_,
@@ -219,7 +219,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
       new DoubleSupportSwaying(draco_states::kDoubleSupportSwaying, robot_,
                                this);
   locomotion_state_machine_container_[draco_states::kDoubleSupportSwaying]
-      ->SetParameters(cfg["state_machine"]["com_swaying"]);
+      ->SetParameters(cfg);
 
   locomotion_state_machine_container_[draco_states::kLFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kLFContactTransitionStart,
@@ -236,7 +236,7 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   locomotion_state_machine_container_[draco_states::kLFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kLFSingleSupportSwing, robot_, this);
   locomotion_state_machine_container_[draco_states::kLFSingleSupportSwing]
-      ->SetParameters(cfg["state_machine"]["single_support_swing"]);
+      ->SetParameters(cfg);
 
   locomotion_state_machine_container_[draco_states::kRFContactTransitionStart] =
       new ContactTransitionStart(draco_states::kRFContactTransitionStart,
@@ -253,12 +253,14 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   locomotion_state_machine_container_[draco_states::kRFSingleSupportSwing] =
       new SingleSupportSwing(draco_states::kRFSingleSupportSwing, robot_, this);
   locomotion_state_machine_container_[draco_states::kRFSingleSupportSwing]
-      ->SetParameters(cfg["state_machine"]["single_support_swing"]);
+      ->SetParameters(cfg);
 
 #if B_USE_TELEOP
   // Manipulation
   manipulation_state_machine_container_[draco_states::kTeleopManipulation] =
       new TeleopManipulation(draco_states::kTeleopManipulation, robot_, this);
+  manipulation_state_machine_container_[draco_states::kTeleopManipulation]
+      ->SetParameters(cfg);
 #endif
 }
 

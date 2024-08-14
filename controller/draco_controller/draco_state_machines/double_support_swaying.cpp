@@ -17,16 +17,6 @@ DoubleSupportSwaying::DoubleSupportSwaying(const StateId state_id,
       amp_(Eigen::Vector3d::Zero()), freq_(Eigen::Vector3d::Zero()) {
   util::PrettyConstructor(2, "DoubleSupportSwaying");
 
-  try {
-    YAML::Node cfg =
-        YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
-        cfg["state_machine"], "b_use_const_desired_foot_pos");
-  } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
-
   nominal_lfoot_iso_.setIdentity();
   nominal_rfoot_iso_.setIdentity();
   sp_ = DracoStateProvider::GetStateProvider();
@@ -91,8 +81,12 @@ StateId DoubleSupportSwaying::GetNextState() {}
 
 void DoubleSupportSwaying::SetParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "amplitude", amp_);
-    util::ReadParameter(node, "frequency", freq_);
+    util::ReadParameter(node["state_machine"], "b_use_const_desired_foot_pos",
+                        b_use_fixed_foot_pos_);
+    util::ReadParameter(node["state_machine"]["com_swaying"], "amplitude",
+                        amp_);
+    util::ReadParameter(node["state_machine"]["com_swaying"], "frequency",
+                        freq_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [ " << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

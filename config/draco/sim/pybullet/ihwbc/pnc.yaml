@@ -171,6 +171,8 @@ wbc:
     max_pos_err: 0.2 #rad
 
 state_machine:
+    b_use_const_desired_foot_pos: false
+
     initialize:
       init_duration: 5.
       #target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
@@ -186,8 +188,6 @@ state_machine:
 
       rf_z_max_interp_duration: 0.1
 
-    b_use_const_desired_foot_pos: false
-
     single_support_swing:
       swing_height: 0.05
 
@@ -196,6 +196,10 @@ state_machine:
       frequency: [0., 0.08, 0.] # [hz]
       #amplitude: [0., 0., 0.05] # [m]
       #frequency: [0., 0., 0.05] # [hz]
+
+    teleop_manipulation:
+      transition_duration: 0.3
+      moving_duration: 0.05
 
 dcm_walking:
   #t_additional_init_trans: 0.

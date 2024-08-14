@@ -116,12 +116,14 @@ StateId DoubleSupportStandUp::GetNextState() {
 
 void DoubleSupportStandUp::SetParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "standup_duration", end_time_);
+    util::ReadParameter(node["state_machine"]["stand_up"], "standup_duration",
+                        end_time_);
     std::string prefix = sp_->b_use_base_height_ ? "base" : "com";
-    util::ReadParameter(node, "target_" + prefix + "_height", target_height_);
+    util::ReadParameter(node["state_machine"]["stand_up"],
+                        "target_" + prefix + "_height", target_height_);
     sp_->des_com_height_ = target_height_;
-    util::ReadParameter(node, "rf_z_max_interp_duration",
-                        rf_z_max_interp_duration_);
+    util::ReadParameter(node["state_machine"]["stand_up"],
+                        "rf_z_max_interp_duration", rf_z_max_interp_duration_);
   } catch (std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
               << __FILE__ << "]" << std::endl
