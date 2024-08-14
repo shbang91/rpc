@@ -352,20 +352,14 @@ void DracoController::_SaveData() {
     rot * tci_container_->force_task_map_["lf_force_task"]
               ->CmdRf(); // global quantity
   else if (wbic_ != nullptr)
+  if (ihwbc_ != nullptr) {
     dm->data_->lfoot_rf_cmd_ =
-        rot * wbic_data_->rf_cmd_.head<6>(); // global quantity
-
-  rot.topLeftCorner<3, 3>() =
-      tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
-  rot.bottomRightCorner<3, 3>() =
-      tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
-  if (ihwbc_ != nullptr)
+            rot * tci_container_->force_task_map_["lf_force_task"]
+                    ->CmdRf(); // global quantity
     dm->data_->rfoot_rf_cmd_ =
-        rot * tci_container_->force_task_map_["rf_force_task"]
-                  ->CmdRf(); // global quantity
-  else if (wbic_ != nullptr)
-    dm->data_->rfoot_rf_cmd_ =
-        rot * wbic_data_->rf_cmd_.tail<6>(); // global quantity
+            rot * tci_container_->force_task_map_["rf_force_task"]
+                    ->CmdRf(); // global quantity
+  }
 
   // IHWBC task weight, kp, kd, ki for plotting
   // TODO:clean up this
