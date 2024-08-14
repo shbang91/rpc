@@ -25,6 +25,10 @@ parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
 parser.add_argument(
     "--visualizer", choices=["none", "meshcat", "foxglove"], default="none"
 )
+parser.add_argument("--robot",
+                    choices=["draco", "fixe_draco", "manipulator"],
+                    default="draco")
+parser.add_argument("--hw_or_sim", choices=["hw", "sim"], default="sim")
 args = parser.parse_args()
 
 # Set max number of planned footstep visuals
@@ -78,6 +82,20 @@ socket = context.socket(zmq.SUB)
 b_using_kf_estimator = False
 b_using_non_kf_estimator = False
 
+##==========================================================================
+## Load config file
+##==========================================================================
+with open("config/" + args.robot + "/INTERFACE.yaml", "r") as iface_yaml:
+    try:
+        config = yaml.safe_load(iface_yaml)
+        env = config["test_env_name"]
+        wbc = config["whole_body_controller"]
+    except yaml.YAMLError as exc:
+        print(exc)
+
+pnc_path = ("config/" + args.robot + "/" +
+            args.hw_or_sim + "/" + env + "/" + wbc + "/pnc.yaml")
+
 
 def isMesh(geometry_object):
     """Check whether the geometry object contains a Mesh supported by MeshCat"""
@@ -91,6 +109,9 @@ def isMesh(geometry_object):
     return False
 
 
+grf_names = ["lfoot_rf_cmd", "rfoot_rf_cmd"]
+             # "lfoot_rf_normal_filt", "rfoot_rf_normal_filt"]
+
 xyz_scene_names = [
     "torso_ori_weight",
     "lf_pos_weight",
@@ -103,12 +124,11 @@ xyz_scene_names = [
 xyz_scenes = []
 
 def foot_dimensions():
-    pnc_path = "config/draco/pnc.yaml"
     with open(pnc_path, "r") as pnc_stream:
         try:
             pnc_cfg = yaml.safe_load(pnc_stream)
-            foot_half_length = pnc_cfg["wbc"]["contact"]["sim_foot_half_length"]
-            foot_half_width = pnc_cfg["wbc"]["contact"]["sim_foot_half_width"]
+            foot_half_length = pnc_cfg["wbc"]["contact"]["foot_half_length"]
+            foot_half_width = pnc_cfg["wbc"]["contact"]["foot_half_width"]
         except yaml.YAMLError as exc:
             print(exc)
     return foot_half_length, foot_half_width
@@ -429,12 +449,7 @@ async def main():
 
             Ry = R.from_euler("y", -np.pi / 2).as_matrix()
             # update GRF arrows
-            for obj in [
-                "lfoot_rf_cmd",
-                "rfoot_rf_cmd",
-                "lfoot_rf_normal_filt",
-                "rfoot_rf_normal_filt",
-            ]:
+            for obj in grf_names:
                 transform.parent_frame_id = "world"
                 transform.child_frame_id = obj
                 transform.timestamp.FromNanoseconds(now)
@@ -522,7 +537,7 @@ def check_if_kf_estimator(kf_pos, est_pos):
 
 
 ##YAML parse
-with open("config/draco/pnc.yaml", "r") as yaml_file:
+with open(pnc_path) as yaml_file:
     try:
         config = yaml.safe_load(yaml_file)
         ip_address = config["ip_address"]
