@@ -28,10 +28,10 @@ add_executable(ihwbc_test ihwbc_test.cpp)
 target_link_libraries(ihwbc_test ${GTEST_LIBRARIES} rpc-draco-controller)
 
 add_executable(friction_compensator_test karnopp_compensator_test.cpp)
-target_link_libraries(friction_compensator_test ${GTEST_LIBRARIES} rpc-friction-compensator)
+target_link_libraries(friction_compensator_test gtest pthread rpc-friction-compensator)
 
 add_executable(mujoco_pinocchio_comparison mujoco_pinocchio_comparison.cpp)
-target_link_libraries(mujoco_pinocchio_comparison gtest ${mujoco_LIBRARIES}
+target_link_libraries(mujoco_pinocchio_comparison gtest pthread ${mujoco_LIBRARIES}
                                                         rpc-pin-robot-system)
 if(BUILD_WITH_MATLOGGER)
     add_executable(min_jerk_traj_test min_jerk_traj.cpp)

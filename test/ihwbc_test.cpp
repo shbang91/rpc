@@ -25,12 +25,12 @@ static double err_tol = 1e-3;
 class IHWBCTest : public ::testing::Test {
 protected:
   IHWBCTest() {
-    cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+    cfg = YAML::LoadFile(THIS_COM "config/draco/sim/pybullet/ihwbc/pnc.yaml");
 
     robot = new PinocchioRobotSystem(
         THIS_COM "robot_model/draco/draco3_big_feet.urdf",
         THIS_COM "robot_model/draco", false, false);
-    tci_container = new DracoTCIContainer(robot);
+    tci_container = new DracoTCIContainer(robot, cfg);
 
     init_com_pos.setZero();
     target_com_pos.setZero();
@@ -220,7 +220,7 @@ protected:
         tci_container->force_task_map_["rf_force_task"], robot);
 
     double max_rf_z;
-    util::ReadParameter(cfg["wbc"]["contact"], "sim_max_rf_z", max_rf_z);
+    util::ReadParameter(cfg["wbc"]["contact"], "max_rf_z", max_rf_z);
     lf_max_normal_force_tm = new MaxNormalForceTrajectoryManager(
         tci_container->contact_map_["lf_contact"], max_rf_z);
     rf_max_normal_force_tm = new MaxNormalForceTrajectoryManager(
@@ -393,8 +393,18 @@ protected:
 TEST_F(IHWBCTest, expBalanceUsingEvenGRFs) {
   // Note: make sure you use b_sim = false
 
+  std::vector<bool> act_list;
+  act_list.resize(draco::n_qdot, true);
+  for (int i(0); i < robot->NumFloatDof(); ++i)
+    act_list[i] = false;
+
+  int l_jp_idx = robot->GetQdotIdx(draco_joint::l_knee_fe_jp);
+  int r_jp_idx = robot->GetQdotIdx(draco_joint::r_knee_fe_jp);
+  act_list[l_jp_idx] = false;
+  act_list[r_jp_idx] = false;
+
   // ihwbc initialize
-  IHWBC ihwbc(sa, &sf, &sv);
+  IHWBC ihwbc(act_list);
 
   // initialize iwbc qp params
   ihwbc.SetParameters(cfg["wbc"]["qp"]);
@@ -485,8 +495,18 @@ TEST_F(IHWBCTest, simBalanceUsingEvenGRFs) {
   // Note:: make sure b_sim: true for this test
 
   // ihwbc initialize
-  IHWBC ihwbc(sa, &sf, &sv);
+  std::vector<bool> act_list;
+  act_list.resize(draco::n_qdot, true);
+  for (int i(0); i < robot->NumFloatDof(); ++i)
+    act_list[i] = false;
 
+  int l_jp_idx = robot->GetQdotIdx(draco_joint::l_knee_fe_jp);
+  int r_jp_idx = robot->GetQdotIdx(draco_joint::r_knee_fe_jp);
+  act_list[l_jp_idx] = false;
+  act_list[r_jp_idx] = false;
+
+  // ihwbc initialize
+  IHWBC ihwbc(act_list);
   // initialize iwbc qp params
   ihwbc.SetParameters(cfg["wbc"]["qp"]);
   if (ihwbc.IsTrqLimit()) {
