@@ -164,7 +164,6 @@ void DracoController::GetCommand(void *command) {
       // TODO:ihwbc joint integrator
       //===========================================
       if (ihwbc_ != nullptr) {
-        std::cout << "I'm here!!!!!!!!" << std::endl;
         joint_integrator_->Initialize(init_joint_pos_,
                                       Eigen::VectorXd::Zero(draco::n_adof));
         // erase jpos task
@@ -349,28 +348,27 @@ void DracoController::_SaveData() {
   rot.bottomRightCorner<3, 3>() =
       tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
   if (ihwbc_ != nullptr)
-    rot * tci_container_->force_task_map_["lf_force_task"]
-              ->CmdRf(); // global quantity
+    dm->data_->lfoot_rf_cmd_ =
+        rot * tci_container_->force_task_map_["lf_force_task"]
+                  ->CmdRf(); // global quantity
   // TODO move equivalent of wbic_data_ to WBC instead of just WBIC
-//  else if (wbic_ != nullptr)
-//    dm->data_->lfoot_rf_cmd_ =
-//        rot * wbic_->wbic_data_->rf_cmd_.head<6>(); // global quantity
+  else if (wbic_ != nullptr)
+    dm->data_->lfoot_rf_cmd_ = rot * static_cast<WBIC *>(wbic_)
+                                         ->GetWBICData()
+                                         ->rf_cmd_.head<6>(); // global quantity
 
   rot.topLeftCorner<3, 3>() =
       tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
   rot.bottomRightCorner<3, 3>() =
       tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
   if (ihwbc_ != nullptr) {
-    dm->data_->lfoot_rf_cmd_ =
-            rot * tci_container_->force_task_map_["lf_force_task"]
-                    ->CmdRf(); // global quantity
     dm->data_->rfoot_rf_cmd_ =
-            rot * tci_container_->force_task_map_["rf_force_task"]
-                    ->CmdRf(); // global quantity
-  }
-//  else if (wbic_ != nullptr)
-//    dm->data_->rfoot_rf_cmd_ =
-//        rot * wbic_data_->rf_cmd_.tail<6>(); // global quantity
+        rot * tci_container_->force_task_map_["rf_force_task"]
+                  ->CmdRf(); // global quantity
+  } else if (wbic_ != nullptr)
+    dm->data_->rfoot_rf_cmd_ = rot * static_cast<WBIC *>(wbic_)
+                                         ->GetWBICData()
+                                         ->rf_cmd_.tail<6>(); // global quantity
 
   // IHWBC task weight, kp, kd, ki for plotting
   // TODO:clean up this
@@ -459,9 +457,13 @@ void DracoController::_SaveData() {
 
     } else if (wbic_ != nullptr) {
       logger_->add("lf_rf_cmd",
-                   wbic_data_->rf_cmd_.head<6>()); // local quantity
+                   static_cast<WBIC *>(wbic_)
+                       ->GetWBICData()
+                       ->rf_cmd_.head<6>()); // local quantity
       logger_->add("rf_rf_cmd",
-                   wbic_data_->rf_cmd_.tail<6>()); // local quantity
+                   static_cast<WBIC *>(wbic_)
+                       ->GetWBICData()
+                       ->rf_cmd_.tail<6>()); // local quantity
 
       Eigen::MatrixXd rot = Eigen::MatrixXd::Zero(6, 6);
       rot.topLeftCorner<3, 3>() =
@@ -469,13 +471,17 @@ void DracoController::_SaveData() {
       rot.bottomRightCorner<3, 3>() =
           tci_container_->task_map_["lf_ori_task"]->Rot().transpose();
       logger_->add("lf_rf_cmd_global",
-                   rot * wbic_data_->rf_cmd_.head<6>()); // global quantity
+                   rot * static_cast<WBIC *>(wbic_)
+                             ->GetWBICData()
+                             ->rf_cmd_.head<6>()); // global quantity
       rot.topLeftCorner<3, 3>() =
           tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
       rot.bottomRightCorner<3, 3>() =
           tci_container_->task_map_["rf_ori_task"]->Rot().transpose();
       logger_->add("rf_rf_cmd_global",
-                   rot * wbic_data_->rf_cmd_.tail<6>()); // global quantity
+                   rot * static_cast<WBIC *>(wbic_)
+                             ->GetWBICData()
+                             ->rf_cmd_.tail<6>()); // global quantity
 
       // des reaction force
       logger_->add(
@@ -488,15 +494,23 @@ void DracoController::_SaveData() {
       logger_->add("fb_qddot_cmd", wbc_qddot_cmd_.head<6>());
       logger_->add("joint_acc_cmd", wbc_qddot_cmd_.tail<27>());
       logger_->add("corrected_fb_qddot_cmd",
-                   wbic_data_->corrected_wbc_qddot_cmd_.head<6>());
+                   static_cast<WBIC *>(wbic_)
+                       ->GetWBICData()
+                       ->corrected_wbc_qddot_cmd_.head<6>());
 
       logger_->add("joint_trq_cmd", joint_trq_cmd_);
 
-      logger_->add("xc_ddot", wbic_data_->Xc_ddot_); // contact acceleration
+      logger_->add("xc_ddot", static_cast<WBIC *>(wbic_)
+                                  ->GetWBICData()
+                                  ->Xc_ddot_); // contact acceleration
 
-      logger_->add("delta_qddot_cost", wbic_data_->delta_qddot_cost_);
-      logger_->add("delta_rf_cost", wbic_data_->delta_rf_cost_);
-      logger_->add("xc_ddot_cost", wbic_data_->Xc_ddot_cost_);
+      logger_->add(
+          "delta_qddot_cost",
+          static_cast<WBIC *>(wbic_)->GetWBICData()->delta_qddot_cost_);
+      logger_->add("delta_rf_cost",
+                   static_cast<WBIC *>(wbic_)->GetWBICData()->delta_rf_cost_);
+      logger_->add("xc_ddot_cost",
+                   static_cast<WBIC *>(wbic_)->GetWBICData()->Xc_ddot_cost_);
     }
 
     // motion task plot
