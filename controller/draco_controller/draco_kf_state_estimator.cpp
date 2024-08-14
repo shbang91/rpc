@@ -395,7 +395,7 @@ void DracoKFStateEstimator::Update(DracoSensorData *sensor_data) {
     Eigen::Quaterniond quat = Eigen::Quaterniond(rot_world_to_base);
     dm->data_->kf_base_joint_ori_ << quat.x(), quat.y(), quat.z(), quat.w();
 
-    dm->data_->est_icp_ = sp_->dcm_.head<2>();
+    dm->data_->est_icp = sp_->dcm_.head<2>();
 
     dm->data_->b_lfoot_ = sp_->b_lf_contact_;
     dm->data_->b_rfoot_ = sp_->b_rf_contact_;
