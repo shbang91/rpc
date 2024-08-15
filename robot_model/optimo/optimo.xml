@@ -1,0 +1,94 @@
+<mujoco model="optimo">
+  <compiler angle="radian" meshdir="mujoco_meshes/"/>
+  <option gravity="0 0 -9.81" timestep="0.001" solver="Newton" tolerance="1e-12" impratio="60.0"/>
+  <default>
+      <geom contype="1" conaffinity="2" condim="6" margin="0.0005" solref="0.005 1" group="1"/>
+      <equality solref="0.0002 1" solimp="0.99 0.999 0.00001"/>
+      <joint limited="true"/>
+      <light castshadow="true" diffuse="0.8 0.8 0.8"/>
+  </default>
+
+  <asset>
+    <mesh name="link0" file="link0.stl"/>
+    <mesh name="link1" file="link1.stl"/>
+    <mesh name="link2" file="link2.stl"/>
+    <mesh name="link3" file="link3.stl"/>
+    <mesh name="link4" file="link4.stl"/>
+    <mesh name="link5" file="link5.stl"/>
+    <mesh name="link6" file="link6.stl"/>
+    <mesh name="link7" file="link7.stl"/>
+    <mesh name="plato_base_link" file="plato_base_link.stl"/>
+    <mesh name="plato_bracket" file="plato_bracket.stl"/>
+    <mesh name="plato_proximal" file="plato_proximal.stl"/>
+    <mesh name="plato_distal" file="plato_distal.stl"/>
+    <mesh name="plato_bracket_2" file="plato_bracket_2.stl"/>
+    <mesh name="plato_proximal_2" file="plato_proximal_2.stl"/>
+    <mesh name="plato_distal_2" file="plato_distal_2.stl"/>
+    <mesh name="plato_bracket_3" file="plato_bracket_3.stl"/>
+    <mesh name="plato_proximal_3" file="plato_proximal_3.stl"/>
+    <mesh name="plato_distal_3" file="plato_distal_3.stl"/>
+  </asset>
+
+  <worldbody>
+    <geom size="0.15 0.15 0.5" type="box" rgba="1 1 1 1"/>
+    <geom pos="0 0 0.77" quat="1 0 0 0" type="mesh" rgba="0.2 0.2 0.2 1" mesh="link0"/>
+    <body name="optimo_link1" pos="0 0 0.77">
+      <inertial pos="0 -0.01549 -0.01635" quat="0.996928 -0.00462197 -0.00305699 0.0781208" mass="4.152" diaginertia="0.0100017 0.00993763 0.0074937"/>
+      <joint name="optimo_joint1" pos="0 0 0" axis="0 0 1" range="-2.86234 2.9147" damping="1" frictionloss="0.1"/>
+      <geom quat="0.707107 0.707107 0 0" type="mesh" rgba="0.3 0.3 0.3 1" mesh="link1"/>
+      <body name="optimo_link2" quat="0.707107 0.707107 0 0">
+        <inertial pos="0 -0.05677 -0.05063" quat="0.57533 0.41109 -0.41109 0.57533" mass="1.72" diaginertia="0.0063654 0.005694 0.0019516"/>
+        <joint name="optimo_joint2" pos="0 0 0" axis="0 0 1" range="1.0472 4.36332" damping="1" frictionloss="0.1"/>
+        <geom quat="0.707107 0.707107 0 0" type="mesh" rgba="0.2 0.2 0.2 1" mesh="link2"/>
+        <body name="optimo_link3" pos="0 -0.4 0" quat="0.707107 0.707107 0 0">
+          <inertial pos="-3.9e-05 0 -0.098" quat="0.692761 -0.0213329 0.021166 0.720541" mass="4.31" diaginertia="0.0130882 0.0129889 0.00254595"/>
+          <joint name="optimo_joint3" pos="0 0 0" axis="0 0 1" range="-2.9147 2.84489" damping="1" frictionloss="0.1"/>
+          <geom pos="0 0 0" quat="0.707107 -0.707107 0 0" type="mesh" rgba="0.3 0.3 0.3 1" mesh="link3"/>
+          <body name="optimo_link4" quat="0.707107 -0.707107 0 0">
+            <inertial pos="-1e-05 -0.0688 0.048852" quat="0.441765 0.552127 -0.552127 0.441765" mass="1.09" diaginertia="0.00454588 0.004297 0.000808118"/>
+            <joint name="optimo_joint4" pos="0 0 0" axis="0 0 1" range="-2.53073 2.53073" damping="1" frictionloss="0.1"/>
+            <geom quat="0.707107 0.707107 0 0" type="mesh" rgba="0.2 0.2 0.2 1" mesh="link4"/>
+            <body name="optimo_link5" pos="0 -0.4 0" quat="0.707107 0.707107 0 0">
+              <inertial pos="0.001262 0.008 -0.085" quat="0.495151 -0.0951566 0.119813 0.855228" mass="2.23" diaginertia="0.0059095 0.00570234 0.00138916"/>
+              <joint name="optimo_joint5" pos="0 0 0" axis="0 0 1" range="-2.96706 2.96706" damping="1" frictionloss="0.1"/>
+              <geom pos="0 0 0" quat="0.707107 -0.707107 0 0" type="mesh" rgba="0.3 0.3 0.3 1" mesh="link5"/>
+              <body name="optimo_link6" quat="0.707107 -0.707107 0 0">
+                <inertial pos="0 -0.010855 -7e-05" quat="0.707107 0.707107 0 0" mass="1.138" diaginertia="0.000634 0.000629 0.000546"/>
+                <joint name="optimo_joint6" pos="0 0 0" axis="0 0 1" range="-2.0944 2.0944" damping="1" frictionloss="0.1"/>
+                <geom quat="0.707107 0.707107 0 0" type="mesh" rgba="0.2 0.2 0.2 1" mesh="link6"/>
+                <body name="optimo_link7" quat="0.707107 0.707107 0 0">
+                  <inertial pos="-0.00591953 -0.00266735 0.214083" quat="0.993817 0.018516 -0.0232445 -0.106976" mass="2.01981" diaginertia="0.00787264 0.00683413 0.00298986"/>
+                  <joint name="optimo_joint7" pos="0 0 0" axis="0 0 1" range="-2.6529 3.28122" damping="1" frictionloss="0.1"/>
+                  <geom type="mesh" rgba="0.3 0.3 0.3 1" mesh="link7"/>
+                  <geom pos="0 0 0.15" quat="0.000563115 0.707072 -0.000563061 0.707141" type="mesh" rgba="0.2 0.2 0.2 1" mesh="plato_base_link"/>
+                  <geom pos="-0.0310561 -0.0299506 0.236297" quat="-0.706218 -3.40452e-05 3.40681e-05 0.707995" type="mesh" rgba="0.295882 0.314473 0.333064 1" mesh="plato_bracket"/>
+                  <geom pos="-0.0591924 -0.0248799 0.226394" quat="-0.499347 0.500604 0.499396 0.500652" type="mesh" rgba="0.346742 0.363773 0.380805 1" mesh="plato_proximal"/>
+                  <geom pos="-0.0592039 -0.0275798 0.274394" quat="-0.499347 0.500604 0.499396 0.500652" type="mesh" rgba="0.646215 0.655347 0.66425 1" mesh="plato_distal"/>
+                  <geom pos="-0.0100559 -0.029984 0.233999" quat="0.500887 0.498313 -0.501729 -0.499064" type="mesh" rgba="0.295882 0.314473 0.333064 1" mesh="plato_bracket_2"/>
+                  <geom pos="-0.000150382 -0.0248524 0.262123" quat="0.498267 -0.501683 -0.500933 -0.49911" type="mesh" rgba="0.346742 0.363773 0.380805 1" mesh="plato_proximal_2"/>
+                  <geom pos="-0.000159225 -0.0275009 0.310138" quat="0.498267 -0.501683 -0.500933 -0.49911" type="mesh" rgba="0.646215 0.655347 0.66425 1" mesh="plato_distal_2"/>
+                  <geom pos="-0.0099603 0.0300159 0.233999" quat="0.500887 0.498313 -0.501729 -0.499064" type="mesh" rgba="0.295882 0.314473 0.333064 1" mesh="plato_bracket_3"/>
+                  <geom pos="-5.48227e-05 0.0351475 0.262123" quat="0.498267 -0.501683 -0.500933 -0.49911" type="mesh" rgba="0.346742 0.363773 0.380805 1" mesh="plato_proximal_3"/>
+                  <geom pos="-6.3666e-05 0.032499 0.310138" quat="0.498267 -0.501683 -0.500933 -0.49911" type="mesh" rgba="0.646215 0.655347 0.66425 1" mesh="plato_distal_3"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="optimo_joint1" gear="1" joint="optimo_joint1" ctrlrange="-79 79"/>
+    <motor name="optimo_joint2" gear="1" joint="optimo_joint2" ctrlrange="-95 95"/>
+    <motor name="optimo_joint3" gear="1" joint="optimo_joint3" ctrlrange="-32 32"/>
+    <motor name="optimo_joint4" gear="1" joint="optimo_joint4" ctrlrange="-40 40"/>
+    <motor name="optimo_joint5" gear="1" joint="optimo_joint5" ctrlrange="-15 15"/>
+    <motor name="optimo_joint6" gear="1" joint="optimo_joint6" ctrlrange="-15 15"/>
+    <motor name="optimo_joint7" gear="1" joint="optimo_joint7" ctrlrange="-15 15"/>
+  </actuator>
+  
+
+
+</mujoco>

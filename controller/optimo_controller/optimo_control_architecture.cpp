@@ -122,8 +122,6 @@ OptimoControlArchitecture::OptimoControlArchitecture(
     std::exit(EXIT_FAILURE);
   }
 
-
-
   // f1_pos_hm_ = new TaskHierarchyManager(
   // tci_container_->task_map_["f1_pos_task"], weight, weight_min);
 
