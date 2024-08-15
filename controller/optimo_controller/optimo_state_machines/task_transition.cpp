@@ -60,10 +60,6 @@ void TaskTransition::OneStep(){
     ctrl_arch_->ee_ori_hm_->UpdateRampToMax(state_machine_time_);
     ctrl_arch_->jpos_hm_->UpdateRampToMin(state_machine_time_);
 
-    // get ee_ori_hm weight
-    Eigen::Vector3d ee_ori_hm_weight = ctrl_arch_->ee_ori_hm_->GetWeight();
-    std::cout << "ee_ori_hm_weight: " << ee_ori_hm_weight.transpose() << std::endl;
-
     // Update Task Trajectory
     ctrl_arch_->ee_SE3_tm_->UpdateDesired(sp_->current_time_);
 }
