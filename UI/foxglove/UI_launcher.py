@@ -51,7 +51,7 @@ elif args.visualizer == "foxglove":
     from plot.foxglove_utils import (
         FoxgloveShapeListener,
         SceneChannel,
-        ScalableArrowsScene,
+        ScalableArrowsScene
     )
 
     # load parameters that can be controlled / changed and start Control Parameters server
@@ -414,19 +414,19 @@ async def main():
                     setattr(fp.sd, obj[5] + "f_steps_taken", getattr(fp.sd, obj[5] + "f_steps_taken") + 1)
                     proj_foot_pos[obj] = getattr(fp, obj[5] + "foot_contact_pos")[yaml][update[obj]]
                     proj_foot_ori[obj] = getattr(fp, obj[5] + "foot_contact_ori")[yaml][update[obj]]
-                transform.parent_frame_id = "world"
-                transform.child_frame_id = obj
-                transform.timestamp.FromNanoseconds(now)
-                transform.translation.x = proj_foot_pos[obj][0]
-                transform.translation.y = proj_foot_pos[obj][1]
-                transform.translation.z = proj_foot_pos[obj][2]
-                transform.rotation.x = proj_foot_ori[obj][1]
-                transform.rotation.y = proj_foot_ori[obj][2]
-                transform.rotation.z = proj_foot_ori[obj][3]
-                transform.rotation.w = proj_foot_ori[obj][0]
-                tasks.append(server.send_message(
-                    tf_chan_id, now, transform.SerializeToString()
-                ))
+                    transform.parent_frame_id = "world"
+                    transform.child_frame_id = obj
+                    transform.timestamp.FromNanoseconds(now)
+                    transform.translation.x = proj_foot_pos[obj][0]
+                    transform.translation.y = proj_foot_pos[obj][1]
+                    transform.translation.z = proj_foot_pos[obj][2]
+                    transform.rotation.x = proj_foot_ori[obj][1]
+                    transform.rotation.y = proj_foot_ori[obj][2]
+                    transform.rotation.z = proj_foot_ori[obj][3]
+                    transform.rotation.w = proj_foot_ori[obj][0]
+                    tasks.append(server.send_message(
+                        tf_chan_id, now, transform.SerializeToString()
+                    ))
 
             Ry = R.from_euler("y", -np.pi / 2).as_matrix()
             # update GRF arrows
