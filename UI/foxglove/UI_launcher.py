@@ -51,7 +51,8 @@ elif args.visualizer == "foxglove":
     from plot.foxglove_utils import (
         FoxgloveShapeListener,
         SceneChannel,
-        ScalableArrowsScene
+        ScalableArrowsScene,
+        ShapeScene
     )
 
     # load parameters that can be controlled / changed and start Control Parameters server
@@ -139,6 +140,20 @@ async def main():
             SceneUpdate.DESCRIPTOR.full_name,
             scene_schema,
         ).add_chan(server)
+        test_chan_id = await SceneChannel(
+            False,
+            "n_test_viz",
+            "protobuf",
+            SceneUpdate.DESCRIPTOR.full_name,
+            scene_schema,
+        ).add_chan(server)
+        sphere_test_chan_id = await SceneChannel(
+            False,
+            "00_spheres",
+            "protobuf",
+            SceneUpdate.DESCRIPTOR.full_name,
+            scene_schema,
+        ).add_chan(server)
         grfs_chan_id = await SceneChannel(
             True,
             "GRFs",
@@ -168,30 +183,6 @@ async def main():
 
         # create all of the visual scenes
         scenes = []
-        norm_listener = FoxgloveShapeListener(
-            normS_chan_id,
-            "arrows",
-            [
-                "lfoot_rf_cmd",
-                "rfoot_rf_cmd",
-                "lfoot_rf_normal_filt",
-                "rfoot_rf_normal_filt",
-            ],
-            {
-                "lfoot_rf_cmd": [1, 0.05, 0.05, 0.1],
-                "rfoot_rf_cmd": [1, 0.05, 0.05, 0.1],
-                "lfoot_rf_normal_filt": [0.1, 0.1, 0.1, 0.2],
-                "rfoot_rf_normal_filt": [0.1, 0.1, 0.1, 0.2],
-            },
-            {
-                "lfoot_rf_cmd": [1, 0, 1, 1],
-                "rfoot_rf_cmd": [1, 0, 1, 1],
-                "lfoot_rf_normal_filt": [1, 0, 1, 1],
-                "rfoot_rf_normal_filt": [1, 0, 1, 1],
-            },
-        )
-        scenes.append(norm_listener)
-
         icp_listener = FoxgloveShapeListener(
             icpS_chan_id,
             "spheres",
@@ -243,6 +234,12 @@ async def main():
             "rfoot_rf_normal_filt", [0.2, 0.2, 0.2, 0.5]
         )  # grey arrow
         scenecount = len(scenes) - 1
+
+        new_arrows = ScalableArrowsScene()
+        new_arrows.add_arrow("cheese",[0, 0, 1, 0.5])
+
+        test_sphere = ShapeScene()
+        test_sphere.add_shape("round", "spheres", [.1,.5,1,1])
 
         # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
@@ -501,6 +498,34 @@ async def main():
                 ))
                 tasks.append(server.send_message(
                     normS_chan_id, now, arrows_scene.serialized_msg(obj)
+                ))
+
+            for obj in ["cheese"]:
+                transform.parent_frame_id = "world"
+                transform.child_frame_id = obj
+                transform.timestamp.FromNanoseconds(now)
+                transform.translation.x = msg.rfoot_pos[0]
+                transform.translation.y = msg.rfoot_pos[1]
+                new_arrows.update(obj, quat_force, force_magnitude, now)
+                tasks.append(server.send_message(
+                    tf_chan_id, now, transform.SerializeToString()
+                ))
+                tasks.append(server.send_message(
+                    test_chan_id, now, new_arrows.serialized_msg(obj)
+                ))
+
+            for obj in ["round"]:
+                transform.parent_frame_id = "world"
+                transform.child_frame_id = obj
+                transform.timestamp.FromNanoseconds(now)
+                transform.translation.x = msg.rfoot_pos[0]
+                transform.translation.y = msg.rfoot_pos[1]
+                test_sphere.update(obj, quat_force, force_magnitude, now)
+                tasks.append(server.send_message(
+                    tf_chan_id, now, transform.SerializeToString()
+                ))
+                tasks.append(server.send_message(
+                    sphere_test_chan_id, now, test_sphere.serialized_msg(obj)
                 ))
 
             await asyncio.gather(*tasks)

@@ -51,6 +51,40 @@ class ScalableArrowsScene:
         return self.arrows[name].SerializeToString()
 
 
+class ShapeScene:
+    def __init__(self):
+        self.shapes = {}
+
+    def add_shape(self, name, shape, color):
+        shape_update = SceneUpdate()
+        shape_entity = shape_update.entities.add()
+        shape_entity.id = name
+        shape_entity.frame_id = name
+        framework = getattr(shape_entity, shape)
+        shape_model = framework.add()
+        shape_model.color.r = color[0]
+        shape_model.color.g = color[1]
+        shape_model.color.b = color[2]
+        shape_model.color.a = color[3]
+        shape_model.size.x = 0.1
+        shape_model.size.y = 0.5
+        shape_model.size.z = 0.1
+        # update dictionary of shapes to visualize
+        self.shapes[name] = shape_update
+
+    def update(self, name, quat_force, force_magnitude, timestamp):
+        # update timestamp
+        self.shapes[name].entities[0].timestamp.FromNanoseconds(timestamp)
+        # update force direction
+        #self.shapes[name].entities[0].arrows[0].pose.orientation.x = quat_force[0]
+        #self.shapes[name].entities[0].arrows[0].pose.orientation.y = quat_force[1]
+        #self.shapes[name].entities[0].arrows[0].pose.orientation.z = quat_force[2]
+        #self.shapes[name].entities[0].arrows[0].pose.orientation.w = quat_force[3]
+
+    def serialized_msg(self, name):
+        return self.shapes[name].SerializeToString()
+
+
 class SceneChannel:
     def __init__(self, scdata, topic, encoding, schemaName, schema):
         self.data = scdata
