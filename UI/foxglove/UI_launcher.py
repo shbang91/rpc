@@ -118,7 +118,6 @@ async def sceneinitman(name, server):
     xyz_scenes.append([x, name])
     return x
 
-
 async def main():
     async with FoxgloveServer(
         "0.0.0.0",
@@ -163,9 +162,6 @@ async def main():
         icp_chan_id = await SceneChannel(
             True, "icp", "json", "icp", ["est_x", "est_y", "des_x", "des_y"]
         ).add_chan(server)
-        proj_footstepS_chan_id = await SceneChannel(
-            False, "proj_footstep_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
-        ).add_chan(server)
 
         for scn in range(len(xyz_scene_names)):
             await sceneinitman(xyz_scene_names[scn], server)
@@ -209,7 +205,7 @@ async def main():
         hfoot_length, hfoot_width = foot_dimensions()
         x = 2*hfoot_length
         y = 2*hfoot_width
-        msgs, size, color = [], {}, {}
+        msgs = []
         proj_footstep_chan_ids = []
         proj_foot_pos, proj_foot_ori = {}, {}   # Stores step position
         for i in range(STEP_MAX):
@@ -217,21 +213,25 @@ async def main():
             lf = "proj_lf"+str(i)
             msgs.append(rf)
             msgs.append(lf)
-            size[rf], size[lf] = [x, y, 0.001], [x, y, 0.001]
-            color[rf] = [1, 0, 0, 1]
-            color[lf] = [.1, .5, 1, 1]
             proj_foot_pos[rf], proj_foot_pos[lf] = [0, 0, 0], [0, 0.184, 0]
             proj_foot_ori[rf], proj_foot_ori[lf] = [0, 0, 0, 0], [0, 0, 0, 0]
-            name = "projected_footsteps_" + str(i)
+            if i < 10:
+                name = "projected_footsteps_0" + str(i)
+            else: name = "projected_footsteps_" + str(i)
+            # Add a channel for projected footstep data
             foot_scene = await SceneChannel(
                 True, name, "json", name,
                 ["rf_pos_x","rf_pos_y","rf_pos_z","rf_ori_x","rf_ori_y","rf_ori_z","rf_ori_q",
                         "lf_pos_x","lf_pos_y","lf_pos_z","lf_ori_x","lf_ori_y","lf_ori_z","lf_ori_q"]
             ).add_chan(server)
             proj_footstep_chan_ids.append(foot_scene)
-
-        proj_footstep_listener = FoxgloveShapeListener(proj_footstepS_chan_id, "cubes", msgs, size, color)
-        scenes.append(proj_footstep_listener)
+            # Add a channel for projected footstep visual elements
+            proj_footstep_viz_chan_id = await SceneChannel(
+                False, name+"_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
+            ).add_chan(server)
+            proj_footstep_listener = FoxgloveShapeListener(proj_footstep_viz_chan_id, "cubes",
+                [rf, lf], {rf: [x, y, 0.001], lf: [x, y, 0.001]}, {rf: [1, 0, 0, 1], lf: [.1, .5, 1, 1]})
+            scenes.append(proj_footstep_listener)
 
         arrows_scene = ScalableArrowsScene()
         arrows_scene.add_arrow("lfoot_rf_cmd", [0, 0, 1, 0.5])  # blue arrow
@@ -259,8 +259,9 @@ async def main():
         observer.start()
 
         while True:
-            # cycle through all visual scenes    --CAUSES A BUG WHERE ALL BUT ONE SCENE NEED TO BE TOGGLED OFF AND BACK ON
+            # cycle through all visual scenes    --CAUSES A BUG WHERE NOT ALL VIZ SCENES SHOW
             server.set_listener(scenes[scenecount])
+            tasks = []
 
             scenecount = scenecount - 1
             if scenecount == -1:
@@ -288,7 +289,7 @@ async def main():
             vis_q[7:] = np.array(msg.joint_positions)
 
             # send 2 pairs of icp x & y as topics to foxglove
-            await server.send_message(
+            tasks.append(server.send_message(
                 icp_chan_id,
                 now,
                 json.dumps(
@@ -299,7 +300,7 @@ async def main():
                         "des_y": list(msg.des_icp)[1],
                     }
                 ).encode("utf8"),
-            )
+            ))
 
             for idx in range(STEP_MAX):
                 rf = "proj_rf" + str(idx)
@@ -308,7 +309,7 @@ async def main():
                 l_pos = proj_foot_pos[lf]
                 r_ori = proj_foot_ori[rf]
                 l_ori = proj_foot_ori[lf]
-                await server.send_message(
+                tasks.append(server.send_message(
                     proj_footstep_chan_ids[idx],
                     now,
                     json.dumps(
@@ -319,10 +320,10 @@ async def main():
                             "lf_ori_x": l_ori[1],"lf_ori_y": l_ori[2],"lf_ori_z": l_ori[3],"lf_ori_q": l_ori[0]
                         }
                     ).encode("utf8")
-                )
+                ))
 
             for scn in xyz_scenes:
-                await server.send_message(
+                tasks.append(server.send_message(
                     scn[0],
                     now,
                     json.dumps(
@@ -332,10 +333,10 @@ async def main():
                             "z": list(getattr(msg, scn[1]))[2],
                         }
                     ).encode("utf8"),
-                )
+                ))
 
             # send 2 pairs of l & r norm data as topics to foxglove
-            await server.send_message(
+            tasks.append(server.send_message(
                 grfs_chan_id,
                 now,
                 json.dumps(
@@ -350,7 +351,7 @@ async def main():
                         "rfoot_rf_normal_filt": msg.rfoot_rf_normal_filt,
                     }
                 ).encode("utf8"),
-            )
+            ))
 
             # update mesh positions
             pp = "world"
@@ -389,9 +390,9 @@ async def main():
                 transform.rotation.y = q[1]
                 transform.rotation.z = q[2]
                 transform.rotation.w = q[3]
-                await server.send_message(
+                tasks.append(server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
-                )
+                ))
                 transform.rotation.Clear()
                 transform.translation.Clear()
 
@@ -402,9 +403,9 @@ async def main():
                 transform.timestamp.FromNanoseconds(now)
                 transform.translation.x = list(getattr(msg, obj))[0]
                 transform.translation.y = list(getattr(msg, obj))[1]
-                await server.send_message(
+                tasks.append(server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
-                )
+                ))
 
             update = fp.sd.steps_to_update()
             for obj in msgs:
@@ -423,9 +424,9 @@ async def main():
                 transform.rotation.y = proj_foot_ori[obj][2]
                 transform.rotation.z = proj_foot_ori[obj][3]
                 transform.rotation.w = proj_foot_ori[obj][0]
-                await server.send_message(
+                tasks.append(server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
-                )
+                ))
 
             Ry = R.from_euler("y", -np.pi / 2).as_matrix()
             # update GRF arrows
@@ -495,12 +496,14 @@ async def main():
                     # force scale
                     force_magnitude = force_magnitude / 1200.0
                 arrows_scene.update(obj, quat_force, force_magnitude, now)
-                await server.send_message(
+                tasks.append(server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
-                )
-                await server.send_message(
+                ))
+                tasks.append(server.send_message(
                     normS_chan_id, now, arrows_scene.serialized_msg(obj)
-                )
+                ))
+
+            await asyncio.gather(*tasks)
 
 
 def check_if_kf_estimator(kf_pos, est_pos):
@@ -699,11 +702,9 @@ def process_data_saver(visualize_type):
 
 
 while True:
-    # print("\nFLAG_B1")
     # receive msg through socket
     encoded_msg = socket.recv()
     msg.ParseFromString(encoded_msg)
-    # print("FLAG_MSG")
     # if publishing raw messages, floating base estimates names are not important
     if args.visualizer != "none":
         check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
