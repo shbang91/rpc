@@ -295,6 +295,10 @@ void DracoStateEstimator::UpdateGroundTruthSensorData(
     dm->data_->est_base_joint_pos_ = sensor_data->base_joint_pos_;
     dm->data_->est_base_joint_ori_ = sensor_data->base_joint_quat_;
     dm->data_->joint_positions_ = sensor_data->joint_pos_;
+
+    dm->data_->est_icp = sp_->dcm_.head<2>();
+    dm->data_->b_lfoot_ = sp_->b_lf_contact_;
+    dm->data_->b_rfoot_ = sp_->b_rf_contact_;
   }
 #endif
 #if B_USE_MATLOGGER

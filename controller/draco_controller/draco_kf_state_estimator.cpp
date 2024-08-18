@@ -561,6 +561,19 @@ void DracoKFStateEstimator::UpdateGroundTruthSensorData(
 
   sp_->dcm_vel_ = alpha * (sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_ +
                   (1 - alpha) * sp_->dcm_vel_; // not being used in controller
+
+#if B_USE_ZMQ
+  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+    DracoDataManager *dm = DracoDataManager::GetDataManager();
+    dm->data_->kf_base_joint_pos_ = sensor_data->base_joint_pos_;
+    dm->data_->kf_base_joint_ori_ = sensor_data->base_joint_quat_;
+    dm->data_->joint_positions_ = sensor_data->joint_pos_;
+
+    dm->data_->est_icp = sp_->dcm_.head<2>();
+    dm->data_->b_lfoot_ = sp_->b_lf_contact_;
+    dm->data_->b_rfoot_ = sp_->b_rf_contact_;
+  }
+#endif
 #if B_USE_MATLOGGER
   // floating base estimate data
   logger_->add("base_joint_pos_gt", sensor_data->base_joint_pos_);
@@ -597,7 +610,6 @@ void DracoKFStateEstimator::UpdateGroundTruthSensorData(
   // imu accel data
   // logger_->add("imu_accel_raw", sensor_data->imu_dvel_ / sp_->servo_dt_);
   // logger_->add("imu_accel_est", base_acceleration_);
-
 #endif
 }
 
@@ -609,7 +621,9 @@ void DracoKFStateEstimator::ComputeDCM() {
   sp_->prev_dcm_ = sp_->dcm_;
   sp_->dcm_ = com_pos + com_vel / dcm_omega;
 
-  double alpha_vel = 0.1; // TODO Study this alpha value
-  sp_->dcm_vel_ = alpha_vel * ((sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_) +
-                  (1.0 - alpha_vel) * sp_->dcm_vel_;
+  double cutoff_period =
+          0.01; // 10ms cut-off period for first-order low pass filter
+  double alpha = sp_->servo_dt_ / cutoff_period;
+  sp_->dcm_vel_ = alpha * ((sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_) +
+                  (1.0 - alpha) * sp_->dcm_vel_;
 }

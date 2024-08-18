@@ -30,13 +30,13 @@ state_estimator:
   foot_reference_frame: 1 #0: left foot, 1: right foot
 
   sigma_base_vel: [0.0, 0.0, 0.0]
-  sigma_base_acc: [0.5, 0.2, 0.2]
-  sigma_pos_lfoot: [0.001, 0.001, 0.001]
-  sigma_pos_rfoot: [0.001, 0.001, 0.001]
-  sigma_vel_lfoot: [0.005, 0.005, 0.002]
-  sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  sigma_base_acc: [0.1, 0.1, 0.1]
+  sigma_pos_lfoot: [0.001, 0.001, 0.002]
+  sigma_pos_rfoot: [0.001, 0.001, 0.002]
+  sigma_vel_lfoot: [0.001, 0.001, 0.001]
+  sigma_vel_rfoot: [0.001, 0.001, 0.001]
   imu_accel_bias: [0.0, 0.0, 0.0]
-  base_accel_time_constant: 0.02
+  base_accel_time_constant: 0.002
   base_accel_limits: [1., 1., 1.]
   base_com_vel_time_constant: 1.0
   num_data_base_accel: [10, 10, 10]
@@ -51,7 +51,7 @@ state_estimator:
 
   ## IF 1: exponential smoother filter parameter
   #com_vel_time_constant: 0.1 
-  com_vel_time_constant: 0.05
+  com_vel_time_constant: 0.01
   com_vel_err_limit: [1., 1., 1.]
 
   ## IF 2: low-pass filter parameter
@@ -75,17 +75,17 @@ wbc:
       weight : [1000., 1000.]
       kp : [200., 200.]
       kd : [10., 10.]
-      icp_weight : [40000., 40000.] # only used when feedback source : 1
-      icp_kp : [0.6, 1.4]
+      icp_weight : [10000., 10000.] # only used when feedback source : 1
+      icp_kp : [1.5, 1.5]
       icp_kd : [0., 0.] # x, y will be ignored
-      icp_ki : [0., 0.]
+      icp_ki : [0.5, 0.5]
 
       ## IF icp_integrator_type == 0:
       time_constant : 0.001
       avg_icp_error_limit: [0.04, 0.04]
 
       ## IF icp_integrator_type == 1:
-      leaky_rate: 0.01
+      leaky_rate: 0.4    # 0: complete leak, 1: no leak
       leaky_integrator_limit: [0.03, 0.03]
       lpf_time_constant: 0.03
 
