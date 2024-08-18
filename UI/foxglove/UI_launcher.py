@@ -186,6 +186,18 @@ async def main():
         proj_footstepS_chan_id = await SceneChannel(
             False, "proj_footstep_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
         ).add_chan(server)
+        b_ft_contact_chan_id = await SceneChannel(
+            True, "b_ft_contact", "json", "b_ft_contact", ["b_lfoot", "b_rfoot"]
+        ).add_chan(server)
+        lf_pos_chan_id = await SceneChannel(
+            True, "lf_pos", "json", "lf_pos",
+            ["x", "y", "z"]
+        ).add_chan(server)
+        rf_pos_chan_id = await SceneChannel(
+            True, "rf_pos", "json", "rf_pos",
+            ["x", "y", "z"]
+        ).add_chan(server)
+
 
         for scn in range(len(xyz_scene_names)):
             await sceneinitman(xyz_scene_names[scn], server)
@@ -220,7 +232,7 @@ async def main():
             icpS_chan_id,
             "spheres",
             ["est_icp", "des_icp"],
-            {"est_icp": [0.1, 0.1, 0.1], "des_icp": [0.1, 0.1, 0.1]},
+            {"est_icp": [0.02, 0.02, 0.02], "des_icp": [0.02, 0.02, 0.02]},
             {"est_icp": [1, 0, 1, 1], "des_icp": [0, 1, 0, 1]},
         )
         scenes.append(icp_listener)
@@ -317,6 +329,41 @@ async def main():
                         "est_y": list(msg.est_icp)[1],
                         "des_x": list(msg.des_icp)[0],
                         "des_y": list(msg.des_icp)[1],
+                    }
+                ).encode("utf8"),
+            )
+
+            await server.send_message(
+                b_ft_contact_chan_id,
+                now,
+                json.dumps(
+                    {
+                        "b_lfoot": msg.b_lfoot,
+                        "b_rfoot": msg.b_rfoot,
+                    }
+                ).encode("utf8"),
+            )
+
+            await server.send_message(
+                lf_pos_chan_id,
+                now,
+                json.dumps(
+                    {
+                        "x": list(msg.lfoot_pos)[0],
+                        "y": list(msg.lfoot_pos)[1],
+                        "z": list(msg.lfoot_pos)[2],
+                    }
+                ).encode("utf8"),
+            )
+
+            await server.send_message(
+                rf_pos_chan_id,
+                now,
+                json.dumps(
+                    {
+                        "x": list(msg.rfoot_pos)[0],
+                        "y": list(msg.rfoot_pos)[1],
+                        "z": list(msg.rfoot_pos)[2],
                     }
                 ).encode("utf8"),
             )
