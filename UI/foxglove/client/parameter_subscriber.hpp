@@ -15,8 +15,7 @@ public:
       std::unordered_map<std::string, double *> &parameters_map_double,
       std::unordered_map<std::string, Task *> &parameters_map_task,
       std::unordered_map<std::string, TaskHierarchyManager *>
-          &parameters_map_hm,
-      const std::string url = "ws://localhost:8766");
+          &parameters_map_hm);
   ~FoxgloveParameterSubscriber();
 
   void UpdateParameters();

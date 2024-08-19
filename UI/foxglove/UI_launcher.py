@@ -65,6 +65,7 @@ elif args.visualizer == "foxglove":
         target=asyncio.run, args=([foxglove_ctrl.run(step_listener)])
     )
     th_slow.start()
+    time.sleep(20.)     # give some time for state estimator to publish data
 
     scene_schema = b64encode(
         build_file_descriptor_set(SceneUpdate).SerializeToString()

@@ -87,7 +87,7 @@ class Listener(FoxgloveServerListener):
 
 async def run(step_listener: Listener):
     async with FoxgloveServer(
-        "0.0.0.0",
+        "127.0.0.1",
         8766,
         "Control param server",
         capabilities=["parameters", "parametersSubscribe"],

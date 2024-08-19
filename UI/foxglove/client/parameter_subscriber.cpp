@@ -1,11 +1,12 @@
 #include "parameter_subscriber.hpp"
 
+constexpr char url[] = "ws://localhost:8766";
+
 FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(
     std::unordered_map<std::string, int *> &parameters_map_int,
     std::unordered_map<std::string, double *> &parameters_map_double,
     std::unordered_map<std::string, Task *> &parameters_map_task,
-    std::unordered_map<std::string, TaskHierarchyManager *> &parameters_map_hm,
-    const std::string url) {
+    std::unordered_map<std::string, TaskHierarchyManager *> &parameters_map_hm) {
   next_sub_id_ = 0;
 
   client_.setBinaryMessageHandler([&](const uint8_t *data, size_t dataLength) {
@@ -59,7 +60,7 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(
                 // set new weight, kp, or kd values
                 if (param.getName().find("weight") != std::string::npos) {
                   Eigen::Vector3d task_weights =
-                      _ParseFoxgloveParameterVec(param); // ERROR IN HERE
+                      _ParseFoxgloveParameterVec(param);
                   task->SetWeight(task_weights);
                 } else if (param.getName().find("kp") != std::string::npos) {
                   Eigen::Vector3d task_kp = _ParseFoxgloveParameterVec(param);
@@ -91,10 +92,10 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(
   });
 
   const auto openHandler = [&](websocketpp::connection_hdl) {
-    std::cout << "Connected to " << url << std::endl;
+    std::cout << "[FoxgloveParameterSubscriber] Connected to " << std::string(url) << std::endl;
   };
   const auto closeHandler = [&](websocketpp::connection_hdl) {
-    std::cout << "Connection closed" << std::endl;
+    std::cout << "[FoxgloveParameterSubscriber] Connection closed" << std::endl;
   };
 
   client_.connect(url, openHandler, closeHandler);
