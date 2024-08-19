@@ -30,9 +30,9 @@ DracoInterface::DracoInterface() : Interface() {
   std::vector<std::string> unactuated_joint_list = {"l_knee_fe_jp",
                                                     "r_knee_fe_jp"};
   robot_ = new PinocchioRobotSystem(
-      THIS_COM "robot_model/draco/draco_latest_collisions.urdf",
-      // THIS_COM "robot_model/draco/draco_latest_collisions_with_gripper.urdf",
+      // THIS_COM "robot_model/draco/draco_latest_collisions.urdf",
       // /*This is for draco with grippers*/
+      THIS_COM "robot_model/draco/draco_latest_collisions_with_gripper.urdf",
       THIS_COM "robot_model/draco", false, false, &unactuated_joint_list);
   // robot_ = new PinocchioRobotSystem(
   // THIS_COM "robot_model/draco/draco_modified.urdf",
@@ -109,6 +109,9 @@ void DracoInterface::GetCommand(void *sensor_data, void *command_data) {
 
   // get control command
   ctrl_arch_->GetCommand(draco_command);
+  // get gripper command
+  if (sp_->b_recv_gripper_cmd_)
+    draco_command->gripper_pos_cmd_ = sp_->gripper_pos_cmd_;
 
 #if B_USE_ZMQ
   if (sp_->count_ % sp_->data_save_freq_ == 0) {

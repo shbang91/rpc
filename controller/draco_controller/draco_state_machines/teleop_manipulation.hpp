@@ -43,4 +43,8 @@ private:
 
   double moving_duration_;
   double transition_duration_;
+
+  std::unordered_map<std::string, double> left_gripper_target_pos_;
+  std::unordered_map<std::string, double> right_gripper_target_pos_;
+  bool b_prev_grasp_ = false;
 };

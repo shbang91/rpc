@@ -52,4 +52,9 @@ DracoStateProvider::DracoStateProvider() {
   wbo_ypr_ = Eigen::Vector3d::Zero();
   wbo_ang_vel_ = Eigen::Vector3d::Zero();
   wbo_des_ = Eigen::VectorXd::Zero(4);
+
+  // gripper
+  b_recv_gripper_cmd_ = false;
+  gripper_pos_cmd_["left"] = 0.0;
+  gripper_pos_cmd_["right"] = 0.0;
 }

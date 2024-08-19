@@ -608,16 +608,18 @@ void CopyCommand() {
     // int pin_act_idx = pin_act_map_.at(mj_act_name);
     int mj_gripper_qpos_idx = mj_gripper_qpos_map_.at(mj_act_name);
     int mj_gripper_qvel_idx = mj_gripper_qvel_map_.at(mj_act_name);
-
-    // d->ctrl[mj_act_idx] =
-    // draco_command->joint_trq_cmd_[pin_act_idx] +
-    // kp_[mj_act_idx] * (draco_command->joint_pos_cmd_[pin_act_idx] -
-    // d->qpos[mj_qpos_idx]) +
-    // kd_[mj_act_idx] *
-    //(draco_command->joint_vel_cmd_[pin_act_idx] - d->qvel[mj_qvel_idx]);
-    d->ctrl[mj_act_idx] =
-        0. + kp_[mj_act_idx] * (0. - d->qpos[mj_gripper_qpos_idx]) +
-        kd_[mj_act_idx] * (0. - d->qvel[mj_gripper_qvel_idx]);
+    if (mj_act_name == "left_ezgripper_knuckle_palm_L1_1")
+      d->ctrl[mj_act_idx] =
+          0. +
+          kp_[mj_act_idx] * (draco_command->gripper_pos_cmd_["left"] -
+                             d->qpos[mj_gripper_qpos_idx]) +
+          kd_[mj_act_idx] * (-d->qvel[mj_gripper_qvel_idx]);
+    else if (mj_act_name == "right_ezgripper_knuckle_palm_L1_1")
+      d->ctrl[mj_act_idx] =
+          0. +
+          kp_[mj_act_idx] * (draco_command->gripper_pos_cmd_["right"] -
+                             d->qpos[mj_gripper_qpos_idx]) +
+          kd_[mj_act_idx] * (-d->qvel[mj_gripper_qvel_idx]);
   }
 }
 

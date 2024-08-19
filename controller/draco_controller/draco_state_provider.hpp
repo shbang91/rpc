@@ -53,6 +53,9 @@ public:
   Eigen::Vector3d wbo_ang_vel_;
   Eigen::VectorXd wbo_des_;
 
+  bool b_recv_gripper_cmd_;
+  std::unordered_map<std::string, double> gripper_pos_cmd_;
+
 private:
   DracoStateProvider();
 };

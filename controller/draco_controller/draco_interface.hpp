@@ -53,6 +53,7 @@ public:
   Eigen::VectorXd joint_pos_cmd_;
   Eigen::VectorXd joint_vel_cmd_;
   Eigen::VectorXd joint_trq_cmd_;
+  std::unordered_map<std::string, double> gripper_pos_cmd_;
 };
 
 class DracoInterface : public Interface {

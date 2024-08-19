@@ -36,8 +36,8 @@ actuator_gains:
     kp: 100
     kd: 5
   left_ezgripper_knuckle_palm_L1_1:
-    kp: 500
-    kd: 10
+    kp: 10
+    kd: 5
   neck_pitch:
     kp: 100 
     kd: 5
@@ -78,8 +78,8 @@ actuator_gains:
     kp: 100
     kd: 5
   right_ezgripper_knuckle_palm_L1_1:
-    kp: 500
-    kd: 10
+    kp: 10
+    kd: 5
 
 initial_config:
   base_pos_x: 0.
