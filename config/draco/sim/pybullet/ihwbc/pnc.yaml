@@ -30,11 +30,11 @@ state_estimator:
   foot_reference_frame: 1 #0: left foot, 1: right foot
 
   sigma_base_vel: [0.0, 0.0, 0.0]
-  sigma_base_acc: [0.5, 0.2, 0.2]
+  sigma_base_acc: [0.1, 0.1, 0.1]
   sigma_pos_lfoot: [0.001, 0.001, 0.001]
   sigma_pos_rfoot: [0.001, 0.001, 0.001]
-  sigma_vel_lfoot: [0.005, 0.005, 0.002]
-  sigma_vel_rfoot: [0.005, 0.005, 0.002]
+  sigma_vel_lfoot: [0.001, 0.001, 0.001]
+  sigma_vel_rfoot: [0.001, 0.001, 0.001]
   imu_accel_bias: [0.0, 0.0, 0.0]
   base_accel_time_constant: 0.02
   base_accel_limits: [1., 1., 1.]
