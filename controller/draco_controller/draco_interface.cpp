@@ -30,8 +30,9 @@ DracoInterface::DracoInterface() : Interface() {
   std::vector<std::string> unactuated_joint_list = {"l_knee_fe_jp",
                                                     "r_knee_fe_jp"};
   robot_ = new PinocchioRobotSystem(
-      // THIS_COM "robot_model/draco/draco_latest_collisions.urdf",
-      THIS_COM "robot_model/draco/draco_latest_collisions_with_gripper.urdf",
+      THIS_COM "robot_model/draco/draco_latest_collisions.urdf",
+      // THIS_COM "robot_model/draco/draco_latest_collisions_with_gripper.urdf",
+      // /*This is for draco with grippers*/
       THIS_COM "robot_model/draco", false, false, &unactuated_joint_list);
   // robot_ = new PinocchioRobotSystem(
   // THIS_COM "robot_model/draco/draco_modified.urdf",
