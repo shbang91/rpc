@@ -35,6 +35,9 @@ actuator_gains:
   l_wrist_pitch:
     kp: 100
     kd: 5
+  left_ezgripper_knuckle_palm_L1_1:
+    kp: 10
+    kd: 5
   neck_pitch:
     kp: 100 
     kd: 5
@@ -74,6 +77,9 @@ actuator_gains:
   r_wrist_pitch:
     kp: 100
     kd: 5
+  right_ezgripper_knuckle_palm_L1_1:
+    kp: 10
+    kd: 5
 
 initial_config:
   base_pos_x: 0.
@@ -96,6 +102,7 @@ initial_config:
   l_elbow_fe: 0.
   l_wrist_ps: 0.
   l_wrist_pitch: 0.
+  left_ezgripper_knuckle_palm_L1_1: 0.
   neck_pitch: 0.
   r_hip_ie: 0.
   r_hip_aa: 0.
@@ -110,4 +117,5 @@ initial_config:
   r_elbow_fe: 0.
   r_wrist_ps: 0.
   r_wrist_pitch: 0.
+  right_ezgripper_knuckle_palm_L1_1: 0.
 

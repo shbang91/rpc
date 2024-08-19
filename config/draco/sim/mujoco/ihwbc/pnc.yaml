@@ -125,7 +125,7 @@ wbc:
     hand_pos_task:
       weight : [0., 0., 0.]
       weight_at_teleop : [50., 50., 50.]
-      kp : [1000., 1000., 1000.]
+      kp : [2000., 2000., 2000.]
       kd : [100., 100., 100.]
 
     hand_ori_task:
@@ -201,6 +201,14 @@ state_machine:
     teleop_manipulation:
       transition_duration: 0.3
       moving_duration: 0.05
+      gripper_control:
+        left:
+          grasp: 0.33
+          release: -0.33
+        right:
+          grasp: 0.33
+          release: -0.33
+
 
 dcm_walking:
   #t_additional_init_trans: 0.

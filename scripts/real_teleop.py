@@ -99,7 +99,7 @@ class Keyboard():
             self._reset_state = 1
             self._enabled = True
 
-        elif key_char == 'c':
+        elif key_char == 'p':
             self._reset_state = 1
             self._grasp = True
 

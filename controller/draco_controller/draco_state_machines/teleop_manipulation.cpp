@@ -120,6 +120,20 @@ void TeleopManipulation::OneStep() {
     } else if (teleop_handler_->IsReady() && b_teleop_mode_) {
       // execute the desired trajectory
       ctrl_arch_->rh_SE3_tm_->UpdateHandPose(sp_->current_time_);
+
+      // gripper command
+      sp_->b_recv_gripper_cmd_ = false;
+      if (rs_commands_->b_grasp_ != b_prev_grasp_) {
+        sp_->b_recv_gripper_cmd_ = true;
+
+        // update gripper target pos
+        if (rs_commands_->b_grasp_)
+          sp_->gripper_pos_cmd_["right"] = right_gripper_target_pos_["grasp"];
+        else
+          sp_->gripper_pos_cmd_["right"] = right_gripper_target_pos_["release"];
+
+        b_prev_grasp_ = rs_commands_->b_grasp_;
+      }
     }
   }
 }
@@ -147,6 +161,24 @@ void TeleopManipulation::SetParameters(const YAML::Node &node) {
                         "transition_duration", transition_duration_);
     util::ReadParameter(node["state_machine"]["teleop_manipulation"],
                         "moving_duration", moving_duration_);
+    double tmp;
+    util::ReadParameter(
+        node["state_machine"]["teleop_manipulation"]["gripper_control"]["left"],
+        "grasp", tmp);
+    left_gripper_target_pos_["grasp"] = tmp;
+    util::ReadParameter(
+        node["state_machine"]["teleop_manipulation"]["gripper_control"]["left"],
+        "release", tmp);
+    left_gripper_target_pos_["release"] = tmp;
+    util::ReadParameter(node["state_machine"]["teleop_manipulation"]
+                            ["gripper_control"]["right"],
+                        "grasp", tmp);
+    right_gripper_target_pos_["grasp"] = tmp;
+    util::ReadParameter(node["state_machine"]["teleop_manipulation"]
+                            ["gripper_control"]["right"],
+                        "release", tmp);
+    right_gripper_target_pos_["release"] = tmp;
+
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error Reading Parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;

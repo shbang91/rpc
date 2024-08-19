@@ -43,6 +43,7 @@ constexpr int torso_com_link = 78;
 constexpr int torso_imu = 80;
 } // namespace draco_link
 
+/* This is for draco with grippers*/
 // namespace draco_link {
 // constexpr int torso_link = 2;
 // constexpr int l_hip_ie_link = 4;
@@ -68,31 +69,30 @@ constexpr int torso_imu = 80;
 // constexpr int left_ezgripper_finger_L1_2 = 44;
 // constexpr int left_ezgripper_finger_L2_2 = 46;
 // constexpr int neck_pitch_link = 48;
-// constexpr int camera = 50;
-// constexpr int r_hip_ie_link = 52;
-// constexpr int r_hip_aa_link = 54;
-// constexpr int r_hip_fe_link = 56;
-// constexpr int r_knee_fe_lp = 58;
-// constexpr int r_knee_adj_link = 60;
-// constexpr int r_knee_fe_ld = 62;
-// constexpr int r_ankle_fe_link = 64;
-// constexpr int r_ankle_ie_link = 66;
-// constexpr int r_foot_contact = 68;
-// constexpr int r_shoulder_fe_link = 70;
-// constexpr int r_shoulder_aa_link = 72;
-// constexpr int r_shoulder_ie_link = 74;
-// constexpr int r_elbow_fe_link = 76;
-// constexpr int r_wrist_ps_link = 78;
-// constexpr int r_wrist_pitch_link = 80;
-// constexpr int r_sake_gripper_link = 82;
-// constexpr int r_hand_contact = 84;
-// constexpr int right_ezgripper_palm_link = 86;
-// constexpr int right_ezgripper_finger_L1_1 = 88;
-// constexpr int right_ezgripper_finger_L2_1 = 90;
-// constexpr int right_ezgripper_finger_L1_2 = 92;
-// constexpr int right_ezgripper_finger_L2_2 = 94;
-// constexpr int torso_com_link = 96;
-// constexpr int torso_imu = 98;
+// constexpr int r_hip_ie_link = 50;
+// constexpr int r_hip_aa_link = 52;
+// constexpr int r_hip_fe_link = 54;
+// constexpr int r_knee_fe_lp = 56;
+// constexpr int r_knee_adj_link = 58;
+// constexpr int r_knee_fe_ld = 60;
+// constexpr int r_ankle_fe_link = 62;
+// constexpr int r_ankle_ie_link = 64;
+// constexpr int r_foot_contact = 66;
+// constexpr int r_shoulder_fe_link = 68;
+// constexpr int r_shoulder_aa_link = 70;
+// constexpr int r_shoulder_ie_link = 72;
+// constexpr int r_elbow_fe_link = 74;
+// constexpr int r_wrist_ps_link = 76;
+// constexpr int r_wrist_pitch_link = 78;
+// constexpr int r_sake_gripper_link = 80;
+// constexpr int r_hand_contact = 82;
+// constexpr int right_ezgripper_palm_link = 84;
+// constexpr int right_ezgripper_finger_L1_1 = 86;
+// constexpr int right_ezgripper_finger_L2_1 = 88;
+// constexpr int right_ezgripper_finger_L1_2 = 90;
+// constexpr int right_ezgripper_finger_L2_2 = 92;
+// constexpr int torso_com_link = 94;
+// constexpr int torso_imu = 96;
 //} // namespace draco_link
 
 namespace draco_joint {
