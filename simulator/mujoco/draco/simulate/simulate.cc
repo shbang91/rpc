@@ -38,6 +38,8 @@
 #include <mujoco/mjxmacro.h>
 #include <mujoco/mujoco.h>
 
+#include <fstream>
+
 // When launched via an App Bundle on macOS, the working directory is the path
 // to the App Bundle's resource directory. This causes files to be saved into
 // the bundle, which is not the desired behavior. Instead, we open a save dialog
@@ -2753,6 +2755,32 @@ void Simulate::RenderLoop() {
   frames_ = 0;
   last_fps_update_ = mj::Simulate::Clock::now();
 
+  // TODO: Record video
+  bool record = false;
+  const char *filename = "draco_manipulation_video";
+
+  std::ofstream video_file;
+
+  const unsigned int buffer_height = uistate.rect[0].height;
+  const unsigned int buffer_width = uistate.rect[0].width;
+  std::cout << "==================================================="
+            << std::endl;
+  std::cout << "buffer_width: " << buffer_width
+            << " buffer_height: " << buffer_height << std::endl;
+  std::cout << "==================================================="
+            << std::endl;
+  std::unique_ptr<unsigned char[]> frame_buffer(
+      new unsigned char[3 * buffer_width * buffer_height]);
+  if (!frame_buffer) {
+    mju_error("could not allocate buffer for video recording");
+  }
+  video_file.open(filename, std::ios::binary);
+  if (!video_file.is_open()) {
+    std::cerr << "Failed to open video file for writing." << std::endl;
+    exit(0);
+  }
+  int count(0);
+
   // run event loop
   while (!this->platform_ui->ShouldCloseWindow() && !this->exitrequest.load()) {
     {
@@ -2763,6 +2791,23 @@ void Simulate::RenderLoop() {
         this->LoadOnRenderThread();
       } else if (this->loadrequest == 2) {
         this->loadrequest = 1;
+      }
+
+      // TODO: record video
+      if (record && count % 30 == 0) {
+        // capture the frame
+        mjr_readPixels(frame_buffer.get(), nullptr, uistate.rect[0],
+                       &this->platform_ui->mjr_context());
+        // flip up-down
+        for (int r = 0; r < buffer_height / 2; ++r) {
+          unsigned char *top_row = &frame_buffer[3 * buffer_width * r];
+          unsigned char *bottom_row =
+              &frame_buffer[3 * buffer_width * (buffer_height - 1 - r)];
+          std::swap_ranges(top_row, top_row + 3 * buffer_width, bottom_row);
+        }
+        // write the frame to the video file
+        video_file.write(reinterpret_cast<char *>(frame_buffer.get()),
+                         3 * buffer_width * buffer_height);
       }
 
       // poll and handle events
@@ -2802,6 +2847,8 @@ void Simulate::RenderLoop() {
     // render while simulation is running
     this->Render();
 
+    count++;
+
     // update FPS stat, at most 5 times per second
     auto now = mj::Simulate::Clock::now();
     double interval = Seconds(now - last_fps_update_).count();
@@ -2811,6 +2858,12 @@ void Simulate::RenderLoop() {
       fps_ = frames_ / interval;
       frames_ = 0;
     }
+  }
+
+  // TODO: record video
+  if (record) {
+    // clean up
+    video_file.close();
   }
 
   const MutexLock lock(this->mtx);
