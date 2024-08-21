@@ -448,6 +448,16 @@ if __name__ == "__main__":
         r_normal_volt_noise = np.random.normal(0, r_contact_volt_noise)
         imu_ang_vel_noise = np.random.normal(0, imu_ang_vel_noise_std_dev)
 
+        ############################################################
+        # Moving Camera Setting
+        ############################################################
+        base_pos, base_ori = pb.getBasePositionAndOrientation(draco_humanoid)
+        pb.resetDebugVisualizerCamera(cameraDistance=1.5,
+                                      cameraYaw=120,
+                                      cameraPitch=-30,
+                                      cameraTargetPosition=base_pos +
+                                      np.array([0.5, 0.3, -base_pos[2] + 1]))
+
         ###############################################################################
         # Debugging Purpose
         ##############################################################################
@@ -593,10 +603,9 @@ if __name__ == "__main__":
 
         # Save Image file
         if (Config.VIDEO_RECORD) and (count % Config.RECORD_FREQ == 0):
-            frame = pybullet_util.get_camera_image([1.0, 0.5, 1.0], 1.0, 120,
-                                                   -15, 0, 60.0, 1920, 1080,
-                                                   0.1, 100.0)
-            frame = frame[:, :, [2, 1, 0]]  # << RGB to BGR
+            camera_data = pb.getDebugVisualizerCamera()
+            frame = pybullet_util.get_camera_image_from_debug_camera(
+                camera_data, Config.RENDER_WIDTH, Config.RENDER_HEIGHT)
             filename = video_dir + "/step%06d.jpg" % jpg_count
             cv2.imwrite(filename, frame)
             jpg_count += 1

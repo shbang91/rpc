@@ -18,6 +18,8 @@ class Config(object):
 
     VIDEO_RECORD = False
     RECORD_FREQ = 50
+    RENDER_WIDTH = 1920
+    RENDER_HEIGHT = 1080
 
     ##TODO:
     USE_MESHCAT = False
