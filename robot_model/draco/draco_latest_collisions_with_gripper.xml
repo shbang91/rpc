@@ -1,11 +1,11 @@
 <mujoco model="draco">
   <compiler angle="radian" autolimits="true" eulerseq="zyx" meshdir="mujoco_meshes/"/>
   <option gravity="0 0 -9.81" timestep="0.00125" solver="Newton" tolerance="1e-12" impratio="60.0" iterations="10"/>
-  <!--<option gravity="0 0 -9.81" timestep="0.00125" solver="Newton" cone="elliptic" tolerance="1e-12" impratio="1.0" iterations="10"/>-->
+  <!--<option gravity="0 0 -9.81" timestep="0.00125" solver="Newton" cone="elliptic" tolerance="1e-12" impratio="40.0" iterations="10"/>-->
   <!--<option gravity="0 0 -9.81" timestep="0.00125" solver="Newton" cone="elliptic" tolerance="1e-5" jacobian="dense" noslip_iterations="30" noslip_tolerance="1e-5" iterations="50"/>-->
   <default>
       <geom contype="1" conaffinity="2" condim="6" margin="0.0005" solref="0.005 1" group="1"/>
-      <!--<geom contype="1" conaffinity="2" condim="6" group="1"/>-->
+      <!--<geom contype="1" conaffinity="2" condim="6" margin="0.0005" solref="0.01 1" group="1"/>-->
       <equality solref="0.0002 1" solimp="0.99 0.999 0.00001"/>
       <joint limited="true"/>
       <light castshadow="true" diffuse="0.8 0.8 0.8"/>
