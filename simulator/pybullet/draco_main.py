@@ -322,6 +322,7 @@ signal.signal(signal.SIGINT, signal_handler)
 if __name__ == "__main__":
     ## connect pybullet sim server
     pb.connect(pb.GUI)
+    pb.configureDebugVisualizer(pb.COV_ENABLE_GUI, 0)
 
     pb.resetDebugVisualizerCamera(
         cameraDistance=1.5,
