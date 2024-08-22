@@ -57,6 +57,7 @@ elif args.visualizer == "foxglove":
         SceneChannel,
         ScalableArrowsScene,
     )
+    from UI.visualization_toolbox import update_robot_transform
 
     # load parameters that can be controlled / changed and start Control Parameters server
     param_store = foxglove_ctrl.load_params_store()
@@ -96,19 +97,6 @@ with open("config/" + args.robot + "/INTERFACE.yaml", "r") as iface_yaml:
 
 pnc_path = ("config/" + args.robot + "/" +
             args.hw_or_sim + "/" + env + "/" + wbc + "/pnc.yaml")
-
-
-def isMesh(geometry_object):
-    """Check whether the geometry object contains a Mesh supported by MeshCat"""
-    if geometry_object.meshPath == "":
-        return False
-
-    _, file_extension = os.path.splitext(geometry_object.meshPath)
-    if file_extension.lower() in [".dae", ".obj", ".stl"]:
-        return True
-
-    return False
-
 
 grf_names = ["lfoot_rf_cmd", "rfoot_rf_cmd"]
              # "lfoot_rf_normal_filt", "rfoot_rf_normal_filt"]
@@ -181,8 +169,11 @@ async def main():
         icpS_chan_id = await SceneChannel(
             False, "icp_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
         ).add_chan(server)
-        icp_chan_id = await SceneChannel(
-            True, "icp", "json", "icp", ["est_x", "est_y", "des_x", "des_y"]
+        icp_est_chan_id = await SceneChannel(
+            True, "icp_est", "json", "icp_est", ["x", "y"]
+        ).add_chan(server)
+        icp_des_chan_id = await SceneChannel(
+            True, "icp_des", "json", "icp_des", ["x", "y"]
         ).add_chan(server)
         proj_footstepS_chan_id = await SceneChannel(
             False, "proj_footstep_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
@@ -322,14 +313,22 @@ async def main():
 
             # send 2 pairs of icp x & y as topics to foxglove
             await server.send_message(
-                icp_chan_id,
+                icp_est_chan_id,
                 now,
                 json.dumps(
                     {
-                        "est_x": list(msg.est_icp)[0],
-                        "est_y": list(msg.est_icp)[1],
-                        "des_x": list(msg.des_icp)[0],
-                        "des_y": list(msg.des_icp)[1],
+                        "x": list(msg.est_icp)[0],
+                        "y": list(msg.est_icp)[1],
+                    }
+                ).encode("utf8"),
+            )
+            await server.send_message(
+                icp_des_chan_id,
+                now,
+                json.dumps(
+                    {
+                        "x": list(msg.des_icp)[0],
+                        "y": list(msg.des_icp)[1],
                     }
                 ).encode("utf8"),
             )
@@ -421,42 +420,10 @@ async def main():
             )
 
             # update mesh positions
-            pp = "world"
             pin.forwardKinematics(model, data, vis_q)
             pin.updateGeometryPlacements(model, data, visual_model, visual_data)
             for visual in visual_model.geometryObjects:
-                # Get mesh pose.
-                M = visual_data.oMg[visual_model.getGeometryId(visual.name)]
-                # Manage scaling
-                if isMesh(visual):
-                    scale = np.asarray(visual.meshScale).flatten()
-                    S = np.diag(np.concatenate((scale, [1.0])))
-                    T = np.array(M.homogeneous).dot(S)
-                else:
-                    T = M.homogeneous
-                anti = visual.name[:-2]  # use for frame_id
-                transform.parent_frame_id = pp
-                transform.child_frame_id = anti
-                x = T[0][3]
-                y = T[1][3]
-                z = T[2][3]
-                if visual.name == "l_ankle_ie_link_0":
-                    l_foot[0] = x
-                    l_foot[1] = y
-                    l_foot[2] = z
-                if visual.name == "r_ankle_ie_link_0":
-                    r_foot[0] = x
-                    r_foot[1] = y
-                    r_foot[2] = z
-                transform.translation.x = x
-                transform.translation.y = y
-                transform.translation.z = z
-                rot = T[:3, :3]
-                q = rot_to_quat(rot)
-                transform.rotation.x = q[0]
-                transform.rotation.y = q[1]
-                transform.rotation.z = q[2]
-                transform.rotation.w = q[3]
+                update_robot_transform(visual, visual_data, visual_model, transform)
                 await server.send_message(
                     tf_chan_id, now, transform.SerializeToString()
                 )
@@ -866,7 +833,6 @@ while True:
                     rfoot_rf_normal,
                 )
         elif args.visualizer == "foxglove":
-            print("FLAG_FOXTRIG")
             # webbrowser.open('https://app.foxglove.dev/view?ds=foxglove-websocket&ds.url=ws%3A%2F%2Flocalhost%3A8765')
             th_fast = threading.Thread(target=asyncio.run(main()), args=())
             th_fast.start()
