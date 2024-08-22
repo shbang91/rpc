@@ -966,7 +966,7 @@ int main(int argc, char **argv) {
   if (argc > 1) {
     filename = argv[1];
   } else {
-    filename = THIS_COM "robot_model/draco/draco_manipulation_scene.xml";
+    filename = THIS_COM "robot_model/draco/draco_manipulation_cup_shelving.xml";
   }
 
   // start physics thread

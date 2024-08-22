@@ -458,6 +458,28 @@ def get_camera_image(
     return rgb_array
 
 
+def get_camera_image_from_debug_camera(
+    debug_camera_data,
+    render_width,
+    render_height,
+):
+    view_matrix = debug_camera_data[2]
+    proj_matrix = debug_camera_data[3]
+    (_, _, px, _, _) = pb.getCameraImage(
+        width=render_width,
+        height=render_height,
+        renderer=pb.ER_BULLET_HARDWARE_OPENGL,
+        viewMatrix=view_matrix,
+        projectionMatrix=proj_matrix,
+    )
+    rgb_array = np.array(px, dtype=np.uint8)
+    rgb_array = np.reshape(np.array(px), (render_height, render_width, -1))
+    rgb_array = rgb_array[:, :, :3]
+    rgb_array = rgb_array[:, :, [2, 1, 0]]
+
+    return rgb_array
+
+
 def is_key_triggered(keys, key):
     o = ord(key)
     if o in keys:

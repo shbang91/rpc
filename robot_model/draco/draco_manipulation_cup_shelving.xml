@@ -1,0 +1,180 @@
+<mujoco model="draco manipulation cup shvelving">
+  <include file="draco_latest_collisions_with_gripper.xml"/>
+
+  <statistic center="0 0 0.6" extent="2.0"/>
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="160" elevation="-20"/>
+  </visual>
+
+  <!--two geoms will collide if the following expression is true-->
+  <!--(contype1 & conaffinity2) || (contype2 & conaffinity1)-->
+  <default>
+      <default class="world_visual">
+          <geom condim="1" contype="0" conaffinity="0" group="0"/>
+      </default>
+      <default class="world_collision">
+          <geom contype="3" conaffinity="2" condim="6" group="2" friction="0.5 0.005 0.0001" solref="0.005 1"/>
+      </default>
+      <default class="object_collision">
+          <geom contype="1" conaffinity="1" condim="3" group="3" friction="1 1 1" solref="0.02 1"/>
+      </default>
+  </default>
+
+
+
+  <asset>
+    <texture type="2d" name="texplane" file="../objects/textures/light-gray-floor-tile.png"/>
+    <texture type="2d" name="tex-light-gray-plaster" file="../objects/textures/light-gray-plaster.png"/>
+    <texture type="cube" name="tex-ceramic" file="../objects/textures/ceramic.png"/>
+    <texture type="cube" name="tex-steel-brushed" file="../objects/textures/steel-brushed.png"/>
+    <texture type="cube" name="cabinet_steel" file="../objects/textures/steel-brushed.png"/>
+    <texture type="cube" name="cabinet_light-wood" file="../objects/textures/light-wood.png"/>
+    <texture type="cube" name="cabinet_dark-wood" file="../objects/textures/dark-wood.png"/>
+    <material name="floorplane" texture="texplane" texuniform="true" texrepeat="2 2" specular="0" shininess="0" reflectance="0.01"/>
+    <material name="walls_mat" texture="tex-light-gray-plaster" texuniform="true" texrepeat="3 3" specular="0.1" shininess="0.1"/>
+    <material name="table_ceramic" texture="tex-ceramic" specular="0.2" shininess="0"/>
+    <material name="table_legs_metal" texture="tex-steel-brushed" shininess="0.8" reflectance="0.8"/>
+    <material name="cabinet_MatSteel" texture="cabinet_steel" specular="1" shininess="0.3" rgba="0.9 0.9 0.9 1"/>
+    <material name="cabinet_MatLightWood" texture="cabinet_light-wood" texrepeat="3 3" specular="0.4" shininess="0.1"/>
+    <material name="cabinet_MatDarkWood" texture="cabinet_dark-wood" texrepeat="3 3" specular="0.4" shininess="0.1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="1 1 1.5" dir="-0.19245 -0.19245 -0.96225" directional="true" castshadow="false"/>
+    <!--<geom name="floor" size="3 3 0.125" type="plane" material="floorplane" class="world_collision"/>-->
+    <geom name="floor" size="3 3 0.05" type="plane" material="floorplane" class="world_collision"/>
+    <geom name="wall_leftcorner_visual" size="1.06 1.5 0.01" pos="-1.25 2.25 1.5" quat="0.653281 0.653281 0.270598 0.270598" type="box" material="walls_mat" class="world_visual"/>
+    <geom name="wall_rightcorner_visual" size="1.06 1.5 0.01" pos="-1.25 -2.25 1.5" quat="0.653281 0.653281 -0.270598 -0.270598" type="box" material="walls_mat" class="world_visual"/>
+    <geom name="wall_left_visual" size="1.75 1.5 0.01" pos="1.25 3 1.5" quat="0.707107 0.707107 0 0" type="box"  material="walls_mat" class="world_visual"/>
+    <geom name="wall_right_visual" size="1.75 1.5 0.01" pos="1.25 -3 1.5" quat="0.707107 -0.707107 0 0" type="box"  material="walls_mat" class="world_visual"/>
+    <geom name="wall_rear_visual" size="1.5 1.5 0.01" pos="-2 0 1.5" quat="0.5 0.5 0.5 0.5" type="box"  material="walls_mat" class="world_visual"/>
+    <geom name="wall_front_visual" size="3 1.5 0.01" pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" type="box"  material="walls_mat" class="world_visual"/>
+
+    <camera name="envview" pos="-2 0 0.75" quat="0.5 -0.5 -0.5 0.5" fovy="89"/>
+    <camera name="backview" pos="-2 0 0.75" quat="0.5 -0.5 -0.5 0.5" fovy="60"/>
+    <camera name="upview" pos="-1 0 2" quat="0.653281 -0.270598 -0.270598 0.653281"/>
+    <!--<camera name="testview" pos="1.5 0 2" quat="0.653281 -0.270598 0.270598 -0.653281"/>-->
+    <camera name="kitchenview" pos="1.2 0 1" quat="0.5 -0.5 0.5 -0.5"/>
+    <camera name="objectview" pos="0.5 0 3" quat="0.707107 0 0 0.707107"/>
+    <camera name="door_topview" pos="2.2 0 2" quat="0.707107 0 0 0.707107"/>
+    <camera name="topview" pos="1 0 2.2" quat="0.707107 0 0 0.707107"/>
+    <camera name="debug_side_view" pos="0 3 0.8" quat="0.707107 -0.707107 0 0"/>
+    <camera name="debug_front_view" pos="3 0 0.8" quat="0.5 -0.5 0.5 -0.5"/>
+    <camera name="frontview" pos="1.6 0 1.45" quat="0.560842 0.430646 0.430646 0.560842"/>
+    <camera name="birdview" pos="-0.2 0 3" quat="0.707107 0 0 0.707107"/>
+    <camera name="agentview" pos="0.5 0 1.35" quat="0.653098 0.271041 0.271041 0.653098"/>
+    <camera name="sideview" pos="-0.0565177 1.27612 1.48796" quat="0.00990507 0.00687796 0.591223 0.806418"/>
+    <camera name="recordingview" pos="-1.2 0 2.2" quat="-0.653098 -0.271041 0.271041 0.653098"/>
+
+    <!--table-->
+    <!--<body name="table" pos="1.5 0 0.6">-->
+    <body name="table" pos="0.8 0 0.7">
+      <geom name="table_collision" size="0.375 1 0.025" type="box" rgba="0.5 0.5 0 0" class ="object_collision"/>
+      <geom name="table_visual" size="0.375 1 0.025" type="box" class="world_visual" material="table_ceramic"/>
+      <geom name="table_leg1_visual" size="0.025 0.35" pos="0.275 0.9 -0.35" type="cylinder" class="world_visual" material="table_legs_metal"/>
+      <geom name="table_leg2_visual" size="0.025 0.35" pos="-0.275 0.9 -0.35" type="cylinder" class="world_visual" material="table_legs_metal"/>
+      <geom name="table_leg3_visual" size="0.025 0.35" pos="-0.275 -0.9 -0.35" type="cylinder" class="world_visual" material="table_legs_metal"/>
+      <geom name="table_leg4_visual" size="0.025 0.35" pos="0.275 -0.9 -0.35" type="cylinder" class="world_visual" material="table_legs_metal"/>
+      <site name="table_top" pos="0 0 0.025" size="0.001" rgba="0 0 0 0"/>
+    </body>
+
+    <!--cabinet-->
+    <!--<body name="cabinet_main" pos="1.6 -0.7 0.85" quat="0.866 0 0 0.5">-->
+    <body name="cabinet_main" pos="0.85 -0.7 0.95" quat="0.866 0 0 0.5">
+      <inertial pos="0 0 0" mass="5" diaginertia="0.03417 0.025633 0.028333"/>
+      <joint name="cabinet_joint0" type="free" limited="false" actuatorfrclimited="false" damping="0.0005"/>
+      <geom name="cabinet_geom_base" size="0.25 0.15 0.035" pos="0 0 -0.215" type="box" rgba="0 0 0 0" class="object_collision"/>
+      <geom name="cabinet_geom_base_visual" size="0.25 0.15 0.035" pos="0 0 -0.215" type="box" class="world_visual" material="cabinet_MatLightWood"/>
+      <geom name="cabinet_geom_top" size="0.25 0.15 0.01" pos="0 0 0.19" type="box" class="object_collision" rgba="0 0 0 0"/>
+      <geom name="cabinet_geom_top_visual" size="0.25 0.15 0.01" pos="0 0 0.19" type="box" class="world_visual" material="cabinet_MatLightWood"/>
+      <geom name="cabinet_geom_back" size="0.23 0.01 0.18" pos="0 -0.14 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+      <geom name="cabinet_geom_back_visual" size="0.23 0.01 0.18" pos="0 -0.14 0" type="box" class="world_visual" material="cabinet_MatLightWood"/>
+      <geom name="cabinet_geom_left_side" size="0.01 0.15 0.18" pos="-0.24 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+      <geom name="cabinet_geom_left_side_visual" size="0.01 0.15 0.18" pos="-0.24 0 0" type="box" class="world_visual" material="cabinet_MatLightWood"/>
+      <geom name="cabinet_geom_right_side" size="0.01 0.15 0.18" pos="0.24 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+      <geom name="cabinet_geom_right_side_visual" size="0.01 0.15 0.18" pos="0.24 0 0" type="box" class="world_visual" material="cabinet_MatLightWood"/>
+      <site name="cabinet_default_site" pos="0 0 0" size="0.002" rgba="1 0 0 0"/>
+      <body name="cabinet_left_door" pos="0.125 0.16 0">
+        <inertial pos="0 0 0" mass="0.1" diaginertia="0.0013467 0.001854 0.0005342"/>
+        <joint name="cabinet_left_joint" pos="0.125 -0.01 0" axis="0 0 -1" springref="1.8" stiffness="1" limited="true" range="0 3.1416" damping="0.05" frictionloss="0.3"/>
+        <geom name="cabinet_geom_left_door" size="0.125 0.01 0.2" type="box" rgba="0 0 0 0" class="object_collision"/>
+        <geom name="cabinet_geom_left_door_visual" size="0.125 0.01 0.2" type="box" class="world_visual" material="cabinet_MatDarkWood"/>
+        <body name="cabinet_left_handle" pos="-0.09 0.01 0" quat="0 0 0.707107 0.707107">
+          <geom name="cabinet_geom_left_top_root1" size="0.005 0.005 0.02" pos="0 0.04 0.02" quat="0 1 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+          <geom name="cabinet_geom_left_top_root2" size="0.005 0.005 0.02" pos="0 -0.04 0.02" quat="0 1 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+          <geom name="cabinet_geom_left_top_handle" size="0.013 0.013 0.04" pos="0 0 0.04" quat="0.707107 0.707107 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+          <geom name="cabinet_geom_left_top_root1_visual" size="0.005 0.02" pos="0 0.04 0.02" quat="0 1 0 0" type="capsule" class="world_visual" material="cabinet_MatSteel"/>
+          <geom name="cabinet_geom_left_top_root2_visual" size="0.005 0.02" pos="0 -0.04 0.02" quat="0 1 0 0" type="capsule" class="world_visual" material="cabinet_MatSteel"/>
+          <geom name="cabinet_geom_left_top_handle_visual" size="0.013 0.04" pos="0 0 0.04" quat="0.707107 0.707107 0 0" type="capsule" class="world_visual" material="cabinet_MatLightWood"/>
+          <site name="cabinet_left_handle" pos="0.125 -0.1 0" size="0.02" rgba="0 0 1 0"/>
+        </body>
+      </body>
+      <body name="cabinet_right_door" pos="-0.125 0.16 0">
+        <inertial pos="0 0 0" mass="0.1" diaginertia="0.0003467 0.0024167 0.0020967"/>
+        <joint name="cabinet_right_joint" pos="-0.125 -0.01 0" axis="0 0 1" springref="1.8" stiffness="1" limited="true" range="0 3.1416" damping="0.05" frictionloss="0.3"/>
+        <geom name="cabinet_geom_right_door" size="0.125 0.01 0.2" type="box" class="object_collision" rgba="0 0 0 0"/>
+        <geom name="cabinet_geom_right_door_visual" size="0.125 0.01 0.2" type="box" class="world_visual" material="cabinet_MatDarkWood"/>
+        <body name="cabinet_right_handle" pos="0.09 0.01 0" quat="0 0 0.707107 0.707107">
+          <geom name="cabinet_geom_right_top_root1" size="0.005 0.005 0.02" pos="0 0.04 0.02" quat="0 1 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+          <geom name="cabinet_geom_right_top_root2" size="0.005 0.005 0.02" pos="0 -0.04 0.02" quat="0 1 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+          <geom name="cabinet_geom_right_top_handle" size="0.013 0.013 0.04" pos="0 0 0.04" quat="0.707107 0.707107 0 0" type="box" class="object_collision" rgba="0 0 0 0"/>
+          <geom name="cabinet_geom_right_top_root1_visual" size="0.005 0.02" pos="0 0.04 0.02" quat="0 1 0 0" type="capsule" class="world_visual" material="cabinet_MatSteel"/>
+          <geom name="cabinet_geom_right_top_root2_visual" size="0.005 0.02" pos="0 -0.04 0.02" quat="0 1 0 0" type="capsule" class="world_visual" material="cabinet_MatSteel"/>
+          <geom name="cabinet_geom_right_top_handle_visual" size="0.013 0.04" pos="0 0 0.04" quat="0.707107 0.707107 0 0" type="capsule" class="world_visual" material="cabinet_MatLightWood"/>
+          <site name="cabinet_right_handle" pos="0.125 -0.1 0" size="0.02" rgba="0 0 1 0"/>
+        </body>
+      </body>
+    </body>
+
+    <!--cup-->
+    <!--<body name="cup_root" pos="1.3 0.2 0.7" quat="0.5 0 0 0.866">-->
+    <body name="cup_root" pos="0.6 -0.05 0.8" quat="0.5 0 0 0.866">
+      <joint name="cup_joint0" type="free" limited="false" actuatorfrclimited="false"/>
+      <site name="cup_default_site" pos="0 0 0" size="0.002" rgba="1 0 0 0"/>
+      <body name="cup_body_root">
+        <geom name="cup_body_hc_0" size="0.0046194 0.0306147 0.08" pos="-0.069291 0 0" quat="0 0 0 1" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_0_vis" size="0.0046194 0.0306147 0.08" pos="-0.069291 0 0" quat="0 0 0 1" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_1" size="0.0046194 0.0306147 0.08" pos="-0.0489961 0.0489961 0" quat="0.382683 0 0 0.92388" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_1_vis" size="0.0046194 0.0306147 0.08" pos="-0.0489961 0.0489961 0" quat="0.382683 0 0 0.92388" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_2" size="0.0046194 0.0306147 0.08" pos="0 0.069291 0" quat="0.707107 0 0 0.707107" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_2_vis" size="0.0046194 0.0306147 0.08" pos="0 0.069291 0" quat="0.707107 0 0 0.707107" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_3" size="0.0046194 0.0306147 0.08" pos="0.0489961 0.0489961 0" quat="0.92388 0 0 0.382683" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_3_vis" size="0.0046194 0.0306147 0.08" pos="0.0489961 0.0489961 0" quat="0.92388 0 0 0.382683" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_4" size="0.0046194 0.0306147 0.08" pos="0.069291 0 0" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_4_vis" size="0.0046194 0.0306147 0.08" pos="0.069291 0 0" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_5" size="0.0046194 0.0306147 0.08" pos="0.0489961 -0.0489961 0" quat="0.92388 0 0 -0.382683" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_5_vis" size="0.0046194 0.0306147 0.08" pos="0.0489961 -0.0489961 0" quat="0.92388 0 0 -0.382683" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_6" size="0.0046194 0.0306147 0.08" pos="0 -0.069291 0" quat="0.707107 0 0 -0.707107" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_6_vis" size="0.0046194 0.0306147 0.08" pos="0 -0.069291 0" quat="0.707107 0 0 -0.707107" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_body_hc_7" size="0.0046194 0.0306147 0.08" pos="-0.0489961 -0.0489961 0" quat="0.382683 0 0 -0.92388" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_body_hc_7_vis" size="0.0046194 0.0306147 0.08" pos="-0.0489961 -0.0489961 0" quat="0.382683 0 0 -0.92388" type="box" class="world_visual" mass="0"/>
+        <site name="cup_body_center" pos="0 0 0" size="0.002" rgba="1 0 0 1"/>
+        <site name="cup_body_default_site" pos="0 0 0" size="0.002" rgba="1 0 0 0"/>
+      </body>
+      <body name="cup_base_main" pos="0 0 -0.065">
+        <geom name="cup_base_g0" size="0.069291 0.01" type="cylinder" friction="1 0.01 0.001" solimp="0.998 0.998" margin="0.001" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_base_g0_vis" size="0.069291 0.01" type="cylinder" class="world_visual" mass="0" rgba="1 0 0 1"/>
+        <site name="cup_base_default_site" pos="0 0 0" size="0.002" rgba="1 0 0 1"/>
+      </body>
+      <body name="cup_handle_root" pos="0 0.0991342 0" quat="0.707107 0 0.707107 0">
+        <geom name="cup_handle_hc_0" size="0.0092388 0.0191342 0.005" pos="-0.0369552 0 0" quat="0 0 0 1" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_handle_hc_0_vis" size="0.0092388 0.0191342 0.005" pos="-0.0369552 0 0" quat="0 0 0 1" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_handle_hc_1" size="0.0092388 0.0191342 0.005" pos="-0.0261313 0.0261313 0" quat="0.382683 0 0 0.92388" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_handle_hc_1_vis" size="0.0092388 0.0191342 0.005" pos="-0.0261313 0.0261313 0" quat="0.382683 0 0 0.92388" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_handle_hc_2" size="0.0092388 0.0191342 0.005" pos="0 0.0369552 0" quat="0.707107 0 0 0.707107" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_handle_hc_2_vis" size="0.0092388 0.0191342 0.005" pos="0 0.0369552 0" quat="0.707107 0 0 0.707107" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_handle_hc_3" size="0.0092388 0.0191342 0.005" pos="0.0261313 0.0261313 0" quat="0.92388 0 0 0.382683" type="box" class="object_collision" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_handle_hc_3_vis" size="0.0092388 0.0191342 0.005" pos="0.0261313 0.0261313 0" quat="0.92388 0 0 0.382683" type="box" class="world_visual" mass="0"/>
+        <geom name="cup_handle_hc_4" size="0.0092388 0.0191342 0.005" pos="0.0369552 0 0" type="box" condim="4" density="100" rgba="0.5 0 0 0"/>
+        <geom name="cup_handle_hc_4_vis" size="0.0092388 0.0191342 0.005" pos="0.0369552 0 0" type="box" class="world_visual" mass="0"/>
+        <site name="cup_handle_center" pos="0 0 0" size="0.002" rgba="1 0 0 1"/>
+        <site name="cup_handle_default_site" pos="0 0 0" size="0.002" rgba="1 0 0 0"/>
+      </body>
+    </body>
+
+
+  </worldbody>
+
+</mujoco>

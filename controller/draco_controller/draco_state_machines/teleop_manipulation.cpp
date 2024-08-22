@@ -90,6 +90,7 @@ void TeleopManipulation::OneStep() {
 
         Eigen::Isometry3d torso_com_iso =
             robot_->GetLinkIsometry(draco_link::torso_com_link);
+        torso_com_iso.linear() = robot_->GetBodyYawRotationMatrix();
         target_iso.translation() =
             torso_com_iso.linear() *
                 (initial_torso_to_rh_iso_.translation() + rs_commands_->pos_) +

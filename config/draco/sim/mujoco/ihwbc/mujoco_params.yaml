@@ -78,7 +78,7 @@ actuator_gains:
     kp: 100
     kd: 5
   right_ezgripper_knuckle_palm_L1_1:
-    kp: 10
+    kp: 30
     kd: 5
 
 initial_config:
