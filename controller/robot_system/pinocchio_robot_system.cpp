@@ -451,7 +451,7 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
   std::cout << "Pinocchio robot info" << std::endl;
   std::cout << "=======================" << std::endl;
 
-  std::cout << "============ draco link ================" << std::endl;
+  std::cout << "============ robot link ================" << std::endl;
   // for (pinocchio::FrameIndex i = 1;
   // i < static_cast<pinocchio::FrameIndex>(model_.nframes); ++i) {
   // std::cout << "constexpr int " << model_.frames[i].name << " = "
@@ -461,7 +461,7 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
     std::cout << "constexpr int " << iter->second << " = " << iter->first << ";"
               << std::endl;
   }
-  std::cout << "============ draco joint ================" << std::endl;
+  std::cout << "============ robot joint ================" << std::endl;
   // for (pinocchio::JointIndex i = 1;
   // i < static_cast<pinocchio::JointIndex>(model_.njoints); ++i) {
   // std::cout << "constexpr int " << model_.names[i] << " = "
@@ -473,7 +473,7 @@ void PinocchioRobotSystem::_PrintRobotInfo() {
               << std::endl;
   }
 
-  std::cout << "============ draco ================" << std::endl;
+  std::cout << "============ robot ================" << std::endl;
   std::cout << "constexpr int n_qdot = " << qdot_.size() << ";" << std::endl;
   std::cout << "constexpr int n_adof = " << qdot_.size() - n_float_ << ";"
             << std::endl;
