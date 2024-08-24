@@ -676,34 +676,34 @@ void DracoController::_SaveData() {
     // ========================================================================
     // wbo task test
     // ========================================================================
-    logger_->add("local_des_wbo",
-                 tci_container_->task_map_["wbo_task"]->DesiredLocalPos());
-    logger_->add("local_act_wbo",
-                 tci_container_->task_map_["wbo_task"]->CurrentLocalPos());
-    logger_->add("local_des_wbo_ang",
-                 tci_container_->task_map_["wbo_task"]->DesiredLocalVel());
-    logger_->add("local_act_wbo_ang",
-                 tci_container_->task_map_["wbo_task"]->CurrentLocalVel());
-    logger_->add("wbo_ang_vel_gt", static_cast<DracoWBOTask *>(
-                                       tci_container_->task_map_["wbo_task"])
-                                       ->local_wbo_ang_vel_gt_);
-    logger_->add("wbo_ang_vel_est", static_cast<DracoWBOTask *>(
-                                        tci_container_->task_map_["wbo_task"])
-                                        ->local_wbo_ang_vel_est_);
-    logger_->add(
-        "centroidal_ang_mom_gt",
-        static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
-            ->centroidal_ang_mom_gt_);
-    logger_->add(
-        "centroidal_ang_mom_est",
-        static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
-            ->centroidal_ang_mom_est_);
+    // logger_->add("local_des_wbo",
+    // tci_container_->task_map_["wbo_task"]->DesiredLocalPos());
+    // logger_->add("local_act_wbo",
+    // tci_container_->task_map_["wbo_task"]->CurrentLocalPos());
+    // logger_->add("local_des_wbo_ang",
+    // tci_container_->task_map_["wbo_task"]->DesiredLocalVel());
+    // logger_->add("local_act_wbo_ang",
+    // tci_container_->task_map_["wbo_task"]->CurrentLocalVel());
+    // logger_->add("wbo_ang_vel_gt", static_cast<DracoWBOTask *>(
+    // tci_container_->task_map_["wbo_task"])
+    //->local_wbo_ang_vel_gt_);
+    // logger_->add("wbo_ang_vel_est", static_cast<DracoWBOTask *>(
+    // tci_container_->task_map_["wbo_task"])
+    //->local_wbo_ang_vel_est_);
+    // logger_->add(
+    //"centroidal_ang_mom_gt",
+    // static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
+    //->centroidal_ang_mom_gt_);
+    // logger_->add(
+    //"centroidal_ang_mom_est",
+    // static_cast<DracoWBOTask *>(tci_container_->task_map_["wbo_task"])
+    //->centroidal_ang_mom_est_);
 
-    logger_->add("base_com_pos", robot_->GetBodyPos());
+    // logger_->add("base_com_pos", robot_->GetBodyPos());
 
     // TEST for mpc update
-    logger_->add("wbo_ypr", sp_->wbo_ypr_);
-    logger_->add("wbo_ang_vel", sp_->wbo_ang_vel_);
+    // logger_->add("wbo_ypr", sp_->wbo_ypr_);
+    // logger_->add("wbo_ang_vel", sp_->wbo_ang_vel_);
   }
 
 #endif
