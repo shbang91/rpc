@@ -94,7 +94,7 @@ def get_sensor_data_from_pybullet(robot):
     imu_ang_vel = np.array(
         pb.getLinkState(robot, DracoLinkIdx.torso_imu, 1, 1)[7])
 
-    imu_dvel = pybullet_util.simulate_dVel_data(robot, link_id_dict,
+    imu_dvel = pybullet_util.simulate_dVel_data(robot, DracoLinkIdx.torso_imu,
                                                 previous_torso_velocity)
 
     #LF
@@ -616,7 +616,6 @@ if __name__ == "__main__":
     count = 0
     jpg_count = 0
 
-
     ## simulation options
     if Config.MEASURE_COMPUTATION_TIME:
         timer = TicToc()
@@ -638,7 +637,11 @@ if __name__ == "__main__":
         # Moving Camera Setting
         ############################################################
         base_pos, base_ori = pb.getBasePositionAndOrientation(draco_humanoid)
-        pb.resetDebugVisualizerCamera(cameraDistance=1.5, cameraYaw=120, cameraPitch=-30, cameraTargetPosition=base_pos + np.array([0.5, 0.3, -base_pos[2] +1]))
+        pb.resetDebugVisualizerCamera(cameraDistance=1.5,
+                                      cameraYaw=120,
+                                      cameraPitch=-30,
+                                      cameraTargetPosition=base_pos +
+                                      np.array([0.5, 0.3, -base_pos[2] + 1]))
 
         ###############################################################################
         #Debugging Purpose
@@ -713,9 +716,9 @@ if __name__ == "__main__":
             rpc_draco_interface.interrupt_.PressD()
         elif pybullet_util.is_key_triggered(keys, 'p'):
             pos = [0.0, 0.0, 0.0]
-            force = [ 0.0, pb.readUserDebugParameter(perturb), 0.0]
-            pb.applyExternalForce(draco_humanoid, DracoLinkIdx.torso_com_link, force, pos,
-                                  pb.WORLD_FRAME)
+            force = [0.0, pb.readUserDebugParameter(perturb), 0.0]
+            pb.applyExternalForce(draco_humanoid, DracoLinkIdx.torso_com_link,
+                                  force, pos, pb.WORLD_FRAME)
             print(f"=================force: {force}=================")
 
         #get sensor data
@@ -790,7 +793,8 @@ if __name__ == "__main__":
         # Save Image file
         if (Config.VIDEO_RECORD) and (count % Config.RECORD_FREQ == 0):
             camera_data = pb.getDebugVisualizerCamera()
-            frame = pybullet_util.get_camera_image_from_debug_camera(camera_data, Config.RENDER_WIDTH, Config.RENDER_HEIGHT) 
+            frame = pybullet_util.get_camera_image_from_debug_camera(
+                camera_data, Config.RENDER_WIDTH, Config.RENDER_HEIGHT)
             filename = video_dir + '/step%06d.jpg' % jpg_count
             cv2.imwrite(filename, frame)
             jpg_count += 1

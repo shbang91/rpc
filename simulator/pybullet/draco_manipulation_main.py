@@ -110,8 +110,8 @@ def get_sensor_data_from_pybullet(robot):
     imu_ang_vel = np.array(
         pb.getLinkState(robot, DracoManipulationLinkIdx.torso_imu, 1, 1)[7])
 
-    imu_dvel = pybullet_util.simulate_dVel_data(robot, link_id_dict,
-                                                previous_torso_velocity)
+    imu_dvel = pybullet_util.simulate_dVel_data(
+        robot, DracoManipulationLinkIdx.torso_imu, previous_torso_velocity)
 
     # LF
     joint_vel[0] = pb.getJointState(robot,

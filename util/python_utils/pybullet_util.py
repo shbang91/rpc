@@ -344,8 +344,7 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
 
 def simulate_dVel_data(robot, link_id, previous_link_velocity):
     # calculate imu acceleration in world frame by numerical differentiation
-    torso_dvel = (get_link_vel(robot, link_id['torso_imu'])[3:6] -
-                  previous_link_velocity)
+    torso_dvel = (get_link_vel(robot, link_id)[3:6] - previous_link_velocity)
 
     return torso_dvel
 

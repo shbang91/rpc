@@ -83,7 +83,7 @@ def get_sensor_data_from_pybullet(robot):
     imu_ang_vel = np.array(
         pb.getLinkState(robot, DracoLinkIdx.torso_imu, 1, 1)[7])
 
-    imu_dvel = pybullet_util.simulate_dVel_data(robot, link_id_dict,
+    imu_dvel = pybullet_util.simulate_dVel_data(robot, DracoLinkIdx.torso_imu,
                                                 previous_torso_velocity)
 
     # LF
