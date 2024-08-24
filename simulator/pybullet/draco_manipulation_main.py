@@ -390,10 +390,11 @@ signal.signal(signal.SIGINT, signal_handler)
 if __name__ == "__main__":
     ## connect pybullet sim server
     pb.connect(pb.GUI)
+    pb.configureDebugVisualizer(pb.COV_ENABLE_GUI, 0)
 
     pb.resetDebugVisualizerCamera(
         cameraDistance=1.5,
-        cameraYaw=120,
+        cameraYaw=250,
         cameraPitch=-30,
         cameraTargetPosition=[0, 0, 0.5],
     )
@@ -417,6 +418,21 @@ if __name__ == "__main__":
 
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
                          useFixedBase=1)
+
+    xOffset = 0.7
+    pb.loadURDF(cwd + "/robot_model/bookcase/bookshelf.urdf",
+                useFixedBase=1,
+                basePosition=[0 + xOffset, 0, 0.025],
+                baseOrientation=[0, 0, 0.7068252, 0.7068252])
+    pb.loadURDF(cwd + "/robot_model/bookcase/red_can.urdf",
+                useFixedBase=0,
+                basePosition=[0 + xOffset, 0.75, 1.05])
+    green_can = pb.loadURDF(cwd + "/robot_model/bookcase/green_can.urdf",
+                            useFixedBase=0,
+                            basePosition=[xOffset - 0.0, -0.5, 1.35])
+    blue_can = pb.loadURDF(cwd + "/robot_model/bookcase/blue_can.urdf",
+                           useFixedBase=0,
+                           basePosition=[xOffset - 0.05, 0.2, 0.3])
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     # TODO:modify this function without dictionary container
@@ -508,12 +524,12 @@ if __name__ == "__main__":
             shutil.rmtree(video_dir)
         os.makedirs(video_dir)
 
-    pybullet_util.draw_link_frame(draco_humanoid,
-                                  DracoManipulationLinkIdx.l_hand_contact,
-                                  text="lh")
-    pybullet_util.draw_link_frame(draco_humanoid,
-                                  DracoManipulationLinkIdx.r_hand_contact,
-                                  text="rh")
+    # pybullet_util.draw_link_frame(draco_humanoid,
+    # DracoManipulationLinkIdx.l_hand_contact,
+    # text="lh")
+    # pybullet_util.draw_link_frame(draco_humanoid,
+    # DracoManipulationLinkIdx.r_hand_contact,
+    # text="rh")
 
     previous_torso_velocity = np.array([0.0, 0.0, 0.0])
     # rate = RateLimiter(frequency=1. / dt)
@@ -522,6 +538,16 @@ if __name__ == "__main__":
         l_normal_volt_noise = np.random.normal(0, l_contact_volt_noise)
         r_normal_volt_noise = np.random.normal(0, r_contact_volt_noise)
         imu_ang_vel_noise = np.random.normal(0, imu_ang_vel_noise_std_dev)
+
+        ############################################################
+        # Moving Camera Setting
+        ############################################################
+        # base_pos, base_ori = pb.getBasePositionAndOrientation(draco_humanoid)
+        # pb.resetDebugVisualizerCamera(cameraDistance=1.5,
+        # cameraYaw=250,
+        # cameraPitch=-30,
+        # cameraTargetPosition=base_pos +
+        # np.array([-0.5, 0.3, -base_pos[2] + 1]))
 
         ###############################################################################
         # Debugging Purpose
@@ -668,10 +694,9 @@ if __name__ == "__main__":
 
         # Save Image file
         if (Config.VIDEO_RECORD) and (count % Config.RECORD_FREQ == 0):
-            frame = pybullet_util.get_camera_image([1.0, 0.5, 1.0], 1.0, 120,
-                                                   -15, 0, 60.0, 1920, 1080,
-                                                   0.1, 100.0)
-            frame = frame[:, :, [2, 1, 0]]  # << RGB to BGR
+            camera_data = pb.getDebugVisualizerCamera()
+            frame = pybullet_util.get_camera_image_from_debug_camera(
+                camera_data, Config.RENDER_WIDTH, Config.RENDER_HEIGHT)
             filename = video_dir + "/step%06d.jpg" % jpg_count
             cv2.imwrite(filename, frame)
             jpg_count += 1
