@@ -11,13 +11,13 @@ file(GLOB_RECURSE ${PROJECT_NAME}_HEADERS include/convex_mpc/*.h*)
 #cmake_print_variables(${PROJECT_NAME}_SOURCES)
 
 add_library(
-  ${PROJECT_NAME} 
+  ${PROJECT_NAME}
   SHARED
-  ${${PROJECT_NAME}_SOURCES} 
+  ${${PROJECT_NAME}_SOURCES}
   ${${PROJECT_NAME}_HEADERS}
 )
 target_link_libraries(
-  ${PROJECT_NAME} 
+  ${PROJECT_NAME}
   PUBLIC
   #${PINOCCHIO_LIBRARIES}
   #pinocchio::pinocchio
@@ -28,7 +28,7 @@ target_link_libraries(
 )
 
 target_include_directories(
-  ${PROJECT_NAME} 
+  ${PROJECT_NAME}
   PUBLIC
   ${EIGEN3_INCLUDE_DIR}
   #${PINOCCHIO_INCLUDE_DIRS}
@@ -40,7 +40,7 @@ target_include_directories(
 )
 #if (OPTIMIZE_FOR_NATIVE)
   #target_compile_options(
-    #${PROJECT_NAME} 
+    #${PROJECT_NAME}
     #PUBLIC
     #-march=native
   #)

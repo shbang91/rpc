@@ -6,7 +6,8 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(
     std::unordered_map<std::string, int *> &parameters_map_int,
     std::unordered_map<std::string, double *> &parameters_map_double,
     std::unordered_map<std::string, Task *> &parameters_map_task,
-    std::unordered_map<std::string, TaskHierarchyManager *> &parameters_map_hm) {
+    std::unordered_map<std::string, TaskHierarchyManager *>
+        &parameters_map_hm) {
   next_sub_id_ = 0;
 
   client_.setBinaryMessageHandler([&](const uint8_t *data, size_t dataLength) {
@@ -92,7 +93,8 @@ FoxgloveParameterSubscriber::FoxgloveParameterSubscriber(
   });
 
   const auto openHandler = [&](websocketpp::connection_hdl) {
-    std::cout << "[FoxgloveParameterSubscriber] Connected to " << std::string(url) << std::endl;
+    std::cout << "[FoxgloveParameterSubscriber] Connected to "
+              << std::string(url) << std::endl;
   };
   const auto closeHandler = [&](websocketpp::connection_hdl) {
     std::cout << "[FoxgloveParameterSubscriber] Connection closed" << std::endl;

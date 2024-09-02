@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include "third_party/sciplot/sciplot.hpp"
+#include <gtest/gtest.h>
 
 #include "controller/friction_compensator/karnopp_compensator.hpp"
 

@@ -4,11 +4,11 @@ include(cmake/gtest.cmake)
 # macto for testing
 macro(add_srbd_mpc_test TESTNAME)
   add_executable(
-    ${TESTNAME} 
+    ${TESTNAME}
     ${TESTNAME}.cpp
   )
   target_include_directories(
-    ${TESTNAME} 
+    ${TESTNAME}
     PRIVATE
     ${GTEST_INCLUDE_PATH}
     ${GMOCK_INCLUDE_PATH}
@@ -17,7 +17,7 @@ macro(add_srbd_mpc_test TESTNAME)
     ${PROJECT_SOURCE_DIR}/test/test_helper
   )
   target_link_libraries(
-    ${TESTNAME} 
+    ${TESTNAME}
     PRIVATE
     GTest::GTest
     GTest::GMock
@@ -29,11 +29,11 @@ macro(add_srbd_mpc_test TESTNAME)
   endif()
 
   add_dependencies(
-    ${TESTNAME} 
+    ${TESTNAME}
     googletest
   )
   add_test(
-    NAME ${TESTNAME} 
+    NAME ${TESTNAME}
     COMMAND $<TARGET_FILE:${TESTNAME}>
   )
 endmacro()

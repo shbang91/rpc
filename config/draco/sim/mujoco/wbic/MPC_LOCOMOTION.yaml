@@ -82,4 +82,3 @@ gait:
   ## 0: standing
   ## 1: walking
   gait_number: 1
-

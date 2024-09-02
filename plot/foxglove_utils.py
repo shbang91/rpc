@@ -1,7 +1,4 @@
-import asyncio
 import json
-import time
-from foxglove_websocket.server import FoxgloveServerListener
 from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
 
 
@@ -86,4 +83,3 @@ class SceneChannel:
                     "schema": self.schema,
                 }
             )
-

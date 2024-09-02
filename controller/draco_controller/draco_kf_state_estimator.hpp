@@ -28,7 +28,7 @@
 #include "controller/state_estimator/PoseMeasurementModel.hpp"
 #include "controller/whole_body_controller/managers/contact_detection_manager.hpp"
 #include "third_party/kalman_filters/ExtendedKalmanFilter.hpp"
-//#include
+// #include
 //"controller/whole_body_controller/managers/contact_detection_manager.hpp"
 
 #if B_USE_MATLOGGER

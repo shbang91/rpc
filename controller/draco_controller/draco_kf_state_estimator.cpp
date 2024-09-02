@@ -622,7 +622,7 @@ void DracoKFStateEstimator::ComputeDCM() {
   sp_->dcm_ = com_pos + com_vel / dcm_omega;
 
   double cutoff_period =
-          0.01; // 10ms cut-off period for first-order low pass filter
+      0.01; // 10ms cut-off period for first-order low pass filter
   double alpha = sp_->servo_dt_ / cutoff_period;
   sp_->dcm_vel_ = alpha * ((sp_->dcm_ - sp_->prev_dcm_) / sp_->servo_dt_) +
                   (1.0 - alpha) * sp_->dcm_vel_;

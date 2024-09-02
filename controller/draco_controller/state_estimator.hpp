@@ -5,7 +5,7 @@ class PinocchioRobotSystem;
 
 class StateEstimator {
 public:
-  StateEstimator(PinocchioRobotSystem *robot) : robot_(robot){};
+  StateEstimator(PinocchioRobotSystem *robot) : robot_(robot) {};
   virtual ~StateEstimator() = default;
 
   virtual void Initialize(DracoSensorData *sensor_Data) = 0;
