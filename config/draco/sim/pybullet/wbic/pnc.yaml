@@ -2,8 +2,8 @@ env: pybullet
 wbc_type: wbic
 servo_dt: 0.00125
 ip_address: "tcp://127.0.0.1:5557"
-data_save_freq: 1
-#data_save_freq: 50
+#data_save_freq: 1
+data_save_freq: 50
 stance_foot: 1 # 0: left_foot 1: right_foot
 
 state_estimator:
@@ -46,7 +46,7 @@ controller:
   b_smoothing_command: true 
   smoothing_command_duration: 0.01 ## this will filter the control command at the beginning
   b_use_modified_swing_foot_jac: true
-  b_use_modified_hand_jac: true
+  b_use_modified_hand_jac: false
   b_use_filtered_torque: false
   alpha_cmd: 0.5
 
@@ -96,8 +96,8 @@ wbc:
     torso_ori_task:
       #kp : [500., 500., 500.]
       #kd : [50., 50., 50.]
-      kp : [500., 500., 500.] ## issues when yaw ~ 90 degree
-      kd : [50., 50., 50.]
+      kp : [500., 500., 300.] ## issues when yaw ~ 90 degree
+      kd : [50., 50., 30.]
       kp_ik : [1.0, 1.0, 1.0]
       #kp : [100., 100., 100.]
       #kd : [20., 20., 20.]

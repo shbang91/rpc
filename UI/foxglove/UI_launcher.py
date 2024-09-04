@@ -211,7 +211,10 @@ async def main():
             color[lf] = [.1, .5, 1, 1]
             proj_foot_pos[rf], proj_foot_pos[lf] = [0, 0, 0], [0, 0.184, 0]
             proj_foot_ori[rf], proj_foot_ori[lf] = [0, 0, 0, 0], [0, 0, 0, 0]
-            name = "projected_footsteps_" + str(i)
+            if i < 10:
+                name = "projected_footsteps_0" + str(i)
+            else: name = "projected_footsteps_" + str(i)
+            # Add a channel for projected footstep data
             foot_scene = await SceneChannel(
                 True, name, "json", name,
                 ["rf_pos_x","rf_pos_y","rf_pos_z","rf_ori_x","rf_ori_y","rf_ori_z","rf_ori_q",
