@@ -238,8 +238,8 @@ async def main():
 
         #add visual icp spheres
         icp_spheres = ShapeScene()
-        icp_spheres.add_shape("est_icp", "spheres", [1, 0, 1, 1], [0.1, 0.1, 0.1])
-        icp_spheres.add_shape("des_icp", "spheres", [0, 1, 0, 1], [0.1, 0.1, 0.1])
+        icp_spheres.add_shape("est_icp", "spheres", [1, 0, 1, 1], [0.03, 0.03, 0.03])
+        icp_spheres.add_shape("des_icp", "spheres", [0, 1, 0, 1], [0.03, 0.03, 0.03])
 
         # Send the FrameTransform every frame to update the model's position
         transform = FrameTransform()
@@ -263,7 +263,7 @@ async def main():
             msg.ParseFromString(encoded_msg)
             check_if_kf_estimator(msg.kf_base_joint_pos, msg.est_base_joint_pos)
 
-            await asyncio.sleep(0.02)
+            await asyncio.sleep(0.01)
             now = time.time_ns()
             transform.timestamp.FromNanoseconds(now)
 
