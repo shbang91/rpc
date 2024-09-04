@@ -1,7 +1,7 @@
 #pragma once
 
 namespace med7_link {
-//constexpr int pedestal = 2;
+// constexpr int pedestal = 2;
 constexpr int world = 2;
 constexpr int link0 = 4;
 constexpr int link1 = 6;
@@ -31,4 +31,3 @@ namespace med7 {
 constexpr int n_qdot = 7;
 constexpr int n_adof = 7;
 } // namespace med7
-

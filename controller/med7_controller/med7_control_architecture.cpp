@@ -4,24 +4,23 @@
 #include "controller/med7_controller/med7_controller.hpp"
 #include "controller/med7_controller/med7_definition.hpp"
 
+#include "controller/med7_controller/med7_state_machines/ee_traj.hpp"
 #include "controller/med7_controller/med7_state_machines/initialize.hpp"
 #include "controller/med7_controller/med7_state_machines/stand_up.hpp"
-#include "controller/med7_controller/med7_state_machines/ee_traj.hpp"
 #include "controller/med7_controller/med7_state_machines/task_transition.hpp"
 
 #include "controller/med7_controller/med7_state_provider.hpp"
 #include "controller/med7_controller/med7_tci_container.hpp"
 
-#include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/arm_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/managers/upper_body_trajectory_manager.hpp"
 #include "util/util.hpp"
 
-Med7ControlArchitecture::Med7ControlArchitecture(
-    PinocchioRobotSystem *robot)
+Med7ControlArchitecture::Med7ControlArchitecture(PinocchioRobotSystem *robot)
     : ControlArchitecture(robot) {
   util::PrettyConstructor(1, "Med7ControlArchitecture");
 
@@ -51,34 +50,27 @@ Med7ControlArchitecture::Med7ControlArchitecture(
   // trajectory Managers
   //=============================================================
   //  initialize kinematics manager
-
-  // upper_body_tm_ = new UpperBodyTrajetoryManager(
-  // tci_container_->task_map_["upper_body_task"], robot_);
-
   ee_SE3_tm_ = new ArmTrajectoryManager(
       tci_container_->task_map_["ee_pos_task"],
       tci_container_->task_map_["ee_ori_task"], robot_);
 
-  
   Eigen::VectorXd weight, weight_min;
 
-
   // Joint Position Task
-  try{
+  try {
     util::ReadParameter(cfg_["wbc"]["task"]["jpos_task"], prefix + "_weight",
                         weight);
     util::ReadParameter(cfg_["wbc"]["task"]["jpos_task"],
                         prefix + "_weight_min", weight_min);
 
-    jpos_hm_ = new TaskHierarchyManager(
-    tci_container_->task_map_["jpos_task"], weight, weight_min);
-    
+    jpos_hm_ = new TaskHierarchyManager(tci_container_->task_map_["jpos_task"],
+                                        weight, weight_min);
+
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
-
 
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["ee_pos_task"], prefix + "_weight",
@@ -87,14 +79,13 @@ Med7ControlArchitecture::Med7ControlArchitecture(
                         prefix + "_weight_min", weight_min);
 
     ee_pos_hm_ = new TaskHierarchyManager(
-    tci_container_->task_map_["ee_pos_task"], weight, weight_min);
+        tci_container_->task_map_["ee_pos_task"], weight, weight_min);
 
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
               << __FILE__ << "]" << std::endl;
     std::exit(EXIT_FAILURE);
   }
-
 
   try {
     util::ReadParameter(cfg_["wbc"]["task"]["ee_ori_task"], prefix + "_weight",
@@ -103,8 +94,7 @@ Med7ControlArchitecture::Med7ControlArchitecture(
                         prefix + "_weight_min", weight_min);
 
     ee_ori_hm_ = new TaskHierarchyManager(
-    tci_container_->task_map_["ee_ori_task"], weight, weight_min);
-
+        tci_container_->task_map_["ee_ori_task"], weight, weight_min);
 
   } catch (const std::runtime_error &ex) {
     std::cerr << "Error reading parameter [" << ex.what() << "] at file: ["
@@ -112,10 +102,8 @@ Med7ControlArchitecture::Med7ControlArchitecture(
     std::exit(EXIT_FAILURE);
   }
 
-
   double max_rf_z;
   util::ReadParameter(cfg_["wbc"]["contact"], prefix + "_max_rf_z", max_rf_z);
-
 
   //=============================================================
   // initialize state machines
@@ -128,7 +116,6 @@ Med7ControlArchitecture::Med7ControlArchitecture(
 
   state_machine_container_[med7_states::kEETraj] =
       new EETraj(med7_states::kEETraj, robot_, this);
-
 
   this->_InitializeParameters();
 }
@@ -148,7 +135,6 @@ void Med7ControlArchitecture::GetCommand(void *command) {
     state_ = state_machine_container_[state_]->GetNextState();
     b_state_first_visit_ = true;
   }
-
 }
 
 void Med7ControlArchitecture::_InitializeParameters() {
@@ -180,5 +166,4 @@ Med7ControlArchitecture::~Med7ControlArchitecture() {
   delete state_machine_container_[med7_states::kInitialize];
   delete state_machine_container_[med7_states::kTaskTransition];
   delete state_machine_container_[med7_states::kEETraj];
-
 }

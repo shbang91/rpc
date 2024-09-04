@@ -15,9 +15,7 @@ Med7TCIContainer::Med7TCIContainer(PinocchioRobotSystem *robot)
   // Tasks List
   //=============================================================
   jpos_task_ = new JointTask(robot_);
-
   ee_pos_task_ = new LinkPosTask(robot_, med7_link::link_inst_ee);
-
   ee_ori_task_ = new LinkOriTask(robot_, med7_link::link_inst_ee);
 
   // std::vector<int> upper_body_jidx{
@@ -55,7 +53,6 @@ Med7TCIContainer::Med7TCIContainer(PinocchioRobotSystem *robot)
   // target_link_idx, mu) ]
   //=============================================================
   ee_contact_ = new PointContact(robot_, med7_link::link_inst_ee, 0.3);
-
 
   task_unweighted_cost_map_.insert(
       std::make_pair("Fr_regularization_task", NAN));

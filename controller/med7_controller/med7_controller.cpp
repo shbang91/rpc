@@ -20,7 +20,7 @@
 #endif
 
 Med7Controller::Med7Controller(Med7TCIContainer *tci_container,
-                                   PinocchioRobotSystem *robot)
+                               PinocchioRobotSystem *robot)
     : tci_container_(tci_container), robot_(robot),
       joint_pos_cmd_(Eigen::VectorXd::Zero(med7::n_adof)),
       joint_vel_cmd_(Eigen::VectorXd::Zero(med7::n_adof)),
@@ -53,8 +53,8 @@ Med7Controller::Med7Controller(Med7TCIContainer *tci_container,
   Eigen::VectorXd jvel_lb = robot_->JointVelLimits().leftCols(1);
   Eigen::VectorXd jvel_ub = robot_->JointVelLimits().rightCols(1);
 
-  joint_integrator_ = new JointIntegrator(med7::n_adof, sp_->servo_dt_,
-                                          jpos_lb, jpos_ub, jvel_lb, jvel_ub);
+  joint_integrator_ = new JointIntegrator(med7::n_adof, sp_->servo_dt_, jpos_lb,
+                                          jpos_ub, jvel_lb, jvel_ub);
 
   // read yaml & set parameters
   try {
@@ -115,10 +115,10 @@ void Med7Controller::GetCommand(void *command) {
     joint_vel_cmd_ = tci_container_->task_map_["joint_task"]->DesiredVel();
     // joint_trq_cmd_ = Eigen::VectorXd::Zero(med7::n_adof);
     joint_trq_cmd_ = Eigen::VectorXd::Zero(med7::n_adof);
-  } 
-  
+  }
+
   else {
-  
+
     // first visit for feedforward torque command
     if (b_first_visit_wbc_ctrl_) {
       // for joint integrator initialization
@@ -138,16 +138,14 @@ void Med7Controller::GetCommand(void *command) {
     // wbc command with contact (feedforward torque)
     // task and contact update
 
-
     for (const auto &[task_str, task_ptr] : tci_container_->task_map_) {
       // print task string
 
       task_ptr->UpdateJacobian();
       task_ptr->UpdateJacobianDotQdot();
       task_ptr->UpdateOpCommand(sp_->rot_world_local_);
-
+      // task_ptr->Debug();
     }
-
 
     int rf_dim(0);
     for (const auto &[contact_str, contact_ptr] :
@@ -166,7 +164,6 @@ void Med7Controller::GetCommand(void *command) {
     Eigen::VectorXd grav = robot_->GetGravity();
     ihwbc_->UpdateSetting(A, Ainv, cori, grav);
 
-    
     ihwbc_->Solve(tci_container_->task_map_, tci_container_->contact_map_,
                   tci_container_->internal_constraint_map_,
                   tci_container_->force_task_map_, wbc_qddot_cmd_,

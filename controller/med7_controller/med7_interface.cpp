@@ -12,7 +12,6 @@
 #include "controller/med7_controller/med7_state_provider.hpp"
 #include "controller/med7_controller/med7_task_gain_handler.hpp"
 
-
 #include "controller/med7_controller/med7_definition.hpp"
 
 Med7Interface::Med7Interface() : Interface() {
@@ -40,7 +39,8 @@ Med7Interface::Med7Interface() : Interface() {
 
   ctrl_arch_ = new Med7ControlArchitecture(robot_);
 
-  interrupt_handler_ = new Med7InterruptHandler(static_cast<Med7ControlArchitecture *>(ctrl_arch_));
+  interrupt_handler_ = new Med7InterruptHandler(
+      static_cast<Med7ControlArchitecture *>(ctrl_arch_));
   task_gain_handler_ = new Med7TaskGainHandler(
       static_cast<Med7ControlArchitecture *>(ctrl_arch_));
 }
@@ -49,7 +49,7 @@ Med7Interface::~Med7Interface() {
   delete robot_;
   delete se_;
   delete ctrl_arch_;
-  // delete interrupt_handler_;
+  delete interrupt_handler_;
   delete task_gain_handler_;
 }
 
@@ -59,31 +59,27 @@ void Med7Interface::GetCommand(void *sensor_data, void *command_data) {
   sp_->state_ = ctrl_arch_->state();
   sp_->prev_state_ = ctrl_arch_->prev_state();
 
-  Med7SensorData *med7_sensor_data =
-      static_cast<Med7SensorData *>(sensor_data);
+  Med7SensorData *med7_sensor_data = static_cast<Med7SensorData *>(sensor_data);
 
   Med7Command *med7_command = static_cast<Med7Command *>(command_data);
 
   // update sensor data to pinocchio model using state estimator class
   se_->Update(med7_sensor_data);
 
-  // TODO:get control command through control architecture class
-
   // process interrupt & task gains
   if (interrupt_handler_->IsSignalReceived()) {
-      interrupt_handler_->Process();
+    interrupt_handler_->Process();
   }
   if (task_gain_handler_->IsSignalReceived())
     task_gain_handler_->Process();
 
-  // get control command
+  // get control command through control architecture class
   ctrl_arch_->GetCommand(med7_command);
 
   count_++;
 }
 
-void Med7Interface::_SafeCommand(Med7SensorData *data,
-                                   Med7Command *command) {
+void Med7Interface::_SafeCommand(Med7SensorData *data, Med7Command *command) {
   command->joint_pos_cmd_ = data->joint_pos_;
   command->joint_vel_cmd_.setZero();
   command->joint_trq_cmd_.setZero();

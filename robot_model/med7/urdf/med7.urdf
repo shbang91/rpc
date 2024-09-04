@@ -14,200 +14,200 @@
     <child link="link_0"/>
   </joint>
   <!-- ros_control-plugin -->
-  <gazebo>
-    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>/home/mk/Documents/M31/install/lbr_ros2_control/share/lbr_ros2_control/config/lbr_controllers.yaml</parameters>
-      <ros>
-        <namespace>/lbr</namespace>
-        <!-- remapping for controller manager inside Gazebo plugin -->
-        <remapping>~/robot_description:=robot_description</remapping>
-      </ros>
-    </plugin>
-  </gazebo>
-  <gazebo reference="link_0">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A1">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_1">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A2">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_2">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A3">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_3">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A4">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_4">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A5">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_5">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A6">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_6">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <gazebo reference="A7">
-    <implicitSpringDamper>true</implicitSpringDamper>
-    <provideFeedback>true</provideFeedback>
-  </gazebo>
-  <gazebo reference="link_7">
-    <mu1>0.2</mu1>
-    <mu2>0.2</mu2>
-  </gazebo>
-  <ros2_control name="lbr_system_interface" type="system">
-    <hardware>
-      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
-    </hardware>
-    <joint name="A1">
-      <param name="min_position">-2.9670597283903604</param>
-      <param name="max_position">2.9670597283903604</param>
-      <param name="max_velocity">1.710422666954443</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-2.9670597283903604</param>
-        <param name="max">2.9670597283903604</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="A2">
-      <param name="min_position">-2.0943951023931953</param>
-      <param name="max_position">2.0943951023931953</param>
-      <param name="max_velocity">1.710422666954443</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-2.0943951023931953</param>
-        <param name="max">2.0943951023931953</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="A3">
-      <param name="min_position">-2.9670597283903604</param>
-      <param name="max_position">2.9670597283903604</param>
-      <param name="max_velocity">1.7453292519943295</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-2.9670597283903604</param>
-        <param name="max">2.9670597283903604</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="A4">
-      <param name="min_position">-2.0943951023931953</param>
-      <param name="max_position">2.0943951023931953</param>
-      <param name="max_velocity">2.2689280275926285</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-2.0943951023931953</param>
-        <param name="max">2.0943951023931953</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="A5">
-      <param name="min_position">-2.9670597283903604</param>
-      <param name="max_position">2.9670597283903604</param>
-      <param name="max_velocity">2.443460952792061</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-2.9670597283903604</param>
-        <param name="max">2.9670597283903604</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="A6">
-      <param name="min_position">-2.0943951023931953</param>
-      <param name="max_position">2.0943951023931953</param>
-      <param name="max_velocity">3.141592653589793</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-2.0943951023931953</param>
-        <param name="max">2.0943951023931953</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-    <joint name="A7">
-      <param name="min_position">-3.0543261909900763</param>
-      <param name="max_position">3.0543261909900763</param>
-      <param name="max_velocity">3.141592653589793</param>
-      <param name="max_torque">200</param>
-      <command_interface name="position">
-        <param name="min">-3.0543261909900763</param>
-        <param name="max">3.0543261909900763</param>
-      </command_interface>
-      <command_interface name="effort">
-        <param name="min">-200</param>
-        <param name="max"> 200</param>
-      </command_interface>
-      <state_interface name="position"/>
-      <state_interface name="velocity"/>
-      <state_interface name="effort"/>
-    </joint>
-  </ros2_control>
+  <!--<gazebo>-->
+    <!--<plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">-->
+      <!--<parameters>/home/mk/Documents/M31/install/lbr_ros2_control/share/lbr_ros2_control/config/lbr_controllers.yaml</parameters>-->
+      <!--<ros>-->
+        <!--<namespace>/lbr</namespace>-->
+         <!--remapping for controller manager inside Gazebo plugin -->
+        <!--<remapping>~/robot_description:=robot_description</remapping>-->
+      <!--</ros>-->
+    <!--</plugin>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_0">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A1">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_1">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A2">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_2">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A3">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_3">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A4">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_4">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A5">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_5">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A6">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_6">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="A7">-->
+    <!--<implicitSpringDamper>true</implicitSpringDamper>-->
+    <!--<provideFeedback>true</provideFeedback>-->
+  <!--</gazebo>-->
+  <!--<gazebo reference="link_7">-->
+    <!--<mu1>0.2</mu1>-->
+    <!--<mu2>0.2</mu2>-->
+  <!--</gazebo>-->
+  <!--<ros2_control name="lbr_system_interface" type="system">-->
+    <!--<hardware>-->
+      <!--<plugin>gazebo_ros2_control/GazeboSystem</plugin>-->
+    <!--</hardware>-->
+    <!--<joint name="A1">-->
+      <!--<param name="min_position">-2.9670597283903604</param>-->
+      <!--<param name="max_position">2.9670597283903604</param>-->
+      <!--<param name="max_velocity">1.710422666954443</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-2.9670597283903604</param>-->
+        <!--<param name="max">2.9670597283903604</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+    <!--<joint name="A2">-->
+      <!--<param name="min_position">-2.0943951023931953</param>-->
+      <!--<param name="max_position">2.0943951023931953</param>-->
+      <!--<param name="max_velocity">1.710422666954443</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-2.0943951023931953</param>-->
+        <!--<param name="max">2.0943951023931953</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+    <!--<joint name="A3">-->
+      <!--<param name="min_position">-2.9670597283903604</param>-->
+      <!--<param name="max_position">2.9670597283903604</param>-->
+      <!--<param name="max_velocity">1.7453292519943295</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-2.9670597283903604</param>-->
+        <!--<param name="max">2.9670597283903604</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+    <!--<joint name="A4">-->
+      <!--<param name="min_position">-2.0943951023931953</param>-->
+      <!--<param name="max_position">2.0943951023931953</param>-->
+      <!--<param name="max_velocity">2.2689280275926285</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-2.0943951023931953</param>-->
+        <!--<param name="max">2.0943951023931953</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+    <!--<joint name="A5">-->
+      <!--<param name="min_position">-2.9670597283903604</param>-->
+      <!--<param name="max_position">2.9670597283903604</param>-->
+      <!--<param name="max_velocity">2.443460952792061</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-2.9670597283903604</param>-->
+        <!--<param name="max">2.9670597283903604</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+    <!--<joint name="A6">-->
+      <!--<param name="min_position">-2.0943951023931953</param>-->
+      <!--<param name="max_position">2.0943951023931953</param>-->
+      <!--<param name="max_velocity">3.141592653589793</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-2.0943951023931953</param>-->
+        <!--<param name="max">2.0943951023931953</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+    <!--<joint name="A7">-->
+      <!--<param name="min_position">-3.0543261909900763</param>-->
+      <!--<param name="max_position">3.0543261909900763</param>-->
+      <!--<param name="max_velocity">3.141592653589793</param>-->
+      <!--<param name="max_torque">200</param>-->
+      <!--<command_interface name="position">-->
+        <!--<param name="min">-3.0543261909900763</param>-->
+        <!--<param name="max">3.0543261909900763</param>-->
+      <!--</command_interface>-->
+      <!--<command_interface name="effort">-->
+        <!--<param name="min">-200</param>-->
+        <!--<param name="max"> 200</param>-->
+      <!--</command_interface>-->
+      <!--<state_interface name="position"/>-->
+      <!--<state_interface name="velocity"/>-->
+      <!--<state_interface name="effort"/>-->
+    <!--</joint>-->
+  <!--</ros2_control>-->
   <!-- properties -->
   <link name="link_0">
     <inertial>
@@ -234,7 +234,7 @@
     <child link="link_1"/>
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="200" lower="-2.9670597283903604" upper="2.9670597283903604" velocity="1.710422666954443"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_1">
     <inertial>
@@ -261,7 +261,7 @@
     <child link="link_2"/>
     <axis xyz="0.0 1.0 0.0"/>
     <limit effort="200" lower="-2.0943951023931953" upper="2.0943951023931953" velocity="1.710422666954443"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_2">
     <inertial>
@@ -288,7 +288,7 @@
     <child link="link_3"/>
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="200" lower="-2.9670597283903604" upper="2.9670597283903604" velocity="1.7453292519943295"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_3">
     <inertial>
@@ -315,7 +315,7 @@
     <child link="link_4"/>
     <axis xyz="0.0 -1.0 0.0"/>
     <limit effort="200" lower="-2.0943951023931953" upper="2.0943951023931953" velocity="2.2689280275926285"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_4">
     <inertial>
@@ -342,7 +342,7 @@
     <child link="link_5"/>
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="200" lower="-2.9670597283903604" upper="2.9670597283903604" velocity="2.443460952792061"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_5">
     <inertial>
@@ -369,7 +369,7 @@
     <child link="link_6"/>
     <axis xyz="0.0 1.0 0.0"/>
     <limit effort="200" lower="-2.0943951023931953" upper="2.0943951023931953" velocity="3.141592653589793"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_6">
     <inertial>
@@ -396,7 +396,7 @@
     <child link="link_7"/>
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="200" lower="-3.0543261909900763" upper="3.0543261909900763" velocity="3.141592653589793"/>
-    <dynamics damping="10.0" friction="0.1"/>
+    <!--<dynamics damping="10.0" friction="0.1"/>-->
   </joint>
   <link name="link_7">
     <inertial>
@@ -423,7 +423,12 @@
     <origin rpy="0 0 0" xyz="0 0 0.035"/>
   </joint>
   <link name="link_ee">
-        </link>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
   <joint name="joint_ins" type="fixed">
     <parent link="link_ee"/>
     <child link="link_ins"/>
@@ -454,7 +459,12 @@
     <origin rpy="0 0 1.570796" xyz="0.018 0.084 0.4235"/>
   </joint>
   <link name="link_inst_ee">
-        </link>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
   <joint name="joint_ee_cam" type="fixed">
     <parent link="link_ee"/>
     <child link="link_cam"/>

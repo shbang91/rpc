@@ -308,7 +308,8 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
 def simulate_dVel_data(robot, link_id, previous_link_velocity):
 
     # calculate imu acceleration in world frame by numerical differentiation
-    torso_dvel = (get_link_vel(robot, link_id['torso_imu'])[3:6] - previous_link_velocity)
+    torso_dvel = (get_link_vel(robot, link_id['torso_imu'])[3:6] -
+                  previous_link_velocity)
 
     return torso_dvel
 
@@ -325,6 +326,7 @@ def simulate_contact_sensor(force_sensor_measurement):
     voltage_to_force_map = -10000
 
     return (force_sensor_measurement - voltage_bias) / voltage_to_force_map
+
 
 def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
                                nearval, farval):
@@ -405,6 +407,7 @@ def is_key_triggered(keys, key):
         return keys[ord(key)] & pb.KEY_WAS_TRIGGERED
     return False
 
+
 def is_medkey_triggered(keys, key, isstr=True):
 
     if isstr is True:
@@ -415,7 +418,6 @@ def is_medkey_triggered(keys, key, isstr=True):
     if o in keys:
         return keys[o] & pb.KEY_WAS_TRIGGERED
     return False
-
 
 
 def set_config(robot, joint_id, base_pos, base_quat, joint_pos):

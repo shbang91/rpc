@@ -23,6 +23,7 @@ from util.python_utils import liegroup
 
 import med7_interface_py
 
+
 def get_sensor_data_from_pybullet(robot):
 
     # Initialize sensor data
@@ -70,6 +71,7 @@ def set_init_config_pybullet(robot):
 
 from scipy.spatial.transform import Rotation as R
 
+
 def every_time_step(count, interval):
     if count % interval == 0:
         return True
@@ -97,9 +99,9 @@ def add_tf_visualization(robot, link_index):
     blue = [0, 0, 1]  # RGB values for blue
     green = [0, 1, 0]  # RGB values for green
 
-    pb.addUserDebugLine(pos, x_ending, red, lineWidth=4, lifeTime=1)
-    pb.addUserDebugLine(pos, y_ending, green, lineWidth=4, lifeTime=1)
-    pb.addUserDebugLine(pos, z_ending, blue, lineWidth=4, lifeTime=1)
+    pb.addUserDebugLine(pos, x_ending, red, lineWidth=5, lifeTime=0.1)
+    pb.addUserDebugLine(pos, y_ending, green, lineWidth=5, lifeTime=0.1)
+    pb.addUserDebugLine(pos, z_ending, blue, lineWidth=5, lifeTime=0.1)
 
 
 def apply_control_input_to_pybullet(robot, command):
@@ -134,7 +136,6 @@ def apply_control_input_to_pybullet(robot, command):
                              Med7JointIdx.joint7,
                              controlMode=mode,
                              force=command[6])
-
 
 
 def main():
@@ -173,7 +174,6 @@ def main():
     # Initial joint configuration
     set_init_config_pybullet(robot)
 
-
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
@@ -196,9 +196,12 @@ def main():
     # Simulation Time Parameters
     rate = RateLimiter(frequency=1. / dt)
 
+    # draw ee link frame
+    if Config.VISUALIZE_ENDEFFECTOR:
+        add_tf_visualization(robot, Med7LinkIdx.ee)
+
     #  Simulation Main Loop
     while True:
-        
         ########################## Keyboard Interrupt ##########################
         keys = pb.getKeyboardEvents()
         if pybullet_util.is_medkey_triggered(keys, '1'):
@@ -222,21 +225,23 @@ def main():
             rpc_med7_interface.interrupt_.PressUp()
         elif pybullet_util.is_medkey_triggered(keys, pb.B3G_DOWN_ARROW, False):
             rpc_med7_interface.interrupt_.PressDown()
-        elif pybullet_util.is_medkey_triggered(keys, pb.B3G_RIGHT_ARROW, False):
+        elif pybullet_util.is_medkey_triggered(keys, pb.B3G_RIGHT_ARROW,
+                                               False):
             rpc_med7_interface.interrupt_.PressRight()
         elif pybullet_util.is_medkey_triggered(keys, pb.B3G_LEFT_ARROW, False):
             rpc_med7_interface.interrupt_.PressLeft()
 
-
+        ## visualize ee frame
+        if Config.VISUALIZE_ENDEFFECTOR:
+            add_tf_visualization(robot, Med7LinkIdx.ee)
         ########################## Sensor Update ##############################
         # get sensor data from pybullet
         joint_pos, joint_vel = get_sensor_data_from_pybullet(robot)
         rpc_med7_sensor_data.joint_pos_ = joint_pos
         rpc_med7_sensor_data.joint_vel_ = joint_vel
-        rpc_med7_interface.GetCommand(rpc_med7_sensor_data,
-                                        rpc_med7_command)
+        rpc_med7_interface.GetCommand(rpc_med7_sensor_data, rpc_med7_command)
         ######################################################################
-        
+
         ########################## Command Update ##############################
 
         rpc_trq_command = rpc_med7_command.joint_trq_cmd_
@@ -248,10 +253,12 @@ def main():
 
         # print("Command pos: ", rpc_joint_pos_command, end="\r")
         # print("Command vel: ", rpc_joint_vel_command, end="\r")
-        
+
         # t_cmd = t_ff + kp(e) + kd(e_dot)
         # joint_impedance_command = ActuatorGains.KP * (
-        joint_impedance_command = rpc_trq_command+ActuatorGains.KP * (rpc_joint_pos_command -joint_pos)+ ActuatorGains.KD * (rpc_joint_vel_command - joint_vel)
+        joint_impedance_command = rpc_trq_command + ActuatorGains.KP * (
+            rpc_joint_pos_command -
+            joint_pos) + ActuatorGains.KD * (rpc_joint_vel_command - joint_vel)
         apply_control_input_to_pybullet(robot, joint_impedance_command)
         ######################################################################
         pb.stepSimulation()
