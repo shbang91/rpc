@@ -479,7 +479,7 @@ struct mjData_ {
       *efc_aref; // reference pseudo-acceleration                    (nefc x 1)
 
   //-------------------- arena-allocated: POSITION, VELOCITY,
-  //CONTROL/ACCELERATION dependent
+  // CONTROL/ACCELERATION dependent
 
   // computed by mj_fwdConstraint/mj_inverse
   mjtNum *efc_b; // linear cost term: J*qacc_smooth - aref            (nefc x 1)

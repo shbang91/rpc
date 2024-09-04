@@ -173,13 +173,13 @@ async def main():
         icp_des_chan_id = await SceneChannel(
             True, "icp_des", "json", "icp_des", ["x", "y"]
         ).add_chan(server)
-        proj_footstepS_chan_id = await SceneChannel(
-            False,
-            "proj_footstep_viz",
-            "protobuf",
-            SceneUpdate.DESCRIPTOR.full_name,
-            scene_schema,
-        ).add_chan(server)
+        # proj_footstepS_chan_id = await SceneChannel(
+        #     False,
+        #     "proj_footstep_viz",
+        #     "protobuf",
+        #     SceneUpdate.DESCRIPTOR.full_name,
+        #     scene_schema,
+        # ).add_chan(server)
         b_ft_contact_chan_id = await SceneChannel(
             True, "b_ft_contact", "json", "b_ft_contact", ["b_lfoot", "b_rfoot"]
         ).add_chan(server)
@@ -279,7 +279,6 @@ async def main():
         transform = FrameTransform()
 
         print("foxglove websocket initiated")
-        r_foot, l_foot = [0, 0, 0], [0, 0, 0]
 
         # Clear experiment_data to start new footstep planning
         fp.remove_yaml_files(fp.WATCHED_DIR)

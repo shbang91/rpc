@@ -10,6 +10,7 @@ sys.path.append(cwd)
 
 from util.python_utils.device.t265 import T265
 import util.python_utils.util as util
+import matplotlib.pyplot as plt
 
 import time
 import cv2
@@ -71,7 +72,7 @@ class Keyboard:
         if key_char == "e":
             self._t_last_click = -1
             self._t_click = time.time()
-            elapsed_time = self._t_click - self._t_last_click
+            # elapsed_time = self._t_click - self._t_last_click
             self._t_last_click = self._t_click
             self.single_click_and_hold = True
         elif key_char == "s":
@@ -298,12 +299,12 @@ def visualize(data_path):
     data["right_img"] = []
     left_img = np.zeros((800, 848, 3), dtype="uint8")
     right_img = np.zeros((800, 848, 3), dtype="uint8")
-    for time in data["time"]:
+    for tm in data["time"]:
         left_img_read = cv2.imread(
-            os.path.join(left_img_dir, "{}.png".format(int(time * 100)))
+            os.path.join(left_img_dir, "{}.png".format(int(tm * 100)))
         )
         right_img_read = cv2.imread(
-            os.path.join(right_img_dir, "{}.png".format(int(time * 100)))
+            os.path.join(right_img_dir, "{}.png".format(int(tm * 100)))
         )
         data["left_img"] += [left_img]
         data["right_img"] += [right_img]
