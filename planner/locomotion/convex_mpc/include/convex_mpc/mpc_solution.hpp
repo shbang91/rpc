@@ -3,8 +3,8 @@
 
 #include "convex_mpc/contact_schedule.hpp"
 #include "convex_mpc/qp_data.hpp"
-//#include "convex_mpc/robot_state.hpp"
-//#include "convex_mpc/single_rigid_body.hpp"
+// #include "convex_mpc/robot_state.hpp"
+// #include "convex_mpc/single_rigid_body.hpp"
 #include "convex_mpc/types.hpp"
 
 #include "util/util.hpp"

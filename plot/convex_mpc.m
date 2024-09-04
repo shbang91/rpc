@@ -21,7 +21,7 @@ for i = 2:col
     time(1:row, i) = time(1:row, i) + time(end, i-1);
 end
 
-time_vec = reshape(time, [row*col, 1]);  
+time_vec = reshape(time, [row*col, 1]);
 
 time_rf = time(2:end, 1:col);
 time_rf_vec = reshape(time_rf, [(row-1)*col, 1]);
@@ -173,7 +173,7 @@ linkaxes(ax,'x')
 % plot(1:10, squeeze(crbi(1, 1, 51:60)),'-o');
 % grid on
 % subplot(2,3,2);
-% plot(1:10, squeeze(crbi(2,2, 51:60)), '-o'); 
+% plot(1:10, squeeze(crbi(2,2, 51:60)), '-o');
 % grid on
 % subplot(2,3,3);
 % plot(1:10, squeeze(crbi(3, 3, 51:60)), '-o');
@@ -198,10 +198,10 @@ figure(num_fig)
 % Example number of time steps
 [row, col] = size(des_base_pos);
 n = col;
-% 
+%
 % plot3(des_base_pos(1,:), des_base_pos(2,:), des_base_pos(3,:), 'k-', 'LineWidth',2);
 % hold on
-% 
+%
 % plot3(des_lf_pos(1,:), des_lf_pos(2,:), des_lf_pos(3,:), 'r-', 'LineWidth',2);
 % plot3(des_rf_pos(1,:), des_rf_pos(2,:), des_rf_pos(3,:), 'b-', 'LineWidth',2);
 
@@ -213,14 +213,14 @@ colors = lines(ceil(n/10)); % 'jet' generates a colormap, which we use to get a 
 for i = 1:10:n-1
     % Determine the end of the current segment
     endIndex = min(i+9, n);
-    
+
     % Extract the current segment of the trajectory
     segmentX = des_lf_pos(1, i:endIndex);
     segmentY = des_lf_pos(2, i:endIndex);
     segmentZ = des_lf_pos(3, i:endIndex);
 
     segmentBaseX = des_base_pos(1, i:endIndex);
-    
+
     % Determining the color index
     colorIndex = ceil(i/10);
     if colorIndex > size(colors, 1)

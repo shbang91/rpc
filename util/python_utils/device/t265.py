@@ -1,4 +1,4 @@
-'''
+"""
 Project:
     Data collection / Teleoprator
 
@@ -10,7 +10,8 @@ Description
 
 * Copyrighted by Mingyo Seo
 * Bonston Dynamics AI Institute, The University of Texas at Austin
-'''
+"""
+
 import sys
 import os
 
@@ -35,12 +36,9 @@ FPS = 10
 
 
 class T265(Sensor):
-
-    def __init__(self,
-                 img_stream=False,
-                 timeout=TIMEOUT,
-                 img_size=(HEIGHT, WIDTH)) -> None:
-
+    def __init__(
+        self, img_stream=False, timeout=TIMEOUT, img_size=(HEIGHT, WIDTH)
+    ) -> None:
         self._left_buffer = Queue()
         self._right_buffer = Queue()
         self._left_lock = Lock()
@@ -68,13 +66,11 @@ class T265(Sensor):
         super().__init__("T265")
 
     def _fn_init(self):
-
         # Wait until the first frameset is available
         while np.sum(self.rot**2) == 0:
             pass
 
     def _fn_proc(self):
-
         # Declare RealSense pipeline, encapsulating the actual device and sensors
         pipe = rs.pipeline()
         pipe.start(self._cfg)
@@ -82,19 +78,17 @@ class T265(Sensor):
         init_time = time.time()
 
         while self._flag_proc.value:
-
             cur_time = time.time() - init_time
-            if cur_time - self._time_proc.value < 1. / FPS:
+            if cur_time - self._time_proc.value < 1.0 / FPS:
                 continue
             if cur_time - self._time_proc.value > self._timeout:
                 break
-            self._time_proc.value += 1. / FPS
+            self._time_proc.value += 1.0 / FPS
 
             frames = pipe.wait_for_frames()
             pose = frames.get_pose_frame().get_pose_data()
 
             if self._img_stream:
-
                 f1 = frames.get_fisheye_frame(1).as_video_frame()
                 f2 = frames.get_fisheye_frame(2).as_video_frame()
 
@@ -106,17 +100,28 @@ class T265(Sensor):
                 self._right_buffer.put(np.asanyarray(f2.get_data()))
                 self._right_lock.release()
 
-            self._pos_data[:] = (pose.translation.x, pose.translation.y,
-                                 pose.translation.z)
-            self._rot_data[:] = (pose.rotation.x, pose.rotation.y,
-                                 pose.rotation.z, pose.rotation.w)
-            self._vel_data[:] = (pose.velocity.x, pose.velocity.y,
-                                 pose.velocity.z)
-            self._angvel_data[:] = (pose.angular_velocity.x,
-                                    pose.angular_velocity.y,
-                                    pose.angular_velocity.z)
-            self._acc_data[:] = (pose.acceleration.x, pose.acceleration.y,
-                                 pose.acceleration.z)
+            self._pos_data[:] = (
+                pose.translation.x,
+                pose.translation.y,
+                pose.translation.z,
+            )
+            self._rot_data[:] = (
+                pose.rotation.x,
+                pose.rotation.y,
+                pose.rotation.z,
+                pose.rotation.w,
+            )
+            self._vel_data[:] = (pose.velocity.x, pose.velocity.y, pose.velocity.z)
+            self._angvel_data[:] = (
+                pose.angular_velocity.x,
+                pose.angular_velocity.y,
+                pose.angular_velocity.z,
+            )
+            self._acc_data[:] = (
+                pose.acceleration.x,
+                pose.acceleration.y,
+                pose.acceleration.z,
+            )
         pipe.stop()
 
     @property

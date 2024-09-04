@@ -24,7 +24,7 @@ contact_detection:
 
 state_estimator:
   b_cheater_mode: true ## true: use simulation groundtruth states
-  state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf 
+  state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf
   b_use_marg_filter: false   # only used when kf is set to true
 
   foot_reference_frame: 1 #0: left foot, 1: right foot
@@ -50,7 +50,7 @@ state_estimator:
   num_data_com_vel: [20, 20, 20]
 
   ## IF 1: exponential smoother filter parameter
-  #com_vel_time_constant: 0.1 
+  #com_vel_time_constant: 0.1
   com_vel_time_constant: 0.01
   com_vel_err_limit: [1., 1., 1.]
 
@@ -59,7 +59,7 @@ state_estimator:
 
 
 controller:
-  b_smoothing_command: true 
+  b_smoothing_command: true
   smoothing_command_duration: 1.0 ## this will filter the control command at the beginning
   b_use_modified_swing_foot_jac: true
   b_use_modified_hand_jac: false
@@ -155,7 +155,7 @@ wbc:
     mu: 0.4
     foot_half_length: 0.08
     foot_half_width: 0.04 ## 0.04
-    kp: [0, 0, 0, 0, 0, 0] ## ori, pos order 
+    kp: [0, 0, 0, 0, 0, 0] ## ori, pos order
     kd: [0, 0, 0, 0, 0, 0]
 
   qp:

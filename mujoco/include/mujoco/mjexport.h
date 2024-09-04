@@ -16,32 +16,32 @@
 #define MUJOCO_MJEXPORT_H_
 
 #if defined _WIN32 || defined __CYGWIN__
-  #define MUJOCO_HELPER_DLL_IMPORT __declspec(dllimport)
-  #define MUJOCO_HELPER_DLL_EXPORT __declspec(dllexport)
-  #define MUJOCO_HELPER_DLL_LOCAL
+#define MUJOCO_HELPER_DLL_IMPORT __declspec(dllimport)
+#define MUJOCO_HELPER_DLL_EXPORT __declspec(dllexport)
+#define MUJOCO_HELPER_DLL_LOCAL
 #else
-  #if __GNUC__ >= 4
-    #define MUJOCO_HELPER_DLL_IMPORT __attribute__ ((visibility ("default")))
-    #define MUJOCO_HELPER_DLL_EXPORT __attribute__ ((visibility ("default")))
-    #define MUJOCO_HELPER_DLL_LOCAL  __attribute__ ((visibility ("hidden")))
-  #else
-    #define MUJOCO_HELPER_DLL_IMPORT
-    #define MUJOCO_HELPER_DLL_EXPORT
-    #define MUJOCO_HELPER_DLL_LOCAL
-  #endif
+#if __GNUC__ >= 4
+#define MUJOCO_HELPER_DLL_IMPORT __attribute__((visibility("default")))
+#define MUJOCO_HELPER_DLL_EXPORT __attribute__((visibility("default")))
+#define MUJOCO_HELPER_DLL_LOCAL __attribute__((visibility("hidden")))
+#else
+#define MUJOCO_HELPER_DLL_IMPORT
+#define MUJOCO_HELPER_DLL_EXPORT
+#define MUJOCO_HELPER_DLL_LOCAL
+#endif
 #endif
 
 #ifdef MJ_STATIC
-  // static library
-  #define MJAPI
-  #define MJLOCAL
+// static library
+#define MJAPI
+#define MJLOCAL
 #else
-  #ifdef MUJOCO_DLL_EXPORTS
-    #define MJAPI MUJOCO_HELPER_DLL_EXPORT
-  #else
-    #define MJAPI MUJOCO_HELPER_DLL_IMPORT
-  #endif
-  #define MJLOCAL MUJOCO_HELPER_DLL_LOCAL
+#ifdef MUJOCO_DLL_EXPORTS
+#define MJAPI MUJOCO_HELPER_DLL_EXPORT
+#else
+#define MJAPI MUJOCO_HELPER_DLL_IMPORT
+#endif
+#define MJLOCAL MUJOCO_HELPER_DLL_LOCAL
 #endif
 
-#endif  // MUJOCO_MJEXPORT_H_
+#endif // MUJOCO_MJEXPORT_H_

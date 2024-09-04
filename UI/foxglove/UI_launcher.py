@@ -9,7 +9,7 @@ cwd = os.getcwd()
 sys.path.append(cwd)
 sys.path.append(cwd + "/build")
 
-#NEED TO GET THIS BACK --- FIX LATER
+# NEED TO GET THIS BACK --- FIX LATER
 from util.python_utils.util import rot_to_quat, quat_to_rot
 from messages.draco_pb2 import *
 
@@ -25,9 +25,9 @@ parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
 parser.add_argument(
     "--visualizer", choices=["none", "meshcat", "foxglove"], default="none"
 )
-parser.add_argument("--robot",
-                    choices=["draco", "fixe_draco", "manipulator"],
-                    default="draco")
+parser.add_argument(
+    "--robot", choices=["draco", "fixe_draco", "manipulator"], default="draco"
+)
 parser.add_argument("--hw_or_sim", choices=["hw", "sim"], default="sim")
 args = parser.parse_args()
 
@@ -52,10 +52,7 @@ elif args.visualizer == "foxglove":
     from watchdog.observers import Observer
 
     # local tools to manage Foxglove scenes
-    from plot.foxglove_utils import (
-        SceneChannel,
-        ShapeScene
-    )
+    from plot.foxglove_utils import SceneChannel, ShapeScene
     from UI.visualization_toolbox import update_robot_transform
 
     # load parameters that can be controlled / changed and start Control Parameters server
@@ -65,7 +62,7 @@ elif args.visualizer == "foxglove":
         target=asyncio.run, args=([foxglove_ctrl.run(step_listener)])
     )
     th_slow.start()
-    time.sleep(20.)     # give some time for state estimator to publish data
+    time.sleep(20.0)  # give some time for state estimator to publish data
 
     scene_schema = b64encode(
         build_file_descriptor_set(SceneUpdate).SerializeToString()
@@ -94,11 +91,12 @@ with open("config/" + args.robot + "/INTERFACE.yaml", "r") as iface_yaml:
     except yaml.YAMLError as exc:
         print(exc)
 
-pnc_path = ("config/" + args.robot + "/" +
-            args.hw_or_sim + "/" + env + "/" + wbc + "/pnc.yaml")
+pnc_path = (
+    "config/" + args.robot + "/" + args.hw_or_sim + "/" + env + "/" + wbc + "/pnc.yaml"
+)
 
 grf_names = ["lfoot_rf_cmd", "rfoot_rf_cmd"]
-             # "lfoot_rf_normal_filt", "rfoot_rf_normal_filt"]
+# "lfoot_rf_normal_filt", "rfoot_rf_normal_filt"]
 
 xyz_scene_names = [
     "torso_ori_weight",
@@ -111,6 +109,7 @@ xyz_scene_names = [
 ]
 xyz_scenes = []
 
+
 def foot_dimensions():
     with open(pnc_path, "r") as pnc_stream:
         try:
@@ -120,6 +119,7 @@ def foot_dimensions():
         except yaml.YAMLError as exc:
             print(exc)
     return foot_half_length, foot_half_width
+
 
 async def sceneinitman(name, server):
     x = await SceneChannel(True, name, "json", name, ["x", "y", "z"]).add_chan(server)
@@ -174,72 +174,103 @@ async def main():
             True, "icp_des", "json", "icp_des", ["x", "y"]
         ).add_chan(server)
         proj_footstepS_chan_id = await SceneChannel(
-            False, "proj_footstep_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
+            False,
+            "proj_footstep_viz",
+            "protobuf",
+            SceneUpdate.DESCRIPTOR.full_name,
+            scene_schema,
         ).add_chan(server)
         b_ft_contact_chan_id = await SceneChannel(
             True, "b_ft_contact", "json", "b_ft_contact", ["b_lfoot", "b_rfoot"]
         ).add_chan(server)
         lf_pos_chan_id = await SceneChannel(
-            True, "lf_pos", "json", "lf_pos",
-            ["x", "y", "z"]
+            True, "lf_pos", "json", "lf_pos", ["x", "y", "z"]
         ).add_chan(server)
         rf_pos_chan_id = await SceneChannel(
-            True, "rf_pos", "json", "rf_pos",
-            ["x", "y", "z"]
+            True, "rf_pos", "json", "rf_pos", ["x", "y", "z"]
         ).add_chan(server)
-
 
         for scn in range(len(xyz_scene_names)):
             await sceneinitman(xyz_scene_names[scn], server)
 
         # STEP_MAX available footstep plans
         hfoot_length, hfoot_width = foot_dimensions()
-        x = 2*hfoot_length
-        y = 2*hfoot_width
+        x = 2 * hfoot_length
+        y = 2 * hfoot_width
         msgs, size, color = [], {}, {}
         proj_footstep_chan_ids = []
         proj_footstep_viz_chan_ids = []
-        proj_foot_pos, proj_foot_ori = {}, {}   # Stores step position
+        proj_foot_pos, proj_foot_ori = {}, {}  # Stores step position
         proj_feet = []
         for i in range(STEP_MAX):
-            rf = "proj_rf"+str(i)
-            lf = "proj_lf"+str(i)
+            rf = "proj_rf" + str(i)
+            lf = "proj_lf" + str(i)
             msgs.append(rf)
             msgs.append(lf)
             size[rf], size[lf] = [x, y, 0.001], [x, y, 0.001]
             color[rf] = [1, 0, 0, 1]
-            color[lf] = [.1, .5, 1, 1]
+            color[lf] = [0.1, 0.5, 1, 1]
             proj_foot_pos[rf], proj_foot_pos[lf] = [0, 0, 0], [0, 0.184, 0]
             proj_foot_ori[rf], proj_foot_ori[lf] = [0, 0, 0, 0], [0, 0, 0, 0]
             if i < 10:
                 name = "projected_footsteps_0" + str(i)
-            else: name = "projected_footsteps_" + str(i)
+            else:
+                name = "projected_footsteps_" + str(i)
             # Add a channel for projected footstep data
             foot_scene = await SceneChannel(
-                True, name, "json", name,
-                ["rf_pos_x","rf_pos_y","rf_pos_z","rf_ori_x","rf_ori_y","rf_ori_z","rf_ori_q",
-                        "lf_pos_x","lf_pos_y","lf_pos_z","lf_ori_x","lf_ori_y","lf_ori_z","lf_ori_q"]
+                True,
+                name,
+                "json",
+                name,
+                [
+                    "rf_pos_x",
+                    "rf_pos_y",
+                    "rf_pos_z",
+                    "rf_ori_x",
+                    "rf_ori_y",
+                    "rf_ori_z",
+                    "rf_ori_q",
+                    "lf_pos_x",
+                    "lf_pos_y",
+                    "lf_pos_z",
+                    "lf_ori_x",
+                    "lf_ori_y",
+                    "lf_ori_z",
+                    "lf_ori_q",
+                ],
             ).add_chan(server)
             proj_footstep_chan_ids.append(foot_scene)
 
             # Add a channel for projected footstep visual elements
             proj_footstep_viz_chan_id = await SceneChannel(
-                False, name+"_viz", "protobuf", SceneUpdate.DESCRIPTOR.full_name, scene_schema
+                False,
+                name + "_viz",
+                "protobuf",
+                SceneUpdate.DESCRIPTOR.full_name,
+                scene_schema,
             ).add_chan(server)
             proj_footstep_viz_chan_ids.append(proj_footstep_viz_chan_id)
-            #add footstep visual elements
+            # add footstep visual elements
             proj_footsteps = ShapeScene()
             proj_footsteps.add_shape(rf, "cubes", [1, 0, 0, 1], [x, y, 0.001])
-            proj_footsteps.add_shape(lf, "cubes", [.1, .5, 1, 1], [x, y, 0.001])
+            proj_footsteps.add_shape(lf, "cubes", [0.1, 0.5, 1, 1], [x, y, 0.001])
             proj_feet.append(proj_footsteps)
 
         arrows_scene = ShapeScene()
-        arrows_scene.add_shape("lfoot_rf_cmd", "arrows", [0, 0, 1, 0.5], [0.03, 0.1, 0.08]) # blue arrow
-        arrows_scene.add_shape("rfoot_rf_cmd", "arrows", [0, 0, 1, 0.5], [0.03, 0.1, 0.08]) # blue arrow
-        arrows_scene.add_shape("lfoot_rf_normal_filt", "arrows", [0.2, 0.2, 0.2, 0.5], [0.03, 0.1, 0.08])  # grey arrow
-        arrows_scene.add_shape("rfoot_rf_normal_filt", "arrows", [0.2, 0.2, 0.2, 0.5], [0.03, 0.1, 0.08])  # grey arrow
+        arrows_scene.add_shape(
+            "lfoot_rf_cmd", "arrows", [0, 0, 1, 0.5], [0.03, 0.1, 0.08]
+        )  # blue arrow
+        arrows_scene.add_shape(
+            "rfoot_rf_cmd", "arrows", [0, 0, 1, 0.5], [0.03, 0.1, 0.08]
+        )  # blue arrow
+        arrows_scene.add_shape(
+            "lfoot_rf_normal_filt", "arrows", [0.2, 0.2, 0.2, 0.5], [0.03, 0.1, 0.08]
+        )  # grey arrow
+        arrows_scene.add_shape(
+            "rfoot_rf_normal_filt", "arrows", [0.2, 0.2, 0.2, 0.5], [0.03, 0.1, 0.08]
+        )  # grey arrow
 
-        #add visual icp spheres
+        # add visual icp spheres
         icp_spheres = ShapeScene()
         icp_spheres.add_shape("est_icp", "spheres", [1, 0, 1, 1], [0.03, 0.03, 0.03])
         icp_spheres.add_shape("des_icp", "spheres", [0, 1, 0, 1], [0.03, 0.03, 0.03])
@@ -351,12 +382,22 @@ async def main():
                     now,
                     json.dumps(
                         {
-                            "rf_pos_x": r_pos[0],"rf_pos_y": r_pos[1],"rf_pos_z": r_pos[2],
-                            "rf_ori_x": r_ori[1],"rf_ori_y": r_ori[2],"rf_ori_z": r_ori[3],"rf_ori_q": r_ori[0],
-                            "lf_pos_x": l_pos[0],"lf_pos_y": l_pos[1],"lf_pos_z": l_pos[2],
-                            "lf_ori_x": l_ori[1],"lf_ori_y": l_ori[2],"lf_ori_z": l_ori[3],"lf_ori_q": l_ori[0]
+                            "rf_pos_x": r_pos[0],
+                            "rf_pos_y": r_pos[1],
+                            "rf_pos_z": r_pos[2],
+                            "rf_ori_x": r_ori[1],
+                            "rf_ori_y": r_ori[2],
+                            "rf_ori_z": r_ori[3],
+                            "rf_ori_q": r_ori[0],
+                            "lf_pos_x": l_pos[0],
+                            "lf_pos_y": l_pos[1],
+                            "lf_pos_z": l_pos[2],
+                            "lf_ori_x": l_ori[1],
+                            "lf_ori_y": l_ori[2],
+                            "lf_ori_z": l_ori[3],
+                            "lf_ori_q": l_ori[0],
                         }
-                    ).encode("utf8")
+                    ).encode("utf8"),
                 )
 
             for scn in xyz_scenes:
@@ -464,9 +505,9 @@ async def main():
                     # force scale
                     force_magnitude = force_magnitude / 1200.0
                 arrows_scene.scale(obj, quat_force, force_magnitude, now)
-                tasks.append(server.send_message(
-                    tf_chan_id, now, transform.SerializeToString()
-                ))
+                tasks.append(
+                    server.send_message(tf_chan_id, now, transform.SerializeToString())
+                )
                 await server.send_message(
                     normS_chan_id, now, arrows_scene.serialized_msg(obj)
                 )
@@ -479,22 +520,32 @@ async def main():
                 transform.translation.x = list(getattr(msg, obj))[0]
                 transform.translation.y = list(getattr(msg, obj))[1]
                 icp_spheres.update(obj, now)
-                tasks.append(server.send_message(
-                    tf_chan_id, now, transform.SerializeToString()
-                ))
-                tasks.append(server.send_message(
-                    icpS_chan_id, now, icp_spheres.serialized_msg(obj)
-                ))
+                tasks.append(
+                    server.send_message(tf_chan_id, now, transform.SerializeToString())
+                )
+                tasks.append(
+                    server.send_message(
+                        icpS_chan_id, now, icp_spheres.serialized_msg(obj)
+                    )
+                )
 
             # Update projected footsteps
             update = fp.sd.steps_to_update()
             for obj in msgs:
                 if obj in update:
-                    stepnum = int(''.join(filter(lambda i: i.isdigit(), obj)))
+                    stepnum = int("".join(filter(lambda i: i.isdigit(), obj)))
                     yaml = fp.sd.yaml_num
-                    setattr(fp.sd, obj[5] + "f_steps_taken", getattr(fp.sd, obj[5] + "f_steps_taken") + 1)
-                    proj_foot_pos[obj] = getattr(fp, obj[5] + "foot_contact_pos")[yaml][update[obj]]
-                    proj_foot_ori[obj] = getattr(fp, obj[5] + "foot_contact_ori")[yaml][update[obj]]
+                    setattr(
+                        fp.sd,
+                        obj[5] + "f_steps_taken",
+                        getattr(fp.sd, obj[5] + "f_steps_taken") + 1,
+                    )
+                    proj_foot_pos[obj] = getattr(fp, obj[5] + "foot_contact_pos")[yaml][
+                        update[obj]
+                    ]
+                    proj_foot_ori[obj] = getattr(fp, obj[5] + "foot_contact_ori")[yaml][
+                        update[obj]
+                    ]
                     transform.parent_frame_id = "world"
                     transform.child_frame_id = obj
                     transform.timestamp.FromNanoseconds(now)
@@ -506,12 +557,18 @@ async def main():
                     transform.rotation.z = proj_foot_ori[obj][3]
                     transform.rotation.w = proj_foot_ori[obj][0]
                     proj_feet[stepnum].update(obj, now)
-                    tasks.append(server.send_message(
-                        tf_chan_id, now, transform.SerializeToString()
-                    ))
-                    tasks.append(server.send_message(
-                        proj_footstep_viz_chan_ids[stepnum], now, proj_feet[stepnum].serialized_msg(obj)
-                    ))
+                    tasks.append(
+                        server.send_message(
+                            tf_chan_id, now, transform.SerializeToString()
+                        )
+                    )
+                    tasks.append(
+                        server.send_message(
+                            proj_footstep_viz_chan_ids[stepnum],
+                            now,
+                            proj_feet[stepnum].serialized_msg(obj),
+                        )
+                    )
 
             await asyncio.gather(*tasks)
 

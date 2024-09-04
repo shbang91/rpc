@@ -1,6 +1,6 @@
 actuator_gains:
-  l_hip_ie: 
-    kp: 400 
+  l_hip_ie:
+    kp: 400
     kd: 20
   l_hip_aa:
     kp: 500
@@ -18,7 +18,7 @@ actuator_gains:
     kp: 40
     kd: 2
   l_shoulder_fe:
-    kp: 100 
+    kp: 100
     kd: 5
   l_shoulder_aa:
     kp: 100
@@ -36,7 +36,7 @@ actuator_gains:
     kp: 100
     kd: 5
   neck_pitch:
-    kp: 100 
+    kp: 100
     kd: 5
   r_hip_ie:
     kp: 400
@@ -83,7 +83,7 @@ initial_config:
   base_quat_x: 0.
   base_quat_y: 0.
   base_quat_z: 0.
-  l_hip_ie: 0. 
+  l_hip_ie: 0.
   l_hip_aa: 0.
   l_hip_fe: 0
   l_knee_fe_jp: 0
@@ -110,4 +110,3 @@ initial_config:
   r_elbow_fe: 0.
   r_wrist_ps: 0.
   r_wrist_pitch: 0.
-

@@ -8,7 +8,7 @@ stance_foot: 1 # 0: left_foot 1: right_foot
 
 state_estimator:
   b_cheater_mode: true ## true: use simulation groundtruth states
-  state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf 
+  state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf
   b_use_marg_filter: false   # only used when kf is set to true
 
   foot_reference_frame: 1 #0: left foot, 1: right foot
@@ -35,7 +35,7 @@ state_estimator:
   num_data_com_vel: [10, 10, 10]
 
   ## IF 1: exponential smoother filter parameter
-  #com_vel_time_constant: 0.1 
+  #com_vel_time_constant: 0.1
   com_vel_time_constant: 0.01
   com_vel_err_limit: [1., 1., 1.]
 
@@ -44,7 +44,7 @@ state_estimator:
 
 
 controller:
-  b_smoothing_command: true 
+  b_smoothing_command: true
   smoothing_command_duration: 1.0 ## this will filter the control command at the beginning
   b_use_modified_swing_foot_jac: true
   b_use_modified_hand_jac: true
@@ -64,7 +64,7 @@ wbc:
 
       icp_kp : [4.0, 4.0]
       icp_kd : [0., 0.] # x, y will be ignored
-      icp_ki : [0.0, 0.0] 
+      icp_ki : [0.0, 0.0]
 
       kp_ik : [1.0, 1.0]
 
@@ -275,5 +275,3 @@ lmpc_walking:
   nominal_strafe_distance: 0.02
   n_steps: 1
   first_swing_leg: 0 ## 0: left leg ## 1: right leg
-
-

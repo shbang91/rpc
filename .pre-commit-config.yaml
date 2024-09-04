@@ -15,7 +15,7 @@ repos:
       - id: clang-format
         types_or: [c++]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.5
+    rev: v0.6.3
     hooks:
       - id: ruff
         # ignore import-star and import-star-usage
