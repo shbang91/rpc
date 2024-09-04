@@ -397,10 +397,25 @@ def get_camera_image(cam_target_pos, cam_dist, cam_yaw, cam_pitch, cam_roll,
 
 
 def is_key_triggered(keys, key):
+    print("ord", ord)
+    input("--")
+
     o = ord(key)
     if o in keys:
         return keys[ord(key)] & pb.KEY_WAS_TRIGGERED
     return False
+
+def is_medkey_triggered(keys, key, isstr=True):
+
+    if isstr is True:
+        o = ord(key)
+    else:
+        o = key
+
+    if o in keys:
+        return keys[o] & pb.KEY_WAS_TRIGGERED
+    return False
+
 
 
 def set_config(robot, joint_id, base_pos, base_quat, joint_pos):

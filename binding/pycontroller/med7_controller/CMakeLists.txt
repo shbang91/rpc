@@ -1,0 +1,2 @@
+pybind11_add_module(med7_interface_py med7_interface_pybind_pin.cpp)
+target_link_libraries(med7_interface_py PUBLIC rpc-med7-controller)

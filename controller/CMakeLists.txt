@@ -1,5 +1,6 @@
 add_subdirectory(draco_controller)
 add_subdirectory(optimo_controller)
+add_subdirectory(med7_controller)
 add_subdirectory(robot_system)
 add_subdirectory(whole_body_controller)
 add_subdirectory(model_predictive_controller)
