@@ -1,6 +1,6 @@
 include(ExternalProject)
 
-# find pthread for googletest 
+# find pthread for googletest
 find_package(Threads REQUIRED)
 
 SET_DIRECTORY_PROPERTIES(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/external)

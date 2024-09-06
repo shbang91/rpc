@@ -71,7 +71,7 @@ struct Glfw {
 #undef mjGLFW_DECLARE_SYMBOL
 };
 
-const struct Glfw& Glfw(void* dlhandle = nullptr);
-}  // namespace mujoco
+const struct Glfw &Glfw(void *dlhandle = nullptr);
+} // namespace mujoco
 
-#endif  // MUJOCO_SIMULATE_GLFW_DISPATCH_H_
+#endif // MUJOCO_SIMULATE_GLFW_DISPATCH_H_

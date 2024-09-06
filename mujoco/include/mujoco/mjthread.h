@@ -15,28 +15,28 @@
 #ifndef MUJOCO_INCLUDE_MJTHREAD_H_
 #define MUJOCO_INCLUDE_MJTHREAD_H_
 
-#define mjMAXTHREAD 128        // maximum number of threads in a thread pool
+#define mjMAXTHREAD 128 // maximum number of threads in a thread pool
 
-typedef enum mjtTaskStatus_ {  // status values for mjTask
-  mjTASK_NEW = 0,              // newly created
-  mjTASK_QUEUED,               // enqueued in a thread pool
-  mjTASK_COMPLETED             // completed execution
+typedef enum mjtTaskStatus_ { // status values for mjTask
+  mjTASK_NEW = 0,             // newly created
+  mjTASK_QUEUED,              // enqueued in a thread pool
+  mjTASK_COMPLETED            // completed execution
 } mjtTaskStatus;
 
 // function pointer type for mjTask
-typedef void* (*mjfTask)(void*);
+typedef void *(*mjfTask)(void *);
 
 // An opaque type representing a thread pool.
 struct mjThreadPool_ {
-  int nworker;  // number of workers in the pool
+  int nworker; // number of workers in the pool
 };
 typedef struct mjThreadPool_ mjThreadPool;
 
-struct mjTask_ {        // a task that can be executed by a thread pool.
-  mjfTask func;         // pointer to the function that implements the task
-  void* args;           // arguments to func
-  volatile int status;  // status of the task
+struct mjTask_ {       // a task that can be executed by a thread pool.
+  mjfTask func;        // pointer to the function that implements the task
+  void *args;          // arguments to func
+  volatile int status; // status of the task
 };
 typedef struct mjTask_ mjTask;
 
-#endif  // MUJOCO_INCLUDE_MJTHREAD_H_
+#endif // MUJOCO_INCLUDE_MJTHREAD_H_

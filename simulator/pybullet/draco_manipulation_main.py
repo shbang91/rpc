@@ -1,5 +1,4 @@
 import pybullet as pb
-import time
 import os
 import sys
 import numpy as np
@@ -225,10 +224,12 @@ def apply_control_input_to_pybullet(robot, command):
                              controlMode=mode,
                              force=command[2])
     # pb.setJointMotorControl2(robot, DracoManipulationJointIdx.l_knee_fe_jp, controlMode=mode, force=command[3])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.l_knee_fe_jd,
-                             controlMode=mode,
-                             force=command[4])
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.l_knee_fe_jd,
+        controlMode=mode,
+        force=command[4],
+    )
     pb.setJointMotorControl2(robot,
                              DracoManipulationJointIdx.l_ankle_fe,
                              controlMode=mode,
@@ -239,18 +240,24 @@ def apply_control_input_to_pybullet(robot, command):
                              force=command[6])
 
     # LH
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.l_shoulder_fe,
-                             controlMode=mode,
-                             force=command[7])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.l_shoulder_aa,
-                             controlMode=mode,
-                             force=command[8])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.l_shoulder_ie,
-                             controlMode=mode,
-                             force=command[9])
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.l_shoulder_fe,
+        controlMode=mode,
+        force=command[7],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.l_shoulder_aa,
+        controlMode=mode,
+        force=command[8],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.l_shoulder_ie,
+        controlMode=mode,
+        force=command[9],
+    )
     pb.setJointMotorControl2(robot,
                              DracoManipulationJointIdx.l_elbow_fe,
                              controlMode=mode,
@@ -259,10 +266,12 @@ def apply_control_input_to_pybullet(robot, command):
                              DracoManipulationJointIdx.l_wrist_ps,
                              controlMode=mode,
                              force=command[11])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.l_wrist_pitch,
-                             controlMode=mode,
-                             force=command[12])
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.l_wrist_pitch,
+        controlMode=mode,
+        force=command[12],
+    )
 
     # neck
     pb.setJointMotorControl2(robot,
@@ -284,10 +293,12 @@ def apply_control_input_to_pybullet(robot, command):
                              controlMode=mode,
                              force=command[16])
     # pb.setJointMotorControl2(robot, DracoManipulationJointIdx.r_knee_fe_jd, controlMode=mode, force=command[17])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.r_knee_fe_jd,
-                             controlMode=mode,
-                             force=command[18])
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.r_knee_fe_jd,
+        controlMode=mode,
+        force=command[18],
+    )
     pb.setJointMotorControl2(robot,
                              DracoManipulationJointIdx.r_ankle_fe,
                              controlMode=mode,
@@ -298,18 +309,24 @@ def apply_control_input_to_pybullet(robot, command):
                              force=command[20])
 
     # RH
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.r_shoulder_fe,
-                             controlMode=mode,
-                             force=command[21])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.r_shoulder_aa,
-                             controlMode=mode,
-                             force=command[22])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.r_shoulder_ie,
-                             controlMode=mode,
-                             force=command[23])
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.r_shoulder_fe,
+        controlMode=mode,
+        force=command[21],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.r_shoulder_aa,
+        controlMode=mode,
+        force=command[22],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.r_shoulder_ie,
+        controlMode=mode,
+        force=command[23],
+    )
     pb.setJointMotorControl2(robot,
                              DracoManipulationJointIdx.r_elbow_fe,
                              controlMode=mode,
@@ -318,10 +335,12 @@ def apply_control_input_to_pybullet(robot, command):
                              DracoManipulationJointIdx.r_wrist_ps,
                              controlMode=mode,
                              force=command[25])
-    pb.setJointMotorControl2(robot,
-                             DracoManipulationJointIdx.r_wrist_pitch,
-                             controlMode=mode,
-                             force=command[26])
+    pb.setJointMotorControl2(
+        robot,
+        DracoManipulationJointIdx.r_wrist_pitch,
+        controlMode=mode,
+        force=command[26],
+    )
 
 
 def set_init_config_pybullet_robot(robot):
@@ -420,19 +439,27 @@ if __name__ == "__main__":
                          useFixedBase=1)
 
     xOffset = 0.7
-    pb.loadURDF(cwd + "/robot_model/bookcase/bookshelf.urdf",
-                useFixedBase=1,
-                basePosition=[0 + xOffset, 0, 0.025],
-                baseOrientation=[0, 0, 0.7068252, 0.7068252])
-    pb.loadURDF(cwd + "/robot_model/bookcase/red_can.urdf",
-                useFixedBase=0,
-                basePosition=[0 + xOffset, 0.75, 1.05])
-    green_can = pb.loadURDF(cwd + "/robot_model/bookcase/green_can.urdf",
-                            useFixedBase=0,
-                            basePosition=[xOffset - 0.0, -0.5, 1.35])
-    blue_can = pb.loadURDF(cwd + "/robot_model/bookcase/blue_can.urdf",
-                           useFixedBase=0,
-                           basePosition=[xOffset - 0.05, 0.2, 0.3])
+    pb.loadURDF(
+        cwd + "/robot_model/bookcase/bookshelf.urdf",
+        useFixedBase=1,
+        basePosition=[0 + xOffset, 0, 0.025],
+        baseOrientation=[0, 0, 0.7068252, 0.7068252],
+    )
+    pb.loadURDF(
+        cwd + "/robot_model/bookcase/red_can.urdf",
+        useFixedBase=0,
+        basePosition=[0 + xOffset, 0.75, 1.05],
+    )
+    green_can = pb.loadURDF(
+        cwd + "/robot_model/bookcase/green_can.urdf",
+        useFixedBase=0,
+        basePosition=[xOffset - 0.0, -0.5, 1.35],
+    )
+    blue_can = pb.loadURDF(
+        cwd + "/robot_model/bookcase/blue_can.urdf",
+        useFixedBase=0,
+        basePosition=[xOffset - 0.05, 0.2, 0.3],
+    )
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     # TODO:modify this function without dictionary container

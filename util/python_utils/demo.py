@@ -12,8 +12,7 @@ def post_process_obs(data):
     return data
 
 
-def post_process_action(pose_vec_cur, pose_vec_prv, mode='quat'):
-
+def post_process_action(pose_vec_cur, pose_vec_prv, mode="quat"):
     pose_cur = np.eye(4)
     pose_cur[:3, :3] = util.quat_to_rot(pose_vec_cur[3:])
     pose_cur[:3, 3] = pose_vec_cur[:3]
@@ -25,7 +24,7 @@ def post_process_action(pose_vec_cur, pose_vec_prv, mode='quat'):
     # Convert to relative pose
     delta_pose = np.linalg.inv(pose_prv) @ pose_cur
     delta_pos = delta_pose[:3, 3]
-    if mode == 'quat':
+    if mode == "quat":
         delta_quat = util.rot_to_quat(delta_pose[:3, :3])
     else:
         delta_quat = util.rot_to_euler(delta_pose[:3, :3])
@@ -35,10 +34,9 @@ def post_process_action(pose_vec_cur, pose_vec_prv, mode='quat'):
     return act_data
 
 
-def reconstruct_pose(delta_pose_vec, pose_vec_prv, mode='quat'):
-
+def reconstruct_pose(delta_pose_vec, pose_vec_prv, mode="quat"):
     delta_pose = np.eye(4)
-    if mode == 'quat':
+    if mode == "quat":
         delta_pose[:3, :3] = util.quat_to_rot(delta_pose_vec[3:])
     else:
         delta_pose[:3, :3] = util.euler_to_rot(delta_pose_vec[3:])
@@ -57,8 +55,7 @@ def reconstruct_pose(delta_pose_vec, pose_vec_prv, mode='quat'):
     return pose_vec
 
 
-def post_process_actions(pose_data, mode='quat'):
-
+def post_process_actions(pose_data, mode="quat"):
     # Convert to relative pose
     pose_rot = np.zeros((pose_data.shape[0], 4, 4))
     pose_rot[:, 0:3, 0:3] = util.quat_to_rot(pose_data[:, 3:])
@@ -81,12 +78,10 @@ def post_process_actions(pose_data, mode='quat'):
     delta_quat.append(np.array([0, 0, 0, 1]))
     delta_rpy.append(np.array([0, 0, 0]))
 
-    if mode == 'quat':
-        act_data = np.concatenate(
-            [np.array(delta_pos), np.array(delta_quat)], axis=1)
+    if mode == "quat":
+        act_data = np.concatenate([np.array(delta_pos), np.array(delta_quat)], axis=1)
     else:
-        act_data = np.concatenate(
-            [np.array(delta_pos), np.array(delta_rpy)], axis=1)
+        act_data = np.concatenate([np.array(delta_pos), np.array(delta_rpy)], axis=1)
     return act_data
 
 

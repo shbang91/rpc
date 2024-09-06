@@ -1,5 +1,4 @@
 import pybullet as pb
-import time
 import os
 import sys
 import numpy as np
@@ -453,11 +452,13 @@ if __name__ == "__main__":
         # Moving Camera Setting
         ############################################################
         base_pos, base_ori = pb.getBasePositionAndOrientation(draco_humanoid)
-        pb.resetDebugVisualizerCamera(cameraDistance=1.5,
-                                      cameraYaw=120,
-                                      cameraPitch=-30,
-                                      cameraTargetPosition=base_pos +
-                                      np.array([0.5, 0.3, -base_pos[2] + 1]))
+        pb.resetDebugVisualizerCamera(
+            cameraDistance=1.5,
+            cameraYaw=120,
+            cameraPitch=-30,
+            cameraTargetPosition=base_pos +
+            np.array([0.5, 0.3, -base_pos[2] + 1]),
+        )
 
         ###############################################################################
         # Debugging Purpose

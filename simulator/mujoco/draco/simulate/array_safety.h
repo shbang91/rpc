@@ -21,12 +21,13 @@
 #include <cstdio>
 #include <cstring>
 
-// Provides safe alternatives to the sizeof() operator and standard library functions for handling
-// null-terminated (C-style) strings in raw char arrays.
+// Provides safe alternatives to the sizeof() operator and standard library
+// functions for handling null-terminated (C-style) strings in raw char arrays.
 //
-// These functions make use of compile-time array sizes to limit read and write operations to within
-// the array bounds. They are designed to trigger a compile error if the array size cannot be
-// determined at compile time (e.g. when an array has decayed into a pointer).
+// These functions make use of compile-time array sizes to limit read and write
+// operations to within the array bounds. They are designed to trigger a compile
+// error if the array size cannot be determined at compile time (e.g. when an
+// array has decayed into a pointer).
 //
 // They do not perform runtime bound checks.
 
@@ -36,7 +37,7 @@ namespace sample_util {
 // returns sizeof(arr)
 // use instead of sizeof() to avoid unintended array-to-pointer decay
 template <typename T, int N>
-static constexpr std::size_t sizeof_arr(const T(&arr)[N]) {
+static constexpr std::size_t sizeof_arr(const T (&arr)[N]) {
   return sizeof(arr);
 }
 
@@ -61,7 +62,7 @@ static inline std::size_t strlen_arr(const char (&str)[N]) {
 // like std::sprintf but will not write beyond the bound of dest
 // dest is guaranteed to be null-terminated
 template <std::size_t N>
-static inline int sprintf_arr(char (&dest)[N], const char* format, ...) {
+static inline int sprintf_arr(char (&dest)[N], const char *format, ...) {
   std::va_list vargs;
   va_start(vargs, format);
   int retval = std::vsnprintf(dest, N, format, vargs);
@@ -72,7 +73,7 @@ static inline int sprintf_arr(char (&dest)[N], const char* format, ...) {
 // like std::strcat but will not write beyond the bound of dest
 // dest is guaranteed to be null-terminated
 template <std::size_t N>
-static inline char* strcat_arr(char (&dest)[N], const char* src) {
+static inline char *strcat_arr(char (&dest)[N], const char *src) {
   const std::size_t dest_len = strlen_arr(dest);
   const std::size_t dest_size = sizeof_arr(dest);
   for (std::size_t i = dest_len; i < dest_size; ++i) {
@@ -88,7 +89,7 @@ static inline char* strcat_arr(char (&dest)[N], const char* src) {
 // like std::strcpy but won't write beyond the bound of dest
 // dest is guaranteed to be null-terminated
 template <std::size_t N>
-static inline char* strcpy_arr(char (&dest)[N], const char* src) {
+static inline char *strcpy_arr(char (&dest)[N], const char *src) {
   {
     std::size_t i = 0;
     for (; src[i] && i < N - 1; ++i) {
@@ -99,7 +100,7 @@ static inline char* strcpy_arr(char (&dest)[N], const char* src) {
   return &dest[0];
 }
 
-}  // namespace sample_util
-}  // namespace mujoco
+} // namespace sample_util
+} // namespace mujoco
 
-#endif  // MUJOCO_SAMPLE_ARRAY_SAFETY_H_
+#endif // MUJOCO_SAMPLE_ARRAY_SAFETY_H_

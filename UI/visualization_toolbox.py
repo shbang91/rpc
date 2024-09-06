@@ -17,10 +17,13 @@ def isMesh(geometry_object):
 
     return False
 
-def update_robot_transform(visual: pin.GeometryModel,
-                           visual_data: pin.GeometryData,
-                           visual_model: pin.GeometryModel,
-                           transform: FrameTransform):
+
+def update_robot_transform(
+    visual: pin.GeometryModel,
+    visual_data: pin.GeometryData,
+    visual_model: pin.GeometryModel,
+    transform: FrameTransform,
+):
     parent_name = "world"
     # Get mesh pose.
     M = visual_data.oMg[visual_model.getGeometryId(visual.name)]
@@ -44,11 +47,9 @@ def update_robot_transform(visual: pin.GeometryModel,
     transform.rotation.z = q[2]
     transform.rotation.w = q[3]
 
-def update_2d_transform(obj_name: str,
-                        pos_2d: np.ndarray,
-                        transform: FrameTransform):
+
+def update_2d_transform(obj_name: str, pos_2d: np.ndarray, transform: FrameTransform):
     transform.parent_frame_id = "world"
     transform.child_frame_id = obj_name
     transform.translation.x = pos_2d[0]
     transform.translation.y = pos_2d[1]
-    

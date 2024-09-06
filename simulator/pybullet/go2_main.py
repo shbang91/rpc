@@ -1,8 +1,6 @@
 import pybullet as pb
-import time
 import os
 import sys
-import numpy as np
 
 cwd = os.getcwd()
 sys.path.append(cwd)

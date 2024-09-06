@@ -74,10 +74,11 @@ GlfwAdapter::GlfwAdapter() {
       window_, +[](GLFWwindow *window, int count, const char **paths) {
         GlfwAdapterFromWindow(window).OnFilesDrop(count, paths);
       });
-  Glfw().glfwSetKeyCallback(window_, +[](GLFWwindow *window, int key,
-                                         int scancode, int act, int mods) {
-    GlfwAdapterFromWindow(window).OnKey(key, scancode, act);
-  });
+  Glfw().glfwSetKeyCallback(
+      window_,
+      +[](GLFWwindow *window, int key, int scancode, int act, int mods) {
+        GlfwAdapterFromWindow(window).OnKey(key, scancode, act);
+      });
   Glfw().glfwSetMouseButtonCallback(
       window_, +[](GLFWwindow *window, int button, int act, int mods) {
         GlfwAdapterFromWindow(window).OnMouseButton(button, act);
@@ -90,15 +91,16 @@ GlfwAdapter::GlfwAdapter() {
       window_, +[](GLFWwindow *window, double xoffset, double yoffset) {
         GlfwAdapterFromWindow(window).OnScroll(xoffset, yoffset);
       });
-  Glfw().glfwSetWindowRefreshCallback(window_, +[](GLFWwindow *window) {
+  Glfw().glfwSetWindowRefreshCallback(
+      window_, +[](GLFWwindow *window) {
 #ifdef __APPLE__
-    auto &core_video = GlfwAdapterFromWindow(window).core_video_;
-    if (core_video.has_value()) {
-      core_video->UpdateDisplayLink();
-    }
+        auto &core_video = GlfwAdapterFromWindow(window).core_video_;
+        if (core_video.has_value()) {
+          core_video->UpdateDisplayLink();
+        }
 #endif
-    GlfwAdapterFromWindow(window).OnWindowRefresh();
-  });
+        GlfwAdapterFromWindow(window).OnWindowRefresh();
+      });
   Glfw().glfwSetWindowSizeCallback(
       window_, +[](GLFWwindow *window, int width, int height) {
         GlfwAdapterFromWindow(window).OnWindowResize(width, height);

@@ -1,24 +1,18 @@
 import pybullet as pb
-import time
 import os
 
 cwd = os.getcwd()
 import sys
 
 sys.path.append(cwd)
-sys.path.append(cwd + "/build/lib")  #include pybind module
-
-import time
+sys.path.append(cwd + "/build/lib")  # include pybind module
 
 import numpy as np
-import ipdb
 
 from config.draco.sim.pybullet.wbic.pybullet_params import *
 from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import liegroup
-
-import copy
 
 import signal
 import shutil
@@ -33,13 +27,12 @@ if Config.MEASURE_COMPUTATION_TIME:
 
 
 def get_sensor_data_from_pybullet(robot):
-
-    #follow pinocchio robotsystem urdf reading convention
+    # follow pinocchio robotsystem urdf reading convention
     joint_pos, joint_vel = np.zeros(27), np.zeros(27)
 
     imu_frame_quat = np.array(
         pb.getLinkState(robot, DracoLinkIdx.torso_imu, 1, 1)[1])
-    #LF
+    # LF
     joint_pos[0] = pb.getJointState(robot, PybulletDracoJointIdx.l_hip_ie)[0]
     joint_pos[1] = pb.getJointState(robot, PybulletDracoJointIdx.l_hip_aa)[0]
     joint_pos[2] = pb.getJointState(robot, PybulletDracoJointIdx.l_hip_fe)[0]
@@ -49,7 +42,7 @@ def get_sensor_data_from_pybullet(robot):
                                     PybulletDracoJointIdx.l_knee_fe_jd)[0]
     joint_pos[5] = pb.getJointState(robot, PybulletDracoJointIdx.l_ankle_fe)[0]
     joint_pos[6] = pb.getJointState(robot, PybulletDracoJointIdx.l_ankle_ie)[0]
-    #LH
+    # LH
     joint_pos[7] = pb.getJointState(robot,
                                     PybulletDracoJointIdx.l_shoulder_fe)[0]
     joint_pos[8] = pb.getJointState(robot,
@@ -62,10 +55,10 @@ def get_sensor_data_from_pybullet(robot):
                                      PybulletDracoJointIdx.l_wrist_ps)[0]
     joint_pos[12] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.l_wrist_pitch)[0]
-    #neck
+    # neck
     joint_pos[13] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.neck_pitch)[0]
-    #RF
+    # RF
     joint_pos[14] = pb.getJointState(robot, PybulletDracoJointIdx.r_hip_ie)[0]
     joint_pos[15] = pb.getJointState(robot, PybulletDracoJointIdx.r_hip_aa)[0]
     joint_pos[16] = pb.getJointState(robot, PybulletDracoJointIdx.r_hip_fe)[0]
@@ -77,7 +70,7 @@ def get_sensor_data_from_pybullet(robot):
                                      PybulletDracoJointIdx.r_ankle_fe)[0]
     joint_pos[20] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.r_ankle_ie)[0]
-    #RH
+    # RH
     joint_pos[21] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.r_shoulder_fe)[0]
     joint_pos[22] = pb.getJointState(robot,
@@ -97,7 +90,7 @@ def get_sensor_data_from_pybullet(robot):
     imu_dvel = pybullet_util.simulate_dVel_data(robot, DracoLinkIdx.torso_imu,
                                                 previous_torso_velocity)
 
-    #LF
+    # LF
     joint_vel[0] = pb.getJointState(robot, PybulletDracoJointIdx.l_hip_ie)[1]
     joint_vel[1] = pb.getJointState(robot, PybulletDracoJointIdx.l_hip_aa)[1]
     joint_vel[2] = pb.getJointState(robot, PybulletDracoJointIdx.l_hip_fe)[1]
@@ -107,7 +100,7 @@ def get_sensor_data_from_pybullet(robot):
                                     PybulletDracoJointIdx.l_knee_fe_jd)[1]
     joint_vel[5] = pb.getJointState(robot, PybulletDracoJointIdx.l_ankle_fe)[1]
     joint_vel[6] = pb.getJointState(robot, PybulletDracoJointIdx.l_ankle_ie)[1]
-    #LH
+    # LH
     joint_vel[7] = pb.getJointState(robot,
                                     PybulletDracoJointIdx.l_shoulder_fe)[1]
     joint_vel[8] = pb.getJointState(robot,
@@ -120,10 +113,10 @@ def get_sensor_data_from_pybullet(robot):
                                      PybulletDracoJointIdx.l_wrist_ps)[1]
     joint_vel[12] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.l_wrist_pitch)[1]
-    #neck
+    # neck
     joint_vel[13] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.neck_pitch)[1]
-    #RF
+    # RF
     joint_vel[14] = pb.getJointState(robot, PybulletDracoJointIdx.r_hip_ie)[1]
     joint_vel[15] = pb.getJointState(robot, PybulletDracoJointIdx.r_hip_aa)[1]
     joint_vel[16] = pb.getJointState(robot, PybulletDracoJointIdx.r_hip_fe)[1]
@@ -135,7 +128,7 @@ def get_sensor_data_from_pybullet(robot):
                                      PybulletDracoJointIdx.r_ankle_fe)[1]
     joint_vel[20] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.r_ankle_ie)[1]
-    #RH
+    # RH
     joint_vel[21] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.r_shoulder_fe)[1]
     joint_vel[22] = pb.getJointState(robot,
@@ -149,18 +142,26 @@ def get_sensor_data_from_pybullet(robot):
     joint_vel[26] = pb.getJointState(robot,
                                      PybulletDracoJointIdx.r_wrist_pitch)[1]
 
-    b_lf_contact = True if pb.getLinkState(robot, DracoLinkIdx.l_foot_contact,
-                                           1, 1)[0][2] <= 0.05 else False
-    b_rf_contact = True if pb.getLinkState(robot, DracoLinkIdx.r_foot_contact,
-                                           1, 1)[0][2] <= 0.05 else False
-    return imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact
+    b_lf_contact = (True if pb.getLinkState(robot, DracoLinkIdx.l_foot_contact,
+                                            1, 1)[0][2] <= 0.05 else False)
+    b_rf_contact = (True if pb.getLinkState(robot, DracoLinkIdx.r_foot_contact,
+                                            1, 1)[0][2] <= 0.05 else False)
+    return (
+        imu_frame_quat,
+        imu_ang_vel,
+        imu_dvel,
+        joint_pos,
+        joint_vel,
+        b_lf_contact,
+        b_rf_contact,
+    )
 
 
-#TODO:try to modify with setjointmotorcontrol "array" API
+# TODO:try to modify with setjointmotorcontrol "array" API
 def apply_torque_control_to_pybullet(robot, command):
     mode = pb.TORQUE_CONTROL
 
-    #LF
+    # LF
     pb.setJointMotorControl2(robot,
                              PybulletDracoJointIdx.l_hip_ie,
                              controlMode=mode,
@@ -187,7 +188,7 @@ def apply_torque_control_to_pybullet(robot, command):
                              controlMode=mode,
                              force=command[6])
 
-    #LH
+    # LH
     pb.setJointMotorControl2(robot,
                              PybulletDracoJointIdx.l_shoulder_fe,
                              controlMode=mode,
@@ -213,13 +214,13 @@ def apply_torque_control_to_pybullet(robot, command):
                              controlMode=mode,
                              force=command[12])
 
-    #neck
+    # neck
     pb.setJointMotorControl2(robot,
                              PybulletDracoJointIdx.neck_pitch,
                              controlMode=mode,
                              force=command[13])
 
-    #RF
+    # RF
     pb.setJointMotorControl2(robot,
                              PybulletDracoJointIdx.r_hip_ie,
                              controlMode=mode,
@@ -246,7 +247,7 @@ def apply_torque_control_to_pybullet(robot, command):
                              controlMode=mode,
                              force=command[20])
 
-    #RH
+    # RH
     pb.setJointMotorControl2(robot,
                              PybulletDracoJointIdx.r_shoulder_fe,
                              controlMode=mode,
@@ -277,243 +278,297 @@ def apply_position_control_to_pybullet(robot, pos_command, vel_command, kp,
                                        kd):
     mode = pb.POSITION_CONTROL
 
-    #LF
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_hip_ie,
-                             controlMode=mode,
-                             targetPosition=pos_command[0],
-                             targetVelocity=vel_command[0],
-                             positionGain=kp[0],
-                             velocityGain=kd[0])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_hip_aa,
-                             controlMode=mode,
-                             targetPosition=pos_command[1],
-                             targetVelocity=vel_command[1],
-                             positionGain=kp[1],
-                             velocityGain=kd[1])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_hip_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[2],
-                             targetVelocity=vel_command[2],
-                             positionGain=kp[2],
-                             velocityGain=kd[2])
+    # LF
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_hip_ie,
+        controlMode=mode,
+        targetPosition=pos_command[0],
+        targetVelocity=vel_command[0],
+        positionGain=kp[0],
+        velocityGain=kd[0],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_hip_aa,
+        controlMode=mode,
+        targetPosition=pos_command[1],
+        targetVelocity=vel_command[1],
+        positionGain=kp[1],
+        velocityGain=kd[1],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_hip_fe,
+        controlMode=mode,
+        targetPosition=pos_command[2],
+        targetVelocity=vel_command[2],
+        positionGain=kp[2],
+        velocityGain=kd[2],
+    )
     # pb.setJointMotorControl2(robot, PybulletDracoJointIdx.l_knee_fe_jp, controlMode=mode, targetPosition=pos_command[3])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_knee_fe_jd,
-                             controlMode=mode,
-                             targetPosition=pos_command[4],
-                             targetVelocity=vel_command[4],
-                             positionGain=kp[4],
-                             velocityGain=kd[4])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_ankle_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[5],
-                             targetVelocity=vel_command[5],
-                             positionGain=kp[5],
-                             velocityGain=kd[5])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_ankle_ie,
-                             controlMode=mode,
-                             targetPosition=pos_command[6],
-                             targetVelocity=vel_command[6],
-                             positionGain=kp[6],
-                             velocityGain=kd[6])
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_knee_fe_jd,
+        controlMode=mode,
+        targetPosition=pos_command[4],
+        targetVelocity=vel_command[4],
+        positionGain=kp[4],
+        velocityGain=kd[4],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_ankle_fe,
+        controlMode=mode,
+        targetPosition=pos_command[5],
+        targetVelocity=vel_command[5],
+        positionGain=kp[5],
+        velocityGain=kd[5],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_ankle_ie,
+        controlMode=mode,
+        targetPosition=pos_command[6],
+        targetVelocity=vel_command[6],
+        positionGain=kp[6],
+        velocityGain=kd[6],
+    )
 
-    #LH
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_shoulder_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[7],
-                             targetVelocity=vel_command[7],
-                             positionGain=kp[7],
-                             velocityGain=kd[7])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_shoulder_aa,
-                             controlMode=mode,
-                             targetPosition=pos_command[8],
-                             targetVelocity=vel_command[8],
-                             positionGain=kp[8],
-                             velocityGain=kd[8])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_shoulder_ie,
-                             controlMode=mode,
-                             targetPosition=pos_command[9],
-                             targetVelocity=vel_command[9],
-                             positionGain=kp[9],
-                             velocityGain=kd[9])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_elbow_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[10],
-                             targetVelocity=vel_command[10],
-                             positionGain=kp[10],
-                             velocityGain=kd[10])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_wrist_ps,
-                             controlMode=mode,
-                             targetPosition=pos_command[11],
-                             targetVelocity=vel_command[11],
-                             positionGain=kp[11],
-                             velocityGain=kd[11])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.l_wrist_pitch,
-                             controlMode=mode,
-                             targetPosition=pos_command[12],
-                             targetVelocity=vel_command[12],
-                             positionGain=kp[12],
-                             velocityGain=kd[12])
+    # LH
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_shoulder_fe,
+        controlMode=mode,
+        targetPosition=pos_command[7],
+        targetVelocity=vel_command[7],
+        positionGain=kp[7],
+        velocityGain=kd[7],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_shoulder_aa,
+        controlMode=mode,
+        targetPosition=pos_command[8],
+        targetVelocity=vel_command[8],
+        positionGain=kp[8],
+        velocityGain=kd[8],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_shoulder_ie,
+        controlMode=mode,
+        targetPosition=pos_command[9],
+        targetVelocity=vel_command[9],
+        positionGain=kp[9],
+        velocityGain=kd[9],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_elbow_fe,
+        controlMode=mode,
+        targetPosition=pos_command[10],
+        targetVelocity=vel_command[10],
+        positionGain=kp[10],
+        velocityGain=kd[10],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_wrist_ps,
+        controlMode=mode,
+        targetPosition=pos_command[11],
+        targetVelocity=vel_command[11],
+        positionGain=kp[11],
+        velocityGain=kd[11],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.l_wrist_pitch,
+        controlMode=mode,
+        targetPosition=pos_command[12],
+        targetVelocity=vel_command[12],
+        positionGain=kp[12],
+        velocityGain=kd[12],
+    )
 
-    #neck
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.neck_pitch,
-                             controlMode=mode,
-                             targetPosition=pos_command[13],
-                             targetVelocity=vel_command[13],
-                             positionGain=kp[13],
-                             velocityGain=kd[13])
+    # neck
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.neck_pitch,
+        controlMode=mode,
+        targetPosition=pos_command[13],
+        targetVelocity=vel_command[13],
+        positionGain=kp[13],
+        velocityGain=kd[13],
+    )
 
-    #RF
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_hip_ie,
-                             controlMode=mode,
-                             targetPosition=pos_command[14],
-                             targetVelocity=vel_command[14],
-                             positionGain=kp[14],
-                             velocityGain=kd[14])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_hip_aa,
-                             controlMode=mode,
-                             targetPosition=pos_command[15],
-                             targetVelocity=vel_command[15],
-                             positionGain=kp[15],
-                             velocityGain=kd[15])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_hip_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[16],
-                             targetVelocity=vel_command[16],
-                             positionGain=kp[16],
-                             velocityGain=kd[16])
+    # RF
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_hip_ie,
+        controlMode=mode,
+        targetPosition=pos_command[14],
+        targetVelocity=vel_command[14],
+        positionGain=kp[14],
+        velocityGain=kd[14],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_hip_aa,
+        controlMode=mode,
+        targetPosition=pos_command[15],
+        targetVelocity=vel_command[15],
+        positionGain=kp[15],
+        velocityGain=kd[15],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_hip_fe,
+        controlMode=mode,
+        targetPosition=pos_command[16],
+        targetVelocity=vel_command[16],
+        positionGain=kp[16],
+        velocityGain=kd[16],
+    )
     # pb.setJointMotorControl2(robot, PybulletDracoJointIdx.r_knee_fe_jd, controlMode=mode, targetPosition=pos_command[17])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_knee_fe_jd,
-                             controlMode=mode,
-                             targetPosition=pos_command[18],
-                             targetVelocity=vel_command[18],
-                             positionGain=kp[18],
-                             velocityGain=kd[18])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_ankle_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[19],
-                             targetVelocity=vel_command[19],
-                             positionGain=kp[19],
-                             velocityGain=kd[19])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_ankle_ie,
-                             controlMode=mode,
-                             targetPosition=pos_command[20],
-                             targetVelocity=vel_command[20],
-                             positionGain=kp[20],
-                             velocityGain=kd[20])
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_knee_fe_jd,
+        controlMode=mode,
+        targetPosition=pos_command[18],
+        targetVelocity=vel_command[18],
+        positionGain=kp[18],
+        velocityGain=kd[18],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_ankle_fe,
+        controlMode=mode,
+        targetPosition=pos_command[19],
+        targetVelocity=vel_command[19],
+        positionGain=kp[19],
+        velocityGain=kd[19],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_ankle_ie,
+        controlMode=mode,
+        targetPosition=pos_command[20],
+        targetVelocity=vel_command[20],
+        positionGain=kp[20],
+        velocityGain=kd[20],
+    )
 
-    #RH
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_shoulder_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[21],
-                             targetVelocity=vel_command[21],
-                             positionGain=kp[21],
-                             velocityGain=kd[21])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_shoulder_aa,
-                             controlMode=mode,
-                             targetPosition=pos_command[22],
-                             targetVelocity=vel_command[22],
-                             positionGain=kp[22],
-                             velocityGain=kd[22])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_shoulder_ie,
-                             controlMode=mode,
-                             targetPosition=pos_command[23],
-                             targetVelocity=vel_command[23],
-                             positionGain=kp[23],
-                             velocityGain=kd[23])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_elbow_fe,
-                             controlMode=mode,
-                             targetPosition=pos_command[24],
-                             targetVelocity=vel_command[24],
-                             positionGain=kp[24],
-                             velocityGain=kd[24])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_wrist_ps,
-                             controlMode=mode,
-                             targetPosition=pos_command[25],
-                             targetVelocity=vel_command[25],
-                             positionGain=kp[25],
-                             velocityGain=kd[25])
-    pb.setJointMotorControl2(robot,
-                             PybulletDracoJointIdx.r_wrist_pitch,
-                             controlMode=mode,
-                             targetPosition=pos_command[26],
-                             targetVelocity=vel_command[26],
-                             positionGain=kp[26],
-                             velocityGain=kd[26])
+    # RH
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_shoulder_fe,
+        controlMode=mode,
+        targetPosition=pos_command[21],
+        targetVelocity=vel_command[21],
+        positionGain=kp[21],
+        velocityGain=kd[21],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_shoulder_aa,
+        controlMode=mode,
+        targetPosition=pos_command[22],
+        targetVelocity=vel_command[22],
+        positionGain=kp[22],
+        velocityGain=kd[22],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_shoulder_ie,
+        controlMode=mode,
+        targetPosition=pos_command[23],
+        targetVelocity=vel_command[23],
+        positionGain=kp[23],
+        velocityGain=kd[23],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_elbow_fe,
+        controlMode=mode,
+        targetPosition=pos_command[24],
+        targetVelocity=vel_command[24],
+        positionGain=kp[24],
+        velocityGain=kd[24],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_wrist_ps,
+        controlMode=mode,
+        targetPosition=pos_command[25],
+        targetVelocity=vel_command[25],
+        positionGain=kp[25],
+        velocityGain=kd[25],
+    )
+    pb.setJointMotorControl2(
+        robot,
+        PybulletDracoJointIdx.r_wrist_pitch,
+        controlMode=mode,
+        targetPosition=pos_command[26],
+        targetVelocity=vel_command[26],
+        positionGain=kp[26],
+        velocityGain=kd[26],
+    )
 
 
 def set_init_config_pybullet_robot(robot):
     # Upperbody
     pb.resetJointState(robot, PybulletDracoJointIdx.l_shoulder_aa, np.pi / 6,
-                       0.)
-    pb.resetJointState(robot, PybulletDracoJointIdx.l_elbow_fe, -np.pi / 2, 0.)
+                       0.0)
+    pb.resetJointState(robot, PybulletDracoJointIdx.l_elbow_fe, -np.pi / 2,
+                       0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.r_shoulder_aa, -np.pi / 6,
-                       0.)
-    pb.resetJointState(robot, PybulletDracoJointIdx.r_elbow_fe, -np.pi / 2, 0.)
+                       0.0)
+    pb.resetJointState(robot, PybulletDracoJointIdx.r_elbow_fe, -np.pi / 2,
+                       0.0)
 
     # Lowerbody
     hip_yaw_angle = 0
     pb.resetJointState(robot, PybulletDracoJointIdx.l_hip_aa,
-                       np.radians(hip_yaw_angle), 0.)
-    pb.resetJointState(robot, PybulletDracoJointIdx.l_hip_fe, -np.pi / 4, 0.)
+                       np.radians(hip_yaw_angle), 0.0)
+    pb.resetJointState(robot, PybulletDracoJointIdx.l_hip_fe, -np.pi / 4, 0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.l_knee_fe_jp, np.pi / 4,
-                       0.)
+                       0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.l_knee_fe_jd, np.pi / 4,
-                       0.)
-    pb.resetJointState(robot, PybulletDracoJointIdx.l_ankle_fe, -np.pi / 4, 0.)
+                       0.0)
+    pb.resetJointState(robot, PybulletDracoJointIdx.l_ankle_fe, -np.pi / 4,
+                       0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.l_ankle_ie,
-                       np.radians(-hip_yaw_angle), 0.)
+                       np.radians(-hip_yaw_angle), 0.0)
 
     pb.resetJointState(robot, PybulletDracoJointIdx.r_hip_aa,
-                       np.radians(-hip_yaw_angle), 0.)
-    pb.resetJointState(robot, PybulletDracoJointIdx.r_hip_fe, -np.pi / 4, 0.)
+                       np.radians(-hip_yaw_angle), 0.0)
+    pb.resetJointState(robot, PybulletDracoJointIdx.r_hip_fe, -np.pi / 4, 0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.r_knee_fe_jp, np.pi / 4,
-                       0.)
+                       0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.r_knee_fe_jd, np.pi / 4,
-                       0.)
-    pb.resetJointState(robot, PybulletDracoJointIdx.r_ankle_fe, -np.pi / 4, 0.)
+                       0.0)
+    pb.resetJointState(robot, PybulletDracoJointIdx.r_ankle_fe, -np.pi / 4,
+                       0.0)
     pb.resetJointState(robot, PybulletDracoJointIdx.r_ankle_ie,
-                       np.radians(hip_yaw_angle), 0.)
+                       np.radians(hip_yaw_angle), 0.0)
 
 
 def signal_handler(signal, frame):
     # if Config.VIDEO_RECORD:
     # pybullet_util.make_video(video_dir, False)
     if Config.MEASURE_COMPUTATION_TIME:
-        print('========================================================')
+        print("========================================================")
         print('saving list of compuation time in "compuation_time.txt"')
-        print('========================================================')
-        np.savetxt('computation_time.txt',
+        print("========================================================")
+        np.savetxt("computation_time.txt",
                    np.array([compuation_cal_list]),
-                   delimiter=',')
+                   delimiter=",")
 
     if Config.VIDEO_RECORD:
-        print('========================================================')
-        print('Making Video')
-        print('========================================================')
+        print("========================================================")
+        print("Making Video")
+        print("========================================================")
         pybullet_util.make_video(video_dir)
 
     pb.disconnect()
@@ -523,15 +578,16 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
-
     ## connect pybullet sim server
     pb.connect(pb.GUI)
     pb.configureDebugVisualizer(pb.COV_ENABLE_GUI, 0)
 
-    pb.resetDebugVisualizerCamera(cameraDistance=1.5,
-                                  cameraYaw=120,
-                                  cameraPitch=-30,
-                                  cameraTargetPosition=[0, 0, 0.5])
+    pb.resetDebugVisualizerCamera(
+        cameraDistance=1.5,
+        cameraYaw=120,
+        cameraPitch=-30,
+        cameraTargetPosition=[0, 0, 0.5],
+    )
     ## sim physics setting
     pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
                                  numSubSteps=Config.N_SUBSTEP)
@@ -544,7 +600,8 @@ if __name__ == "__main__":
         cwd + "/robot_model/draco/draco_latest_collisions.urdf",
         Config.INITIAL_BASE_JOINT_POS,
         Config.INITIAL_BASE_JOINT_QUAT,
-        useFixedBase=False)
+        useFixedBase=False,
+    )
     # draco_humanoid = pb.loadURDF(cwd +
     # "/robot_model/draco/draco3_big_feet.urdf",
     # Config.INITIAL_BASE_JOINT_POS,
@@ -555,50 +612,65 @@ if __name__ == "__main__":
                          useFixedBase=1)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
-    #TODO:modify this function without dictionary container
-    n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
-        draco_humanoid, Config.INITIAL_BASE_JOINT_POS,
-        Config.INITIAL_BASE_JOINT_QUAT, Config.PRINT_ROBOT_INFO)
+    # TODO:modify this function without dictionary container
+    (
+        n_q,
+        n_v,
+        n_a,
+        joint_id_dict,
+        link_id_dict,
+        pos_basejoint_to_basecom,
+        rot_basejoint_to_basecom,
+    ) = pybullet_util.get_robot_config(
+        draco_humanoid,
+        Config.INITIAL_BASE_JOINT_POS,
+        Config.INITIAL_BASE_JOINT_QUAT,
+        Config.PRINT_ROBOT_INFO,
+    )
 
-    #robot initial config setting
+    # robot initial config setting
     set_init_config_pybullet_robot(draco_humanoid)
 
-    #robot joint and link dynamics setting
-    #TODO:modify this function without dictionary container
+    # robot joint and link dynamics setting
+    # TODO:modify this function without dictionary container
     pybullet_util.set_joint_friction(draco_humanoid, joint_id_dict, 0)
-    pybullet_util.set_link_damping(draco_humanoid, link_id_dict, 0., 0.)
+    pybullet_util.set_link_damping(draco_humanoid, link_id_dict, 0.0, 0.0)
 
     ## rolling contact joint constraint
-    c1 = pb.createConstraint(draco_humanoid,
-                             DracoLinkIdx.l_knee_fe_lp,
-                             draco_humanoid,
-                             DracoLinkIdx.l_knee_fe_ld,
-                             jointType=pb.JOINT_GEAR,
-                             jointAxis=[0, 1, 0],
-                             parentFramePosition=[0, 0, 0],
-                             childFramePosition=[0, 0, 0])
+    c1 = pb.createConstraint(
+        draco_humanoid,
+        DracoLinkIdx.l_knee_fe_lp,
+        draco_humanoid,
+        DracoLinkIdx.l_knee_fe_ld,
+        jointType=pb.JOINT_GEAR,
+        jointAxis=[0, 1, 0],
+        parentFramePosition=[0, 0, 0],
+        childFramePosition=[0, 0, 0],
+    )
     pb.changeConstraint(c1, gearRatio=-1, maxForce=500, erp=10)
 
-    c2 = pb.createConstraint(draco_humanoid,
-                             DracoLinkIdx.r_knee_fe_lp,
-                             draco_humanoid,
-                             DracoLinkIdx.r_knee_fe_ld,
-                             jointType=pb.JOINT_GEAR,
-                             jointAxis=[0, 1, 0],
-                             parentFramePosition=[0, 0, 0],
-                             childFramePosition=[0, 0, 0])
+    c2 = pb.createConstraint(
+        draco_humanoid,
+        DracoLinkIdx.r_knee_fe_lp,
+        draco_humanoid,
+        DracoLinkIdx.r_knee_fe_ld,
+        jointType=pb.JOINT_GEAR,
+        jointAxis=[0, 1, 0],
+        parentFramePosition=[0, 0, 0],
+        childFramePosition=[0, 0, 0],
+    )
     pb.changeConstraint(c2, gearRatio=-1, maxForce=500, erp=10)
 
-    #pnc interface, sensor_data, command class
+    # pnc interface, sensor_data, command class
     rpc_draco_interface = draco_interface_py.DracoInterface()
     rpc_draco_sensor_data = draco_interface_py.DracoSensorData()
     rpc_draco_command = draco_interface_py.DracoCommand()
 
-    #TODO
-    #active jointidx list in sequence (pinocchio model joint order)
+    # TODO
+    # active jointidx list in sequence (pinocchio model joint order)
     active_joint_idx_list = []
 
-    #default robot kinematics information
+    # default robot kinematics information
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
         draco_humanoid)
     rot_world_basecom = util.quat_to_rot(np.array(base_com_quat))
@@ -607,7 +679,8 @@ if __name__ == "__main__":
 
     pos_basejoint_to_basecom = np.dot(
         rot_world_basejoint.transpose(),
-        base_com_pos - np.array(Config.INITIAL_BASE_JOINT_POS))
+        base_com_pos - np.array(Config.INITIAL_BASE_JOINT_POS),
+    )
     rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
                                       rot_world_basecom)
 
@@ -622,17 +695,17 @@ if __name__ == "__main__":
         compuation_cal_list = []
 
     if Config.VIDEO_RECORD:
-        video_dir = 'video/draco'
+        video_dir = "video/draco"
         if os.path.exists(video_dir):
             shutil.rmtree(video_dir)
         os.makedirs(video_dir)
 
-    previous_torso_velocity = np.array([0., 0., 0.])
+    previous_torso_velocity = np.array([0.0, 0.0, 0.0])
 
-    rate = RateLimiter(frequency=1. / dt)
+    rate = RateLimiter(frequency=1.0 / dt)
 
     perturb = pb.addUserDebugParameter("External Force", -1000, 1000, 0)
-    while (True):
+    while True:
         ############################################################
         # Moving Camera Setting
         ############################################################
@@ -644,7 +717,7 @@ if __name__ == "__main__":
                                       np.array([0.5, 0.3, -base_pos[2] + 1]))
 
         ###############################################################################
-        #Debugging Purpose
+        # Debugging Purpose
         ##############################################################################
         ##debugging state estimator by calculating groundtruth basejoint states
         base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
@@ -678,7 +751,7 @@ if __name__ == "__main__":
         base_joint_ang_vel = twist_basejoint_in_world[0:3]
         base_joint_lin_vel = twist_basejoint_in_world[3:6]
 
-        #pass debugged data to rpc interface
+        # pass debugged data to rpc interface
         rpc_draco_sensor_data.base_joint_pos_ = base_joint_pos
         rpc_draco_sensor_data.base_joint_quat_ = base_joint_quat
         rpc_draco_sensor_data.base_joint_lin_vel_ = base_joint_lin_vel
@@ -688,44 +761,51 @@ if __name__ == "__main__":
 
         # Get Keyboard Event
         keys = pb.getKeyboardEvents()
-        if pybullet_util.is_key_triggered(keys, '1'):
+        if pybullet_util.is_key_triggered(keys, "1"):
             rpc_draco_interface.interrupt_.PressOne()
-        elif pybullet_util.is_key_triggered(keys, '2'):
+        elif pybullet_util.is_key_triggered(keys, "2"):
             rpc_draco_interface.interrupt_.PressTwo()
-        elif pybullet_util.is_key_triggered(keys, '4'):
+        elif pybullet_util.is_key_triggered(keys, "4"):
             rpc_draco_interface.interrupt_.PressFour()
-        elif pybullet_util.is_key_triggered(keys, '5'):
+        elif pybullet_util.is_key_triggered(keys, "5"):
             rpc_draco_interface.interrupt_.PressFive()
-        elif pybullet_util.is_key_triggered(keys, '6'):
+        elif pybullet_util.is_key_triggered(keys, "6"):
             rpc_draco_interface.interrupt_.PressSix()
-        elif pybullet_util.is_key_triggered(keys, '7'):
+        elif pybullet_util.is_key_triggered(keys, "7"):
             rpc_draco_interface.interrupt_.PressSeven()
-        elif pybullet_util.is_key_triggered(keys, '8'):
+        elif pybullet_util.is_key_triggered(keys, "8"):
             rpc_draco_interface.interrupt_.PressEight()
-        elif pybullet_util.is_key_triggered(keys, '9'):
+        elif pybullet_util.is_key_triggered(keys, "9"):
             rpc_draco_interface.interrupt_.PressNine()
-        elif pybullet_util.is_key_triggered(keys, 'm'):
+        elif pybullet_util.is_key_triggered(keys, "m"):
             rpc_draco_interface.interrupt_.PressM()
-        elif pybullet_util.is_key_triggered(keys, 'x'):
+        elif pybullet_util.is_key_triggered(keys, "x"):
             rpc_draco_interface.interrupt_.PressX()
-        elif pybullet_util.is_key_triggered(keys, 'y'):
+        elif pybullet_util.is_key_triggered(keys, "y"):
             rpc_draco_interface.interrupt_.PressY()
-        elif pybullet_util.is_key_triggered(keys, 'z'):
+        elif pybullet_util.is_key_triggered(keys, "z"):
             rpc_draco_interface.interrupt_.PressZ()
-        elif pybullet_util.is_key_triggered(keys, 'd'):
+        elif pybullet_util.is_key_triggered(keys, "d"):
             rpc_draco_interface.interrupt_.PressD()
-        elif pybullet_util.is_key_triggered(keys, 'p'):
+        elif pybullet_util.is_key_triggered(keys, "p"):
             pos = [0.0, 0.0, 0.0]
             force = [0.0, pb.readUserDebugParameter(perturb), 0.0]
             pb.applyExternalForce(draco_humanoid, DracoLinkIdx.torso_com_link,
                                   force, pos, pb.WORLD_FRAME)
             print(f"=================force: {force}=================")
 
-        #get sensor data
-        imu_frame_quat, imu_ang_vel, imu_dvel, joint_pos, joint_vel, b_lf_contact, b_rf_contact = get_sensor_data_from_pybullet(
-            draco_humanoid)
+        # get sensor data
+        (
+            imu_frame_quat,
+            imu_ang_vel,
+            imu_dvel,
+            joint_pos,
+            joint_vel,
+            b_lf_contact,
+            b_rf_contact,
+        ) = get_sensor_data_from_pybullet(draco_humanoid)
 
-        #copy sensor data to rpc sensor data class
+        # copy sensor data to rpc sensor data class
         rpc_draco_sensor_data.imu_frame_quat_ = imu_frame_quat
         rpc_draco_sensor_data.imu_ang_vel_ = imu_ang_vel
         rpc_draco_sensor_data.imu_dvel_ = imu_dvel
@@ -748,12 +828,12 @@ if __name__ == "__main__":
             comp_time = timer.tocvalue()
             compuation_cal_list.append(comp_time)
 
-        #copy command data from rpc command class
+        # copy command data from rpc command class
         rpc_trq_command = rpc_draco_command.joint_trq_cmd_
         rpc_joint_pos_command = rpc_draco_command.joint_pos_cmd_
         rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
 
-        #apply command to pybullet robot
+        # apply command to pybullet robot
 
         # joint impedance control
         # trq_command = rpc_trq_command + JointGains.kp.dot(
@@ -775,7 +855,7 @@ if __name__ == "__main__":
         # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
         # save current torso velocity for next iteration
         previous_torso_velocity = pybullet_util.get_link_vel(
-            draco_humanoid, link_id_dict['torso_imu'])[3:6]
+            draco_humanoid, link_id_dict["torso_imu"])[3:6]
 
         # DracoLinkIdx.l_foot_contact)[0:3, 3]
         # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
@@ -799,7 +879,7 @@ if __name__ == "__main__":
             cv2.imwrite(filename, frame)
             jpg_count += 1
 
-        pb.stepSimulation()  #step simulation
+        pb.stepSimulation()  # step simulation
         # rate.sleep()  # while loop rate limiter
 
         count += 1

@@ -3,6 +3,7 @@ Converts a pkl file to mcap file for visualization in Foxglove.
 This assumes a specific set of parameters available in the pkl file,
 such as time, base_pos, base_ori, joint_positions, icp_est, icp_des, etc.
 """
+
 import os
 import sys
 import argparse
@@ -44,7 +45,7 @@ def main():
     b_using_kf_estimator = args.b_using_kf_estimator
 
     # variables in pkl file
-    time =[]
+    time = []
     base_pos, base_ori, joint_positions = [], [], []
     vis_2d_object_names = ["icp_est", "icp_des"]
     vis_3d_object_names = ["lf_pos", "rf_pos"]
@@ -97,7 +98,9 @@ def main():
     icp_des_scene = create_sphere_scene("icp_des", [0.0, 1.0, 0.0, 0.5])
 
     # send data to mcap file
-    with open(cwd + "/experiment_data/draco3_foxglove.mcap", "wb") as f, Writer(f) as mcap_writer:
+    with open(cwd + "/experiment_data/draco3_foxglove.mcap", "wb") as f, Writer(
+        f
+    ) as mcap_writer:
         for i in range(len(time)):
             # Update all transforms (to visualize URDF)
             vis_q[0:3] = np.array(base_pos[i])
@@ -109,39 +112,48 @@ def main():
             pin.updateGeometryPlacements(model, data, visual_model, visual_data)
             for visual in visual_model.geometryObjects:
                 update_robot_transform(visual, visual_data, visual_model, transform)
-                mcap_writer.write_message("transforms", transform, int(time[i] * 1e9), int(time[i] * 1e9))
+                mcap_writer.write_message(
+                    "transforms", transform, int(time[i] * 1e9), int(time[i] * 1e9)
+                )
                 transform.rotation.Clear()
                 transform.translation.Clear()
             # -------------------------------------------
             # update transform of ADDITIONAL visual elements
             for vname, vval in vis_2d_dict.items():
                 update_2d_transform(vname, vval[i], transform)
-                mcap_writer.write_message( "transforms", transform,
-                                           int(time[i] * 1e9), int(time[i] * 1e9))
+                mcap_writer.write_message(
+                    "transforms", transform, int(time[i] * 1e9), int(time[i] * 1e9)
+                )
                 transform.rotation.Clear()
                 transform.translation.Clear()
             # ===========================================
             # ICP visuals (est / des)
             icp_est_scene.entities[0].timestamp.FromNanoseconds(int(time[i] * 1e9))
-            mcap_writer.write_message( "icp_est_viz", icp_est_scene,
-                                       int(time[i] * 1e9), int(time[i] * 1e9))
+            mcap_writer.write_message(
+                "icp_est_viz", icp_est_scene, int(time[i] * 1e9), int(time[i] * 1e9)
+            )
             # -------------------------------------------
             icp_des_scene.entities[0].timestamp.FromNanoseconds(int(time[i] * 1e9))
-            mcap_writer.write_message( "icp_des_viz", icp_des_scene,
-                                       int(time[i] * 1e9), int(time[i] * 1e9))
+            mcap_writer.write_message(
+                "icp_des_viz", icp_des_scene, int(time[i] * 1e9), int(time[i] * 1e9)
+            )
             # ===========================================
             # ICP plots (est / des)
             for vname, vval in vis_2d_dict.items():
-                mcap_writer.write_message(vname,
-                                          Point2(x=vval[i][0], y=vval[i][1]),
-                                          int(time[i] * 1e9),
-                                          int(time[i] * 1e9))
+                mcap_writer.write_message(
+                    vname,
+                    Point2(x=vval[i][0], y=vval[i][1]),
+                    int(time[i] * 1e9),
+                    int(time[i] * 1e9),
+                )
             # Feet position plots (left / right)
             for vname, vval in vis_3d_dict.items():
-                mcap_writer.write_message(vname,
-                                          Point3(x=vval[i][0], y=vval[i][1], z=vval[i][2]),
-                                          int(time[i] * 1e9),
-                                          int(time[i] * 1e9))
+                mcap_writer.write_message(
+                    vname,
+                    Point3(x=vval[i][0], y=vval[i][1], z=vval[i][2]),
+                    int(time[i] * 1e9),
+                    int(time[i] * 1e9),
+                )
         mcap_writer.finish()
 
 

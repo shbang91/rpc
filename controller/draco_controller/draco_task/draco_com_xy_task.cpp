@@ -110,8 +110,8 @@ void DracoCoMXYTask::UpdateOpCommand(const Eigen::Matrix3d &world_R_local) {
       // TODO: clean up this
 
       // uncomment to filter ICP error before numerical integral
-//       icp_lpf_->Input(icp_err);
-//       icp_err = icp_lpf_->Output();
+      //       icp_lpf_->Input(icp_err);
+      //       icp_err = icp_lpf_->Output();
 
       // apply leaky integration
       icp_avg_err = icp_err * sp_->servo_dt_ + leaky_rate_ * icp_integral_;

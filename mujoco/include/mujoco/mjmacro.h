@@ -15,15 +15,16 @@
 #ifndef MUJOCO_MJMACRO_H_
 #define MUJOCO_MJMACRO_H_
 
-// include asan interface header, or provide stubs for poison/unpoison macros when not using asan
+// include asan interface header, or provide stubs for poison/unpoison macros
+// when not using asan
 #ifdef ADDRESS_SANITIZER
-  #include <sanitizer/asan_interface.h>
+#include <sanitizer/asan_interface.h>
 #elif defined(_MSC_VER)
-  #define ASAN_POISON_MEMORY_REGION(addr, size)
-  #define ASAN_UNPOISON_MEMORY_REGION(addr, size)
+#define ASAN_POISON_MEMORY_REGION(addr, size)
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size)
 #else
-  #define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
-  #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
 // max and min (use only for primitive types)
@@ -32,18 +33,19 @@
 
 // return current value of mjOption enable/disable flags
 #define mjDISABLED(x) (m->opt.disableflags & (x))
-#define mjENABLED(x)  (m->opt.enableflags & (x))
+#define mjENABLED(x) (m->opt.enableflags & (x))
 
 // is actuator disabled
-#define mjACTUATORDISABLED(i) (m->opt.disableactuator & (1 << m->actuator_group[i]))
+#define mjACTUATORDISABLED(i)                                                  \
+  (m->opt.disableactuator & (1 << m->actuator_group[i]))
 
 // annotation for functions that accept printf-like variadic arguments
 #ifndef mjPRINTFLIKE
-  #if defined(__GNUC__)
-    #define mjPRINTFLIKE(n, m) __attribute__((format(printf, n, m)))
-  #else
-    #define mjPRINTFLIKE(n, m)
-  #endif
+#if defined(__GNUC__)
+#define mjPRINTFLIKE(n, m) __attribute__((format(printf, n, m)))
+#else
+#define mjPRINTFLIKE(n, m)
+#endif
 #endif
 
-#endif  // MUJOCO_MJMACRO_H_
+#endif // MUJOCO_MJMACRO_H_
