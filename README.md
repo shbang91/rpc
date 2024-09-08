@@ -1,6 +1,6 @@
 # Robot Planning and Control (rpc)
 
-[![Build](https://img.shields.io/github/actions/workflow/status/shbang91/rpc/linux.yml?branch=feature/foxglove-ui)](https://github.com/shbang91/rpc/actions)
+[![Build](https://img.shields.io/github/actions/workflow/status/shbang91/rpc/linux.yml?branch=develop)](https://github.com/shbang91/rpc/actions)
 
 rpc is a software framework designed for generating task trajectories (planning) and tracking the trajectories (control) for legged systems.<br/>
 
