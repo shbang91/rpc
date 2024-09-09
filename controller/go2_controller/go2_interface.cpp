@@ -101,12 +101,12 @@ void Go2Interface::GetCommand(void *sensor_data, void *command_data) {
   // ctrl_arch_->GetCommand(draco_command);
 
 #if B_USE_ZMQ
-  if (sp_->count_ % sp_->data_save_freq_ == 0) {
-    Go2DataManager *dm = Go2DataManager::GetDataManager();
-    dm->data_->time_ = sp_->current_time_;
-    dm->data_->phase_ = sp_->state_;
-    dm->SendData();
-  }
+//  if (sp_->count_ % sp_->data_save_freq_ == 0) {
+//    Go2DataManager *dm = Go2DataManager::GetDataManager();
+//    dm->data_->time_ = sp_->current_time_;
+//    dm->data_->phase_ = sp_->state_;
+//    dm->SendData();
+//  }
 #endif
 
   // step control count
