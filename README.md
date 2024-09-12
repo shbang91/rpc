@@ -13,10 +13,7 @@ The controller has been tested on Ubuntu 18.04, Ubuntu 20.04, Ubuntu 23.04, and 
 ```
 $ conda env create -f rpc.yml
 ```
-- [conan](https://github.com/conan-io/conan): package manager for C/C++
-```
-$ pip install conan
-```
+- [conan](https://github.com/conan-io/conan): package manager for C/C++ (for Foxglove)
 - [pinocchio](https://github.com/shbang91/pinocchio): rigid body dynamics
 
 ###### optional dependencies
@@ -25,15 +22,14 @@ $ pip install conan
 - [protobuf](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_protobuf.sh): logging numeric data
 - [Foxglove](https://github.com/foxglove): websocket & schema protocols for robot visualization and parameter operations
 
-## Usage
+## Usage for PyBullet
 - Source conda environment:<br/>
 ```
 $ conda activate rpc
 ```
 - Compile:<br/>
 ```
-$ conan install conanfile.txt --build=missing
-$ cd build
+$ mkdir build && cd build
 $ cmake ..
 $ make -j4
 ```
@@ -41,20 +37,41 @@ $ make -j4
 ```
 python simulator/pybullet/draco_main.py
 ```
-###### Foxglove (optional)
-- Project should be built with the following flags:
+## Foxglove UI (optional)
+#### Build
+- Source conda environment:<br/>
 ```
-BUILD_WITH_FOXGLOVE       ON
-BUILD_WITH_ZMQ_PROTOBUF   ON
+$ conda activate rpc
 ```
-- Run Foxglove:<br/>
+- Compile:<br/>
+```
+$ mkdir -p ~/.conan2/profiles/ && cp .github/conan_profile ~/.conan2/profiles/default
+$ conan install conanfile.txt --build=missing
+$ cd build
+$ cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=ON -DBUILD_WITH_FOXGLOVE=ON
+$ make -j4
+```
+
+#### Run
 ```
 $ conda env create -f visualize.yml
 $ conda activate visualize
 $ python UI/foxglove/UI_launcher.py --visualizer=foxglove
 ```
 - Access Foxglove server via either:<br/>
-  1) [Foxglove webservice](https://app.foxglove.dev/)
+  1) [Account in Foxglove webservice](https://app.foxglove.dev/)
   2) [Foxglove application](https://foxglove.dev/download)
-###### Hardware Usage
+
+- To set up the Foxglove URDF visualizer, please refer to the Readme [in the UI folder](https://github.com/shbang91/rpc/tree/develop/UI/foxglove)
+
+## Meshcat Visualizer (optional)
+#### Run
+```
+$ conda env create -f visualize.yml
+$ conda activate visualize
+$ python UI/foxglove/UI_launcher.py --visualizer=meshcat
+```
+
+
+## Hardware Usage
 - Please refer to this [repository](https://github.com/shbang91/draco3_nodelet) using rpc library
