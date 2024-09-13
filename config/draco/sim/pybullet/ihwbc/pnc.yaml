@@ -23,7 +23,7 @@ contact_detection:
 
 
 state_estimator:
-  b_cheater_mode: true ## true: use simulation groundtruth states
+  b_cheater_mode: false ## true: use simulation groundtruth states
   state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf
   b_use_marg_filter: false   # only used when kf is set to true
 
@@ -69,7 +69,7 @@ controller:
 wbc:
   task:
     com_xy_task:
-      com_feedback_source: 0 # 0: com feedback / 1: icp feedback
+      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
       icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
 
       weight : [1000., 1000.]

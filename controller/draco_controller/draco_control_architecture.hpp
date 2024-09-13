@@ -2,6 +2,7 @@
 #include "controller/control_architecture.hpp"
 #if B_USE_FOXGLOVE
 #include "UI/foxglove/client/parameter_subscriber.hpp"
+#include "UI/foxglove/client/fox_advertiser.hpp"
 #endif
 #include "util/util.hpp"
 #include <any>
@@ -74,5 +75,6 @@ private:
   std::unordered_map<std::string, double *> param_map_double_;
   std::unordered_map<std::string, TaskHierarchyManager *> param_map_hm_;
   FoxgloveParameterSubscriber *param_subscriber_;
+  FoxgloveTopicSubscriber *topic_subscriber_;
 #endif
 };

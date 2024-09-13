@@ -29,6 +29,7 @@
 
 #if B_USE_FOXGLOVE
 #include "UI/foxglove/client/parameter_subscriber.hpp"
+#include "UI/foxglove/client/fox_advertiser.hpp"
 #endif
 
 DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
@@ -192,6 +193,8 @@ DracoControlArchitecture::DracoControlArchitecture(PinocchioRobotSystem *robot,
   param_subscriber_ =
       new FoxgloveParameterSubscriber(param_map_int_, param_map_double_,
                                       tci_container_->task_map_, param_map_hm_);
+  topic_subscriber_ =
+      new FoxgloveTopicSubscriber();
 #endif
 
   //=============================================================
@@ -313,6 +316,8 @@ DracoControlArchitecture::~DracoControlArchitecture() {
 
 #if B_USE_FOXGLOVE
   delete param_subscriber_;
+  delete topic_subscriber_;
+
 #endif
 }
 
@@ -330,6 +335,8 @@ void DracoControlArchitecture::GetCommand(void *command) {
 
 #if B_USE_FOXGLOVE
   param_subscriber_->UpdateParameters();
+  topic_subscriber_->UpdateTopics();
+  topic_subscriber_->Connect();
 #endif
 
 #if B_USE_TELEOP
