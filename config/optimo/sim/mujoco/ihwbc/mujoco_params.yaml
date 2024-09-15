@@ -1,0 +1,31 @@
+actuator_gains:
+  optimo_joint1:
+    kp: 0
+    kd: 0
+  optimo_joint2:
+    kp: 0
+    kd: 0
+  optimo_joint3:
+    kp: 0
+    kd: 0
+  optimo_joint4:
+    kp: 0
+    kd: 0
+  optimo_joint5:
+    kp: 0
+    kd: 0
+  optimo_joint6:
+    kp: 0
+    kd: 0
+  optimo_joint7:
+    kp: 0
+    kd: 0
+
+initial_config:
+  optimo_joint1: 0.
+  optimo_joint2: 3.14
+  optimo_joint3: 0.
+  optimo_joint4: -1.57
+  optimo_joint5: 0.
+  optimo_joint6: -1.57
+  optimo_joint7: 0.

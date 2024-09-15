@@ -157,7 +157,7 @@ def main():
     pb.resetDebugVisualizerCamera(cameraDistance=1.5,
                                   cameraYaw=0,
                                   cameraPitch=-40,
-                                  cameraTargetPosition=[0, 0, 0])
+                                  cameraTargetPosition=[0, 0, 0.3])
     pb.configureDebugVisualizer(pb.COV_ENABLE_GUI, 0)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 

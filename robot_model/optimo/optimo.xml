@@ -30,6 +30,7 @@
   </asset>
 
   <worldbody>
+  <body name="optimo_pedestal" pos="0 0 0">
     <geom size="0.15 0.15 0.5" type="box" rgba="1 1 1 1"/>
     <geom pos="0 0 0.77" quat="1 0 0 0" type="mesh" rgba="0.2 0.2 0.2 1" mesh="link0"/>
     <body name="optimo_link1" pos="0 0 0.77">
@@ -77,6 +78,7 @@
         </body>
       </body>
     </body>
+  </body>
   </worldbody>
 
   <actuator>

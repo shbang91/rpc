@@ -114,9 +114,7 @@ void PinocchioRobotSystem::_Initialize(
 }
 
 void PinocchioRobotSystem::_InitializeRootFrame() {
-  int joint_offset = 1; // pinocchio model always has universal joint
-  if (n_float_ != 0)
-    joint_offset = 2;
+  int joint_offset = 2; // pinocchio model always has universal joint
   root_frame_name_ = model_.frames[joint_offset].name;
   base_local_com_pos_ = model_.inertias[1].lever();
   std::cout << "=====================================" << std::endl;
