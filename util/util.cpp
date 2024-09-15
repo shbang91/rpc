@@ -349,14 +349,47 @@ Eigen::Quaternion<double> ExpToQuat(const Eigen::Vector3d &exp) {
 //     The equation is similar, but the values for fixed and body frame
 //     rotations are different.
 // World Orientation is R = Rz*Ry*Rx
-Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
-                                  const double yaw) {
-  Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
-  Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
-  Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
+// Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
+// const double yaw) {
+// Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
+// Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
+// Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
 
-  Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
-  return q.normalized();
+// Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
+// return q.normalized();
+//}
+
+// Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy) {
+// Eigen::AngleAxisd rollAngle(rpy[0], Eigen::Vector3d::UnitX());
+// Eigen::AngleAxisd pitchAngle(rpy[1], Eigen::Vector3d::UnitY());
+// Eigen::AngleAxisd yawAngle(rpy[2], Eigen::Vector3d::UnitZ());
+
+// Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
+// return q.normalized();
+//}
+Eigen::Quaterniond EulerZYXtoQuat(const double r, const double p,
+                                  const double y) {
+  double hy = y / 2.0;
+  double hp = p / 2.0;
+  double hr = r / 2.0;
+
+  double ys = sin(hy);
+  double yc = cos(hy);
+  double ps = sin(hp);
+  double pc = cos(hp);
+  double rs = sin(hr);
+  double rc = cos(hr);
+
+  Eigen::Quaterniond quat;
+  quat.w() = rc * pc * yc + rs * ps * ys;
+  quat.x() = rs * pc * yc - rc * ps * ys;
+  quat.y() = rc * ps * yc + rs * pc * ys;
+  quat.z() = rc * pc * ys - rs * ps * yc;
+  return quat;
+}
+
+Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy) {
+  return EulerZYXtoQuat(rpy(0), rpy(1), rpy(2));
 }
 
 Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in) {
@@ -393,6 +426,39 @@ Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in) {
   return Eigen::Vector3d(yaw, pitch, roll);
 }
 
+Eigen::Vector3d QuatToEulerXYZ(const Eigen::Quaterniond &quat_in) {
+  // to match equation from:
+  // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+  // roll (x-axis rotation)
+  double sinr_cosp =
+      2 * (quat_in.w() * quat_in.x() + quat_in.y() * quat_in.z());
+  double cosr_cosp =
+      1 - 2 * (quat_in.x() * quat_in.x() + quat_in.y() * quat_in.y());
+  double roll = std::atan2(sinr_cosp, cosr_cosp);
+
+  // pitch (y-axis rotation)
+  double sinp = 2 * (quat_in.w() * quat_in.y() - quat_in.z() * quat_in.x());
+  double pitch;
+  if (std::abs(sinp) >= 1)
+    pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+  else
+    pitch = std::asin(sinp);
+
+  // yaw rotation (z-axis rotation)
+  double siny_cosp =
+      2 * (quat_in.w() * quat_in.z() + quat_in.x() * quat_in.y());
+  double cosy_cosp =
+      1 - 2 * (quat_in.y() * quat_in.y() + quat_in.z() * quat_in.z());
+  double yaw = std::atan2(siny_cosp, cosy_cosp);
+
+  // The following is the Eigen library method. But it flips for a negative
+  // yaw..
+  // Eigen::Matrix3d mat = quat_in.toRotationMatrix();
+  // return mat.eulerAngles(2,1,0);
+
+  return Eigen::Vector3d(roll, pitch, yaw);
+}
 // ZYX extrinsic rotation rates to world angular velocity
 // angular vel = [wx, wy, wz]
 Eigen::Vector3d EulerZYXRatestoAngVel(const double roll, const double pitch,
@@ -429,6 +495,63 @@ Eigen::Matrix3d SO3FromRPY(double r, double p, double y) {
   // Eigen::Matrix3d rot2 = m.transpose().eval();
   // return m.transpose().eval();
   return q.normalized().toRotationMatrix();
+}
+
+/*!
+ * Compute rotation matrix for coordinate transformation. Note that
+ * coordinateRotation(CoordinateAxis:X, .1) * v will rotate v by -.1 radians
+ * this transforms into a frame rotated by .1 radians!.
+ */
+Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
+                                   const double theta) {
+  double s = std::sin(theta);
+  double c = std::cos(theta);
+
+  Eigen::Matrix3d R;
+  if (axis == CoordinateAxis::X)
+    R << 1, 0, 0, 0, c, -s, 0, s, c;
+  else if (axis == CoordinateAxis::Y)
+    R << c, 0, s, 0, 1, 0, -s, 0, c;
+  else if (axis == CoordinateAxis::Z)
+    R << c, -s, 0, s, c, 0, 0, 0, 1;
+
+  return R;
+}
+
+Eigen::Matrix3d RotMatrixToYawMatrix(const Eigen::Matrix3d &rot) {
+  Eigen::Matrix3d yaw_mat = rot;
+  yaw_mat.row(2).setZero();
+  yaw_mat.col(2).setZero();
+  yaw_mat.col(0).normalize();
+  yaw_mat.col(1).normalize();
+  yaw_mat(2, 2) = 1.0;
+
+  return yaw_mat;
+}
+
+Eigen::Matrix3d QuaternionToYawMatrix(const Eigen::Quaterniond &quat) {
+  return RotMatrixToYawMatrix(quat.toRotationMatrix());
+}
+
+double QuaternionToYaw(const Eigen::Quaterniond &quat) {
+  return RPYFromSO3(QuaternionToYawMatrix(quat))(2);
+}
+
+void WrapYawToPi(Eigen::Quaterniond &quat) {
+  double yaw = QuaternionToYaw(quat);
+  if (yaw > M_PI)
+    yaw -= 2.0 * M_PI;
+  else if (yaw < -M_PI)
+    yaw += 2.0 * M_PI;
+
+  quat = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()) * quat;
+}
+
+void WrapYawToPi(Eigen::Vector3d &rpy) {
+  if (rpy(2) > M_PI)
+    rpy(2) -= 2.0 * M_PI;
+  else if (rpy(2) < -M_PI)
+    rpy(2) += 2.0 * M_PI;
 }
 
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
@@ -536,13 +659,24 @@ Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd &matrix,
   return cod.pseudoInverse();
 }
 
-Eigen::MatrixXd getNullSpace(const Eigen::MatrixXd &J, const double threshold) {
+Eigen::MatrixXd GetNullSpace(const Eigen::MatrixXd &J, const double threshold,
+                             const Eigen::MatrixXd *W) {
 
   Eigen::MatrixXd ret(J.cols(), J.cols());
   Eigen::MatrixXd J_pinv;
-  util::PseudoInverse(J, threshold, J_pinv);
+  W ? util::WeightedPseudoInverse(J, *W, threshold, J_pinv)
+    : util::PseudoInverse(J, threshold, J_pinv);
   ret = Eigen::MatrixXd::Identity(J.cols(), J.cols()) - J_pinv * J;
   return ret;
+}
+
+void WeightedPseudoInverse(const Eigen::MatrixXd &J, const Eigen::MatrixXd &W,
+                           const double sigma_threshold,
+                           Eigen::MatrixXd &Jinv) {
+  Eigen::MatrixXd lambda(J * W * J.transpose());
+  Eigen::MatrixXd lambda_inv;
+  util::PseudoInverse(lambda, sigma_threshold, lambda_inv);
+  Jinv = W * J.transpose() * lambda_inv;
 }
 
 Eigen::MatrixXd WeightedPseudoInverse(const Eigen::MatrixXd &J,
@@ -554,6 +688,29 @@ Eigen::MatrixXd WeightedPseudoInverse(const Eigen::MatrixXd &J,
   util::PseudoInverse(lambda, sigma_threshold, lambda_inv);
   Jinv = W * J.transpose() * lambda_inv;
   return Jinv;
+}
+
+Eigen::MatrixXd HStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
+  assert(a.rows() == b.rows());
+  Eigen::MatrixXd ab = Eigen::MatrixXd::Zero(a.rows(), a.cols() + b.cols());
+  ab << a, b;
+  return ab;
+}
+
+Eigen::MatrixXd VStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b) {
+  assert(a.cols() == b.cols());
+  Eigen::MatrixXd ab = Eigen::MatrixXd::Zero(a.rows() + b.rows(), a.cols());
+  ab << a, b;
+  return ab;
+}
+
+Eigen::MatrixXd BlockDiagonalMatrix(const Eigen::MatrixXd &a,
+                                    const Eigen::MatrixXd &b) {
+  Eigen::MatrixXd ret =
+      Eigen::MatrixXd::Zero(a.rows() + b.rows(), a.cols() + b.cols());
+  ret.block(0, 0, a.rows(), a.cols()) = a;
+  ret.block(a.rows(), a.cols(), b.rows(), b.cols()) = b;
+  return ret;
 }
 
 } // namespace util

@@ -142,7 +142,7 @@ for i = 1:3
     xlabel('time')
     ylabel(xyz_label(i))
     sgtitle(sprintf('base joint lin vel %s', base_estimator_type{est_or_kf}), 'FontSize', 30)
-end 
+end
 linkaxes(ax, 'x')
 
 figure(num_fig)
@@ -162,7 +162,7 @@ for i = 1:3
     xlabel('time')
     ylabel(ang_vel_label(i))
     sgtitle('base joint ang vel est', 'FontSize', 30)
-end 
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % com vel est

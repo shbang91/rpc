@@ -40,16 +40,19 @@ void EndEffectorTrajectoryManager::UseCurrent() {
   ori_task_->UpdateDesired(des_ori, des_ang_vel, des_acc);
 }
 
-void EndEffectorTrajectoryManager::UseNominal(const Eigen::Isometry3d &nominal_iso) {
+void EndEffectorTrajectoryManager::UseNominal(
+    const Eigen::Isometry3d &nominal_iso) {
   Eigen::Vector3d zero_des_vel = Eigen::Vector3d::Zero();
   Eigen::Vector3d zero_des_acc = Eigen::Vector3d::Zero();
 
   // transform quaternion to EigenXd to pass to Task
   Eigen::Quaterniond nominal_quat = Eigen::Quaterniond(nominal_iso.linear());
   Eigen::Vector4d nominal_orientation;
-  nominal_orientation << nominal_quat.x(), nominal_quat.y(), nominal_quat.z(), nominal_quat.w();
+  nominal_orientation << nominal_quat.x(), nominal_quat.y(), nominal_quat.z(),
+      nominal_quat.w();
 
-  pos_task_->UpdateDesired(nominal_iso.translation(), zero_des_vel, zero_des_acc);
+  pos_task_->UpdateDesired(nominal_iso.translation(), zero_des_vel,
+                           zero_des_acc);
   ori_task_->UpdateDesired(nominal_orientation, zero_des_vel, zero_des_acc);
 }
 

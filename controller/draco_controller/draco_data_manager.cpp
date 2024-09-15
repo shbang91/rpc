@@ -108,14 +108,55 @@ void DracoDataManager::SendData() {
     msg.add_quat_world_local(data_->quat_world_local_.coeffs()[i]);
   }
 
-  // for (int i = 0; i < 3; ++i) {
-  // msg.add_base_joint_pos(data_->base_joint_pos_[i]);
-  // msg.add_base_joint_ori(data_->base_joint_ori_[i]);
-  // msg.add_base_joint_lin_vel(data_->base_joint_lin_vel_[i]);
-  // msg.add_base_joint_ang_vel(data_->base_joint_ang_vel_[i]);
-  //}
-  // msg.add_base_joint_ori(data_->base_joint_ori_[3]);
+  // =============================================================
+  // MPC variables
+  // =============================================================
+  draco::Pos com_msg;
+  for (const auto &des_com : data_->des_com_traj) {
+    com_msg.set_x(des_com(0));
+    com_msg.set_y(des_com(1));
+    com_msg.set_z(des_com(2));
+    msg.add_des_com_traj()->CopyFrom(com_msg);
+  }
 
+  draco::Euler ori_msg;
+  for (const auto &des_ori : data_->des_torso_ori_traj) {
+    ori_msg.set_x(des_ori(0));
+    ori_msg.set_y(des_ori(1));
+    ori_msg.set_z(des_ori(2));
+    msg.add_des_torso_ori_traj()->CopyFrom(ori_msg);
+  }
+
+  draco::Pos lf_pos_msg;
+  for (const auto &des_pos : data_->des_lf_pos_traj) {
+    lf_pos_msg.set_x(des_pos(0));
+    lf_pos_msg.set_y(des_pos(1));
+    lf_pos_msg.set_z(des_pos(2));
+    msg.add_des_lf_pos_traj()->CopyFrom(lf_pos_msg);
+  }
+  draco::Pos rf_pos_msg;
+  for (const auto &des_pos : data_->des_rf_pos_traj) {
+    rf_pos_msg.set_x(des_pos(0));
+    rf_pos_msg.set_y(des_pos(1));
+    rf_pos_msg.set_z(des_pos(2));
+    msg.add_des_rf_pos_traj()->CopyFrom(rf_pos_msg);
+  }
+
+  draco::Euler lf_ori_msg;
+  for (const auto &des_ori : data_->des_lf_ori_traj) {
+    lf_ori_msg.set_x(des_ori(0));
+    lf_ori_msg.set_y(des_ori(1));
+    lf_ori_msg.set_z(des_ori(2));
+    msg.add_des_lf_ori_traj()->CopyFrom(lf_ori_msg);
+  }
+
+  draco::Euler rf_ori_msg;
+  for (const auto &des_ori : data_->des_rf_ori_traj) {
+    rf_ori_msg.set_x(des_ori(0));
+    rf_ori_msg.set_y(des_ori(1));
+    rf_ori_msg.set_z(des_ori(2));
+    msg.add_des_rf_ori_traj()->CopyFrom(rf_ori_msg);
+  }
   // serialize msg in string type
   std::string encoded_msg;
   msg.SerializeToString(&encoded_msg);

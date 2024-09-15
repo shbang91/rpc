@@ -1,5 +1,4 @@
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
-#include "controller/whole_body_controller/basic_task.hpp"
 
 TaskHierarchyManager::TaskHierarchyManager(Task *task, Eigen::VectorXd w_max,
                                            Eigen::VectorXd w_min)
@@ -41,7 +40,22 @@ void TaskHierarchyManager::UpdateRampToMin(const double state_machine_time) {
   task_->SetWeight(w_current);
 }
 
-
 void TaskHierarchyManager::UpdateInstantToMax() { task_->SetWeight(w_max_); }
 
 void TaskHierarchyManager::UpdateInstantToMin() { task_->SetWeight(w_min_); }
+
+void TaskHierarchyManager::SetWeightMax(const Eigen::Vector3d &w_max) {
+  w_max_ = w_max;
+}
+
+void TaskHierarchyManager::SetWeightMin(const Eigen::Vector3d &w_min) {
+  w_min_ = w_min;
+}
+
+void TaskHierarchyManager::SetTaskKp(const Eigen::Vector3d &kp) {
+  task_->SetKp(kp);
+}
+
+void TaskHierarchyManager::SetTaskKd(const Eigen::Vector3d &kd) {
+  task_->SetKd(kd);
+}

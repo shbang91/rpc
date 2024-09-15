@@ -16,7 +16,7 @@ import signal
 import shutil
 import cv2
 
-from config.optimo.pybullet_simulation import *
+from config.optimo.sim.pybullet.ihwbc.pybullet_params import *
 from util.python_utils import pybullet_util
 from util.python_utils import util
 from util.python_utils import liegroup
@@ -72,6 +72,7 @@ def set_init_config_pybullet(robot):
 
 
 from scipy.spatial.transform import Rotation as R
+
 
 def every_time_step(count, interval):
     if count % interval == 0:
@@ -184,8 +185,6 @@ def main():
     # Initial joint configuration
     set_init_config_pybullet(robot)
 
-
-
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
@@ -210,7 +209,7 @@ def main():
 
     #  Simulation Main Loop
     while True:
-        
+
         ########################## Keyboard Interrupt ##########################
         keys = pb.getKeyboardEvents()
         if pybullet_util.is_key_triggered(keys, '1'):
@@ -231,8 +230,6 @@ def main():
         elif pybullet_util.is_key_triggered(keys, '9'):
             rpc_optimo_interface.interrupt_.PressNine()
 
-        
-
         ########################## Sensor Update ##############################
         # get sensor data from pybullet
         joint_pos, joint_vel = get_sensor_data_from_pybullet(robot)
@@ -241,7 +238,7 @@ def main():
         rpc_optimo_interface.GetCommand(rpc_optimo_sensor_data,
                                         rpc_optimo_command)
         ######################################################################
-        
+
         ########################## Command Update ##############################
 
         rpc_trq_command = rpc_optimo_command.joint_trq_cmd_
@@ -253,7 +250,7 @@ def main():
 
         # print("Command pos: ", rpc_joint_pos_command, end="\r")
         # print("Command vel: ", rpc_joint_vel_command, end="\r")
-        
+
         # t_cmd = t_ff + kp(e) + kd(e_dot)
         joint_impedance_command = rpc_trq_command + ActuatorGains.KP * (
             rpc_joint_pos_command -
@@ -264,10 +261,8 @@ def main():
         pb.stepSimulation()
         # print without newline
         # print("Simulation Time: ", count * dt, end="\r")
-        
+
         # End Effector Visualization every 1000 steps
- 
-            
 
         count += 1
         rate.sleep()

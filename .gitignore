@@ -11,6 +11,7 @@
 
 # Compiled Dynamic libraries
 *.so
+*.so.*
 *.dylib
 *.dll
 
@@ -44,3 +45,9 @@ octave-workspace
 RLData
 *.json
 note.txt
+
+# IDE temp build files
+.idea/*
+cmake-build-debug/*
+.vscode/*
+*.asv

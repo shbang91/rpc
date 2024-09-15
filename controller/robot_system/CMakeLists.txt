@@ -8,14 +8,12 @@ endif()
 
 add_library(rpc-pin-robot-system ${pin_robot_system_source}
     ${pin_robot_system_header})
-#target_link_libraries(rpc-pin-robot-system ${pinocchio_LIBRARIES}
-                                            #rpc-util)
 target_link_libraries(rpc-pin-robot-system PUBLIC pinocchio::pinocchio
                                            PUBLIC rpc-util)
 
 if(BUILD_WITH_DART)
     add_library(rpc-dart-robot-system ${dart_robot_system_source} ${dart_robot_system_header})
-    target_link_libraries(rpc-dart-robot-system PUBLIC ${DART_LIBRARIES} 
+    target_link_libraries(rpc-dart-robot-system PUBLIC ${DART_LIBRARIES}
                                                 PUBLIC rpc-util)
 endif()
 

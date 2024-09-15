@@ -88,7 +88,4 @@
     <motor name="optimo_joint6" gear="1" joint="optimo_joint6" ctrlrange="-15 15"/>
     <motor name="optimo_joint7" gear="1" joint="optimo_joint7" ctrlrange="-15 15"/>
   </actuator>
-  
-
-
 </mujoco>

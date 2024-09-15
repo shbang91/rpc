@@ -1,4 +1,4 @@
-<mujoco model="draco scene">
+<mujoco model="optimo scene">
   <include file="optimo.xml"/>
 
   <statistic center="0 0 0.6" extent="2.0"/>

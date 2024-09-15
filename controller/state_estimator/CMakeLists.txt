@@ -7,4 +7,4 @@ target_link_libraries(rpc-state-estimator rpc-util)
 
 install(TARGETS rpc-state-estimator DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${headers} DESTINATION
-        "${INSTALL_INCLUDE_DIR}/rpc/state_estimator")
+        "${INSTALL_INCLUDE_DIR}/controller/state_estimator")

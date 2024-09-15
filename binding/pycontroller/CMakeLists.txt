@@ -1,4 +1,5 @@
 add_subdirectory(draco_controller)
 add_subdirectory(optimo_controller)
+add_subdirectory(go2_controller)
 
 pybind11_add_module(interrupt_py interrupt_pybind.cpp)

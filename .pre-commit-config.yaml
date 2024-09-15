@@ -1,0 +1,33 @@
+exclude: |
+  (?x)^(
+      third_party/.*|
+      robot_model/.*|
+      plot/yaml_tools/.*
+  )$
+
+ci:
+  autoupdate_branch: develop
+
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        types_or: [c++]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.3
+    hooks:
+      - id: ruff
+        # ignore import-star and import-star-usage
+        args: [--fix, --ignore, F403, --ignore, F405,  --ignore, E402]
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: check-merge-conflict

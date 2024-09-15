@@ -1,0 +1,84 @@
+b_save_mpc_solution: true
+
+iterations_btw_mpc: 30
+
+mpc_params:
+  mpc_cost:
+    #Qqq: [1e3, 1e3, 1e5, 1e3, 1e3, 1e7] ## roll, pitch, yaw, x, y, z
+    #Qvv: [1e1, 1e1, 1e2, 1e1, 1e1, 1e4] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 5e-6, 1e-6, 1e-6, 1e-7] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    #Qqq: [100, 100, 200, 2000, 2000, 5000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [500, 10, 20, 500, 500, 500000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-4, 1e-4, 5e-4, 1e-5, 1e-5, 1e-8] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    #Qqq: [100, 100, 200, 2000, 2000, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [500, 10, 20, 500, 500, 100000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #
+    #Qqq: [1000, 1000, 2000, 2000, 2000, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [500, 500, 500, 500, 500, 100000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #
+    #Qqq: [10, 10, 200, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [5, 5, 50, 20, 20, 100000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    #
+    #
+    #Qqq: [50, 50, 300, 100, 100, 1000000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [20, 20, 150, 30, 30, 10000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    ####### without inertia
+    #Qqq: [100, 100, 500, 200, 200, 5000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [10, 10, 30, 20, 20, 50] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-1, 1e-1, 1e-1, 1e-3, 1e-3, 1e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    Qqq: [10, 10, 25, 20, 20, 100] ## roll, pitch, yaw, x, y, z
+    Qvv: [1, 1, 2.5, 2, 2, 10] ## wx, wy, wz, xdot, ydot, zdot
+    Quu: [1e-5, 1e-5, 1e-5, 1e-5, 1e-5, 1e-5] ## trq_x, trq_y, trq_z, fx, fy, fz
+    ####### with inertia (before)
+    #Qqq: [3000, 3000, 5000, 100, 100, 100000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [300, 300, 500, 1, 1, 50000] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-2, 1e-2, 5e-4, 1e-4, 1e-4, 5e-4] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    Qqq_terminal: [10, 10, 15, 20, 20, 50]
+    Qvv_terminal: [1, 1, 1, 1, 1, 1]
+    decay_rate: 0.98
+
+    ####### with inertia (After)
+    #Qqq: [1, 1, 20, 10, 10, 1000] ## roll, pitch, yaw, x, y, z
+    #Qvv: [0.01, 0.01, 0.1, 0.1, 0.1, 10] ## wx, wy, wz, xdot, ydot, zdot
+    #Quu: [1e-2, 1e-2, 1e-7, 1e-5, 1e-5, 1e-10] ## trq_x, trq_y, trq_z, fx, fy, fz
+
+    #Qqq_terminal: [100, 100, 2000, 1000, 1000, 500000]
+    #Qvv_terminal: [1, 1, 10, 10, 10, 5000]
+    #decay_rate: 1.0
+
+
+  nominal_inertia: [ 4.51486, -0.00153135, 0.885743, -0.00153135, 4.1509,
+      -0.00292598, 0.885743, -0.00292598, 1.23588 ]
+
+  contact_wrench_cone:
+    mu: 0.5
+    fz_min: 20.0 #[N]
+    fz_max: 800 #[N]
+    foot_half_length: 0.08 #[m]
+    foot_half_width: 0.04 #[m]
+
+
+swing_foot:
+  height: 0.05
+  raibert_gain: 0.02
+  high_speed_turning_gain: 1.0
+  landing_foot_offset: [0.0, 0.0, 0.0]
+
+gait:
+  x_vel_cmd: 0.0
+  y_vel_cmd: 0.0
+  yaw_rate_cmd: 0.0
+
+  ## TODO: making this as interrupt keystroke
+  ## 0: standing
+  ## 1: walking
+  gait_number: 1

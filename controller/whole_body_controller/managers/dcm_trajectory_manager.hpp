@@ -92,6 +92,9 @@ public:
   std::vector<FootStep> GetFootStepList() { return foot_step_list_; }
   int GetSwingLeg() { return swing_leg_; }
 
+  // setter (for operator UI)
+  int *GetNumSteps();
+
 private:
   DCMPlanner *dcm_planner_;
   Task *com_xy_task_;

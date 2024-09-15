@@ -2,25 +2,19 @@
 #include <Eigen/Dense>
 #include <unordered_map>
 
+#include "controller/whole_body_controller/wbc.hpp"
+
 #include "third_party/optimizer/goldfarb/QuadProg++.hh"
-#include "util/util.hpp"
 
 class Task;
 class Contact;
 class InternalConstraint;
 class ForceTask;
-class IHWBC {
+class IHWBC : public WBC {
 public:
-  IHWBC(const Eigen::MatrixXd &Sa, const Eigen::MatrixXd *Sf = NULL,
-        const Eigen::MatrixXd *Sv = NULL);
-
-        // Sa: acutated joint space selection matrix (if no passive actuation, Sa = I)
-        // Sf: floating base selection matrix (if no floating base, Sf = NULL)
-        // Sv: passive joint space selection matrix (if no passive joint, Sv = NULL)
+  IHWBC(const std::vector<bool> &act_qdot_list);
   virtual ~IHWBC() = default;
 
-  void UpdateSetting(const Eigen::MatrixXd &A, const Eigen::MatrixXd &Ainv,
-                     const Eigen::VectorXd &cori, const Eigen::VectorXd &grav);
   void Solve(const std::unordered_map<std::string, Task *> &task_map,
              const std::map<std::string, Contact *> &contact_map,
              const std::unordered_map<std::string, InternalConstraint *>
@@ -28,18 +22,18 @@ public:
              std::map<std::string, ForceTask *> &force_task_map,
              Eigen::VectorXd &qddot_cmd, Eigen::VectorXd &trq_cmd);
 
-  void ComputeTaskCosts(const std::unordered_map<std::string, Task *> &task_map,
-                        const std::map<std::string, ForceTask *> &force_task_map,
-                        std::unordered_map<std::string, double> &task_unweighted_cost_map,
-                        std::unordered_map<std::string, double> &task_weighted_cost_map);
+  void ComputeTaskCosts(
+      const std::unordered_map<std::string, Task *> &task_map,
+      const std::map<std::string, ForceTask *> &force_task_map,
+      std::unordered_map<std::string, double> &task_unweighted_cost_map,
+      std::unordered_map<std::string, double> &task_weighted_cost_map);
 
-  void SetParameters(const YAML::Node &node);
+  void SetParameters(const YAML::Node &node) override;
 
   // getter
   bool IsTrqLimit() const { return b_trq_limit_; }
-  Eigen::MatrixXd Sa() const { return sa_; }
-  Eigen::VectorXd GetLambdaRf() const {return lambda_rf_;}
-  double GetLambdaQddot() const {return lambda_qddot_;}
+  Eigen::VectorXd GetLambdaRf() const { return lambda_rf_; }
+  double GetLambdaQddot() const { return lambda_qddot_; }
 
   // setter
   void SetTrqLimit(const Eigen::Matrix<double, Eigen::Dynamic, 2> &trq_limit) {
@@ -55,29 +49,9 @@ protected:
                                   const Eigen::VectorXd &ineq_vec);
   void _SolveQP();
 
-  Eigen::MatrixXd A_;
-  Eigen::MatrixXd Ainv_;
-  Eigen::VectorXd cori_;
-  Eigen::VectorXd grav_;
-
-  int num_qdot_;
-  int num_active_;
-  int num_passive_;
-  int num_float_;
-
-  Eigen::MatrixXd sa_;
-  Eigen::MatrixXd sv_;
-  Eigen::MatrixXd sf_;
-  Eigen::MatrixXd snf_;
-
-  bool b_passive_;
-  bool b_floating_;
-  bool b_contact_;
-
   // ihwbc solve method firstvisit
   bool b_first_visit_;
 
-  int dim_contact_;
   int dim_cone_constraint_;
 
   // optimization regularization parameters

@@ -3,6 +3,10 @@
 #include "util/util.hpp"
 #include <stdexcept>
 
+// ====================================================================
+// Note that this class is deprecated!!!
+// ====================================================================
+
 namespace com_feedback_source {
 constexpr int kComFeedback = 0;
 constexpr int kDcmFeedback = 1;
@@ -21,12 +25,13 @@ public:
 
   virtual ~DracoComTask() = default;
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 
-  void SetParameters(const YAML::Node &node, const bool b_sim) override;
+  void SetParameters(const YAML::Node &node, const WBC_TYPE wbc_type) override;
 
 private:
   int com_feedback_source_;

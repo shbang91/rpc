@@ -1,0 +1,238 @@
+env: mujoco
+wbc_type: ihwbc
+servo_dt: 0.00125
+ip_address: "tcp://127.0.0.1:5557"
+teleop_ip_address: "tcp://10.157.137.100:5555"
+
+#data_save_freq: 1
+data_save_freq: 50
+teleop_freq: 50
+
+stance_foot: 1 # 0: left_foot 1: right_foot (default state estimator use this)
+
+contact_detection:
+  b_debug_only_log: true
+  b_use_contact_sensor: true
+  b_use_foot_height: true
+  volt_to_force_map: [-10000, -10000]   # [-10588, -5000]
+  volt_bias: [25000, 25000]             # [26471, 12500]
+
+  schmitt_thresholds: [10, 40]    # [N]
+  foot_height_tol: 0.001          # [m] tolerance before determining touchdown
+  contact_time_constant: 0.005
+
+
+state_estimator:
+  b_cheater_mode: true ## true: use simulation groundtruth states
+  state_estimator_type: kf ## 1. default (IMU + Leg kinematics) 2. kf
+  b_use_marg_filter: false   # only used when kf is set to true
+
+  foot_reference_frame: 1 #0: left foot, 1: right foot
+
+  sigma_base_vel: [0.0, 0.0, 0.0]
+  sigma_base_acc: [0.1, 0.1, 0.1]
+  sigma_pos_lfoot: [0.001, 0.001, 0.002]
+  sigma_pos_rfoot: [0.001, 0.001, 0.002]
+  sigma_vel_lfoot: [0.001, 0.001, 0.001]
+  sigma_vel_rfoot: [0.001, 0.001, 0.001]
+  imu_accel_bias: [0.0, 0.0, 0.0]
+  base_accel_time_constant: 0.002
+  base_accel_limits: [1., 1., 1.]
+  base_com_vel_time_constant: 1.0
+  num_data_base_accel: [10, 10, 10]
+  num_data_ang_vel: [5, 5, 5]
+  ang_vel_time_constant: 0.01
+
+  ## for simulation please use 0
+  com_vel_filter_type: 1 ## 0: moving average // 1: exponential smoother // 2: low pass filter
+
+  ## IF 0: simple moving average filter parameter
+  num_data_com_vel: [20, 20, 20]
+
+  ## IF 1: exponential smoother filter parameter
+  #com_vel_time_constant: 0.1
+  com_vel_time_constant: 0.01
+  com_vel_err_limit: [1., 1., 1.]
+
+  ## IF 2: low-pass filter parameter
+  cut_off_period: 0.01
+
+
+controller:
+  b_smoothing_command: true
+  smoothing_command_duration: 1.0 ## this will filter the control command at the beginning
+  b_use_modified_swing_foot_jac: true
+  b_use_modified_hand_jac: false
+  b_use_filtered_torque: false
+  alpha_cmd: 0.5
+
+wbc:
+  task:
+    com_xy_task:
+      com_feedback_source: 1 # 0: com feedback / 1: icp feedback
+      icp_integrator_type: 0 # 0: exponential smoother / 1: leaky integrator
+
+      weight : [1000., 1000.]
+      kp : [200., 200.]
+      kd : [10., 10.]
+      icp_weight : [10000., 10000.] # only used when feedback source : 1
+      icp_kp : [1.5, 1.5]
+      icp_kd : [0., 0.] # x, y will be ignored
+      icp_ki : [0.5, 0.5]
+
+      ## IF icp_integrator_type == 0:
+      time_constant : 0.001
+      avg_icp_error_limit: [0.04, 0.04]
+
+      ## IF icp_integrator_type == 1:
+      leaky_rate: 0.4    # 0: complete leak, 1: no leak
+      leaky_integrator_limit: [0.03, 0.03]
+      lpf_time_constant: 0.03
+
+    com_z_task:
+      com_height_target_source: 1 # 0: com height / 1: base height
+      com_weight : [1000.]
+      com_kp : [100.]
+      com_kd : [5.]
+
+      base_weight : [1000.] # only used when target source : 1
+      base_kp : [100.]
+      base_kd : [5.] # x, y will be ignored
+
+
+    cam_task:
+      weight : [0., 0., 0.]
+      kd : [0., 0., 0.]
+
+    wbo_task:
+      weight : [0., 0., 0.]
+      kp : [0.0, 0.0, 1.0]
+      kd : [0.0, 0.0, 2.0]
+
+    torso_ori_task:
+      weight : [100., 100., 100.]
+      kp : [200., 200., 100.]
+      kd : [14., 14., 10.]
+
+    upper_body_task:
+      ## l_shoulder_fe(0), l_shoulder_aa(1), l_shoulder_ie(2), l_elbow_fe(3), l_wrist_ps_(4),
+      ## l_wrist_pitch(5), neck_pitch(6), r_shoulder_fe(7), r_shoulder_aa(8), r_shoulder_ie(9),
+      ## r_shoulder_ie(10), r_elbow_fe(11), r_wrist_ps(12), r_wrist_pitch(13)
+      weight : [40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40., 40.]
+      kp : [100., 100., 100., 50., 40., 40., 100., 100., 100., 100., 50., 40., 40.]
+      kd : [8., 8., 8., 3., 2., 2., 10., 8., 8., 8., 3., 2., 2.]
+
+    hand_pos_task:
+      weight : [0., 0., 0.]
+      weight_at_teleop : [50., 50., 50.]
+      kp : [2000., 2000., 2000.]
+      kd : [100., 100., 100.]
+
+    hand_ori_task:
+      weight : [0., 0., 0.]
+      weight_at_teleop : [10., 10., 10.]
+      kp : [500., 500., 500.]
+      kd : [20., 20., 20.]
+
+    foot_pos_task:
+      weight : [5000., 5000., 5000.]
+      weight_at_swing : [8000., 8000., 8000.]
+      kp : [300., 300., 300.]
+      kd : [30., 30., 30.]
+
+    foot_ori_task:
+      weight : [5000., 5000., 5000.]
+      weight_at_swing : [5000., 5000., 5000.]
+      kp : [80., 80., 80.]
+      kd : [4., 4., 4.]
+
+    foot_rf_task:
+      weight : [0., 0., 0., 1e-8, 1e-8, 5e-10] ## trq, force order
+
+  contact:
+    max_rf_z: 400.
+
+    mu: 0.4
+    foot_half_length: 0.08
+    foot_half_width: 0.04 ## 0.04
+    kp: [0, 0, 0, 0, 0, 0] ## ori, pos order
+    kd: [0, 0, 0, 0, 0, 0]
+
+  qp:
+    b_save_costs: true
+    lambda_qddot: 5e-6 ##regularization
+    #lambda_rf: [9e-7, 5e-7, 6e-7, 0., 0., 0., 9e-7, 5e-7, 6e-7, 0., 0., 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    #lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0., 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 0.]  #regulariztion lfoot / rfoot (trq, force order)
+    lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5, 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5]  #regulariztion lfoot / rfoot (trq, force order)
+    b_trq_limit: false
+
+  joint_integrator:
+    pos_cutoff_freq: 2.0 #hz
+    vel_cutoff_freq: 2. #hz
+    max_pos_err: 0.2 #rad
+
+state_machine:
+    b_use_const_desired_foot_pos: false
+
+    initialize:
+      init_duration: 5.
+      #target_joint_pos: [0., 0.040, -0.785, 0.785, 0.785, -0.785, -0.040, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.040, -0.785, 0.785, 0.785, -0.785, 0.040, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      #target_joint_pos: [0., 0.160, -0.785, 0.785, 0.785, -0.785, -0.160, 0., 0.523, 0., -1.57, 0., 0., 0., 0., -0.160, -0.785, 0.785, 0.785, -0.785, 0.160, 0., -0.523, 0., -1.57, 0., 0.] #pinocchio robotsystem joint order
+      target_joint_pos: [-1.434e-4, -2.827e-3, -5.650e-1, 5.650e-1, 5.650e-1, -5.650e-1, 2.827e-3, 5.574e-8, 0.523, 3.1517e-8, -1.57, 1.555e-7, -4.075e-8, -5.106e-6, 3.007e-6, -2.977e-3, -5.650e-1, 5.650e-1, 5.650e-1, -5.650e-1, -2.9767e-3, -2.347e-8, -0.523, 4.1193e-8, -1.57, -6.215e-7, -3.4377e-7] #pinocchio robotsystem joint order
+      b_only_joint_pos_control: false
+      wait_time: 2.
+
+    stand_up:
+      standup_duration: 5.
+      target_com_height: 0.658
+      target_base_height: 0.90
+
+      rf_z_max_interp_duration: 0.1
+
+    single_support_swing:
+      swing_height: 0.05
+
+    com_swaying:
+      amplitude: [0., 0.05, 0.] # [m]
+      frequency: [0., 0.08, 0.] # [hz]
+      #amplitude: [0., 0., 0.05] # [m]
+      #frequency: [0., 0., 0.05] # [hz]
+
+    teleop_manipulation:
+      transition_duration: 0.3
+      moving_duration: 0.05
+      gripper_control:
+        left:
+          grasp: 0.33
+          release: -0.33
+        right:
+          grasp: 0.33
+          release: -0.33
+
+
+dcm_walking:
+  t_additional_init_trans: 0.
+  t_contact_trans: 0.45
+  t_swing: 0.55
+  percentage_settle: 0.9
+  alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.4
+  #t_contact_trans: 1.2
+  #t_swing: 0.8
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  #t_additional_init_trans: 0.4
+  #t_contact_trans: 1.6
+  #t_swing: 0.8
+  #percentage_settle: 0.9
+  #alpha_ds: 0.5
+
+  nominal_footwidth: 0.2425
+  nominal_forward_step: 0.1
+  nominal_backward_step: -0.1
+  nominal_turn_radians: 0.3
+  nominal_strafe_distance: 0.05
+  n_steps: 3
+  first_swing_leg: 1 ## 0: left leg ## 1: right leg

@@ -1,11 +1,7 @@
 import os
 import sys
-
-cwd = os.getcwd()
-sys.path.append(cwd)
-
-import pickle, yaml
-
+import pickle
+import yaml
 import meshcat
 import numpy as np
 import time
@@ -17,6 +13,9 @@ import pinocchio as pin
 # Python-Meshcat
 from meshcat.animation import Animation
 from plot import meshcat_utils as vis_tools
+
+cwd = os.getcwd()
+sys.path.append(cwd)
 
 # for the animation, set if you want to use the experiment time or start animation from t=0
 use_exp_time = False
@@ -45,7 +44,9 @@ lfoot_contact_pos, lfoot_contact_ori = [], []
 # Create Robot for Meshcat Visualization
 model, collision_model, visual_model = pin.buildModelsFromUrdf(
     cwd + "/robot_model/draco/draco_modified.urdf",
-    cwd + "/robot_model/draco", pin.JointModelFreeFlyer())
+    cwd + "/robot_model/draco",
+    pin.JointModelFreeFlyer(),
+)
 viz = MeshcatVisualizer(model, collision_model, visual_model)
 try:
     viz.initViewer(open=True)
@@ -60,34 +61,30 @@ viz.loadViewerModel(rootNodeName="draco3")
 vis_q = pin.neutral(model)
 
 # add other visualizations to viewer
-com_des_viz, com_des_model = vis_tools.add_sphere(viz.viewer,
-                                                  "com_des",
-                                                  color=[0., 0., 1., 0.5])
+com_des_viz, com_des_model = vis_tools.add_sphere(
+    viz.viewer, "com_des", color=[0.0, 0.0, 1.0, 0.5]
+)
 com_des_viz_q = pin.neutral(com_des_model)
 
-com_viz, com_model = vis_tools.add_sphere(viz.viewer,
-                                          "com",
-                                          color=[1., 0., 0., 0.5])
+com_viz, com_model = vis_tools.add_sphere(viz.viewer, "com", color=[1.0, 0.0, 0.0, 0.5])
 com_viz_q = pin.neutral(com_model)
 
-com_proj_viz, com_proj_model = vis_tools.add_sphere(viz.viewer,
-                                                    "com_proj",
-                                                    color=[0., 0., 1., 0.3])
+com_proj_viz, com_proj_model = vis_tools.add_sphere(
+    viz.viewer, "com_proj", color=[0.0, 0.0, 1.0, 0.3]
+)
 com_proj_viz_q = pin.neutral(com_proj_model)
 
-icp_viz, icp_model = vis_tools.add_sphere(viz.viewer,
-                                          "icp",
-                                          color=vis_tools.violet)
+icp_viz, icp_model = vis_tools.add_sphere(viz.viewer, "icp", color=vis_tools.violet)
 icp_viz_q = pin.neutral(icp_model)
 
-icp_des_viz, icp_des_model = vis_tools.add_sphere(viz.viewer,
-                                                  "icp_des",
-                                                  color=[0., 1., 0., 0.3])
+icp_des_viz, icp_des_model = vis_tools.add_sphere(
+    viz.viewer, "icp_des", color=[0.0, 1.0, 0.0, 0.3]
+)
 icp_des_viz_q = pin.neutral(icp_des_model)
 
-cmp_des_viz, cmp_des_model = vis_tools.add_sphere(viz.viewer,
-                                                  "cmp_des",
-                                                  color=[0., 0.75, 0.75, 0.3])
+cmp_des_viz, cmp_des_model = vis_tools.add_sphere(
+    viz.viewer, "cmp_des", color=[0.0, 0.75, 0.75, 0.3]
+)
 cmp_des_viz_q = pin.neutral(cmp_des_model)
 
 # add arrows visualizers to viewer
@@ -98,37 +95,35 @@ vis_tools.add_arrow(arrow_viz, "grf_rf", color=[0, 0, 1])
 # load all YAML data from dcm trajectory manager to plot planned footsteps
 footstep_plans = 0
 b_footsteps_available = False
-path = 'experiment_data/' + str(footstep_plans) + '.yaml'
+path = "experiment_data/" + str(footstep_plans) + ".yaml"
 file_exists = os.path.isfile(path)
 while file_exists:
     b_footsteps_available = True
-    with open(path, 'r') as stream:
+    with open(path, "r") as stream:
         try:
             cfg = yaml.load(stream, Loader=yaml.FullLoader)
             t_ini_footsteps_planned.append(
-                np.array(cfg["temporal_parameters"]["initial_time"]))
+                np.array(cfg["temporal_parameters"]["initial_time"])
+            )
             t_end_footsteps_planned.append(
-                np.array(cfg["temporal_parameters"]["final_time"]))
-            rfoot_contact_pos.append(
-                np.array(cfg["contact"]["right_foot"]["pos"]))
-            rfoot_contact_ori.append(
-                np.array(cfg["contact"]["right_foot"]["ori"]))
+                np.array(cfg["temporal_parameters"]["final_time"])
+            )
+            rfoot_contact_pos.append(np.array(cfg["contact"]["right_foot"]["pos"]))
+            rfoot_contact_ori.append(np.array(cfg["contact"]["right_foot"]["ori"]))
             # assert rfoot_contact_pos.shape[0] == rfoot_contact_ori.shape[0]
-            lfoot_contact_pos.append(
-                np.array(cfg["contact"]["left_foot"]["pos"]))
-            lfoot_contact_ori.append(
-                np.array(cfg["contact"]["left_foot"]["ori"]))
+            lfoot_contact_pos.append(np.array(cfg["contact"]["left_foot"]["pos"]))
+            lfoot_contact_ori.append(np.array(cfg["contact"]["left_foot"]["ori"]))
             # assert lfoot_contact_pos.shape[0] == lfoot_contact_ori.shape[0]
         except yaml.YAMLError as exc:
             print(exc)
 
     # check if there are more steps to queue
     footstep_plans += 1
-    path = 'experiment_data/' + str(footstep_plans) + '.yaml'
+    path = "experiment_data/" + str(footstep_plans) + ".yaml"
     file_exists = os.path.isfile(path)
 
-pnc_path = 'config/draco/pnc.yaml'
-with open(pnc_path, 'r') as pnc_stream:
+pnc_path = "config/draco/pnc.yaml"
+with open(pnc_path, "r") as pnc_stream:
     try:
         pnc_cfg = yaml.load(pnc_stream, Loader=yaml.FullLoader)
         foot_half_length = pnc_cfg["wbc"]["contact"]["sim_foot_half_length"]
@@ -138,35 +133,35 @@ with open(pnc_path, 'r') as pnc_stream:
         print(exc)
 
 # load pkl data
-with open('experiment_data/pnc.pkl', 'rb') as file:
+with open("experiment_data/pnc.pkl", "rb") as file:
     while True:
         try:
             d = pickle.load(file)
-            exp_time.append(d['time'])
-            phase.append(d['phase'])
-            joint_positions.append(d['kf_base_joint_pos'] +
-                                   d['kf_base_joint_ori'] +
-                                   d['joint_positions'])
+            exp_time.append(d["time"])
+            phase.append(d["phase"])
+            joint_positions.append(
+                d["kf_base_joint_pos"] + d["kf_base_joint_ori"] + d["joint_positions"]
+            )
 
-            com_position_des.append(d['des_com_pos'])
-            com_position.append(d['act_com_pos'])
-            icp.append(d['est_icp'])
-            icp_des.append(d['des_icp'])
+            com_position_des.append(d["des_com_pos"])
+            com_position.append(d["act_com_pos"])
+            icp.append(d["est_icp"])
+            icp_des.append(d["des_icp"])
 
-            lfoot_position.append(d['lfoot_pos'])
-            rfoot_position.append(d['rfoot_pos'])
-            lfoot_orientation.append(d['lfoot_ori'])
-            rfoot_orientation.append(d['rfoot_ori'])
+            lfoot_position.append(d["lfoot_pos"])
+            rfoot_position.append(d["rfoot_pos"])
+            lfoot_orientation.append(d["lfoot_ori"])
+            rfoot_orientation.append(d["rfoot_ori"])
 
             if phase[-1] == 1:  # if in initialize state, ignore GRFs
                 lfoot_grf.append([float("nan")])
                 rfoot_grf.append([float("nan")])
             else:
-                lfoot_grf.append(d['lfoot_rf_cmd'])
-                rfoot_grf.append(d['rfoot_rf_cmd'])
+                lfoot_grf.append(d["lfoot_rf_cmd"])
+                rfoot_grf.append(d["rfoot_rf_cmd"])
 
-            cmp_des.append(d['des_cmp'])
-            quat_world_local.append(d['quat_world_local'])
+            cmp_des.append(d["des_cmp"])
+            quat_world_local.append(d["quat_world_local"])
 
         except EOFError:
             break
@@ -175,12 +170,22 @@ time.sleep(3)
 
 # add planned footsteps
 footsteps_viz = meshcat.Visualizer(window=viz.viewer.window)
-vis_tools.add_footsteps(footsteps_viz, "lf_footsteps", len(lfoot_contact_pos[0]),
-                        color=[1, 0, 0], foot_width=2.*foot_half_width,
-                        foot_length=2.*foot_half_length)
-vis_tools.add_footsteps(footsteps_viz, "rf_footsteps", len(rfoot_contact_pos[0]),
-                        color=[0, 0, 1], foot_width=2.*foot_half_width,
-                        foot_length=2.*foot_half_length)
+vis_tools.add_footsteps(
+    footsteps_viz,
+    "lf_footsteps",
+    len(lfoot_contact_pos[0]),
+    color=[1, 0, 0],
+    foot_width=2.0 * foot_half_width,
+    foot_length=2.0 * foot_half_length,
+)
+vis_tools.add_footsteps(
+    footsteps_viz,
+    "rf_footsteps",
+    len(rfoot_contact_pos[0]),
+    color=[0, 0, 1],
+    foot_width=2.0 * foot_half_width,
+    foot_length=2.0 * foot_half_length,
+)
 b_footsteps_visible_on_viewer = False
 
 # add local frame
@@ -237,54 +242,71 @@ for ti in range(len(exp_time)):
     # make animation
     with anim.at_frame(viz.viewer, frame_index) as frame:
         if phase[ti] != 1:
-            vis_tools.grf_display(frame["grf_lf"], lfoot_position[ti],
-                                  lfoot_orientation[ti], lfoot_grf[ti])
-            vis_tools.grf_display(frame["grf_rf"], rfoot_position[ti],
-                                  rfoot_orientation[ti], rfoot_grf[ti])
+            vis_tools.grf_display(
+                frame["grf_lf"],
+                lfoot_position[ti],
+                lfoot_orientation[ti],
+                lfoot_grf[ti],
+            )
+            vis_tools.grf_display(
+                frame["grf_rf"],
+                rfoot_position[ti],
+                rfoot_orientation[ti],
+                rfoot_grf[ti],
+            )
 
         # save other visualizations at current frame
         vis_tools.display_visualizer_frames(viz, frame)  # robot
-        vis_tools.display_visualizer_frames(com_proj_viz,
-                                            frame)  # projected CoM
-        vis_tools.display_visualizer_frames(com_des_viz,
-                                            frame)  # desired CoM position
-        vis_tools.display_visualizer_frames(com_viz,
-                                            frame)  # actual CoM position
+        vis_tools.display_visualizer_frames(com_proj_viz, frame)  # projected CoM
+        vis_tools.display_visualizer_frames(com_des_viz, frame)  # desired CoM position
+        vis_tools.display_visualizer_frames(com_viz, frame)  # actual CoM position
         vis_tools.display_visualizer_frames(icp_viz, frame)  # actual ICP
         vis_tools.display_visualizer_frames(icp_des_viz, frame)  # desired ICP
 
         vis_tools.display_visualizer_frames(cmp_des_viz, frame)  # desired CMP
 
-        vis_tools.display_coordinate_frame(local_frame_name,
-                                       quat_world_local[ti], frame)
-
+        vis_tools.display_coordinate_frame(
+            local_frame_name, quat_world_local[ti], frame
+        )
 
         # show footsteps ONLY if they have already been planned
         if b_show_footsteps and b_footsteps_available:
-            if t_ini_footsteps_planned[curr_step_plan] < exp_time[
-                    ti] < t_end_footsteps_planned[curr_step_plan] + 0.01:
+            if (
+                t_ini_footsteps_planned[curr_step_plan]
+                < exp_time[ti]
+                < t_end_footsteps_planned[curr_step_plan] + 0.01
+            ):
                 footsteps_viz["lf_footsteps"].set_property("visible", True)
                 footsteps_viz["rf_footsteps"].set_property("visible", True)
-                vis_tools.update_footstep(footsteps_viz["lf_footsteps"],
-                                          lfoot_contact_pos[curr_step_plan],
-                                          lfoot_contact_ori[curr_step_plan])
-                vis_tools.update_footstep(footsteps_viz["rf_footsteps"],
-                                          rfoot_contact_pos[curr_step_plan],
-                                          rfoot_contact_ori[curr_step_plan])
+                vis_tools.update_footstep(
+                    footsteps_viz["lf_footsteps"],
+                    lfoot_contact_pos[curr_step_plan],
+                    lfoot_contact_ori[curr_step_plan],
+                )
+                vis_tools.update_footstep(
+                    footsteps_viz["rf_footsteps"],
+                    rfoot_contact_pos[curr_step_plan],
+                    rfoot_contact_ori[curr_step_plan],
+                )
             else:
                 footsteps_viz["lf_footsteps"].set_property("visible", False)
                 footsteps_viz["rf_footsteps"].set_property("visible", False)
 
-            vis_tools.update_footstep(frame["lf_footsteps"],
-                                      lfoot_contact_pos[curr_step_plan],
-                                      lfoot_contact_ori[curr_step_plan])
-            vis_tools.update_footstep(frame["rf_footsteps"],
-                                      rfoot_contact_pos[curr_step_plan],
-                                      rfoot_contact_ori[curr_step_plan])
+            vis_tools.update_footstep(
+                frame["lf_footsteps"],
+                lfoot_contact_pos[curr_step_plan],
+                lfoot_contact_ori[curr_step_plan],
+            )
+            vis_tools.update_footstep(
+                frame["rf_footsteps"],
+                rfoot_contact_pos[curr_step_plan],
+                rfoot_contact_ori[curr_step_plan],
+            )
 
             # check if we need to update the index of step plans loaded
-            if exp_time[ti] > t_end_footsteps_planned[curr_step_plan] and \
-                    curr_step_plan < (footstep_plans - 1):
+            if exp_time[ti] > t_end_footsteps_planned[
+                curr_step_plan
+            ] and curr_step_plan < (footstep_plans - 1):
                 curr_step_plan += 1
 
     frame_index = frame_index + 1

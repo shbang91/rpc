@@ -2,7 +2,6 @@
 
 #include "controller/whole_body_controller/task.hpp"
 #include "util/util.hpp"
-#include "controller/filter/digital_filters.hpp"
 
 #if B_USE_MATLOGGER
 #include <matlogger2/matlogger2.h>
@@ -11,6 +10,7 @@
 class PinocchioRobotSystem;
 class DracoStateProvider;
 class ExponentialMovingAverageFilter;
+class FirstOrderLowPassFilter;
 
 constexpr double kGravAcc = 9.81;
 
@@ -29,16 +29,21 @@ public:
   DracoCoMXYTask(PinocchioRobotSystem *robot);
   ~DracoCoMXYTask();
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 
-  void SetParameters(const YAML::Node &node, const bool b_sim) override;
+  void SetParameters(const YAML::Node &node, const WBC_TYPE wbc_type) override;
+
+  // ICP variables
+  Eigen::Vector2d des_icp_ = Eigen::Vector2d::Zero();
+  Eigen::Vector2d icp_ = Eigen::Vector2d::Zero();
+  Eigen::Vector2d des_icp_dot_ = Eigen::Vector2d::Zero();
 
 private:
   DracoStateProvider *sp_;
 
-  bool b_sim_;
   int feedback_source_;
 
   // Icp ExponentialSmoother
@@ -52,6 +57,6 @@ private:
   Eigen::Vector2d icp_integral_ = Eigen::Vector2d::Zero();
 
 #if B_USE_MATLOGGER
-  XBot::MatLogger2::Ptr logger_;
+  // XBot::MatLogger2::Ptr logger_;
 #endif
 };

@@ -75,11 +75,15 @@ StateId Initialize::GetNextState() {
 
 void Initialize::SetParameters(const YAML::Node &node) {
   try {
-    util::ReadParameter(node, "init_duration", end_time_);
-    util::ReadParameter(node, "target_joint_pos", target_joint_pos_);
+    util::ReadParameter(node["state_machine"]["initialize"], "init_duration",
+                        end_time_);
+    util::ReadParameter(node["state_machine"]["initialize"], "target_joint_pos",
+                        target_joint_pos_);
     sp_->nominal_jpos_ = target_joint_pos_; // set nominal jpos
-    util::ReadParameter(node, "b_only_joint_pos_control", b_stay_here_);
-    util::ReadParameter(node, "wait_time", wait_time_);
+    util::ReadParameter(node["state_machine"]["initialize"],
+                        "b_only_joint_pos_control", b_stay_here_);
+    util::ReadParameter(node["state_machine"]["initialize"], "wait_time",
+                        wait_time_);
 
   } catch (const std::runtime_error &e) {
     std::cerr << "Error reading parameter [" << e.what() << "] at file: ["

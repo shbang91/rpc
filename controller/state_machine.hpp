@@ -1,8 +1,12 @@
 #pragma once
 #include "util/util.hpp"
 
+#include <vector>
+
 typedef int StateId;
 class PinocchioRobotSystem;
+class Task;
+class Contact;
 
 class StateMachine {
 public:

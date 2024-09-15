@@ -2,6 +2,18 @@ syntax = "proto3";
 
 package draco;
 
+message Pos {
+  optional double x = 1;
+  optional double y = 2;
+  optional double z = 3;
+}
+
+message Euler {
+  optional double x = 1;
+  optional double y = 2;
+  optional double z = 3;
+}
+
 message pnc_msg {
   float time = 1;
   uint32 phase = 2;
@@ -56,7 +68,7 @@ message pnc_msg {
   repeated float rf_ori_weight = 36;
   repeated float rf_ori_kp = 37;
   repeated float rf_ori_kd = 38;
-  
+
   repeated float kf_base_joint_pos = 39;
   repeated float kf_base_joint_ori = 40;
 
@@ -71,18 +83,37 @@ message pnc_msg {
 
   repeated float quat_world_local = 49;
 
+  // mpc msg
+  repeated Pos des_com_traj = 50;
+  repeated Euler des_torso_ori_traj = 51;
+  repeated Pos des_lf_pos_traj = 52;
+  repeated Pos des_rf_pos_traj = 53;
+  repeated Euler des_lf_ori_traj = 54;
+  repeated Euler des_rf_ori_traj = 55;
 }
 
-// TODO:
-// message msg_list {
-// optional float time = 1;
-// repeated fb_msg fb = 2;
-//}
+message rs_teleop_msg {
+  repeated float pos = 1;
+  repeated float quat = 2;
+  bool b_grasp = 3;
+  bool b_teleop_toggled = 4;
+}
 
-// message fb_msg {
-// message base_joint_pos { repeated float xyz = 1; }
-// message base_joint_ori { repeated float xyzw = 1; }
+message vr_teleop_msg {
+  repeated float lh_pos = 1;
+  repeated float rh_pos = 2;
+  repeated float lh_ori = 3;
+  repeated float rh_ori = 4;
 
-// repeated base_joint_pos bjoint_pos = 1;
-// repeated base_joint_ori bjoint_ori = 2;
-//}
+  bool l_trigger = 5;
+  bool l_bump = 6;
+  bool l_button = 7;
+  bool l_pad = 8;
+
+  bool r_trigger = 9;
+  bool r_bump = 10;
+  bool r_button = 11;
+  bool r_pad = 12;
+
+  int64 vr_timestamp = 13;
+}

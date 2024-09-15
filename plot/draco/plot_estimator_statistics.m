@@ -307,4 +307,3 @@ for i = 1:3
     ylabel(xyz_label(i))
 end
 sgtitle('IMU accel error in Balance State', 'FontSize', 30)
-

@@ -13,7 +13,8 @@ public:
   JointTask(PinocchioRobotSystem *robot);
   virtual ~JointTask() = default;
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -25,12 +26,13 @@ public:
                     const std::vector<int> &joint_idx_container);
   virtual ~SelectedJointTask() = default;
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 
-  std::vector<int> JointIdxContainer();
+  std::vector<int> JointIdxContainer() { return joint_idx_container_; }
 
 private:
   std::vector<int> joint_idx_container_;
@@ -41,7 +43,8 @@ public:
   LinkPosTask(PinocchioRobotSystem *robot, int target_idx);
   virtual ~LinkPosTask() = default;
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
@@ -55,13 +58,15 @@ public:
   LinkOriTask(PinocchioRobotSystem *robot, int target_idx);
   virtual ~LinkOriTask() = default;
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;
 
 private:
   int target_link_idx_;
+  Eigen::Quaterniond des_quat_prev_;
 };
 
 class ComTask : public Task {
@@ -69,7 +74,8 @@ public:
   ComTask(PinocchioRobotSystem *robot);
   virtual ~ComTask() = default;
 
-  void UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) override;
+  void UpdateOpCommand(const Eigen::Matrix3d &world_R_local =
+                           Eigen::Matrix3d::Identity()) override;
 
   void UpdateJacobian() override;
   void UpdateJacobianDotQdot() override;

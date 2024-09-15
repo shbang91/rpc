@@ -20,10 +20,10 @@ double KarnoppCompensator::Update(double des_vel) {
 
   // check if in 'dead-zone' region
   if (std::abs(des_vel) < vel_deadzone_) {
-    return sign(des_vel) * alpha_Dv_ * des_vel*des_vel;
+    return sign(des_vel) * alpha_Dv_ * des_vel * des_vel;
   }
 
-  return viscous_friction_*des_vel + sign(des_vel)*bias_viscous_;
+  return viscous_friction_ * des_vel + sign(des_vel) * bias_viscous_;
 }
 
 void KarnoppCompensator::ConstructModel() {
@@ -31,8 +31,8 @@ void KarnoppCompensator::ConstructModel() {
   //
   // dead-zone parameters
   //
-  alpha_Dv_ = force_static_ / (vel_deadzone_*vel_deadzone_);   // F_s = alpha * v^2
-
+  alpha_Dv_ =
+      force_static_ / (vel_deadzone_ * vel_deadzone_); // F_s = alpha * v^2
 
   //
   // linear viscous force model parameters

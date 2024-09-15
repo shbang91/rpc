@@ -42,7 +42,8 @@ int main() {
                          bjoint_av, joint_pos, joint_vel, true);
 
   // dcm tm initialize
-  YAML::Node cfg = YAML::LoadFile(THIS_COM "config/draco/pnc.yaml");
+  YAML::Node cfg =
+      YAML::LoadFile(THIS_COM "config/draco/sim/pybullet/ihwbc/pnc.yaml");
   dcm_tm.InitializeParameters(cfg["dcm_walking"]);
 
   Eigen::Vector3d init_dcm = robot.GetRobotComPos();

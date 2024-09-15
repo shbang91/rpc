@@ -5,6 +5,8 @@ dependencies:
   - pybind11=2.6.2
   - python=3.9.5
   - ruamel.yaml=0.17.10
+  - boost=1.78.0
+  - boost-cpp=1.78.0
   - pip
   - pip:
       - casadi
@@ -14,6 +16,7 @@ dependencies:
       - matplotlib==3.4.2
       - meshcat==0.1.1
       - opencv-python==4.5.2.54
+      - pre-commit
       - protobuf==3.17.3
       - pybullet==3.0.8
       - scipy==1.7.0
@@ -23,3 +26,4 @@ dependencies:
       - zmq==0.0.0
       - tensorboard
       - loop-rate-limiters
+      - conan

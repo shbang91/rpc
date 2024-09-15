@@ -5,11 +5,13 @@
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "util/util.hpp"
 
+enum class WBC_TYPE { IHWBC, WBIC };
+
 class Task {
 public:
   Task(PinocchioRobotSystem *robot, const int dim)
       : robot_(robot), dim_(dim), target_idx_(0),
-        rot_link_w_(Eigen::Matrix3d::Identity()) {
+        local_R_world_(Eigen::Matrix3d::Identity()) {
 
     des_pos_ = Eigen::VectorXd::Zero(dim_);
     des_vel_ = Eigen::VectorXd::Zero(dim_);
@@ -35,6 +37,8 @@ public:
     kd_ = Eigen::VectorXd::Zero(dim_);
     ki_ = Eigen::VectorXd::Zero(dim_);
 
+    kp_ik_ = Eigen::VectorXd::Zero(dim_);
+
     op_cmd_ = Eigen::VectorXd::Zero(dim_);
 
     jacobian_ = Eigen::MatrixXd::Zero(dim_, robot_->NumQdot());
@@ -54,18 +58,21 @@ public:
     des_acc_ = des_acc;
   }
 
-  virtual void UpdateOpCommand(const Eigen::Matrix3d &rot_world_loacl) = 0;
+  virtual void UpdateOpCommand(
+      const Eigen::Matrix3d &world_R_local = Eigen::Matrix3d::Identity()) = 0;
   virtual void UpdateJacobian() = 0;
   virtual void UpdateJacobianDotQdot() = 0;
 
   // setter function
   // task gain, hierarchy
-  virtual void SetParameters(const YAML::Node &node, const bool b_sim) {
+  virtual void SetParameters(const YAML::Node &node, const WBC_TYPE wbc_type) {
     try {
-      std::string prefix = b_sim ? "sim" : "exp";
-      util::ReadParameter(node, prefix + "_kp", kp_);
-      util::ReadParameter(node, prefix + "_kd", kd_);
-      util::ReadParameter(node, prefix + "_weight", weight_);
+      util::ReadParameter(node, "kp", kp_);
+      util::ReadParameter(node, "kd", kd_);
+      if (wbc_type == WBC_TYPE::IHWBC)
+        util::ReadParameter(node, "weight", weight_);
+      else if (wbc_type == WBC_TYPE::WBIC)
+        util::ReadParameter(node, "kp_ik", kp_ik_);
     } catch (std::runtime_error &e) {
       std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
                 << __FILE__ << "]" << std::endl;
@@ -73,9 +80,10 @@ public:
     }
   }
 
-  void ModifyJacobian(const std::vector<int> joint_idx) {
+  void ModifyJacobian(const std::vector<int> joint_idx,
+                      const int num_float = 0) {
     for (int i(0); i < joint_idx.size(); i++)
-      jacobian_.col(joint_idx[i]).setZero();
+      jacobian_.col(num_float + joint_idx[i]).setZero();
   }
 
   // getter function
@@ -99,12 +107,15 @@ public:
   Eigen::VectorXd Kp() const { return kp_; }
   Eigen::VectorXd Kd() const { return kd_; }
   Eigen::VectorXd Ki() const { return ki_; }
+  Eigen::VectorXd KpIK() const { return kp_ik_; }
   Eigen::VectorXd OpCommand() const { return op_cmd_; }
   int Dim() const { return dim_; }
 
-  // TODO: virtual??
+  Eigen::VectorXd PosError() const { return pos_err_; }
+  Eigen::VectorXd LocalPosError() const { return local_pos_err_; }
+
   int TargetIdx() const { return target_idx_; }
-  Eigen::Matrix3d Rot() const { return rot_link_w_; }
+  Eigen::Matrix3d Rot() const { return local_R_world_; }
 
   // setter
   void SetWeight(Eigen::VectorXd weight) { weight_ = weight; }
@@ -122,7 +133,6 @@ public:
     std::cout << "vel_err: " << vel_err_.transpose() << std::endl;
     std::cout << "des_vel: " << des_vel_.transpose() << std::endl;
     std::cout << "vel: " << vel_.transpose() << std::endl;
-    std::cout << "task_weight: " << weight_.transpose() << std::endl;
   }
 
 protected:
@@ -130,7 +140,7 @@ protected:
   int dim_;
   int target_idx_;
 
-  Eigen::Matrix3d rot_link_w_;
+  Eigen::Matrix3d local_R_world_;
 
   // measured quantities
   Eigen::VectorXd pos_;
@@ -145,9 +155,13 @@ protected:
   Eigen::VectorXd local_pos_err_;
   Eigen::VectorXd local_vel_err_;
 
+  // task space gains
   Eigen::VectorXd kp_;
   Eigen::VectorXd kd_;
   Eigen::VectorXd ki_;
+
+  // ik gains
+  Eigen::VectorXd kp_ik_;
 
   //  desired quantities
   Eigen::VectorXd des_pos_;

@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include "third_party/sciplot/sciplot.hpp"
+#include <gtest/gtest.h>
 
 #include "controller/friction_compensator/karnopp_compensator.hpp"
 
@@ -14,14 +14,15 @@ TEST(KarnoppCompensatorTest, plotCurve) {
   double static_force = 1.0;
   double viscous_force = 0.1;
   double vel_deadzone = 0.05;
-  auto friction_comp = KarnoppCompensator(static_force, viscous_force, vel_deadzone);
+  auto friction_comp =
+      KarnoppCompensator(static_force, viscous_force, vel_deadzone);
 
   // variables to plot
   std::vector<double> tau_cmd_traj, vel_traj;
 
   // collect points to plot
-  double vel_des =-final_vel;
-  while(vel_des < final_vel) {
+  double vel_des = -final_vel;
+  while (vel_des < final_vel) {
     tau_cmd_traj.push_back(friction_comp.Update(vel_des));
 
     vel_traj.push_back(vel_des);
@@ -48,28 +49,27 @@ TEST(KarnoppCompensatorTest, plotCurve) {
 
   // check value in dead-zone (positive)
   double torque_cmd = friction_comp.Update(0.01);
-  double expected_torque = static_force/(vel_deadzone*vel_deadzone) * 0.01*0.01;
-  ASSERT_TRUE(torque_cmd-expected_torque <= err_tol);
+  double expected_torque =
+      static_force / (vel_deadzone * vel_deadzone) * 0.01 * 0.01;
+  ASSERT_TRUE(torque_cmd - expected_torque <= err_tol);
 
   // check value out of dead-zone (positive)
-  torque_cmd = friction_comp.Update(vel_deadzone+0.01);
-  expected_torque = static_force + 0.01*viscous_force;
-  ASSERT_TRUE(torque_cmd-expected_torque <= err_tol);
+  torque_cmd = friction_comp.Update(vel_deadzone + 0.01);
+  expected_torque = static_force + 0.01 * viscous_force;
+  ASSERT_TRUE(torque_cmd - expected_torque <= err_tol);
 
   // check value in dead-zone (negative)
   torque_cmd = friction_comp.Update(-0.01);
-  expected_torque = -static_force/(vel_deadzone*vel_deadzone) * 0.01*0.01;
-  ASSERT_TRUE(torque_cmd-expected_torque <= err_tol);
+  expected_torque = -static_force / (vel_deadzone * vel_deadzone) * 0.01 * 0.01;
+  ASSERT_TRUE(torque_cmd - expected_torque <= err_tol);
 
   // check value out of dead-zone (negative)
-  torque_cmd = friction_comp.Update(-vel_deadzone-0.01);
-  expected_torque = -static_force - 0.01*viscous_force;
-  ASSERT_TRUE(torque_cmd-expected_torque <= err_tol);
-
+  torque_cmd = friction_comp.Update(-vel_deadzone - 0.01);
+  expected_torque = -static_force - 0.01 * viscous_force;
+  ASSERT_TRUE(torque_cmd - expected_torque <= err_tol);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

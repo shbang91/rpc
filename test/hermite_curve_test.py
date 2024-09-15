@@ -1,21 +1,16 @@
 import os
 import sys
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+from util.python_utils import interpolation
 
 cwd = os.getcwd()
 sys.path.append(cwd)
-
-from util.python_utils import interpolation
-import ipdb
-
-import numpy as np
-
-import matplotlib
-
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
+matplotlib.use("TkAgg")
 
 if __name__ == "__main__":
-
     ## hermiteCurve Test
     # p1 = 0.2
     # v1 = 0.
@@ -45,11 +40,11 @@ if __name__ == "__main__":
     # plt.show()
 
     ## hermiteCurveVec Test
-    p1 = np.array([1., 1., 1.])
-    v1 = np.array([0., 0., 0.])
-    p2 = np.array([3., 3., 3.])
-    v2 = np.array([0., 0., 0.])
-    duration = 2.
+    p1 = np.array([1.0, 1.0, 1.0])
+    v1 = np.array([0.0, 0.0, 0.0])
+    p2 = np.array([3.0, 3.0, 3.0])
+    v2 = np.array([0.0, 0.0, 0.0])
+    duration = 2.0
 
     curveVec = interpolation.HermiteCurveVec(p1, v1, p2, v2, duration)
 

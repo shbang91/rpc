@@ -1,0 +1,76 @@
+env: mujoco
+wbc_type: ihwbc
+servo_dt: 0.001
+ip_address: "tcp://127.0.0.1:5557"
+
+#data_save_freq: 1
+data_save_freq: 50
+
+controller:
+  b_smoothing_command: false
+  smoothing_command_duration: 0.01 ## this will filter the control command at the beginning
+
+wbc:
+  task:
+    jpos_task:
+      weight : [100., 100., 100., 100., 100., 100., 100.]
+      weight_min : [1., 1., 1., 1., 1., 1., 1.]
+      kp : [200., 200., 200., 200., 200., 200., 200.]
+      kd : [10., 10., 10., 10., 10., 10., 10.]
+
+    ee_pos_task:
+      weight : [100., 100., 100.]
+      weight_min : [0., 0., 0.]
+      kp : [100., 100., 100.]
+      kd : [10., 10., 10.]
+
+    ee_ori_task:
+      weight : [100., 100., 100.]
+      weight_min : [0., 0., 0.]
+      kp : [500., 500., 500.]
+      kd : [10., 10., 10.]
+
+    rf_task:
+      weight : [0., 0., 0.] ## trq, force order
+
+    ee_rf_task:
+      weight : [0., 0., 0.] ## trq, force order
+
+
+  contact:
+    max_rf_z: 400.
+    mu: 0.4
+    kp: [0, 0, 0] ## pos order
+    kd: [0, 0, 0]
+
+  qp:
+    b_save_costs: false
+    lambda_qddot: 5e-6 ##regularization
+    # TODO: 3 finger regularization
+    lambda_rf: [1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5, 1e-3, 1e-3, 1e-3, 1e-5, 1e-5, 1e-5]  #regulariztion lfoot / rfoot (trq, force order)
+    b_trq_limit: false
+
+  joint_integrator:
+    pos_cutoff_freq: 2.0 #hz
+    vel_cutoff_freq: 2. #hz
+    max_pos_err: 0.2 #rad
+
+
+state_machine:
+  initialize:
+    duration: 2.
+    wait_time: 0. 
+    target_joint_pos: [0.0, 3.665191429188092, 0.0, -2.0943951023931953, 0.0, -1.0471975511965976, 0.0]
+    b_stay_here: false
+
+  task_transition:
+    duration: 0.01
+    wait_time: 0.
+    b_stay_here: false
+
+  ee_traj:
+    duration: 1.
+    wait_time: 0.
+    target_pos: [0.1, 0.0, 0.5] # x, y, z
+    target_ori: [1.0, 0.0, 0.0, 0.0] # w, x, y, z
+    b_stay_here: true

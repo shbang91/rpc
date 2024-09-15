@@ -6,8 +6,7 @@
 #include "controller/draco_controller/draco_definition.hpp"
 #include "controller/interface.hpp"
 
-class DracoStateEstimator;
-class DracoKFStateEstimator;
+class StateEstimator;
 class DracoStateProvider;
 class DracoTaskGainHandler;
 
@@ -26,9 +25,9 @@ public:
   virtual ~DracoSensorData() = default;
 
   Eigen::Vector4d imu_frame_quat_; // x, y, z, w order
-  Eigen::Vector3d imu_ang_vel_;
-  Eigen::Vector3d imu_dvel_;
-  Eigen::Vector3d imu_lin_acc_;
+  Eigen::Vector3d imu_ang_vel_;    // in world frame
+  Eigen::Vector3d imu_dvel_;       // in world frame
+  Eigen::Vector3d imu_lin_acc_;    // imu_dvel_ / dt_
   Eigen::VectorXd joint_pos_;
   Eigen::VectorXd joint_vel_;
   bool b_lf_contact_;
@@ -54,6 +53,7 @@ public:
   Eigen::VectorXd joint_pos_cmd_;
   Eigen::VectorXd joint_vel_cmd_;
   Eigen::VectorXd joint_trq_cmd_;
+  std::unordered_map<std::string, double> gripper_pos_cmd_;
 };
 
 class DracoInterface : public Interface {
@@ -66,8 +66,13 @@ public:
   DracoTaskGainHandler *task_gain_handler_;
 
 private:
-  DracoStateEstimator *se_;
-  DracoKFStateEstimator *se_kf_;
+  StateEstimator *se_;
   DracoStateProvider *sp_;
   void _SafeCommand(DracoSensorData *data, DracoCommand *command);
+  void _SetParameters() override;
+
+  // state estimator selection
+  std::string state_estimator_type_;
+  std::string wbc_type_;
+  bool b_cheater_mode_;
 };

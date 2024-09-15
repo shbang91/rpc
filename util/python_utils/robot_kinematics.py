@@ -2,14 +2,14 @@ import pybullet as p
 import numpy as np
 import multiprocessing as mp
 from itertools import repeat
-from functools import partial
 
 from util.python_utils.util import *
 from util.python_utils.liegroup import *
 
 
-def get_kinematics_config(robot, joint_id, link_id, open_chain_joints,
-                          base_link, ee_link):
+def get_kinematics_config(
+    robot, joint_id, link_id, open_chain_joints, base_link, ee_link
+):
     joint_screws_in_ee = np.zeros((6, len(open_chain_joints)))
     ee_link_state = p.getLinkState(robot, link_id[ee_link])
     if link_id[base_link] == -1:
@@ -18,8 +18,9 @@ def get_kinematics_config(robot, joint_id, link_id, open_chain_joints,
         base_link_state = p.getLinkState(robot, link_id[base_link])
         base_pos, base_quat = base_link_state[0], base_link_state[1]
     T_w_b = RpToTrans(quat_to_rot(np.array(base_quat)), np.array(base_pos))
-    T_w_ee = RpToTrans(quat_to_rot(np.array(ee_link_state[1])),
-                       np.array(ee_link_state[0]))
+    T_w_ee = RpToTrans(
+        quat_to_rot(np.array(ee_link_state[1])), np.array(ee_link_state[0])
+    )
     T_b_ee = np.dot(TransInv(T_w_b), T_w_ee)
     for i, joint_name in enumerate(open_chain_joints):
         joint_info = p.getJointInfo(robot, joint_id[joint_name])
@@ -28,8 +29,7 @@ def get_kinematics_config(robot, joint_id, link_id, open_chain_joints,
         joint_axis = joint_info[13]
         screw_at_joint = np.zeros(6)
         link_state = p.getLinkState(robot, link_id[link_name])
-        T_w_j = RpToTrans(quat_to_rot(np.array(link_state[5])),
-                          np.array(link_state[4]))
+        T_w_j = RpToTrans(quat_to_rot(np.array(link_state[5])), np.array(link_state[4]))
         T_ee_j = np.dot(TransInv(T_w_ee), T_w_j)
         Adj_ee_j = Adjoint(T_ee_j)
         if joint_type == p.JOINT_REVOLUTE:
@@ -71,17 +71,14 @@ def FKinBody(M, Blist, thetalist):
     """
     T = np.array(M)
     for i in range(len(thetalist)):
-        T = np.dot(T, MatrixExp6(VecTose3(np.array(Blist)[:, i] \
-                                          * thetalist[i])))
+        T = np.dot(T, MatrixExp6(VecTose3(np.array(Blist)[:, i] * thetalist[i])))
     return T
 
 
 def batch_fk(M, Blist, thetalistlist, num_cpu=4):
-
     pool = mp.Pool(processes=num_cpu)
 
-    T_list = pool.starmap(FKinBody, zip(repeat(M), repeat(Blist),
-                                        thetalistlist))
+    T_list = pool.starmap(FKinBody, zip(repeat(M), repeat(Blist), thetalistlist))
 
     pool.close()
     pool.terminate()
@@ -118,8 +115,7 @@ def FKinSpace(M, Slist, thetalist):
     """
     T = np.array(M)
     for i in range(len(thetalist) - 1, -1, -1):
-        T = np.dot(MatrixExp6(VecTose3(np.array(Slist)[:, i] \
-                                       * thetalist[i])), T)
+        T = np.dot(MatrixExp6(VecTose3(np.array(Slist)[:, i] * thetalist[i])), T)
     return T
 
 
@@ -148,8 +144,9 @@ def JacobianBody(Blist, thetalist):
     Jb = np.array(Blist).copy().astype(np.float)
     T = np.eye(4)
     for i in range(len(thetalist) - 2, -1, -1):
-        T = np.dot(T,MatrixExp6(VecTose3(np.array(Blist)[:, i + 1] \
-                                         * -thetalist[i + 1])))
+        T = np.dot(
+            T, MatrixExp6(VecTose3(np.array(Blist)[:, i + 1] * -thetalist[i + 1]))
+        )
         Jb[:, i] = np.dot(Adjoint(T), np.array(Blist)[:, i])
     return Jb
 
@@ -179,13 +176,14 @@ def JacobianSpace(Slist, thetalist):
     Js = np.array(Slist).copy().astype(np.float)
     T = np.eye(4)
     for i in range(1, len(thetalist)):
-        T = np.dot(T, MatrixExp6(VecTose3(np.array(Slist)[:, i - 1] \
-                                * thetalist[i - 1])))
+        T = np.dot(
+            T, MatrixExp6(VecTose3(np.array(Slist)[:, i - 1] * thetalist[i - 1]))
+        )
         Js[:, i] = np.dot(Adjoint(T), np.array(Slist)[:, i])
     return Js
 
 
-def batch_ik(Blist, M, Tlist, thetalist0, num_cpu=4, eomg=1.e-2, ev=1.e-4):
+def batch_ik(Blist, M, Tlist, thetalist0, num_cpu=4, eomg=1.0e-2, ev=1.0e-4):
     """Computes inverse kinematics in the body frame for an open chain robot
     :param Blist: The joint screw axes in the end-effector frame when the
                   manipulator is at the home position, in the format of a
@@ -210,10 +208,19 @@ def batch_ik(Blist, M, Tlist, thetalist0, num_cpu=4, eomg=1.e-2, ev=1.e-4):
 
     pool = mp.Pool(processes=num_cpu)
 
-    sol_list, success_list = zip(*pool.starmap(
-        IKinBody,
-        zip(repeat(Blist), repeat(M), Tlist, repeat(thetalist0), repeat(eomg),
-            repeat(ev))))
+    sol_list, success_list = zip(
+        *pool.starmap(
+            IKinBody,
+            zip(
+                repeat(Blist),
+                repeat(M),
+                Tlist,
+                repeat(thetalist0),
+                repeat(eomg),
+                repeat(ev),
+            ),
+        )
+    )
 
     pool.close()
     pool.terminate()
@@ -222,7 +229,7 @@ def batch_ik(Blist, M, Tlist, thetalist0, num_cpu=4, eomg=1.e-2, ev=1.e-4):
     return sol_list, success_list
 
 
-def IKinBody(Blist, M, T, thetalist0, eomg=1.e-2, ev=1.e-4):
+def IKinBody(Blist, M, T, thetalist0, eomg=1.0e-2, ev=1.0e-4):
     """Computes inverse kinematics in the body frame for an open chain robot
     :param Blist: The joint screw axes in the end-effector frame when the
                   manipulator is at the home position, in the format of a
@@ -268,24 +275,25 @@ def IKinBody(Blist, M, T, thetalist0, eomg=1.e-2, ev=1.e-4):
     thetalist = np.array(thetalist0).copy()
     i = 0
     maxiterations = 20
-    Vb = se3ToVec(MatrixLog6(np.dot(TransInv(FKinBody(M, Blist, \
-                                                      thetalist)), T)))
-    err = np.linalg.norm([Vb[0], Vb[1], Vb[2]]) > eomg \
-          or np.linalg.norm([Vb[3], Vb[4], Vb[5]]) > ev
+    Vb = se3ToVec(MatrixLog6(np.dot(TransInv(FKinBody(M, Blist, thetalist)), T)))
+    err = (
+        np.linalg.norm([Vb[0], Vb[1], Vb[2]]) > eomg
+        or np.linalg.norm([Vb[3], Vb[4], Vb[5]]) > ev
+    )
     while err and i < maxiterations:
-        thetalist = thetalist \
-                    + np.dot(np.linalg.pinv(JacobianBody(Blist, \
-                                                         thetalist)), Vb)
+        thetalist = thetalist + np.dot(
+            np.linalg.pinv(JacobianBody(Blist, thetalist)), Vb
+        )
         i = i + 1
-        Vb \
-        = se3ToVec(MatrixLog6(np.dot(TransInv(FKinBody(M, Blist, \
-                                                       thetalist)), T)))
-        err = np.linalg.norm([Vb[0], Vb[1], Vb[2]]) > eomg \
-              or np.linalg.norm([Vb[3], Vb[4], Vb[5]]) > ev
+        Vb = se3ToVec(MatrixLog6(np.dot(TransInv(FKinBody(M, Blist, thetalist)), T)))
+        err = (
+            np.linalg.norm([Vb[0], Vb[1], Vb[2]]) > eomg
+            or np.linalg.norm([Vb[3], Vb[4], Vb[5]]) > ev
+        )
     return (thetalist, not err)
 
 
-def IKinSpace(Slist, M, T, thetalist0, eomg=1.e-2, ev=1.e-4):
+def IKinSpace(Slist, M, T, thetalist0, eomg=1.0e-2, ev=1.0e-4):
     """Computes inverse kinematics in the space frame for an open chain robot
     :param Slist: The joint screw axes in the space frame when the
                   manipulator is at the home position, in the format of a
@@ -332,18 +340,20 @@ def IKinSpace(Slist, M, T, thetalist0, eomg=1.e-2, ev=1.e-4):
     i = 0
     maxiterations = 20
     Tsb = FKinSpace(M, Slist, thetalist)
-    Vs = np.dot(Adjoint(Tsb), \
-                se3ToVec(MatrixLog6(np.dot(TransInv(Tsb), T))))
-    err = np.linalg.norm([Vs[0], Vs[1], Vs[2]]) > eomg \
-          or np.linalg.norm([Vs[3], Vs[4], Vs[5]]) > ev
+    Vs = np.dot(Adjoint(Tsb), se3ToVec(MatrixLog6(np.dot(TransInv(Tsb), T))))
+    err = (
+        np.linalg.norm([Vs[0], Vs[1], Vs[2]]) > eomg
+        or np.linalg.norm([Vs[3], Vs[4], Vs[5]]) > ev
+    )
     while err and i < maxiterations:
-        thetalist = thetalist \
-                    + np.dot(np.linalg.pinv(JacobianSpace(Slist, \
-                                                          thetalist)), Vs)
+        thetalist = thetalist + np.dot(
+            np.linalg.pinv(JacobianSpace(Slist, thetalist)), Vs
+        )
         i = i + 1
         Tsb = FKinSpace(M, Slist, thetalist)
-        Vs = np.dot(Adjoint(Tsb), \
-                    se3ToVec(MatrixLog6(np.dot(TransInv(Tsb), T))))
-        err = np.linalg.norm([Vs[0], Vs[1], Vs[2]]) > eomg \
-              or np.linalg.norm([Vs[3], Vs[4], Vs[5]]) > ev
+        Vs = np.dot(Adjoint(Tsb), se3ToVec(MatrixLog6(np.dot(TransInv(Tsb), T))))
+        err = (
+            np.linalg.norm([Vs[0], Vs[1], Vs[2]]) > eomg
+            or np.linalg.norm([Vs[3], Vs[4], Vs[5]]) > ev
+        )
     return (thetalist, not err)

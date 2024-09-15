@@ -11,6 +11,9 @@
 #include "configuration.hpp"
 #include "util/util.hpp"
 
+#include <assert.h>
+#include <type_traits>
+
 namespace util {
 double SmoothPos(double ini, double end, double moving_duration,
                  double curr_time);
@@ -162,6 +165,89 @@ private:
   void PrintQuat(const Eigen::Quaterniond &quat);
 };
 
+class HermiteQuaternionCurve2 {
+public:
+  HermiteQuaternionCurve2();
+  HermiteQuaternionCurve2(const Eigen::Quaterniond &quat_start,
+                          const Eigen::Vector3d &angular_velocity_start,
+                          const Eigen::Quaterniond &quat_end,
+                          const Eigen::Vector3d &angular_velocity_end);
+  ~HermiteQuaternionCurve2();
+
+  void Initialize(const Eigen::Quaterniond &quat_start,
+                  const Eigen::Vector3d &angular_velocity_start,
+                  const Eigen::Quaterniond &quat_end,
+                  const Eigen::Vector3d &angular_velocity_end);
+
+  // custom functions
+  void SetDesired(const Eigen::Quaterniond &quat_end,
+                  const Eigen::Vector3d &angular_velocity_end);
+
+  void SetInitial(const Eigen::Quaterniond &quat_start,
+                  const Eigen::Vector3d &angular_velocity_start);
+
+  // All values are expressed in "world frame"
+  Eigen::Quaterniond GetOrientation(const double &s_in);
+  Eigen::Vector3d GetAngularVelocity(const double &s_in);
+  Eigen::Vector3d GetAngularAcceleration(const double &s_in);
+
+  Eigen::Quaterniond GetInitialOri() { return qa; }
+  Eigen::Quaterniond GetFinalOri() { return qb; }
+
+private:
+  Eigen::Quaterniond qa;   // Starting quaternion
+  Eigen::Vector3d omega_a; // Starting Angular Velocity
+  Eigen::Quaterniond qb;   // Ending quaternion
+  Eigen::Vector3d omega_b; // Ending Angular velocity
+
+  void Initialize_data_structures();
+  HermiteCurveVec theta_ab; // so3
+  Eigen::Quaterniond delq;
+
+  ///////////////////////////////////////
+
+  Eigen::AngleAxisd omega_a_aa; // axis angle representation of omega_a
+  Eigen::AngleAxisd omega_b_aa; // axis angle representation of omega_b
+
+  void ComputeBasis(const double &s_in); // computes the basis functions
+  void ComputeOmegas();
+
+  Eigen::Quaterniond q0; // quat0
+  Eigen::Quaterniond q1; // quat1
+  Eigen::Quaterniond q2; // quat1
+  Eigen::Quaterniond q3; // quat1
+
+  double b1; // basis 1
+  double b2; // basis 2
+  double b3; // basis 3
+
+  double bdot1; // 1st derivative of basis 1
+  double bdot2; // 1st derivative of basis 2
+  double bdot3; // 1st derivative of basis 3
+
+  double bddot1; // 2nd derivative of basis 1
+  double bddot2; // 2nd derivative of basis 2
+  double bddot3; // 2nd derivative of basis 3
+
+  Eigen::Vector3d omega_1;
+  Eigen::Vector3d omega_2;
+  Eigen::Vector3d omega_3;
+
+  Eigen::AngleAxisd omega_1aa;
+  Eigen::AngleAxisd omega_2aa;
+  Eigen::AngleAxisd omega_3aa;
+
+  // Allocate memory for quaternion operations
+  Eigen::Quaterniond qtmp1;
+  Eigen::Quaterniond qtmp2;
+  Eigen::Quaterniond qtmp3;
+
+  void PrintQuat(const Eigen::Quaterniond &quat);
+
+  double s_; // progression variable
+  double Clamp(const double &s_in, double lo = 0.0, double hi = 1.0);
+};
+
 class MinJerkCurve {
 public:
   // Constructors
@@ -226,3 +312,55 @@ private:
   std::vector<MinJerkCurve> curves_;
   Eigen::VectorXd output_;
 };
+
+/*************************************************************************
+ * From MIT Cheetah Software
+ *************************************************************************/
+/*!
+ * Linear interpolation between y0 and yf.  x is between 0 and 1
+ */
+template <typename y_t, typename x_t> y_t Lerp(y_t y0, y_t yf, x_t x) {
+  static_assert(std::is_floating_point<x_t>::value,
+                "must use floating point value");
+  assert(x >= 0 && x <= 1);
+  return y0 + (yf - y0) * x;
+}
+/*!
+ * Cubic bezier interpolation between y0 and yf.  x is between 0 and 1
+ */
+template <typename y_t, typename x_t> y_t CubicBezier(y_t y0, y_t yf, x_t x) {
+  static_assert(std::is_floating_point<x_t>::value,
+                "must use floating point value");
+  assert(x >= 0 && x <= 1);
+  y_t yDiff = yf - y0;
+  x_t bezier = x * x * x + x_t(3) * (x * x * (x_t(1) - x));
+  return y0 + bezier * yDiff;
+}
+
+/*!
+ * Cubic bezier interpolation derivative between y0 and yf.  x is between 0 and
+ * 1
+ */
+template <typename y_t, typename x_t>
+y_t CubicBezierFirstDerivative(y_t y0, y_t yf, x_t x) {
+  static_assert(std::is_floating_point<x_t>::value,
+                "must use floating point value");
+  assert(x >= 0 && x <= 1);
+  y_t yDiff = yf - y0;
+  x_t bezier = x_t(6) * x * (x_t(1) - x);
+  return bezier * yDiff;
+}
+
+/*!
+ * Cubic bezier interpolation derivative between y0 and yf.  x is between 0 and
+ * 1
+ */
+template <typename y_t, typename x_t>
+y_t CubicBezierSecondDerivative(y_t y0, y_t yf, x_t x) {
+  static_assert(std::is_floating_point<x_t>::value,
+                "must use floating point value");
+  assert(x >= 0 && x <= 1);
+  y_t yDiff = yf - y0;
+  x_t bezier = x_t(6) - x_t(12) * x;
+  return bezier * yDiff;
+}

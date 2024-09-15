@@ -11,9 +11,9 @@ FloatingBaseTrajectoryManager::FloatingBaseTrajectoryManager(
       torso_ori_task_(torso_ori_task), robot_(robot), duration_(0.),
       init_com_pos_(Eigen::Vector3d::Zero()),
       target_com_pos_(Eigen::Vector3d::Zero()),
-      exp_err_(Eigen::VectorXd::Zero(3)), amp_(Eigen::Vector3d::Zero()),
-      freq_(Eigen::Vector3d::Zero()), b_swaying_(false),
-      min_jerk_curve_(nullptr), min_jerk_time_(nullptr) {
+      exp_err_(Eigen::VectorXd::Zero(3)), axis_(Eigen::Vector3d::Zero()),
+      angle_(0.), amp_(Eigen::Vector3d::Zero()), freq_(Eigen::Vector3d::Zero()),
+      b_swaying_(false), min_jerk_curve_(nullptr), min_jerk_time_(nullptr) {
 
   util::PrettyConstructor(2, "FloatingBaseTrajectoryManager");
 }
@@ -44,7 +44,10 @@ void FloatingBaseTrajectoryManager::InitializeFloatingBaseInterpolation(
 
   // angular
   init_torso_quat_ = init_torso_quat;
-  exp_err_ = util::QuatToExp(target_torso_quat * init_torso_quat_.inverse());
+  Eigen::Quaterniond quat_err = target_torso_quat * init_torso_quat_.inverse();
+  // exp_err_ = util::QuatToExp(target_torso_quat * init_torso_quat_.inverse());
+  axis_ = Eigen::AngleAxisd(quat_err).axis();
+  angle_ = Eigen::AngleAxisd(quat_err).angle();
   Eigen::VectorXd start_time(1), end_time(1);
   start_time << 0.;
   end_time << 1.;
@@ -66,15 +69,12 @@ void FloatingBaseTrajectoryManager::InitializeSwaying(
 void FloatingBaseTrajectoryManager::UpdateDesired(
     const double state_machine_time) {
   if (b_swaying_) {
-
     Eigen::VectorXd local_des_pos = Eigen::VectorXd::Zero(3);
     Eigen::VectorXd local_des_vel = Eigen::VectorXd::Zero(3);
     Eigen::VectorXd local_des_acc = Eigen::VectorXd::Zero(3);
-
     // com swaying
     util::SinusoidTrajectory(amp_, freq_, state_machine_time, local_des_pos,
                              local_des_vel, local_des_acc, 1.0);
-
     Eigen::VectorXd des_com_pos =
         init_com_pos_ + rot_world_local_ * local_des_pos;
     Eigen::VectorXd des_com_vel = rot_world_local_ * local_des_vel;
@@ -110,15 +110,19 @@ void FloatingBaseTrajectoryManager::UpdateDesired(
     double t_ddot =
         min_jerk_time_->EvaluateSecondDerivative(state_machine_time)[0];
 
+    Eigen::AngleAxisd so3 = Eigen::AngleAxisd(angle_ * t, axis_);
     Eigen::Quaterniond des_torso_quat =
-        util::ExpToQuat(exp_err_ * t) * init_torso_quat_;
+        // util::ExpToQuat(exp_err_ * t) * init_torso_quat_;
+        Eigen::Quaterniond(so3) * init_torso_quat_;
     Eigen::VectorXd des_torso_quat_vec(4);
     des_torso_quat_vec << des_torso_quat.normalized().coeffs();
 
     Eigen::VectorXd des_torso_ang_vel(3);
-    des_torso_ang_vel << exp_err_ * t_dot;
+    des_torso_ang_vel << axis_ * angle_ * t_dot;
+    // des_torso_ang_vel << exp_err_ * t_dot;
     Eigen::VectorXd des_torso_ang_acc(3);
-    des_torso_ang_acc << exp_err_ * t_ddot;
+    des_torso_ang_acc << axis_ * angle_ * t_ddot;
+    // des_torso_ang_acc << exp_err_ * t_ddot;
 
     // update desired torso_ori des traj
     torso_ori_task_->UpdateDesired(des_torso_quat_vec, des_torso_ang_vel,

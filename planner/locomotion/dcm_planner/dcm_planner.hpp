@@ -101,6 +101,10 @@ public:
                              Eigen::Vector3d &ang_acc_out);
   Eigen::Vector3d GetRefVrp(const double current_time) const;
 
+  // testing param update
+  double *GetTssPtr();
+  double *GetTdsPtr();
+
 protected:
   // setter related variables
   double mass_ = 40;

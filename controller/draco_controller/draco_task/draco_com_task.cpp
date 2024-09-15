@@ -5,13 +5,14 @@
 
 DracoComTask::DracoComTask(PinocchioRobotSystem *robot)
     : Task(robot, 3), com_feedback_source_(com_feedback_source::kComFeedback),
-      com_height_target_source_(com_height_target_source::kComHeight) {
+      com_height_target_source_(com_height_target_source::kComHeight),
+      b_sim_(true) {
   util::PrettyConstructor(3, "DracoCoMTask");
 
   sp_ = DracoStateProvider::GetStateProvider();
 }
 
-void DracoComTask::UpdateOpCommand(const Eigen::Matrix3d &rot_world_local) {
+void DracoComTask::UpdateOpCommand(const Eigen::Matrix3d &world_R_local) {
   if (com_feedback_source_ == com_feedback_source::kComFeedback) {
     Eigen::Vector3d com_pos = robot_->GetRobotComPos();
     Eigen::Vector3d com_vel =
@@ -91,9 +92,14 @@ void DracoComTask::UpdateJacobianDotQdot() {
   }
 }
 
-void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
+void DracoComTask::SetParameters(const YAML::Node &node,
+                                 const WBC_TYPE wbc_type) {
   try {
-    b_sim_ = b_sim;
+
+    std::string test_env_name = util::ReadParameter<std::string>(node, "env");
+    if (test_env_name == "hw") {
+      b_sim_ = false;
+    }
 
     util::ReadParameter(node, "com_feedback_source", com_feedback_source_);
     util::ReadParameter(node, "com_height_target_source",
@@ -104,16 +110,13 @@ void DracoComTask::SetParameters(const YAML::Node &node, const bool b_sim) {
             ? true
             : false;
 
-    std::string prefix = b_sim ? "sim" : "exp";
     if (com_feedback_source_ == com_feedback_source::kComFeedback) {
-      util::ReadParameter(node, prefix + "_kp", kp_);
-      util::ReadParameter(node, prefix + "_kd", kd_);
-      util::ReadParameter(node, prefix + "_weight", weight_);
+      util::ReadParameter(node, "kp", kp_);
+      util::ReadParameter(node, "kd", kd_);
     } else if (com_feedback_source_ == com_feedback_source::kDcmFeedback) {
-      util::ReadParameter(node, prefix + "_icp_kp", kp_);
-      util::ReadParameter(node, prefix + "_icp_kd", kd_);
-      util::ReadParameter(node, prefix + "_icp_ki", ki_);
-      util::ReadParameter(node, prefix + "_icp_weight", weight_);
+      util::ReadParameter(node, "icp_kp", kp_);
+      util::ReadParameter(node, "icp_kd", kd_);
+      util::ReadParameter(node, "icp_ki", ki_);
     } else {
       throw std::invalid_argument("No Matching CoM Feedback Source");
     }

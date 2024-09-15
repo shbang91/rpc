@@ -541,6 +541,9 @@ void DCMPlanner::_ComputeCoMAcc(const Eigen::Vector3d &com_vel,
 }
 
 int DCMPlanner::_GetStepIndex(const double time_at_query) const {
+  // std::cout << "\nt_ss value:" << t_ss_ << std::endl;       //DEBUG: outputs
+  // t_ss when stepping std::cout << "\nt_ds value:" << t_ds_ << std::endl;
+  // //DEBUG: outputs t_ds when stepping
   if (time_at_query < 0.)
     return 0;
 
@@ -739,6 +742,10 @@ int DCMPlanner::_ClampInt(const int step_idx, const int lower_bound,
 void DCMPlanner::Initialize() {}
 
 void DCMPlanner::GetResults() {}
+
+double *DCMPlanner::GetTssPtr() { return &t_ss_; }
+
+double *DCMPlanner::GetTdsPtr() { return &t_ds_; }
 
 void DCMPlanner::SetParams(const YAML::Node &node) {
   try {

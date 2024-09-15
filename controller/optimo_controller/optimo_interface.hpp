@@ -56,5 +56,9 @@ public:
 private:
   OptimoStateProvider *sp_;
   OptimoStateEstimator *se_;
+  void _SetParameters() override;
   void _SafeCommand(OptimoSensorData *data, OptimoCommand *command);
+
+  // wbc type
+  std::string wbc_type_;
 };

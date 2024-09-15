@@ -461,24 +461,24 @@ if b_include_lhand_task
         end
         sgtitle('Left Hand Task', 'FontSize', 30)
     end
-    
+
     % orientation
     [row, col] = size(des_lh_ori);
     des_lh_quat = zeros(row, col);
     des_lh_quat(1, :) = des_lh_ori(4, :);
     des_lh_quat(2:4, :) = des_lh_ori(1:3, :);
-    
+
     act_lh_quat = zeros(row, col);
     act_lh_quat(1, :) = act_lf_ori(4, :);
     act_lh_quat(2:4, :) = act_lf_ori(1:3, :);
-    
+
     des_lh_ori_euler_xyz = zeros(3, col);
     act_lh_ori_euler_xyz = zeros(3, col);
     for i = 1: col
         des_lh_ori_euler_xyz(:, i) = quat2eul(des_lh_quat(:, i).', 'xyz');
         act_lh_ori_euler_xyz(:, i) = quat2eul(act_lh_quat(:, i).', 'xyz');
     end
-    
+
     figure(num_fig)
     num_fig = num_fig + 1;
     j = 0;
@@ -516,7 +516,7 @@ if b_include_lhand_task
         end
         sgtitle('Left Hand ori task', 'FontSize', 30)
     end
-    
+
     % Local
     figure(num_fig)
     num_fig = num_fig + 1;
@@ -555,24 +555,24 @@ if b_include_lhand_task
         end
         sgtitle('Left Hand Task in LOCAL', 'FontSize', 30)
     end
-    
+
     % orientation
     [row, col] = size(local_des_lh_ori);
     local_des_lh_quat = zeros(row, col);
     local_des_lh_quat(1, :) = local_des_lh_ori(4, :);
     local_des_lh_quat(2:4, :) = local_des_lh_ori(1:3, :);
-    
+
     local_act_lh_quat = zeros(row, col);
     local_act_lh_quat(1, :) = local_act_lf_ori(4, :);
     local_act_lh_quat(2:4, :) = local_act_lf_ori(1:3, :);
-    
+
     local_des_lh_ori_euler_xyz = zeros(3, col);
     local_act_lh_ori_euler_xyz = zeros(3, col);
     for i = 1: col
         local_des_lh_ori_euler_xyz(:, i) = quat2eul(local_des_lh_quat(:, i).', 'xyz');
         local_act_lh_ori_euler_xyz(:, i) = quat2eul(local_act_lh_quat(:, i).', 'xyz');
     end
-    
+
     figure(num_fig)
     num_fig = num_fig + 1;
     j = 0;
@@ -1201,10 +1201,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(num_fig)
 num_fig = num_fig + 1;
-l_joint_lim_low = [-0.872665; -0.2618; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.523599]; 
-l_joint_lim_up = [0.872665; 0.7854; 0.5236; 1.52716; 1.52716; 1.0472; 0.523599]; 
-r_joint_lim_low = [-0.872665; -0.7854; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.523599]; 
-r_joint_lim_up = [0.872665; 0.2618; 0.5236; 1.52716; 1.52716; 1.0472; 0.523599]; 
+l_joint_lim_low = [-0.872665; -0.2618; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.523599];
+l_joint_lim_up = [0.872665; 0.7854; 0.5236; 1.52716; 1.52716; 1.0472; 0.523599];
+r_joint_lim_low = [-0.872665; -0.7854; -1.52716; -0.0872665; -0.0872665; -1.5708; -0.523599];
+r_joint_lim_up = [0.872665; 0.2618; 0.5236; 1.52716; 1.52716; 1.0472; 0.523599];
 j = 0;
 k = 0;
 for i = 1:14
@@ -1374,7 +1374,7 @@ num_fig = num_fig + 1;
 ax(1) = subplot(5,1,1:2);
 plot(wbc_time, des_lf_pos(3,:), 'r', 'LineWidth', 2);
 hold on
-plot(wbc_time, act_lf_pos(3,:), 'b', 'LineWidth', 2);        
+plot(wbc_time, act_lf_pos(3,:), 'b', 'LineWidth', 2);
 min_val = min([des_lf_pos(3,:), act_lf_pos(3,:)]);
 max_val = max([des_lf_pos(3,:), act_lf_pos(3,:)]);
 min_val = min_val - 0.1 * (max_val - min_val);
@@ -1419,7 +1419,7 @@ num_fig = num_fig + 1;
 ax(1) = subplot(5,1,1:2);
 plot(wbc_time, des_rf_pos(3,:), 'r', 'LineWidth', 2);
 hold on
-plot(wbc_time, act_rf_pos(3,:), 'b', 'LineWidth', 2);        
+plot(wbc_time, act_rf_pos(3,:), 'b', 'LineWidth', 2);
 min_val = min([des_rf_pos(3,:), act_lf_pos(3,:)]);
 max_val = max([des_rf_pos(3,:), act_lf_pos(3,:)]);
 min_val = min_val - 0.1 * (max_val - min_val);

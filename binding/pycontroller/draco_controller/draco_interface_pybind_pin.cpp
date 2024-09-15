@@ -11,6 +11,9 @@ public:
     PYBIND11_OVERRIDE_PURE(void, Interface, GetCommand, sensor_data,
                            command_data);
   }
+
+protected:
+  void _SetParameters() override {}
 };
 
 namespace py = pybind11;

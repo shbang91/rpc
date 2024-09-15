@@ -14,5 +14,10 @@ PYBIND11_MODULE(interrupt_py, m) {
       .def("PressSix", &InterruptHandler::PressSix)
       .def("PressSeven", &InterruptHandler::PressSeven)
       .def("PressEight", &InterruptHandler::PressEight)
-      .def("PressNine", &InterruptHandler::PressNine);
+      .def("PressNine", &InterruptHandler::PressNine)
+      .def("PressM", &InterruptHandler::PressM)
+      .def("PressX", &InterruptHandler::PressX)
+      .def("PressY", &InterruptHandler::PressY)
+      .def("PressZ", &InterruptHandler::PressZ)
+      .def("PressD", &InterruptHandler::PressD);
 }

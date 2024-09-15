@@ -38,9 +38,9 @@ public:
   int prev_state_;
 
   bool b_use_base_height_;
-  bool b_use_kf_state_estimator_;
 
   double des_com_height_;
+  // double des_body_height_;
   Eigen::Quaterniond des_torso_quat_;
 
   int planning_id_;
@@ -48,6 +48,13 @@ public:
   std::vector<int> floating_base_jidx_;
 
   Eigen::Vector3d cam_est_;
+
+  Eigen::Vector3d wbo_ypr_;
+  Eigen::Vector3d wbo_ang_vel_;
+  Eigen::VectorXd wbo_des_;
+
+  bool b_recv_gripper_cmd_;
+  std::unordered_map<std::string, double> gripper_pos_cmd_;
 
 private:
   DracoStateProvider();

@@ -1,17 +1,17 @@
 #include "controller/draco_controller/draco_state_machines/contact_transition_start.hpp"
 #include "controller/draco_controller/draco_control_architecture.hpp"
 #include "controller/draco_controller/draco_definition.hpp"
+#include "controller/draco_controller/draco_state_machines/double_support_stand_up.hpp"
 #include "controller/draco_controller/draco_state_provider.hpp"
 #include "controller/draco_controller/draco_tci_container.hpp"
 #include "controller/robot_system/pinocchio_robot_system.hpp"
 #include "controller/whole_body_controller/managers/dcm_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/end_effector_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/max_normal_force_trajectory_manager.hpp"
+#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
 #include "controller/whole_body_controller/managers/task_hierarchy_manager.hpp"
 #include "controller/whole_body_controller/task.hpp"
 #include "planner/locomotion/dcm_planner/dcm_planner.hpp"
-#include "controller/whole_body_controller/managers/reaction_force_trajectory_manager.hpp"
-#include "double_support_stand_up.hpp"
 
 ContactTransitionStart::ContactTransitionStart(
     StateId state_id, PinocchioRobotSystem *robot,
@@ -22,16 +22,6 @@ ContactTransitionStart::ContactTransitionStart(
     util::PrettyConstructor(2, "LFContactTransitionStart");
   else if (state_id_ == draco_states::kRFContactTransitionStart)
     util::PrettyConstructor(2, "RFContactTransitionStart");
-
-  try {
-    YAML::Node cfg =
-            YAML::LoadFile(THIS_COM "config/draco/pnc.yaml"); // get yaml node
-    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(cfg["state_machine"],
-                                                "b_use_const_desired_foot_pos");
-  } catch (const std::runtime_error &e) {
-    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
-              << __FILE__ << "]" << std::endl;
-  }
 
   nominal_lfoot_iso_.setIdentity();
   nominal_rfoot_iso_.setIdentity();
@@ -82,12 +72,11 @@ void ContactTransitionStart::FirstVisit() {
   // =====================================================================
   // dcm planner initialize
   // =====================================================================
-  if (ctrl_arch_->dcm_tm_->NoRemainingSteps()){
+  if (ctrl_arch_->dcm_tm_->NoRemainingSteps()) {
     end_time_ =
-            ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetFinalContactTransferTime();
+        ctrl_arch_->dcm_tm_->GetDCMPlanner()->GetFinalContactTransferTime();
     rf_end_time_ = 0.5 * end_time_;
-  }
-  else {
+  } else {
     // Eigen::Quaterniond init_torso_quat(
     // robot_->GetLinkIsometry(draco_link::torso_com_link).linear());
     // Eigen::Vector3d init_dcm_pos = sp_->dcm_;
@@ -150,12 +139,16 @@ void ContactTransitionStart::FirstVisit() {
   // set reference desired reaction force
   Eigen::VectorXd mid_max_force_z = Eigen::VectorXd::Zero(6);
   mid_max_force_z[5] = kGravity * robot_->GetTotalMass() / 2.;
-  ctrl_arch_->lf_force_tm_->InitializeInterpolation(mid_max_force_z, rf_end_time_);
-  ctrl_arch_->rf_force_tm_->InitializeInterpolation(mid_max_force_z, rf_end_time_);
+  ctrl_arch_->lf_force_tm_->InitializeInterpolation(mid_max_force_z,
+                                                    rf_end_time_);
+  ctrl_arch_->rf_force_tm_->InitializeInterpolation(mid_max_force_z,
+                                                    rf_end_time_);
 
   // set current foot position as nominal (desired) for rest of this state
   nominal_lfoot_iso_ = robot_->GetLinkIsometry(draco_link::l_foot_contact);
   nominal_rfoot_iso_ = robot_->GetLinkIsometry(draco_link::r_foot_contact);
+  FootStep::MakeHorizontal(nominal_lfoot_iso_);
+  FootStep::MakeHorizontal(nominal_rfoot_iso_);
 }
 
 void ContactTransitionStart::OneStep() {
@@ -210,4 +203,12 @@ StateId ContactTransitionStart::GetNextState() {
   }
 }
 
-void ContactTransitionStart::SetParameters(const YAML::Node &node) {}
+void ContactTransitionStart::SetParameters(const YAML::Node &node) {
+  try {
+    b_use_fixed_foot_pos_ = util::ReadParameter<bool>(
+        node["state_machine"], "b_use_const_desired_foot_pos");
+  } catch (const std::runtime_error &e) {
+    std::cerr << "Error reading parameter [" << e.what() << "] at file: ["
+              << __FILE__ << "]" << std::endl;
+  }
+}

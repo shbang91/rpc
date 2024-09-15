@@ -84,6 +84,8 @@ std::string PrettyString(double vv);
 // =========================================================================
 // Math
 // =========================================================================
+enum class CoordinateAxis { X, Y, Z };
+
 Eigen::MatrixXd hStack(const Eigen::MatrixXd &a_, const Eigen::MatrixXd &b_);
 Eigen::MatrixXd vStack(const Eigen::MatrixXd &a_, const Eigen::MatrixXd &b_);
 Eigen::MatrixXd block_diag(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
@@ -106,9 +108,13 @@ Eigen::Quaternion<double> ExpToQuat(const Eigen::Vector3d &exp);
 // World Orientation is R = Rz*Ry*Rx
 Eigen::Quaterniond EulerZYXtoQuat(const double roll, const double pitch,
                                   const double yaw);
+Eigen::Quaterniond EulerZYXtoQuat(const Eigen::Vector3d &rpy);
 
 // Quaternion to Euler ZYX
 Eigen::Vector3d QuatToEulerZYX(const Eigen::Quaterniond &quat_in);
+
+// Quaternion to Euler XYZ
+Eigen::Vector3d QuatToEulerXYZ(const Eigen::Quaterniond &quat_in);
 
 // ZYX extrinsic rotation rates to world angular velocity
 // angular vel = [wx, wy, wz]
@@ -122,6 +128,15 @@ Eigen::Vector3d RPYFromSO3(const Eigen::Matrix3d &R);
 
 // euler angles to rotation matrix
 Eigen::Matrix3d SO3FromRPY(double r, double p, double y);
+
+Eigen::Matrix3d CoordinateRotation(const CoordinateAxis axis,
+                                   const double theta);
+
+Eigen::Matrix3d RotMatrixToYawMatrix(const Eigen::Matrix3d &rot);
+Eigen::Matrix3d QuaternionToYawMatrix(Eigen::Quaterniond &quat);
+double QuaternionToYaw(const Eigen::Quaterniond &quat);
+void WrapYawToPi(Eigen::Quaterniond &quat);
+void WrapYawToPi(Eigen::Vector3d &rpy);
 
 void AvoidQuatJump(const Eigen::Quaternion<double> &des_ori,
                    Eigen::Quaternion<double> &act_ori);
@@ -143,10 +158,18 @@ void PseudoInverse(Eigen::MatrixXd const &matrix, double sigmaThreshold,
 Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd &matrix,
                               const double &threshold);
 
-Eigen::MatrixXd NullSpace(const Eigen::MatrixXd &J,
-                          const double threshold = 0.00001);
+Eigen::MatrixXd GetNullSpace(const Eigen::MatrixXd &J,
+                             const double threshold = 0.00001,
+                             const Eigen::MatrixXd *W = nullptr);
 
 Eigen::MatrixXd WeightedPseudoInverse(const Eigen::MatrixXd &J,
                                       const Eigen::MatrixXd &W,
                                       const double sigma_threshold = 0.0001);
+void WeightedPseudoInverse(const Eigen::MatrixXd &J, const Eigen::MatrixXd &W,
+                           const double sigma_threshold, Eigen::MatrixXd &Jinv);
+
+Eigen::MatrixXd HStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+Eigen::MatrixXd VStack(const Eigen::MatrixXd &a, const Eigen::MatrixXd &b);
+Eigen::MatrixXd BlockDiagonalMatrix(const Eigen::MatrixXd &a,
+                                    const Eigen::MatrixXd &b);
 } // namespace util
