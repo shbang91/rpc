@@ -3,7 +3,7 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/shbang91/rpc/linux.yml?branch=develop)](https://github.com/shbang91/rpc/actions)
 
 **RPC** is a Modular Framework for Robot Planning, Control, and Deployment. It is designed to integrate multiple physics-based simulators, planning and control modules, visualization tools, plotting and logging utilities, and operator interfaces for robotic systems.<br/>
-<img src="docs/images/draco_example.gif" width="100%"/>
+<img src="https://imgur.com/a/PzyTRZ2" width="100%"/>
 
 If you find our work useful in your research, please consider the following [citation](#book-citation).
 
