@@ -1,28 +1,34 @@
-# Robot Planning and Control (rpc)
+# Robot Planning, Control, and Deployment (rpc)
 
 [![Build](https://img.shields.io/github/actions/workflow/status/shbang91/rpc/linux.yml?branch=develop)](https://github.com/shbang91/rpc/actions)
 
-rpc is a software framework designed for generating task trajectories (planning) and tracking the trajectories (control) for legged systems.<br/>
+**RPC** is a Modular Framework for Robot Planning, Control, and Deployment. It is designed to integrate multiple physics-based simulators, planning and control modules, visualization tools, plotting and logging utilities, and operator interfaces for robotic systems.<br/>
 
-Software Framework is developed by Seung Hyeon Bang based on the [PnC](https://github.com/junhyeokahn/PnC) Repository.<br/>
 
-## Dependencies
-The controller has been tested on Ubuntu 18.04, Ubuntu 20.04, Ubuntu 23.04, and Mac OSX Ventura. It builds on the shoulders of the following software:<br/>
+## :package: Mandatory Dependencies
+The controller has been tested on Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04, and Mac OSX Sonoma. It builds on the shoulders of the following software:<br/>
 - [anaconda](https://docs.anaconda.com/anaconda/install/): For Pybullet simulator<br/>
 - python dependencies:
 ```
 $ conda env create -f rpc.yml
 ```
-- [conan](https://github.com/conan-io/conan): package manager for C/C++ (for Foxglove)
-- [pinocchio](https://github.com/shbang91/pinocchio): rigid body dynamics
+- [pinocchio](https://github.com/shbang91/pinocchio): Rigid body dynamics library
 
-###### optional dependencies
+## :newspaper_roll: Optional Dependencies
+#### :walking: MPC for Locomotion
+- [hpipm-cpp](https://github.com/shbang91/hpipm-cpp): C++ wrapper for HPIPM (QP solver). Note that **blasfo**, **hpipm**, and **hpipm-cpp** wrapper should be installed
+#### :pinching_hand: Teleoperation for Manipulation
+- [Teleoperation](): Please follow the instructions for installation and usage
+#### :toolbox: Utilities for Visualization, Plotting, Logging and Operator Interfaces
 - [MatLogger2](https://github.com/shbang91/MatLogger2): logging numeric data (cpp to MAT-files)
-- [zmq](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_zmq.sh): logging numeric data
-- [protobuf](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_protobuf.sh): logging numeric data
+- [zmq](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_zmq.sh): socket communication protocol
+- [protobuf](https://github.com/shbang91/rpc/blob/main/dependency/scripts/install_protobuf.sh): structured data serialization
+- [conan](https://github.com/conan-io/conan): package manager for C/C++ (for Foxglove)
 - [Foxglove](https://github.com/foxglove): websocket & schema protocols for robot visualization and parameter operations
 
-## Usage for PyBullet
+
+## :computer: Usage 
+#### PyBullet
 - Source conda environment:<br/>
 ```
 $ conda activate rpc
@@ -37,8 +43,23 @@ $ make -j4
 ```
 python simulator/pybullet/draco_main.py
 ```
-## Foxglove UI (optional)
-#### Build
+#### MuJoCo
+- Compile:<br/>
+```
+$ mkdir build && cd build
+$ cmake ..
+$ make -j4
+```
+- Run simulation:<br/>
+```
+./bin/run_draco
+```
+#### Keyboard Input
+- Please see the [example implementation](https://github.com/shbang91/rpc/blob/develop/controller/draco_controller/draco_interrupt_handler.cpp) for DRACO 3 
+
+## :tv: Visualization
+#### Foxglove UI (optional)
+###### Build
 - Source conda environment:<br/>
 ```
 $ conda activate rpc
@@ -52,7 +73,7 @@ $ cmake .. -DBUILD_WITH_ZMQ_PROTOBUF=ON -DBUILD_WITH_FOXGLOVE=ON
 $ make -j4
 ```
 
-#### Run
+###### Run
 ```
 $ conda env create -f visualize.yml
 $ conda activate visualize
@@ -64,8 +85,8 @@ $ python UI/foxglove/UI_launcher.py --visualizer=foxglove
 
 - To set up the Foxglove URDF visualizer, please refer to the Readme [in the UI folder](https://github.com/shbang91/rpc/tree/develop/UI/foxglove)
 
-## Meshcat Visualizer (optional)
-#### Run
+#### Meshcat Visualizer (optional)
+###### Run
 ```
 $ conda env create -f visualize.yml
 $ conda activate visualize
@@ -73,5 +94,5 @@ $ python UI/foxglove/UI_launcher.py --visualizer=meshcat
 ```
 
 
-## Hardware Usage
+## :robot: Hardware Usage
 - Please refer to this [repository](https://github.com/shbang91/draco3_nodelet) using rpc library
