@@ -102,7 +102,8 @@ $ python UI/foxglove/UI_launcher.py --visualizer=meshcat
 ```
 @misc{bang2024rpc,
     title={RPC: A Modular Framework for Robot Planning, Control, and Deployment},
-    author={Bang, Seung Hyeon and Gonzalez, Carlos and Moore, Gabriel and Kang, Dong Ho and Seo, Mingyo and Sentis, Luis},
+    author={Bang, Seung Hyeon and Gonzalez, Carlos and Moore, Gabriel and Kang, Dong Ho
+            and Seo, Mingyo and Sentis, Luis},
     year={2024}
     eprint={XXXX.XXXXXX},
     archivePrefix={arXiv},
