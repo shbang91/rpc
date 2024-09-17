@@ -105,9 +105,9 @@ $ python UI/foxglove/UI_launcher.py --visualizer=meshcat
     author={Bang, Seung Hyeon and Gonzalez, Carlos and Moore, Gabriel and Kang, Dong Ho
             and Seo, Mingyo and Sentis, Luis},
     year={2024}
-    eprint={XXXX.XXXXXX},
+    eprint={2409.10015},
     archivePrefix={arXiv},
     primaryClass={cs.RO},
-    url={}
+    url={https://arxiv.org/abs/2409.10015}
 }
 ```
