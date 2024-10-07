@@ -9,9 +9,12 @@ class Config(object):
     INITIAL_BASE_JOINT_QUAT = [0, 0, 0, 1]
     INITIAL_JOINT_POSITION = [
         deg2rad(0),
-        deg2rad(180), 0.0,
-        deg2rad(-90), 0.0,
-        deg2rad(-90), 0.0
+        deg2rad(180),
+        0.0,
+        deg2rad(-90),
+        0.0,
+        deg2rad(-90),
+        0.0,
     ]
 
     PRINT_ROBOT_INFO = True
@@ -70,5 +73,5 @@ class PlatoJointIdx(object):
 class ActuatorGains(object):
     # KP = [200., 200., 200., 200., 200., 200., 200.]
     # KD = [5., 5., 5., 5., 5., 5., 5.]
-    KP = [0., 0., 0., 0., 0., 0., 0.]
-    KD = [0., 0., 0., 0., 0., 0., 0.]
+    KP = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    KD = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

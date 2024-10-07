@@ -11,7 +11,7 @@ $ apt-get install libusb-1.0-0-dev xorg-dev libglu1-mesa-dev libglfw3 libglfw3-d
 $ git clone https://github.com/IntelRealSense/librealsense.git
 $ git checkout v2.53.1
 
-# Setting up authorizing USB devices (You may need "sudo" commands.) 
+# Setting up authorizing USB devices (You may need "sudo" commands.)
 $ cp config/99-realsense-libusb.rules /etc/udev/rules.d/
 
 # Build and install the driver
