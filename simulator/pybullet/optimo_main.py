@@ -1,5 +1,4 @@
 import pybullet as pb
-import time
 import os
 from loop_rate_limiters import RateLimiter
 
@@ -8,24 +7,18 @@ cwd = os.getcwd()
 import sys
 
 sys.path.append(cwd)
-sys.path.append(cwd + "/build/lib")  #include pybind module
+sys.path.append(cwd + "/build/lib")  # include pybind module
 
 import numpy as np
 
-import signal
-import shutil
-import cv2
 
 from config.optimo.sim.pybullet.ihwbc.pybullet_params import *
 from util.python_utils import pybullet_util
-from util.python_utils import util
-from util.python_utils import liegroup
 
 import optimo_interface_py
 
 
 def get_sensor_data_from_pybullet(robot):
-
     # Initialize sensor data
     joint_pos, joint_vel = np.zeros(7), np.zeros(7)
 
@@ -54,20 +47,27 @@ def get_sensor_data_from_pybullet(robot):
 
 
 def set_init_config_pybullet(robot):
-    pb.resetJointState(robot, OptimoJointIdx.joint1,
-                       Config.INITIAL_JOINT_POSITION[0], 0.0)
-    pb.resetJointState(robot, OptimoJointIdx.joint2,
-                       Config.INITIAL_JOINT_POSITION[1], 0.0)
-    pb.resetJointState(robot, OptimoJointIdx.joint3,
-                       Config.INITIAL_JOINT_POSITION[2], 0.0)
-    pb.resetJointState(robot, OptimoJointIdx.joint4,
-                       Config.INITIAL_JOINT_POSITION[3], 0.0)
-    pb.resetJointState(robot, OptimoJointIdx.joint5,
-                       Config.INITIAL_JOINT_POSITION[4], 0.0)
-    pb.resetJointState(robot, OptimoJointIdx.joint6,
-                       Config.INITIAL_JOINT_POSITION[5], 0.0)
-    pb.resetJointState(robot, OptimoJointIdx.joint7,
-                       Config.INITIAL_JOINT_POSITION[6], 0.0)
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint1, Config.INITIAL_JOINT_POSITION[0], 0.0
+    )
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint2, Config.INITIAL_JOINT_POSITION[1], 0.0
+    )
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint3, Config.INITIAL_JOINT_POSITION[2], 0.0
+    )
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint4, Config.INITIAL_JOINT_POSITION[3], 0.0
+    )
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint5, Config.INITIAL_JOINT_POSITION[4], 0.0
+    )
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint6, Config.INITIAL_JOINT_POSITION[5], 0.0
+    )
+    pb.resetJointState(
+        robot, OptimoJointIdx.joint7, Config.INITIAL_JOINT_POSITION[6], 0.0
+    )
     print("Initial Configuration Set")
 
 
@@ -80,7 +80,7 @@ def every_time_step(count, interval):
 
 
 def add_tf_visualization(robot, link_index):
-    #Add a visualization of the desired frame of the robot.
+    # Add a visualization of the desired frame of the robot.
     pos, ori = pb.getLinkState(robot, link_index)[0:2]
 
     # Define the axis unit vectors
@@ -110,34 +110,27 @@ def apply_control_input_to_pybullet(robot, command):
     mode = pb.TORQUE_CONTROL
 
     # Optimo Arm
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint1,
-                             controlMode=mode,
-                             force=command[0])
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint2,
-                             controlMode=mode,
-                             force=command[1])
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint3,
-                             controlMode=mode,
-                             force=command[2])
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint4,
-                             controlMode=mode,
-                             force=command[3])
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint5,
-                             controlMode=mode,
-                             force=command[4])
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint6,
-                             controlMode=mode,
-                             force=command[5])
-    pb.setJointMotorControl2(robot,
-                             OptimoJointIdx.joint7,
-                             controlMode=mode,
-                             force=command[6])
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint1, controlMode=mode, force=command[0]
+    )
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint2, controlMode=mode, force=command[1]
+    )
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint3, controlMode=mode, force=command[2]
+    )
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint4, controlMode=mode, force=command[3]
+    )
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint5, controlMode=mode, force=command[4]
+    )
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint6, controlMode=mode, force=command[5]
+    )
+    pb.setJointMotorControl2(
+        robot, OptimoJointIdx.joint7, controlMode=mode, force=command[6]
+    )
 
     # Plato Hand
     # pb.setJointMotorControl2(robot, PlatoJointIdx.joint1, controlMode=mode, force=command[7])
@@ -154,16 +147,19 @@ def apply_control_input_to_pybullet(robot, command):
 def main():
     # Pybullet Renderer
     pb.connect(pb.GUI)
-    pb.resetDebugVisualizerCamera(cameraDistance=1.5,
-                                  cameraYaw=0,
-                                  cameraPitch=-40,
-                                  cameraTargetPosition=[0, 0, 0.3])
+    pb.resetDebugVisualizerCamera(
+        cameraDistance=1.5,
+        cameraYaw=0,
+        cameraPitch=-40,
+        cameraTargetPosition=[0, 0, 0.3],
+    )
     pb.configureDebugVisualizer(pb.COV_ENABLE_GUI, 0)
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
     # Simulation Physics
-    pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
-                                 numSubSteps=Config.N_SUBSTEP)
+    pb.setPhysicsEngineParameter(
+        fixedTimeStep=Config.CONTROLLER_DT, numSubSteps=Config.N_SUBSTEP
+    )
     pb.setGravity(0, 0, -9.81)
 
     ## robot spawn & initial kinematics and dynamics setting
@@ -175,25 +171,37 @@ def main():
 
     # Load URDF
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    robot = pb.loadURDF(cwd + "/robot_model/optimo/optimo.urdf",
-                        Config.INITIAL_BASE_JOINT_POS,
-                        Config.INITIAL_BASE_JOINT_QUAT,
-                        useFixedBase=True)
-    ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
-                         useFixedBase=True)
+    robot = pb.loadURDF(
+        cwd + "/robot_model/optimo/optimo.urdf",
+        Config.INITIAL_BASE_JOINT_POS,
+        Config.INITIAL_BASE_JOINT_QUAT,
+        useFixedBase=True,
+    )
+    ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf", useFixedBase=True)
 
     # Initial joint configuration
     set_init_config_pybullet(robot)
 
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 1)
 
-    n_q, n_v, n_a, joint_id_dict, link_id_dict, pos_basejoint_to_basecom, rot_basejoint_to_basecom = pybullet_util.get_robot_config(
-        robot, Config.INITIAL_BASE_JOINT_POS, Config.INITIAL_BASE_JOINT_QUAT,
-        Config.PRINT_ROBOT_INFO)
+    (
+        n_q,
+        n_v,
+        n_a,
+        joint_id_dict,
+        link_id_dict,
+        pos_basejoint_to_basecom,
+        rot_basejoint_to_basecom,
+    ) = pybullet_util.get_robot_config(
+        robot,
+        Config.INITIAL_BASE_JOINT_POS,
+        Config.INITIAL_BASE_JOINT_QUAT,
+        Config.PRINT_ROBOT_INFO,
+    )
 
     # Joint Friction and Damping
     pybullet_util.set_joint_friction(robot, joint_id_dict, 0)
-    pybullet_util.set_link_damping(robot, link_id_dict, 0., 0.)
+    pybullet_util.set_link_damping(robot, link_id_dict, 0.0, 0.0)
 
     # Initialize RPC Interface
     rpc_optimo_interface = optimo_interface_py.OptimoInterface()
@@ -205,29 +213,28 @@ def main():
     rpc_optimo_sensor_data.base_quat_ = Config.INITIAL_BASE_JOINT_QUAT
 
     # Simulation Time Parameters
-    rate = RateLimiter(frequency=1. / dt)
+    rate = RateLimiter(frequency=1.0 / dt)
 
     #  Simulation Main Loop
     while True:
-
         ########################## Keyboard Interrupt ##########################
         keys = pb.getKeyboardEvents()
-        if pybullet_util.is_key_triggered(keys, '1'):
+        if pybullet_util.is_key_triggered(keys, "1"):
             rpc_optimo_interface.interrupt_.PressOne()
             print("Python: 1 Pressed")
-        elif pybullet_util.is_key_triggered(keys, '2'):
+        elif pybullet_util.is_key_triggered(keys, "2"):
             rpc_optimo_interface.interrupt_.PressTwo()
-        elif pybullet_util.is_key_triggered(keys, '4'):
+        elif pybullet_util.is_key_triggered(keys, "4"):
             rpc_optimo_interface.interrupt_.PressFour()
-        elif pybullet_util.is_key_triggered(keys, '5'):
+        elif pybullet_util.is_key_triggered(keys, "5"):
             rpc_optimo_interface.interrupt_.PressFive()
-        elif pybullet_util.is_key_triggered(keys, '6'):
+        elif pybullet_util.is_key_triggered(keys, "6"):
             rpc_optimo_interface.interrupt_.PressSix()
-        elif pybullet_util.is_key_triggered(keys, '7'):
+        elif pybullet_util.is_key_triggered(keys, "7"):
             rpc_optimo_interface.interrupt_.PressSeven()
-        elif pybullet_util.is_key_triggered(keys, '8'):
+        elif pybullet_util.is_key_triggered(keys, "8"):
             rpc_optimo_interface.interrupt_.PressEight()
-        elif pybullet_util.is_key_triggered(keys, '9'):
+        elif pybullet_util.is_key_triggered(keys, "9"):
             rpc_optimo_interface.interrupt_.PressNine()
 
         ########################## Sensor Update ##############################
@@ -235,8 +242,7 @@ def main():
         joint_pos, joint_vel = get_sensor_data_from_pybullet(robot)
         rpc_optimo_sensor_data.joint_pos_ = joint_pos
         rpc_optimo_sensor_data.joint_vel_ = joint_vel
-        rpc_optimo_interface.GetCommand(rpc_optimo_sensor_data,
-                                        rpc_optimo_command)
+        rpc_optimo_interface.GetCommand(rpc_optimo_sensor_data, rpc_optimo_command)
         ######################################################################
 
         ########################## Command Update ##############################
@@ -252,9 +258,11 @@ def main():
         # print("Command vel: ", rpc_joint_vel_command, end="\r")
 
         # t_cmd = t_ff + kp(e) + kd(e_dot)
-        joint_impedance_command = rpc_trq_command + ActuatorGains.KP * (
-            rpc_joint_pos_command -
-            joint_pos) + ActuatorGains.KD * (rpc_joint_vel_command - joint_vel)
+        joint_impedance_command = (
+            rpc_trq_command
+            + ActuatorGains.KP * (rpc_joint_pos_command - joint_pos)
+            + ActuatorGains.KD * (rpc_joint_vel_command - joint_vel)
+        )
         apply_control_input_to_pybullet(robot, joint_impedance_command)
         ######################################################################
 
