@@ -14,7 +14,7 @@ contact_detection:
   b_debug_only_log: true
   b_use_contact_sensor: true
   b_use_foot_height: true
-  volt_to_force_map: [-10000, -10000]   # [-10588, -5000]
+  volt_to_force_map: [-10000, -10000]   # [-10588, -5000] 
   volt_bias: [25000, 25000]             # [26471, 12500]
 
   schmitt_thresholds: [10, 40]    # [N]

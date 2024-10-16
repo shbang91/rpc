@@ -7,6 +7,8 @@ class Config(object):
 
     INITIAL_BASE_JOINT_POS = [0, 0, 0.35]
     INITIAL_BASE_JOINT_QUAT = [0, 0, 0, 1]
+    INITIAL_CYLINDER_BASE_JOINT_POS = [0, 0, 3.35]
+    INITIAL_CYLINDER_BASE_JOINT_QUAT = [0, 0, 0, 1]
 
     PRINT_ROBOT_INFO = True
 

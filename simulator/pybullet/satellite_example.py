@@ -332,28 +332,20 @@ if __name__ == "__main__":
     ## sim physics setting
     pb.setPhysicsEngineParameter(fixedTimeStep=Config.CONTROLLER_DT,
                                  numSubSteps=Config.N_SUBSTEP)
-    pb.setGravity(0, 0, -9.81)
+    pb.setGravity(0, 0, 0)
 
     ## robot spawn & initial kinematics and dynamics setting
     pb.configureDebugVisualizer(pb.COV_ENABLE_RENDERING, 0)
-    # draco_humanoid = pb.loadURDF(cwd + "/robot_model/draco/draco_modified.urdf",
+    # cylinder_robot = pb.loadURDF(cwd + "/robot_model/draco/draco_modified.urdf",
     # Config.INITIAL_BASE_JOINT_POS,
     # Config.INITIAL_BASE_JOINT_QUAT,
     # useFixedBase=0)
-    draco_humanoid = pb.loadURDF(
-        cwd + "/robot_model/draco/draco_latest_collisions.urdf",
+    cylinder_robot = pb.loadURDF(
+        cwd + "/robot_model/cylinder.urdf",
         Config.INITIAL_BASE_JOINT_POS,
         Config.INITIAL_BASE_JOINT_QUAT,
         useFixedBase=0,
     )
-
-    cylinder_robot = pb.loadURDF(
-        cwd + "/robot_model/cylinder.urdf",
-        Config.INITIAL_CYLINDER_BASE_JOINT_POS,
-        Config.INITIAL_BASE_JOINT_QUAT,
-        useFixedBase=0,
-    )
-
 
     ground = pb.loadURDF(cwd + "/robot_model/ground/plane.urdf",
                          useFixedBase=1)
@@ -369,44 +361,19 @@ if __name__ == "__main__":
         pos_basejoint_to_basecom,
         rot_basejoint_to_basecom,
     ) = pybullet_util.get_robot_config(
-        draco_humanoid,
+        cylinder_robot,
         Config.INITIAL_BASE_JOINT_POS,
         Config.INITIAL_BASE_JOINT_QUAT,
         Config.PRINT_ROBOT_INFO,
     )
 
     # robot initial config setting
-    set_init_config_pybullet_robot(draco_humanoid)
+    # set_init_config_pybullet_robot(cylinder_robot)
 
     # robot joint and link dynamics setting
     # TODO:modify this function without dictionary container
-    pybullet_util.set_joint_friction(draco_humanoid, joint_id_dict, 0)
-    pybullet_util.set_link_damping(draco_humanoid, link_id_dict, 0.0, 0.0)
-
-    ## rolling contact joint constraint
-    c1 = pb.createConstraint(
-        draco_humanoid,
-        DracoLinkIdx.l_knee_fe_lp,
-        draco_humanoid,
-        DracoLinkIdx.l_knee_fe_ld,
-        jointType=pb.JOINT_GEAR,
-        jointAxis=[0, 1, 0],
-        parentFramePosition=[0, 0, 0],
-        childFramePosition=[0, 0, 0],
-    )
-    pb.changeConstraint(c1, gearRatio=-1, maxForce=500, erp=10)
-
-    c2 = pb.createConstraint(
-        draco_humanoid,
-        DracoLinkIdx.r_knee_fe_lp,
-        draco_humanoid,
-        DracoLinkIdx.r_knee_fe_ld,
-        jointType=pb.JOINT_GEAR,
-        jointAxis=[0, 1, 0],
-        parentFramePosition=[0, 0, 0],
-        childFramePosition=[0, 0, 0],
-    )
-    pb.changeConstraint(c2, gearRatio=-1, maxForce=500, erp=10)
+    pybullet_util.set_joint_friction(cylinder_robot, joint_id_dict, 0)
+    pybullet_util.set_link_damping(cylinder_robot, link_id_dict, 0.0, 0.0)
 
     # pnc interface, sensor_data, command class
     rpc_draco_interface = draco_interface_py.DracoInterface()
@@ -414,13 +381,10 @@ if __name__ == "__main__":
     rpc_draco_sensor_data = draco_interface_py.DracoSensorData()
     rpc_draco_command = draco_interface_py.DracoCommand()
 
-    # TODO
-    # active jointidx list in sequence
-    active_jointidx_list = []  # for setjointmotorcontrolarray
 
     # default robot kinematics information
     base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
-        draco_humanoid)
+        cylinder_robot)
     rot_world_basecom = util.quat_to_rot(np.array(base_com_quat))
     rot_world_basejoint = util.quat_to_rot(
         np.array(Config.INITIAL_BASE_JOINT_QUAT))
@@ -459,21 +423,21 @@ if __name__ == "__main__":
         ############################################################
         # Moving Camera Setting
         ############################################################
-        base_pos, base_ori = pb.getBasePositionAndOrientation(draco_humanoid)
-        # pb.resetDebugVisualizerCamera(
-        #     cameraDistance=1.5,
-        #     cameraYaw=120,
-        #     cameraPitch=-30,
-        #     cameraTargetPosition=base_pos +
-        #     np.array([0.5, 0.3, -base_pos[2] + 1]),
-        # )
+        base_pos, base_ori = pb.getBasePositionAndOrientation(cylinder_robot)
+        pb.resetDebugVisualizerCamera(
+            cameraDistance=1.5,
+            cameraYaw=120,
+            cameraPitch=-30,
+            cameraTargetPosition=base_pos +
+            np.array([0.5, 0.3, -base_pos[2] + 1]),
+        )
 
         ###############################################################################
         # Debugging Purpose
         ##############################################################################
         ##debugging state estimator by calculating groundtruth basejoint states
         base_com_pos, base_com_quat = pb.getBasePositionAndOrientation(
-            draco_humanoid)
+            cylinder_robot)
         rot_world_basecom = util.quat_to_rot(base_com_quat)
         rot_world_basejoint = np.dot(rot_world_basecom,
                                      rot_basejoint_to_basecom.transpose())
@@ -481,7 +445,7 @@ if __name__ == "__main__":
                                                pos_basejoint_to_basecom)
         base_joint_quat = util.rot_to_quat(rot_world_basejoint)
 
-        base_com_lin_vel, base_com_ang_vel = pb.getBaseVelocity(draco_humanoid)
+        base_com_lin_vel, base_com_ang_vel = pb.getBaseVelocity(cylinder_robot)
         trans_joint_com = liegroup.RpToTrans(rot_basejoint_to_basecom,
                                              pos_basejoint_to_basecom)
         adjoint_joint_com = liegroup.Adjoint(trans_joint_com)
@@ -549,7 +513,7 @@ if __name__ == "__main__":
             b_rf_contact,
             l_normal_force,
             r_normal_force,
-        ) = get_sensor_data_from_pybullet(draco_humanoid)
+        ) = get_sensor_data_from_pybullet(cylinder_robot)
         l_normal_force = pybullet_util.simulate_contact_sensor(l_normal_force)
         r_normal_force = pybullet_util.simulate_contact_sensor(r_normal_force)
         imu_dvel = pybullet_util.add_sensor_noise(imu_dvel, imu_dvel_bias)
@@ -591,15 +555,15 @@ if __name__ == "__main__":
         rpc_joint_vel_command = rpc_draco_command.joint_vel_cmd_
 
         # apply command to pybullet robot
-        apply_control_input_to_pybullet(draco_humanoid, rpc_trq_command)
+        apply_control_input_to_pybullet(cylinder_robot, rpc_trq_command)
 
-        # lfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+        # lfoot_pos = pybullet_util.get_link_iso(cylinder_robot,
         # save current torso velocity for next iteration
         previous_torso_velocity = pybullet_util.get_link_vel(
-            draco_humanoid, link_id_dict["torso_imu"])[3:6]
+            cylinder_robot, link_id_dict["torso_imu"])[3:6]
 
         # DracoLinkIdx.l_foot_contact)[0:3, 3]
-        # rfoot_pos = pybullet_util.get_link_iso(draco_humanoid,
+        # rfoot_pos = pybullet_util.get_link_iso(cylinder_robot,
         # DracoLinkIdx.r_foot_contact)[0:3, 3]
         # print("------------------------------------")
         # print(rfoot_pos[1] - lfoot_pos[1])

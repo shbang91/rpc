@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot name="cylinder">
+
+  <material name = "dark_gray">
+    <color rgba="0.3 0.3 0.3 1"/>
+  </material>
+
+  <material name = "gray">
+    <color rgba="0.5 0.5 0.5 1"/>
+  </material>
+
+  <material name = "light_blue">
+    <color rgba="0.52 0.73 1 1"/>
+  </material>
+
+  <material name = "black">
+    <color rgba="0 0 0 1"/>
+  </material>
+
+  <material name = "white">
+    <color rgba="0.8 0.8 0.8 1"/>
+  </material>
+
+  <!--=============================== root (torso) ===========================-->
+  <link name="torso_link">
+    <visual>
+      <origin rpy="0 -0 0" xyz="0 0 0"/>
+      <geometry>
+        <!--<mesh filename="package://meshes/torso_link.stl"/>-->
+        <cylinder radius="0.5" length="2"/>
+      </geometry>
+      <!--<material name="white"/>-->
+    </visual>
+    <collision>
+      <origin rpy="0 -0 0" xyz="0 0 0"/>
+      <geometry>
+        <!--<mesh filename="package://meshes/torso_link.stl"/>-->
+        <cylinder radius="0.5" length="2"/>
+      </geometry>
+      <!--<material name="white"/>-->
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="-31.658e-03 -0.03865e-03 125.19e-03"/>
+      <mass value="6.456"/>
+      <inertia ixx="178517.35e-06" ixy="-18.968e-06" ixz="28376.527e-06" iyy="181767.801e-06" iyz="-50.398e-06" izz="37147.31e-06"/>
+    </inertial>
+  </link>
+
+  <!--=============================== torso_imu_frame (torso_imu) ===========================-->
+  <!-- <joint name="torso_imu_frame" type="fixed">
+    <origin rpy="3.14159 0 3.14159" xyz="0 0 -0.09"/>
+    <parent link="torso_link"/>
+    <child link="torso_imu"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  <link name="torso_imu">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link> -->
+</robot>
