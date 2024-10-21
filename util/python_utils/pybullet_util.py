@@ -14,10 +14,7 @@ from util.python_utils import liegroup
 np.set_printoptions(precision=5)
 
 
-def get_robot_config(robot,
-                     initial_pos=None,
-                     initial_quat=None,
-                     b_print_info=False):
+def get_robot_config(robot, initial_pos=None, initial_quat=None, b_print_info=False):
     nq, nv, na, joint_id, link_id = 0, 0, 0, OrderedDict(), OrderedDict()
     link_id[(pb.getBodyInfo(robot)[0]).decode("utf-8")] = -1
     for i in range(pb.getNumJoints(robot)):
@@ -34,13 +31,12 @@ def get_robot_config(robot,
     base_pos, base_quat = pb.getBasePositionAndOrientation(robot)
     rot_world_com = util.quat_to_rot(base_quat)
     initial_pos = [0.0, 0.0, 0.0] if initial_pos is None else initial_pos
-    initial_quat = [0.0, 0.0, 0.0, 1.0
-                    ] if initial_quat is None else initial_quat
+    initial_quat = [0.0, 0.0, 0.0, 1.0] if initial_quat is None else initial_quat
     rot_world_basejoint = util.quat_to_rot(np.array(initial_quat))
-    pos_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
-                                      base_pos - np.array(initial_pos))
-    rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(),
-                                      rot_world_com)
+    pos_basejoint_to_basecom = np.dot(
+        rot_world_basejoint.transpose(), base_pos - np.array(initial_pos)
+    )
+    rot_basejoint_to_basecom = np.dot(rot_world_basejoint.transpose(), rot_world_com)
 
     if b_print_info:
         print("=" * 80)
@@ -76,8 +72,9 @@ def get_robot_config(robot,
     )
 
 
-def get_kinematics_config(robot, joint_id, link_id, open_chain_joints,
-                          base_link, ee_link):
+def get_kinematics_config(
+    robot, joint_id, link_id, open_chain_joints, base_link, ee_link
+):
     joint_screws_in_ee = np.zeros((6, len(open_chain_joints)))
     ee_link_state = pb.getLinkState(robot, link_id[ee_link], 1, 1)
     if link_id[base_link] == -1:
@@ -85,10 +82,12 @@ def get_kinematics_config(robot, joint_id, link_id, open_chain_joints,
     else:
         base_link_state = pb.getLinkState(robot, link_id[base_link], 1, 1)
         base_pos, base_quat = base_link_state[0], base_link_state[1]
-    T_w_b = liegroup.RpToTrans(util.quat_to_rot(np.array(base_quat)),
-                               np.array(base_pos))
-    T_w_ee = liegroup.RpToTrans(util.quat_to_rot(np.array(ee_link_state[1])),
-                                np.array(ee_link_state[0]))
+    T_w_b = liegroup.RpToTrans(
+        util.quat_to_rot(np.array(base_quat)), np.array(base_pos)
+    )
+    T_w_ee = liegroup.RpToTrans(
+        util.quat_to_rot(np.array(ee_link_state[1])), np.array(ee_link_state[0])
+    )
     T_b_ee = np.dot(liegroup.TransInv(T_w_b), T_w_ee)
     for i, joint_name in enumerate(open_chain_joints):
         joint_info = pb.getJointInfo(robot, joint_id[joint_name])
@@ -97,8 +96,9 @@ def get_kinematics_config(robot, joint_id, link_id, open_chain_joints,
         joint_axis = joint_info[13]
         screw_at_joint = np.zeros(6)
         link_state = pb.getLinkState(robot, link_id[link_name], 1, 1)
-        T_w_j = liegroup.RpToTrans(util.quat_to_rot(np.array(link_state[5])),
-                                   np.array(link_state[4]))
+        T_w_j = liegroup.RpToTrans(
+            util.quat_to_rot(np.array(link_state[5])), np.array(link_state[4])
+        )
         T_ee_j = np.dot(liegroup.TransInv(T_w_ee), T_w_j)
         Adj_ee_j = liegroup.Adjoint(T_ee_j)
         if joint_type == pb.JOINT_REVOLUTE:
@@ -131,10 +131,9 @@ def get_link_vel(robot, link_idx):
 
 def set_link_damping(robot, link_id, lin_damping, ang_damping):
     for i in link_id.values():
-        pb.changeDynamics(robot,
-                          i,
-                          linearDamping=lin_damping,
-                          angularDamping=ang_damping)
+        pb.changeDynamics(
+            robot, i, linearDamping=lin_damping, angularDamping=ang_damping
+        )
 
 
 def set_joint_friction(robot, joint_id, max_force=0):
@@ -189,16 +188,17 @@ def draw_link_frame(robot, link_idx, linewidth=5.0, text=None):
 def set_motor_impedance(robot, joint_id, command, kp, kd):
     trq_applied = OrderedDict()
     for (joint_name, pos_des), (_, vel_des), (_, trq_des) in zip(
-            command["joint_positions_cmd_"].items(),
-            command["joint_velocities_cmd_"].items(),
-            command["joint_torques_cmd_"].items(),
+        command["joint_positions_cmd_"].items(),
+        command["joint_velocities_cmd_"].items(),
+        command["joint_torques_cmd_"].items(),
     ):
         joint_state = pb.getJointState(robot, joint_id[joint_name])
         joint_pos, joint_vel = joint_state[0], joint_state[1]
-        trq_applied[joint_id[joint_name]] = (trq_des + kp[joint_name] *
-                                             (pos_des - joint_pos) +
-                                             kd[joint_name] *
-                                             (vel_des - joint_vel))
+        trq_applied[joint_id[joint_name]] = (
+            trq_des
+            + kp[joint_name] * (pos_des - joint_pos)
+            + kd[joint_name] * (vel_des - joint_vel)
+        )
 
     pb.setJointMotorControlArray(
         robot,
@@ -237,8 +237,7 @@ def set_motor_pos(robot, joint_id, pos_cmd):
 def set_motor_pos_vel(robot, joint_id, pos_cmd, vel_cmd):
     pos_applied = OrderedDict()
     vel_applied = OrderedDict()
-    for (joint_name, pos_des), (_, vel_des) in zip(pos_cmd.items(),
-                                                   vel_cmd.items()):
+    for (joint_name, pos_des), (_, vel_des) in zip(pos_cmd.items(), vel_cmd.items()):
         pos_applied[joint_id[joint_name]] = pos_des
         vel_applied[joint_id[joint_name]] = vel_des
 
@@ -251,8 +250,9 @@ def set_motor_pos_vel(robot, joint_id, pos_cmd, vel_cmd):
     )
 
 
-def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
-                    rot_basejoint_to_basecom):
+def get_sensor_data(
+    robot, joint_id, link_id, pos_basejoint_to_basecom, rot_basejoint_to_basecom
+):
     """
     Parameters
     ----------
@@ -306,13 +306,14 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
     sensor_data["base_com_ang_vel"] = np.asarray(base_com_ang_vel)
 
     rot_world_com = util.quat_to_rot(np.copy(sensor_data["base_com_quat"]))
-    rot_world_joint = np.dot(rot_world_com,
-                             rot_basejoint_to_basecom.transpose())
+    rot_world_joint = np.dot(rot_world_com, rot_basejoint_to_basecom.transpose())
     sensor_data["base_joint_pos"] = sensor_data["base_com_pos"] - np.dot(
-        rot_world_joint, pos_basejoint_to_basecom)
+        rot_world_joint, pos_basejoint_to_basecom
+    )
     sensor_data["base_joint_quat"] = util.rot_to_quat(rot_world_joint)
-    trans_joint_com = liegroup.RpToTrans(rot_basejoint_to_basecom,
-                                         pos_basejoint_to_basecom)
+    trans_joint_com = liegroup.RpToTrans(
+        rot_basejoint_to_basecom, pos_basejoint_to_basecom
+    )
     adT_joint_com = liegroup.Adjoint(trans_joint_com)
     twist_com_in_world = np.zeros(6)
     twist_com_in_world[0:3] = np.copy(sensor_data["base_com_ang_vel"])
@@ -322,8 +323,7 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
     augrot_com_world[3:6, 3:6] = rot_world_com.transpose()
     twist_com_in_com = np.dot(augrot_com_world, twist_com_in_world)
     twist_joint_in_joint = np.dot(adT_joint_com, twist_com_in_com)
-    rot_world_joint = np.dot(rot_world_com,
-                             rot_basejoint_to_basecom.transpose())
+    rot_world_joint = np.dot(rot_world_com, rot_basejoint_to_basecom.transpose())
     augrot_world_joint = np.zeros((6, 6))
     augrot_world_joint[0:3, 0:3] = rot_world_joint
     augrot_world_joint[3:6, 3:6] = rot_world_joint
@@ -344,7 +344,7 @@ def get_sensor_data(robot, joint_id, link_id, pos_basejoint_to_basecom,
 
 def simulate_dVel_data(robot, link_id, previous_link_velocity):
     # calculate imu acceleration in world frame by numerical differentiation
-    torso_dvel = (get_link_vel(robot, link_id)[3:6] - previous_link_velocity)
+    torso_dvel = get_link_vel(robot, link_id)[3:6] - previous_link_velocity
 
     return torso_dvel
 
@@ -363,11 +363,11 @@ def simulate_contact_sensor(force_sensor_measurement):
     return (force_sensor_measurement - voltage_bias) / voltage_to_force_map
 
 
-def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
-                               nearval, farval):
+def get_camera_image_from_link(
+    robot, link, pic_width, pic_height, fov, nearval, farval
+):
     aspect = pic_width / pic_height
-    projection_matrix = pb.computeProjectionMatrixFOV(fov, aspect, nearval,
-                                                      farval)
+    projection_matrix = pb.computeProjectionMatrixFOV(fov, aspect, nearval, farval)
     link_info = pb.getLinkState(robot, link, 1, 1)  # Get head link info
     link_pos = link_info[0]  # Get link com pos wrt world
     link_ori = link_info[1]  # Get link com ori wrt world
@@ -380,8 +380,9 @@ def get_camera_image_from_link(robot, link, pic_width, pic_height, fov,
     camera_eye_pos = link_pos + np.dot(rot, 0.1 * global_camera_x_unit)
     camera_target_pos = link_pos + np.dot(rot, 1.0 * global_camera_x_unit)
     camera_up_vector = np.dot(rot, global_camera_z_unit)
-    view_matrix = pb.computeViewMatrix(camera_eye_pos, camera_target_pos,
-                                       camera_up_vector)  # SE3_camera_to_world
+    view_matrix = pb.computeViewMatrix(
+        camera_eye_pos, camera_target_pos, camera_up_vector
+    )  # SE3_camera_to_world
     width, height, rgb_img, depth_img, seg_img = pb.getCameraImage(
         pic_width,  # image width
         pic_height,  # image height
@@ -406,8 +407,7 @@ def add_sensor_noise(measurement, noise):
 
 def make_video(video_dir, delete_jpgs=True):
     images = []
-    for file in tqdm(sorted(os.listdir(video_dir)),
-                     desc="converting jpgs to gif"):
+    for file in tqdm(sorted(os.listdir(video_dir)), desc="converting jpgs to gif"):
         filename = video_dir + "/" + file
         im = cv2.imread(filename)
         im = im[:, :, [2, 1, 0]]  # << BGR to RGB
@@ -492,23 +492,20 @@ def set_config(robot, joint_id, base_pos, base_quat, joint_pos):
         pb.resetJointState(robot, joint_id[k], v, 0.0)
 
 
-def get_point_cloud_data(depth_buffer, view_matrix, projection_matrix, d_hor,
-                         d_ver):
+def get_point_cloud_data(depth_buffer, view_matrix, projection_matrix, d_hor, d_ver):
     view_matrix = np.asarray(view_matrix).reshape([4, 4], order="F")
-    projection_matrix = np.asarray(projection_matrix).reshape([4, 4],
-                                                              order="F")
-    trans_world_to_pix = np.linalg.inv(
-        np.matmul(projection_matrix, view_matrix))
+    projection_matrix = np.asarray(projection_matrix).reshape([4, 4], order="F")
+    trans_world_to_pix = np.linalg.inv(np.matmul(projection_matrix, view_matrix))
     # trans_camera_to_pix = np.linalg.inv(projection_matrix)
     img_height = (depth_buffer.shape)[0]
     img_width = (depth_buffer.shape)[1]
 
     wf_point_cloud_data = np.empty(
-        [np.int(img_height / d_ver),
-         np.int(img_width / d_hor), 3])
+        [np.int(img_height / d_ver), np.int(img_width / d_hor), 3]
+    )
     cf_point_cloud_data = np.empty(
-        [np.int(img_height / d_ver),
-         np.int(img_width / d_hor), 3])
+        [np.int(img_height / d_ver), np.int(img_width / d_hor), 3]
+    )
 
     for h in range(0, img_height, d_ver):
         for w in range(0, img_width, d_hor):
@@ -518,14 +515,12 @@ def get_point_cloud_data(depth_buffer, view_matrix, projection_matrix, d_hor,
             pix_pos = np.asarray([x, y, z, 1])
             point_in_world = np.matmul(trans_world_to_pix, pix_pos)
             # point_in_camera = np.matmul(trans_camera_to_pix, pix_pos)
-            wf_point_cloud_data[np.int(h / d_ver),
-                                np.int(w / d_hor), :] = (
-                                    point_in_world /
-                                    point_in_world[3])[:3]  # world frame
+            wf_point_cloud_data[np.int(h / d_ver), np.int(w / d_hor), :] = (
+                point_in_world / point_in_world[3]
+            )[:3]  # world frame
 
-            cf_point_cloud_data[np.int(h / d_ver),
-                                np.int(w / d_hor), :] = (
-                                    point_in_world /
-                                    point_in_world[3])[:3]  # camera frame
+            cf_point_cloud_data[np.int(h / d_ver), np.int(w / d_hor), :] = (
+                point_in_world / point_in_world[3]
+            )[:3]  # camera frame
 
     return wf_point_cloud_data, cf_point_cloud_data

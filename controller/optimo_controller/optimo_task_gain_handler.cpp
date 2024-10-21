@@ -6,7 +6,8 @@
 #include "controller/whole_body_controller/task.hpp"
 #include "util/util.hpp"
 
-OptimoTaskGainHandler::OptimoTaskGainHandler(OptimoControlArchitecture *ctrl_arch)
+OptimoTaskGainHandler::OptimoTaskGainHandler(
+    OptimoControlArchitecture *ctrl_arch)
     : ctrl_arch_(ctrl_arch), b_signal_received_(false), b_first_visit_(false),
       b_com_xy_task_(false), count_(0) {
 
@@ -18,9 +19,9 @@ OptimoTaskGainHandler::OptimoTaskGainHandler(OptimoControlArchitecture *ctrl_arc
 }
 
 void OptimoTaskGainHandler::Trigger(const std::string &task_name,
-                                   const Eigen::VectorXd &weight,
-                                   const Eigen::VectorXd &kp,
-                                   const Eigen::VectorXd &kd) {
+                                    const Eigen::VectorXd &weight,
+                                    const Eigen::VectorXd &kp,
+                                    const Eigen::VectorXd &kd) {
   task_name_ = task_name;
   if (!_TaskExists(task_name_))
     return;
@@ -33,10 +34,10 @@ void OptimoTaskGainHandler::Trigger(const std::string &task_name,
 }
 
 void OptimoTaskGainHandler::Trigger(const std::string &task_name,
-                                   const Eigen::VectorXd &weight,
-                                   const Eigen::VectorXd &kp,
-                                   const Eigen::VectorXd &kd,
-                                   const Eigen::VectorXd &ki) {
+                                    const Eigen::VectorXd &weight,
+                                    const Eigen::VectorXd &kp,
+                                    const Eigen::VectorXd &kd,
+                                    const Eigen::VectorXd &ki) {
   task_name_ = task_name;
   if (!_TaskExists(task_name_))
     return;
