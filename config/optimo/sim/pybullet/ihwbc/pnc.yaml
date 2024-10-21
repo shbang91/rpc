@@ -59,7 +59,7 @@ wbc:
 state_machine:
   initialize:
     duration: 2.
-    wait_time: 0. 
+    wait_time: 0.
     target_joint_pos: [0.0, 3.665191429188092, 0.0, -2.0943951023931953, 0.0, -1.0471975511965976, 0.0]
     b_stay_here: false
 
