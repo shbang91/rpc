@@ -4,20 +4,22 @@ This assumes a specific set of parameters available in the pkl file,
 such as time, base_pos, base_ori, joint_positions, icp_est, icp_des, etc.
 """
 
-import os
-import sys
 import argparse
+import os
 import pickle
-import pinocchio as pin
+import sys
+
 import numpy as np
+import pinocchio as pin
+from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
+from foxglove_schemas_protobuf.Point2_pb2 import Point2
+from foxglove_schemas_protobuf.Point3_pb2 import Point3
+from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
 
 # foxglove + mcap tools for visualization
 from mcap_protobuf.writer import Writer
-from UI.visualization_toolbox import update_robot_transform, update_2d_transform
-from foxglove_schemas_protobuf.Point2_pb2 import Point2
-from foxglove_schemas_protobuf.Point3_pb2 import Point3
-from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
-from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
+
+from UI.visualization_toolbox import update_2d_transform, update_robot_transform
 
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -98,9 +100,10 @@ def main():
     icp_des_scene = create_sphere_scene("icp_des", [0.0, 1.0, 0.0, 0.5])
 
     # send data to mcap file
-    with open(cwd + "/experiment_data/draco3_foxglove.mcap", "wb") as f, Writer(
-        f
-    ) as mcap_writer:
+    with (
+        open(cwd + "/experiment_data/draco3_foxglove.mcap", "wb") as f,
+        Writer(f) as mcap_writer,
+    ):
         for i in range(len(time)):
             # Update all transforms (to visualize URDF)
             vis_q[0:3] = np.array(base_pos[i])
