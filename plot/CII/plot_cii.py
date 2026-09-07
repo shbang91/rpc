@@ -1,10 +1,11 @@
-import os
-import sys
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pickle
 import argparse
+import os
+import pickle
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 
 cwd = os.getcwd()
 sys.path.append(cwd)

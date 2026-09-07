@@ -1,9 +1,10 @@
 import os
-import sys
 import pickle
-import numpy as np
+import sys
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 from plot.helper import plot_vector_traj
 

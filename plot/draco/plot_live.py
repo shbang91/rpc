@@ -1,11 +1,12 @@
 import os
-import sys
 import pickle
-import numpy as np
+import sys
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 # import pandas as pd
 # import seaborn as sns
-
 from matplotlib.animation import FFMpegWriter
 
 # matplotlib.use('TkAgg')

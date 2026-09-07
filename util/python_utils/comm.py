@@ -1,15 +1,16 @@
-import time
-import zmq
-import pickle
 import copy
 import ctypes
+import pickle
+import time
+from multiprocessing import Manager, Process, Value
+
 import numpy as np
-from multiprocessing import Process, Value, Manager
+import zmq
 
 INIT_POSE = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 
 
-class ZMQServer(object):
+class ZMQServer:
     def __init__(self, ip, sub_port, pub_port, logger_fn=print, verbose=False):
         self.ip = ip
         self.pub_port = pub_port
@@ -30,7 +31,7 @@ class ZMQServer(object):
     def _publish(self):
         context = zmq.Context()
         pub_socket = context.socket(zmq.PUB)
-        pub_socket.bind("tcp://{}:{}".format(self.ip, self.pub_port))
+        pub_socket.bind(f"tcp://{self.ip}:{self.pub_port}")
         self._logger_fn("Publishing Socket is running...")
 
         while self._running.value:
@@ -41,12 +42,10 @@ class ZMQServer(object):
             pub_socket.send(msg)
             if self._verbose:
                 self._logger_fn(
-                    "[{:.2f}] Publishing message...".format(
-                        time.time() - self._init_time
-                    )
+                    f"[{time.time() - self._init_time:.2f}] Publishing message..."
                 )
                 for key, val in self._cmd.items():
-                    self._logger_fn("{}: {}".format(key, val))
+                    self._logger_fn(f"{key}: {val}")
             self._cmd.clear()
 
         pub_socket.close()
@@ -57,7 +56,7 @@ class ZMQServer(object):
         sub_socket = context.socket(zmq.SUB)
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"")
         sub_socket.setsockopt(zmq.RCVBUF, 0)
-        sub_socket.bind("tcp://{}:{}".format(self.ip, self.sub_port))
+        sub_socket.bind(f"tcp://{self.ip}:{self.sub_port}")
         self._logger_fn("Subscription Socket is running...")
 
         while self._running.value:
@@ -66,10 +65,10 @@ class ZMQServer(object):
             self._obs.update(obs)
             if self._verbose:
                 self._logger_fn(
-                    "[{:.2f}] Recieved message...".format(time.time() - self._init_time)
+                    f"[{time.time() - self._init_time:.2f}] Recieved message..."
                 )
                 for key, val in self._obs.items():
-                    self._logger_fn("{}: {}".format(key, val))
+                    self._logger_fn(f"{key}: {val}")
 
         sub_socket.close()
         self._logger_fn("Subscription Socket is closed...")
@@ -110,7 +109,7 @@ class ZMQServer(object):
         return copy.deepcopy(self._obs)
 
 
-class ZMQClient(object):
+class ZMQClient:
     def __init__(self, ip, sub_port, pub_port, logger_fn=print):
         self.ip = ip
         self.pub_port = pub_port
@@ -132,7 +131,7 @@ class ZMQClient(object):
     def _publish(self):
         context = zmq.Context()
         pub_socket = context.socket(zmq.PUB)
-        pub_socket.connect("tcp://{}:{}".format(self.ip, self.pub_port))
+        pub_socket.connect(f"tcp://{self.ip}:{self.pub_port}")
         self._logger_fn("Publishing Socket is running...")
 
         while self._running.value:
@@ -141,9 +140,7 @@ class ZMQClient(object):
             obs = {key: value for key, value in self._obs.items()}
             msg = pickle.dumps(obs)
             pub_socket.send(msg)
-            self._logger_fn(
-                "[{}] Publishing message...".format(time.time() - self._init_time)
-            )
+            self._logger_fn(f"[{time.time() - self._init_time}] Publishing message...")
             self._logger_fn(self._obs.items())
             self._obs.clear()
 
@@ -155,16 +152,14 @@ class ZMQClient(object):
         sub_socket = context.socket(zmq.SUB)
         sub_socket.setsockopt(zmq.SUBSCRIBE, b"")
         sub_socket.setsockopt(zmq.RCVBUF, 0)
-        sub_socket.connect("tcp://{}:{}".format(self.ip, self.sub_port))
+        sub_socket.connect(f"tcp://{self.ip}:{self.sub_port}")
         self._logger_fn("Subscription Socket is running...")
 
         while self._running.value:
             data = sub_socket.recv()
             cmd = pickle.loads(data)
             self._cmd.update(cmd)
-            self._logger_fn(
-                "[{}] Recieved message...".format(time.time() - self._init_time)
-            )
+            self._logger_fn(f"[{time.time() - self._init_time}] Recieved message...")
             self._logger_fn(self._cmd.items())
 
         sub_socket.close()
