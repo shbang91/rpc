@@ -1,33 +1,32 @@
-import os
-import sys
-import meshcat
 import copy
+import os
 import shutil
-import matplotlib.pyplot as plt
-import numpy as np
-
-from plot.data_saver import DataSaver
-from tqdm import tqdm
-from ruamel.yaml import YAML
-from casadi import *
-from util.python_utils import util
-from util.python_utils import interpolation
-from util.python_utils import liegroup
+import sys
 from enum import Enum
+
+import matplotlib.pyplot as plt
+import meshcat
+import meshcat_shapes
+import numpy as np
+import pink
+import pinocchio as pin
 
 # kinematics tools
 import qpsolvers
-import pinocchio as pin
-import meshcat_shapes
-import pink
-from pink import solve_ik
-from pink.tasks import FrameTask, JointCouplingTask, PostureTask
-from loop_rate_limiters import RateLimiter
 
 # training libraries / tools
 import torch
 import torch.utils.data as torch_utils
+from casadi import *
+from loop_rate_limiters import RateLimiter
+from pink import solve_ik
+from pink.tasks import FrameTask, JointCouplingTask, PostureTask
+from ruamel.yaml import YAML
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
+
+from plot.data_saver import DataSaver
+from util.python_utils import interpolation, liegroup, util
 
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -88,7 +87,7 @@ class MotionType(Enum):
 ## 2-hidden layer Neural Network
 class NetWork(torch.nn.Module):
     def __init__(self, n_input, n_hidden_1, n_hidden_2, n_output):
-        super(NetWork, self).__init__()
+        super().__init__()
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(n_input, n_hidden_1),
             torch.nn.Tanh(),
@@ -565,13 +564,13 @@ def _do_generate_data(
         "torso_link"
     ).copy()
 
-    frame_idx = int(0)
+    frame_idx = 0
     iter = 0
-    text = "#" + "{}".format(cpu_idx).zfill(3)
+    text = "#" + f"{cpu_idx}".zfill(3)
     with tqdm(
         total=n_data, desc=text + ": Generating data", position=cpu_idx + 1
     ) as pbar:
-        i = int(0)
+        i = 0
         while i < n_data:
             # reset to home config
             configuration.q = copy.deepcopy(nominal_configuration)
@@ -582,7 +581,7 @@ def _do_generate_data(
             nominal_rf_iso_step = copy.deepcopy(nominal_rf_iso)
             nominal_base_iso = copy.deepcopy(nominal_base_iso_init)
             n_turn = 0
-            resample_attempt_num = int(0)
+            resample_attempt_num = 0
             while n_turn < N_TURN_STEPS:
                 if MOTION_TYPE == MotionType.STEP:
                     (
@@ -813,7 +812,7 @@ def _do_generate_data(
                             ]
                         )  # I_xx, I_yy, I_zz, I_xy, I_xz, I_yz
                     else:
-                        print("")
+                        print()
                         print(f"Index {i} went out of bounds. Ignoring data point.")
                         break
                         # i = n_data - 2
@@ -841,8 +840,8 @@ def _do_generate_data(
                             nominal_rf_iso_step = copy.deepcopy(nominal_rf_iso)
                             nominal_base_iso = copy.deepcopy(nominal_base_iso_init)
                             n_turn = 0
-                            resample_attempt_num = int(0)
-                            print("")
+                            resample_attempt_num = 0
+                            print()
                             print("Bad stuck. Re-starting from home config")
                             i = iter * N_DATA_PER_MOTION * N_TURN_STEPS
                     continue
@@ -1028,7 +1027,7 @@ def train_and_plot_crbi():
     writer = SummaryWriter(log_dir)
 
     ## normalize training data
-    print("{} data is collected".format(len(data_x)))
+    print(f"{len(data_x)} data is collected")
     input_mean, input_std, input_normalized_data = util.normalize_data(data_x)
     output_mean, output_std, output_normalized_data = util.normalize_data(data_y)
 

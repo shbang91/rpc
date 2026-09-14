@@ -1,15 +1,16 @@
 import asyncio
-from typing import Any, Dict, List, Optional
+import json
+import time
+from typing import Any
+
 from foxglove_websocket.server import FoxgloveServer, FoxgloveServerListener
 from foxglove_websocket.types import Parameter
-import time
-import json
 
 from UI.foxglove.foxglove_sceneorganizer import SceneChannel
 
 
-def load_params_store() -> Dict[str, Any]:
-    param_store: Dict[str, Any] = {
+def load_params_store() -> dict[str, Any]:
+    param_store: dict[str, Any] = {
         "n_steps": 3,
         "t_ss": 0.8,
         "t_ds": 1.2,
@@ -29,7 +30,7 @@ def load_params_store() -> Dict[str, Any]:
 
 
 class Listener(FoxgloveServerListener):
-    def __init__(self, param_store: Dict[str, Any]) -> None:
+    def __init__(self, param_store: dict[str, Any]) -> None:
         self._param_store = param_store
         self.modified_param = ""
         self.b_modified = False
@@ -37,9 +38,9 @@ class Listener(FoxgloveServerListener):
     async def on_get_parameters(
         self,
         server: FoxgloveServer,
-        param_names: List[str],
-        request_id: Optional[str],
-    ) -> List[Parameter]:
+        param_names: list[str],
+        request_id: str | None,
+    ) -> list[Parameter]:
         return [
             Parameter(name=k, value=v, type="float64")
             for k, v in self._param_store.items()
@@ -49,8 +50,8 @@ class Listener(FoxgloveServerListener):
     async def on_set_parameters(
         self,
         server: FoxgloveServer,
-        params: List[Parameter],
-        request_id: Optional[str],
+        params: list[Parameter],
+        request_id: str | None,
     ):
         for param in params:
             if not param["name"].startswith("read_only"):

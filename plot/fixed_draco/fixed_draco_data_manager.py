@@ -1,15 +1,15 @@
-import zmq
-import sys
+import argparse
 import os
-import ruamel.yaml as yaml
+import sys
+
 import numpy as np
 import pinocchio as pin
-import argparse
-
+import zmq
 from messages.fixed_draco_pb2 import *
-from plot.data_saver import *
-
 from pinocchio.visualize import MeshcatVisualizer
+from ruamel import yaml
+
+from plot.data_saver import *
 
 cwd = os.getcwd()
 sys.path.append(cwd + "/build")
