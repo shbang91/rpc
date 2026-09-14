@@ -15,8 +15,8 @@ if __name__ == "__main__":
     res = po.map(f, range(5000))
     po.close()
     po.join()
-    print("Parallel execution time taken = {}".format(time.time() - t1))
+    print(f"Parallel execution time taken = {time.time() - t1}")
 
     t2 = time.time()
     seq_res = list(map(f, range(5000)))
-    print("Sequential execution time taken = {}".format(time.time() - t2))
+    print(f"Sequential execution time taken = {time.time() - t2}")

@@ -1,11 +1,12 @@
 import os
 import sys
+
 import numpy as np
 
 cwd = os.getcwd()
 sys.path.append(cwd)
 
-import util.python_utils.util as util
+from util.python_utils import util
 
 
 def post_process_obs(data):

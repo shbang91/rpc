@@ -7,7 +7,7 @@ class InterruptHandler;
 
 class Interface {
 public:
-  Interface() : count_(0), running_time_(0.){};
+  Interface() : count_(0), running_time_(0.) {};
 
   virtual ~Interface() = default;
 
