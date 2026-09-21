@@ -1,13 +1,12 @@
 import os
 import sys
-
 from collections import OrderedDict
 
 import numpy as np
 import pinocchio as pin
 
-from util.python_utils.robot_system import RobotSystem
 from util.python_utils import util
+from util.python_utils.robot_system import RobotSystem
 
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -23,9 +22,7 @@ class PinocchioRobotSystem(RobotSystem):
     """
 
     def __init__(self, urdf_file, package_dir, b_fixed_base, b_print_info=False):
-        super(PinocchioRobotSystem, self).__init__(
-            urdf_file, package_dir, b_fixed_base, b_print_info
-        )
+        super().__init__(urdf_file, package_dir, b_fixed_base, b_print_info)
 
     def _config_robot(self, urdf_file, package_dir):
         if self._b_fixed_base:

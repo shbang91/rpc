@@ -1,15 +1,13 @@
-import numpy as np
-
-from pinocchio.visualize import MeshcatVisualizer
 import meshcat.geometry as g
 import meshcat.transformations as tf
-
+import numpy as np
 import pinocchio as pin
+from pinocchio.visualize import MeshcatVisualizer
 
 violet = [1.0, 0.0, 1.0, 0.3]
 
 
-class Color(object):
+class Color:
     RED = 0xFF0000
     GREEN = 0x00FF00
     BLUE = 0x0000FF

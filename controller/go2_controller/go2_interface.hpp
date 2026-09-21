@@ -22,7 +22,7 @@ public:
         RR_normal_force_(0.), base_joint_pos_(Eigen::Vector3d::Zero()),
         base_joint_quat_(0, 0, 0, 1),
         base_joint_lin_vel_(Eigen::Vector3d::Zero()),
-        base_joint_ang_vel_(Eigen::Vector3d::Zero()){};
+        base_joint_ang_vel_(Eigen::Vector3d::Zero()) {};
   virtual ~Go2SensorData() = default;
 
   Eigen::Vector4d imu_frame_quat_; // x, y, z, w order
@@ -52,7 +52,7 @@ public:
   Go2Command()
       : joint_pos_cmd_(Eigen::VectorXd::Zero(go2::n_adof)),
         joint_vel_cmd_(Eigen::VectorXd::Zero(go2::n_adof)),
-        joint_trq_cmd_(Eigen::VectorXd::Zero(go2::n_adof)){};
+        joint_trq_cmd_(Eigen::VectorXd::Zero(go2::n_adof)) {};
   virtual ~Go2Command() = default;
 
   Eigen::VectorXd joint_pos_cmd_;
