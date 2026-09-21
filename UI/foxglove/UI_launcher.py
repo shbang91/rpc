@@ -1,24 +1,25 @@
 import os
 import sys
-import zmq
 import time
-import ruamel.yaml as yaml
+
 import numpy as np
+import zmq
+from ruamel import yaml
 
 cwd = os.getcwd()
 sys.path.append(cwd)
 sys.path.append(cwd + "/build")
 
 # NEED TO GET THIS BACK --- FIX LATER
-from util.python_utils.util import rot_to_quat, quat_to_rot
-from messages.draco_pb2 import *
-
-from plot.data_saver import *
-import pinocchio as pin
-import json
 import argparse
+import json
+
+import pinocchio as pin
+from messages.draco_pb2 import *
 from scipy.spatial.transform import Rotation as R
 
+from plot.data_saver import *
+from util.python_utils.util import quat_to_rot, rot_to_quat
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_use_plotjuggler", type=bool, default=False)
@@ -35,21 +36,24 @@ args = parser.parse_args()
 STEP_MAX = 20
 
 if args.visualizer == "meshcat":
-    from pinocchio.visualize import MeshcatVisualizer
     import meshcat
+    from pinocchio.visualize import MeshcatVisualizer
+
     from plot import meshcat_utils as vis_tools
 elif args.visualizer == "foxglove":
     # Foxglove dependencies
-    import UI.foxglove.control_widgets as foxglove_ctrl
     import asyncio
     import threading
     from base64 import b64encode
-    from foxglove_websocket.server import FoxgloveServer
-    from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
-    from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
-    from mcap_protobuf.schema import build_file_descriptor_set
+
     import footstep_planner as fp
+    from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
+    from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
+    from foxglove_websocket.server import FoxgloveServer
+    from mcap_protobuf.schema import build_file_descriptor_set
     from watchdog.observers import Observer
+
+    import UI.foxglove.control_widgets as foxglove_ctrl
 
     # local tools to manage Foxglove scenes
     from plot.foxglove_utils import SceneChannel, ShapeScene

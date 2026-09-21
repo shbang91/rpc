@@ -131,7 +131,6 @@ class RobotSystem(abc.ABC):
             hg = Ig * centroid_velocity = Ag * qdot
         Note that all quantities are represented at the world frame
         """
-        pass
 
     @abc.abstractmethod
     def _config_robot(self, urdf_file):
@@ -164,7 +163,6 @@ class RobotSystem(abc.ABC):
         ----------
         urdf_file (str): urdf path
         """
-        pass
 
     @abc.abstractmethod
     def get_q_idx(self, joint_id):
@@ -179,7 +177,6 @@ class RobotSystem(abc.ABC):
         -------
         joint_idx (int or list of int)
         """
-        pass
 
     @abc.abstractmethod
     def get_q_dot_idx(self, joint_id):
@@ -194,7 +191,6 @@ class RobotSystem(abc.ABC):
         -------
         joint_idx (int or list of int)
         """
-        pass
 
     @abc.abstractmethod
     def get_joint_idx(self, joint_id):
@@ -209,7 +205,6 @@ class RobotSystem(abc.ABC):
         -------
         joint_idx (int or list of int)
         """
-        pass
 
     @abc.abstractmethod
     def create_cmd_ordered_dict(self, joint_pos_cmd, joint_vel_cmd, joint_trq_cmd):
@@ -229,7 +224,6 @@ class RobotSystem(abc.ABC):
         -------
         command (OrderedDict)
         """
-        pass
 
     @abc.abstractmethod
     def update_system(
@@ -255,7 +249,6 @@ class RobotSystem(abc.ABC):
         joint_vel (OrderedDict): Actuator vel
         b_cent (Bool): Whether updating centroidal frame or not
         """
-        pass
 
     @abc.abstractmethod
     def get_q(self):
@@ -264,7 +257,6 @@ class RobotSystem(abc.ABC):
         -------
         q (np.array): positions in generalized coordinate
         """
-        pass
 
     @abc.abstractmethod
     def get_q_dot(self):
@@ -273,7 +265,6 @@ class RobotSystem(abc.ABC):
         -------
         qdot (np.array): velocities in generalized coordinate
         """
-        pass
 
     @abc.abstractmethod
     def get_mass_matrix(self):
@@ -282,7 +273,6 @@ class RobotSystem(abc.ABC):
         -------
         A (np.array): Mass matrix in generalized coordinate
         """
-        pass
 
     @abc.abstractmethod
     def get_gravity(self):
@@ -291,7 +281,6 @@ class RobotSystem(abc.ABC):
         -------
         g (np.array): Gravity forces in generalized coordinate
         """
-        pass
 
     @abc.abstractmethod
     def get_coriolis(self):
@@ -300,7 +289,6 @@ class RobotSystem(abc.ABC):
         -------
         c (np.array): Coriolis forces in generalized coordinate
         """
-        pass
 
     @abc.abstractmethod
     def get_com_pos(self):
@@ -309,7 +297,6 @@ class RobotSystem(abc.ABC):
         -------
         com_pos (np.array): COM position
         """
-        pass
 
     @abc.abstractmethod
     def get_com_lin_vel(self):
@@ -318,7 +305,6 @@ class RobotSystem(abc.ABC):
         -------
         com_lin_vel (np.array): COM linear velocity
         """
-        pass
 
     @abc.abstractmethod
     def get_com_lin_jacobian(self):
@@ -327,7 +313,6 @@ class RobotSystem(abc.ABC):
         -------
         com_lin_jac (np.array): COM linear jacobian
         """
-        pass
 
     @abc.abstractmethod
     def get_com_lin_jacobian_dot(self):
@@ -336,7 +321,6 @@ class RobotSystem(abc.ABC):
         -------
         com_lin_jac_dot (np.array): COM linear jacobian dot
         """
-        pass
 
     @abc.abstractmethod
     def get_link_iso(self, link_id):
@@ -349,7 +333,6 @@ class RobotSystem(abc.ABC):
         -------
         link_iso (np.array): Link SE(3)
         """
-        pass
 
     @abc.abstractmethod
     def get_link_vel(self, link_id):
@@ -362,7 +345,6 @@ class RobotSystem(abc.ABC):
         -------
             Link CoM Screw described in World Frame
         """
-        pass
 
     @abc.abstractmethod
     def get_link_jacobian(self, link_id):
@@ -378,7 +360,6 @@ class RobotSystem(abc.ABC):
         Jacobian (np.ndarray):
             Link CoM Jacobian described in World Frame
         """
-        pass
 
     @abc.abstractmethod
     def get_link_jacobian_dot_times_qdot(self, link_id):
@@ -391,4 +372,3 @@ class RobotSystem(abc.ABC):
         -------
             Link CoM jacobian_dot times qdot
         """
-        pass
