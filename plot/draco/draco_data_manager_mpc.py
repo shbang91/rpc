@@ -1,26 +1,24 @@
-import zmq
-import sys
 import os
+import sys
 
-
-import ruamel.yaml as yaml
 import numpy as np
+import zmq
+from ruamel import yaml
 
 cwd = os.getcwd()
 sys.path.append(cwd + "/build")
 sys.path.append(cwd)
 
-from messages.draco_pb2 import *
-from plot.data_saver import *
-
-import pinocchio as pin
-from pinocchio.visualize import MeshcatVisualizer
+import argparse
 
 import meshcat
 import meshcat_shapes
-from plot import meshcat_utils as vis_tools
+import pinocchio as pin
+from messages.draco_pb2 import *
+from pinocchio.visualize import MeshcatVisualizer
 
-import argparse
+from plot import meshcat_utils as vis_tools
+from plot.data_saver import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--b_visualize", type=bool, default=False)

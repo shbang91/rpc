@@ -1,4 +1,4 @@
-class Config(object):
+class Config:
     CONTROLLER_DT = 0.001
     N_SUBSTEP = 1
 
