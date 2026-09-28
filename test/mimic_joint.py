@@ -1,8 +1,9 @@
 # a mimic joint can act as a gear between two joints
 # you can control the gear ratio in magnitude and sign (>0 reverses direction)
 
-import pybullet as p
 import time
+
+import pybullet as p
 import pybullet_data
 
 p.connect(p.GUI)

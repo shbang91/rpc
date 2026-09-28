@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Config(object):
+class Config:
     CONTROLLER_DT = 0.001
     N_SUBSTEP = 1
 
@@ -21,7 +21,7 @@ class Config(object):
     USE_MESHCAT = False
 
 
-class Go2LinkIdx(object):
+class Go2LinkIdx:
     base = -1
     Head_upper = 0
     Head_lower = 1
@@ -53,7 +53,7 @@ class Go2LinkIdx(object):
     radar = 27
 
 
-class Go2JointIdx(object):
+class Go2JointIdx:
     FL_hip_joint = 2
     FL_thigh_joint = 3
     FL_calf_joint = 4
@@ -68,15 +68,68 @@ class Go2JointIdx(object):
     RR_calf_joint = 22
 
 
-class JointGains(object):
+class JointGains:
     # kp = 5. * np.ones(27)
     # kd = 0. * np.ones(27)
-    kp = np.array([
-        10, 10, 10, 10, 10, 10, 10, 5, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10,
-        10, 10, 5, 5, 5, 5, 5, 5
-    ])
-    kd = np.array([
-        0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.001, 0.001, 0.001, 0.001,
-        0.001, 0.001, 0.01, 0.01, 0.001, 0.01, 0.01, 0.01, 0.01, 0.01, 0.001,
-        0.001, 0.001, 0.001, 0.001, 0.001
-    ])
+    kp = np.array(
+        [
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            10,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+        ]
+    )
+    kd = np.array(
+        [
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            0.001,
+            0.001,
+            0.001,
+            0.001,
+            0.001,
+            0.001,
+            0.01,
+            0.01,
+            0.001,
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            0.01,
+            0.001,
+            0.001,
+            0.001,
+            0.001,
+            0.001,
+            0.001,
+        ]
+    )
