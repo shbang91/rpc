@@ -12,20 +12,20 @@ Description
 * Bonston Dynamics AI Institute, The University of Texas at Austin
 """
 
-import sys
 import os
+import sys
 
 cwd = os.getcwd()
 sys.path.append(cwd)
 
 # First import the library
-import pyrealsense2 as rs
+import ctypes
+import time
+from multiprocessing import Array, Lock, Queue
 
 # Import OpenCV and numpy
 import numpy as np
-from multiprocessing import Array, Lock, Queue
-import ctypes
-import time
+import pyrealsense2 as rs
 
 from util.python_utils.device.base import Sensor
 

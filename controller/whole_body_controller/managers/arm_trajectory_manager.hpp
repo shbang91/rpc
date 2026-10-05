@@ -11,7 +11,7 @@ class MinJerkCurveQuat;
 class ArmTrajectoryManager {
 public:
   ArmTrajectoryManager(Task *pos_task, Task *ori_task,
-                               PinocchioRobotSystem *robot);
+                       PinocchioRobotSystem *robot);
   ~ArmTrajectoryManager();
 
   void UseCurrent();
@@ -19,8 +19,8 @@ public:
   void UseNominal(const Eigen::Isometry3d &nominal_iso);
 
   void InitializeTrajectory(const Eigen::Isometry3d &ini_pose,
-                                 const Eigen::Isometry3d &fin_pose,
-                                 const double duration);
+                            const Eigen::Isometry3d &fin_pose,
+                            const double duration);
   void UpdateDesired(const double current_time);
 
 private:
