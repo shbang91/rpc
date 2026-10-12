@@ -1,8 +1,9 @@
 import os
 import sys
-import numpy as np
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 from util.python_utils import interpolation
 
