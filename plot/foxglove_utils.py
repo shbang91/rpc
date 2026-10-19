@@ -1,4 +1,5 @@
 import json
+
 from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
 
 
