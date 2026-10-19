@@ -1,7 +1,8 @@
-import sys
 import os
-import numpy as np
+import sys
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 cwd = os.getcwd()
 sys.path.append(cwd)

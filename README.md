@@ -28,7 +28,7 @@ $ conda env create -f rpc.yml
 - [Foxglove](https://github.com/foxglove): websocket & schema protocols for robot visualization and parameter operations
 
 
-## :computer: Usage 
+## :computer: Usage
 #### (1) PyBullet
 - Source conda environment:<br/>
 ```
@@ -56,7 +56,7 @@ $ make -j4
 $ ./bin/run_draco
 ```
 #### Keyboard Input
-- Please see the [example implementation](https://github.com/shbang91/rpc/blob/develop/controller/draco_controller/draco_interrupt_handler.cpp) for DRACO 3 
+- Please see the [example implementation](https://github.com/shbang91/rpc/blob/develop/controller/draco_controller/draco_interrupt_handler.cpp) for DRACO 3
 
 ## :tv: Visualization
 #### (1) Foxglove UI (optional)
@@ -102,8 +102,8 @@ $ python UI/foxglove/UI_launcher.py --visualizer=meshcat
 ```
 @INPROCEEDINGS{10871130,
   author={Bang, Seung Hyeon and Gonzalez, Carlos and Moore, Gabriel and Kang, Dong Ho and Seo, Mingyo and Gupta, Ryan and Sentis, Luis},
-  booktitle={2025 IEEE/SICE International Symposium on System Integration (SII)}, 
-  title={RPC: A Modular Framework for Robot Planning, Control, and Deployment}, 
+  booktitle={2025 IEEE/SICE International Symposium on System Integration (SII)},
+  title={RPC: A Modular Framework for Robot Planning, Control, and Deployment},
   year={2025},
   volume={},
   number={},
