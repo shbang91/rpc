@@ -1,10 +1,11 @@
+import glob
 import os
 import time
-import yaml
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-import glob
+
 import numpy as np
+import yaml
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 # Define the directory to watch
 WATCHED_DIR = "experiment_data"

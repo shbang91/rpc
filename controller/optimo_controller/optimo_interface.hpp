@@ -18,7 +18,7 @@ public:
         joint_trq_(Eigen::VectorXd::Zero(optimo::n_adof)),
         joint_sea_trq_(Eigen::VectorXd::Zero(optimo::n_adof)),
         base_pos_(Eigen::Vector3d::Zero()),
-        base_quat_(Eigen::Vector4d(0., 0., 0., 1.)){};
+        base_quat_(Eigen::Vector4d(0., 0., 0., 1.)) {};
 
   virtual ~OptimoSensorData() = default;
 
@@ -36,7 +36,7 @@ public:
   OptimoCommand()
       : joint_pos_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
         joint_vel_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)),
-        joint_trq_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)){};
+        joint_trq_cmd_(Eigen::VectorXd::Zero(optimo::n_adof)) {};
   virtual ~OptimoCommand() = default;
 
   Eigen::VectorXd joint_pos_cmd_;
