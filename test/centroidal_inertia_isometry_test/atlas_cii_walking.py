@@ -1,18 +1,19 @@
+import copy
 import os
 import sys
-import copy
-import pybullet as pb
+
 import numpy as np
-
-from util.python_utils import pybullet_util
-from util.python_utils import interpolation
-from util.python_utils import util
-from util.python_utils import liegroup
-from util.python_utils import robot_kinematics
-
-from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
+import pybullet as pb
 
 from plot.data_saver import DataSaver
+from util.python_utils import (
+    interpolation,
+    liegroup,
+    pybullet_util,
+    robot_kinematics,
+    util,
+)
+from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
 
 cwd = os.getcwd()
 sys.path.append(cwd)

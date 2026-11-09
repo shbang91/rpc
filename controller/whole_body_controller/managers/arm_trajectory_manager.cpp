@@ -4,11 +4,10 @@
 #include "util/interpolation.hpp"
 #include "util/util.hpp"
 
-ArmTrajectoryManager::ArmTrajectoryManager(
-    Task *pos_task, Task *ori_task, PinocchioRobotSystem *robot)
+ArmTrajectoryManager::ArmTrajectoryManager(Task *pos_task, Task *ori_task,
+                                           PinocchioRobotSystem *robot)
     : pos_task_(pos_task), ori_task_(ori_task), robot_(robot),
-      pos_curve_(nullptr),
-      ori_curve_(nullptr) {
+      pos_curve_(nullptr), ori_curve_(nullptr) {
   util::PrettyConstructor(2, "ArmTrajectoryManager");
 }
 
@@ -46,9 +45,11 @@ void ArmTrajectoryManager::UseNominal(const Eigen::Isometry3d &nominal_iso) {
   // transform quaternion to EigenXd to pass to Task
   Eigen::Quaterniond nominal_quat = Eigen::Quaterniond(nominal_iso.linear());
   Eigen::Vector4d nominal_orientation;
-  nominal_orientation << nominal_quat.x(), nominal_quat.y(), nominal_quat.z(), nominal_quat.w();
+  nominal_orientation << nominal_quat.x(), nominal_quat.y(), nominal_quat.z(),
+      nominal_quat.w();
 
-  pos_task_->UpdateDesired(nominal_iso.translation(), zero_des_vel, zero_des_acc);
+  pos_task_->UpdateDesired(nominal_iso.translation(), zero_des_vel,
+                           zero_des_acc);
   ori_task_->UpdateDesired(nominal_orientation, zero_des_vel, zero_des_acc);
 }
 
@@ -64,20 +65,15 @@ void ArmTrajectoryManager::InitializeTrajectory(
   Eigen::VectorXd end_pos = Eigen::VectorXd::Zero(3);
   end_pos = fin_pose.translation();
 
+  pos_curve_ = new HermiteCurveVec(start_pos, Eigen::VectorXd::Zero(3), end_pos,
+                                   Eigen::VectorXd::Zero(3), duration_);
 
-  pos_curve_ =
-      new HermiteCurveVec(start_pos, 
-                          Eigen::VectorXd::Zero(3), 
-                          end_pos,
-                          Eigen::VectorXd::Zero(3), duration_);
-
-  // pos_curve_ = new MinJerkCurveVec(start_pos, 
+  // pos_curve_ = new MinJerkCurveVec(start_pos,
   //                                  Eigen::VectorXd::Zero(3),
-  //                                  Eigen::VectorXd::Zero(3), 
+  //                                  Eigen::VectorXd::Zero(3),
   //                                  end_pos,
-  //                                  Eigen::VectorXd::Zero(3), 
+  //                                  Eigen::VectorXd::Zero(3),
   //                                  Eigen::VectorXd::Zero(3), duration_);
-          
 
   Eigen::Quaterniond start_ori(ini_pose.linear());
   Eigen::Quaterniond end_ori(fin_pose.linear());
@@ -85,8 +81,6 @@ void ArmTrajectoryManager::InitializeTrajectory(
   ori_curve_ =
       new HermiteQuaternionCurve(start_ori, Eigen::Vector3d::Zero(), end_ori,
                                  Eigen::Vector3d::Zero(), duration_);
-
-
 }
 
 void ArmTrajectoryManager::UpdateDesired(const double current_time) {
@@ -115,11 +109,7 @@ void ArmTrajectoryManager::UpdateDesired(const double current_time) {
   Eigen::VectorXd des_ori_acc(3);
   des_ori_acc << des_ori_acc_vec;
 
-    
-
-
   ori_task_->UpdateDesired(des_ori, des_ori_vel, des_ori_acc);
 
   counter_++;
 }
-

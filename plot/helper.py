@@ -1,4 +1,5 @@
 import random
+
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -179,7 +180,7 @@ def plot_rf(time, rfs, phase):
 
 def plot_phase(ax, t, data_phse):
     phseChange = []
-    for i in range(0, len(t) - 1):
+    for i in range(len(t) - 1):
         if data_phse[i] != data_phse[i + 1]:
             phseChange.append(i)
         else:

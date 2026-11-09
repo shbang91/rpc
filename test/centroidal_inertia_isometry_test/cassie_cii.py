@@ -1,14 +1,14 @@
+import copy
 import os
 import sys
-import copy
 import time
-import pybullet as pb
-import numpy as np
 
-from util.python_utils import pybullet_util
-from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
+import numpy as np
+import pybullet as pb
 
 from plot.data_saver import DataSaver
+from util.python_utils import pybullet_util
+from util.python_utils.pinocchio_robot_system import PinocchioRobotSystem
 
 cwd = os.getcwd()
 sys.path.append(cwd)
