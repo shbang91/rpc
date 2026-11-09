@@ -1,10 +1,11 @@
-import pybullet as p
-import numpy as np
 import multiprocessing as mp
 from itertools import repeat
 
-from util.python_utils.util import *
+import numpy as np
+import pybullet as p
+
 from util.python_utils.liegroup import *
+from util.python_utils.util import *
 
 
 def get_kinematics_config(

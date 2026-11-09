@@ -1,6 +1,6 @@
+import numpy as np
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
-import numpy as np
 
 from util.python_utils import liegroup
 
@@ -49,7 +49,7 @@ def iso_interpolate(T1, T2, alpha):
     return liegroup.RpToTrans(R_ret, p_ret)
 
 
-class HermiteCurve(object):
+class HermiteCurve:
     def __init__(self, start_pos, start_vel, end_pos, end_vel, duration):
         self._p1 = start_pos
         self._v1 = start_vel
@@ -93,7 +93,7 @@ class HermiteCurve(object):
         )
 
 
-class HermiteCurveVec(object):
+class HermiteCurveVec:
     def __init__(self, start_pos, start_vel, end_pos, end_vel, duration):
         self._p1 = start_pos
         self._p2 = end_pos
@@ -208,7 +208,7 @@ class HermiteCurveVec(object):
 # return self._omega_1 * self._bddot1 + self._omega_2 * self._bddot2 + self._omega_3 * self._bddot3
 
 
-class HermiteCurveQuat(object):
+class HermiteCurveQuat:
     def __init__(self, quat_start, ang_vel_start, quat_end, ang_vel_end, duration):
         self._qa = R.from_quat(quat_start)
         self._omega_a = np.copy(ang_vel_start)

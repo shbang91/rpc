@@ -1,17 +1,17 @@
-import zmq
-import sys
-import os
-import time
-import ruamel.yaml as yaml
-import numpy as np
-
-from util.python_utils.util import rot_to_quat
-from messages.draco_pb2 import *
-from plot.data_saver import *
-
-import pinocchio as pin
-import json
 import argparse
+import json
+import os
+import sys
+import time
+
+import numpy as np
+import pinocchio as pin
+import zmq
+from messages.draco_pb2 import *
+from ruamel import yaml
+
+from plot.data_saver import *
+from util.python_utils.util import rot_to_quat
 
 cwd = os.getcwd()
 sys.path.append(cwd + "/build")
@@ -25,18 +25,19 @@ parser.add_argument(
 args = parser.parse_args()
 
 if args.visualizer == "meshcat":
-    from pinocchio.visualize import MeshcatVisualizer
     import meshcat
+    from pinocchio.visualize import MeshcatVisualizer
+
     from plot import meshcat_utils as vis_tools
 elif args.visualizer == "foxglove":
     import asyncio
-
     from base64 import b64encode
+
+    from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
+    from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
 
     # Foxglove dependencies
     from foxglove_websocket.server import FoxgloveServer
-    from foxglove_schemas_protobuf.SceneUpdate_pb2 import SceneUpdate
-    from foxglove_schemas_protobuf.FrameTransform_pb2 import FrameTransform
     from mcap_protobuf.schema import build_file_descriptor_set
 
     # local tools to manage Foxglove scenes

@@ -1,25 +1,25 @@
+import argparse
+import io
 import os
 import sys
-import argparse
+
 import numpy as np
-import io
 from pynput import keyboard
 
 cwd = os.getcwd()
 sys.path.append(cwd)
 
-from util.python_utils.device.t265 import T265
-import util.python_utils.util as util
-import matplotlib.pyplot as plt
-
-import time
-import cv2
 import csv
+import time
+
+import cv2
+import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation as R
 
 # from util.python_utils.comm import ZMQServer
 from scripts.draco_manipulation_comm import DracoZMQServer
-import util.python_utils.demo as demo
+from util.python_utils import demo, util
+from util.python_utils.device.t265 import T265
 
 TARGET_IP = "*"
 PUB_PORT = 5555
@@ -145,7 +145,7 @@ def record(path, ros_socket=None):
 
     # state = {key: [] for key in ['time', 'left_img', 'right_img', 'trk_pos', 'trk_rot', 'robot_pos', 'robot_rot', 'robot_grasp']}
 
-    dir_name = "{}".format(int(time.time()))
+    dir_name = f"{int(time.time())}"
     dir_path = os.path.join(path, dir_name)
     os.makedirs(dir_path, exist_ok=True)
 
@@ -225,39 +225,26 @@ def record(path, ros_socket=None):
 
             if not trk_init:
                 low_dim_file.write(
-                    "{}, \
-                                    {}, {}, {},\
-                                    {}, {}, {}, {},\
-                                \n".format(
-                        t265.time,
-                        pos[0],
-                        pos[1],
-                        pos[2],
-                        quat[0],
-                        quat[1],
-                        quat[2],
-                        quat[3],
-                    )
+                    f"{t265.time}, \
+                                    {pos[0]}, {pos[1]}, {pos[2]},\
+                                    {quat[0]}, {quat[1]}, {quat[2]}, {quat[3]},\
+                                \n"
                 )
 
                 if t265.b_img_stream:
                     cv2.imwrite(
-                        os.path.join(
-                            left_img_path, "{}.png".format(int(t265.time * 100))
-                        ),
+                        os.path.join(left_img_path, f"{int(t265.time * 100)}.png"),
                         left_img,
                     )
                     cv2.imwrite(
-                        os.path.join(
-                            right_img_path, "{}.png".format(int(t265.time * 100))
-                        ),
+                        os.path.join(right_img_path, f"{int(t265.time * 100)}.png"),
                         right_img,
                     )
 
     t265.stop()
 
     if input("Do you want to keep the data? (y/n): ") == "n":
-        os.system("rm -rf {}".format(dir_path))
+        os.system(f"rm -rf {dir_path}")
 
 
 def visualize(data_path):
@@ -288,7 +275,7 @@ def visualize(data_path):
             [float(row[11]), float(row[12]), float(row[13]), float(row[14])]
         ]
 
-    for key in data.keys():
+    for key in data:
         data[key] = np.array(data[key])
 
     mat_tool_offset = np.eye(4)
@@ -300,12 +287,8 @@ def visualize(data_path):
     left_img = np.zeros((800, 848, 3), dtype="uint8")
     right_img = np.zeros((800, 848, 3), dtype="uint8")
     for tm in data["time"]:
-        left_img_read = cv2.imread(
-            os.path.join(left_img_dir, "{}.png".format(int(tm * 100)))
-        )
-        right_img_read = cv2.imread(
-            os.path.join(right_img_dir, "{}.png".format(int(tm * 100)))
-        )
+        left_img_read = cv2.imread(os.path.join(left_img_dir, f"{int(tm * 100)}.png"))
+        right_img_read = cv2.imread(os.path.join(right_img_dir, f"{int(tm * 100)}.png"))
         data["left_img"] += [left_img]
         data["right_img"] += [right_img]
         # print(right_img)
@@ -544,7 +527,7 @@ if __name__ == "__main__":
     demo_cnt = 1
 
     while True:
-        print("Recording {}th demo...".format(demo_cnt))
+        print(f"Recording {demo_cnt}th demo...")
         record(path, ros_socket=server)
         print("Pause, waiting for next demo...")
         demo_cnt += 1
