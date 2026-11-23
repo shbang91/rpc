@@ -8,7 +8,7 @@ class MinJerkCurveVec;
 class StandUp : public StateMachine {
 public:
   StandUp(const StateId state_id, PinocchioRobotSystem *robot,
-             OptimoControlArchitecture *ctrl_arch);
+          OptimoControlArchitecture *ctrl_arch);
   ~StandUp();
 
   void FirstVisit() override;

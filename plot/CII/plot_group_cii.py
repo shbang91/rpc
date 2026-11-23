@@ -1,9 +1,10 @@
 import os
-import sys
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
 import pickle
+import sys
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 cwd = os.getcwd()
 sys.path.append(cwd)

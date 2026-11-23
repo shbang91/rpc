@@ -9,24 +9,24 @@ OptimoStateProvider *OptimoStateProvider::GetStateProvider() {
 }
 
 OptimoStateProvider::OptimoStateProvider() {
-    util::PrettyConstructor(1, "OptimoStateProvider");
+  util::PrettyConstructor(1, "OptimoStateProvider");
 
-    servo_dt_ = 0.001;
-    data_save_freq_ = 1;
+  servo_dt_ = 0.001;
+  data_save_freq_ = 1;
 
-    count_ = 0;
-    current_time_ = 0.;
+  count_ = 0;
+  current_time_ = 0.;
 
-    b_f1_contact_ = false;
-    b_f2_contact_ = false;
-    b_f3_contact_ = false;
+  b_f1_contact_ = false;
+  b_f2_contact_ = false;
+  b_f3_contact_ = false;
 
-    state_ = optimo_states::kInitialize;
-    prev_state_ = optimo_states::kInitialize;
+  state_ = optimo_states::kInitialize;
+  prev_state_ = optimo_states::kInitialize;
 
-    des_ee_iso_ = Eigen::Isometry3d::Identity();
+  des_ee_iso_ = Eigen::Isometry3d::Identity();
 
-    planning_id_ = 0;
+  planning_id_ = 0;
 
-    rot_world_local_ = Eigen::Matrix3d::Identity();
+  rot_world_local_ = Eigen::Matrix3d::Identity();
 }

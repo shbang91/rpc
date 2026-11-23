@@ -1,17 +1,19 @@
 import os
-import sys
 import pickle
-import yaml
-import meshcat
-import numpy as np
+import sys
 import time
 
-# Robot model libraries
-from pinocchio.visualize import MeshcatVisualizer
+import meshcat
+import numpy as np
 import pinocchio as pin
+import yaml
 
 # Python-Meshcat
 from meshcat.animation import Animation
+
+# Robot model libraries
+from pinocchio.visualize import MeshcatVisualizer
+
 from plot import meshcat_utils as vis_tools
 
 cwd = os.getcwd()

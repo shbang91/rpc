@@ -1,7 +1,7 @@
-import pybullet as p
-
 # import pybullet_data as pd
 import time
+
+import pybullet as p
 
 p.connect(p.GUI)
 dt = p.getPhysicsEngineParameters()["fixedTimeStep"]

@@ -6,23 +6,22 @@
 #include "controller/whole_body_controller/basic_task.hpp"
 #include "util/interpolation.hpp"
 
-StandUp::StandUp(const StateId state_id, PinocchioRobotSystem *robot, 
-                        OptimoControlArchitecture *ctrl_arch) 
-        : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false), 
-        wait_time_(0.), min_jerk_curves_(nullptr) {
-    util::PrettyConstructor(2, "StandUp");
+StandUp::StandUp(const StateId state_id, PinocchioRobotSystem *robot,
+                 OptimoControlArchitecture *ctrl_arch)
+    : StateMachine(state_id, robot), ctrl_arch_(ctrl_arch), b_stay_here_(false),
+      wait_time_(0.), min_jerk_curves_(nullptr) {
+  util::PrettyConstructor(2, "StandUp");
 
-    sp_ = OptimoStateProvider::GetStateProvider();
-    target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
-    init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
+  sp_ = OptimoStateProvider::GetStateProvider();
+  target_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
+  init_joint_pos_ = Eigen::VectorXd::Zero(robot_->NumActiveDof());
 }
 
 StandUp::~StandUp() {
-     if (min_jerk_curves_ != nullptr) {
-        delete min_jerk_curves_;
-    }
+  if (min_jerk_curves_ != nullptr) {
+    delete min_jerk_curves_;
+  }
 }
-
 
 void StandUp::FirstVisit() {
   std::cout << "optimo_states::kStandUp" << std::endl;
@@ -47,8 +46,7 @@ void StandUp::OneStep() {
       Eigen::VectorXd::Zero(target_joint_pos_.size());
 
   if (min_jerk_curves_ == nullptr)
-    throw std::runtime_error(
-        "StandUp MinJerkCurve in StandUp StateMachine");
+    throw std::runtime_error("StandUp MinJerkCurve in StandUp StateMachine");
 
   for (unsigned int i(0); i < target_joint_pos_.size(); ++i) {
     des_joint_pos = min_jerk_curves_->Evaluate(state_machine_time_);
@@ -71,9 +69,7 @@ bool StandUp::EndOfState() {
   }
 }
 
-StateId StandUp::GetNextState() {
-  return 0;
-}
+StateId StandUp::GetNextState() { return 0; }
 
 void StandUp::SetParameters(const YAML::Node &node) {
   try {
