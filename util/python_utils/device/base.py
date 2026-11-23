@@ -12,11 +12,11 @@ Description
 * Bonston Dynamics AI Institute, The University of Texas at Austin
 """
 
-from multiprocessing import Process, Value
 import ctypes
+from multiprocessing import Process, Value
 
 
-class Sensor(object):
+class Sensor:
     """
     a receiver's configuration for remote commands
     """
@@ -31,7 +31,7 @@ class Sensor(object):
             ctypes.c_float,
         )
 
-        print("{} created".format(self._name))
+        print(f"{self._name} created")
 
     def _fn_init(self):
         raise NotImplementedError
@@ -46,13 +46,13 @@ class Sensor(object):
 
         self._fn_init()
 
-        print("{} start!".format(self._name))
+        print(f"{self._name} start!")
 
     def stop(self):
         self._flag_proc.value = False
         self._proc.terminate()
 
-        print("{} stop!".format(self._name))
+        print(f"{self._name} stop!")
 
     def _fn_proc(self):
         raise NotImplementedError

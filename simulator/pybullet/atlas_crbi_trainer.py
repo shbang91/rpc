@@ -1,25 +1,26 @@
-import os
-import sys
-import pybullet as pb
-import numpy as np
-import time
 import copy
 import math
-from tqdm import tqdm
+import os
 import shutil
-
-from util.python_utils import pybullet_util
-from util.python_utils import interpolation
-from util.python_utils import util
-from util.python_utils import liegroup
-from util.python_utils import robot_kinematics
+import sys
+import time
 
 import matplotlib.pyplot as plt
-from scipy.spatial.transform import Rotation as R
-
+import numpy as np
+import pybullet as pb
 import torch
 import torch.utils.data as torch_utils
+from scipy.spatial.transform import Rotation as R
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
+
+from util.python_utils import (
+    interpolation,
+    liegroup,
+    pybullet_util,
+    robot_kinematics,
+    util,
+)
 
 cwd = os.getcwd()
 sys.path.append(cwd)
@@ -60,7 +61,7 @@ EPOCH = 30
 ## 2-hidden layer Neural Network
 class NetWork(torch.nn.Module):
     def __init__(self, n_input, n_hidden_1, n_hidden_2, n_output):
-        super(NetWork, self).__init__()
+        super().__init__()
         self.layers = torch.nn.Sequential(
             torch.nn.Linear(n_input, n_hidden_1),
             torch.nn.Tanh(),
@@ -399,7 +400,7 @@ def generate_data_set(
         cwd + "/robot_model/atlas/atlas.urdf", cwd + "/robot_model/atlas", False, False
     )
 
-    text = "{}".format(leg_side) + "#" + "{}".format(cpu_idx).zfill(2)
+    text = f"{leg_side}" + "#" + f"{cpu_idx}".zfill(2)
     with tqdm(
         total=num_swing * num_samples_per_swing,
         desc=text + "data generation",
@@ -883,8 +884,8 @@ if __name__ == "__main__":
                 "right_foot",
             )
 
-            print("{} training data set collected".format(len(x_data)))
-            print("{} test data set collected".format(len(x_data_test)))
+            print(f"{len(x_data)} training data set collected")
+            print(f"{len(x_data_test)} test data set collected")
 
             ## normalize training data
             input_mean, input_std, input_normalized_data = util.normalize_data(x_data)

@@ -1,15 +1,18 @@
-import pybullet as pb
-import time
 import os
 import sys
+import time
+
 import numpy as np
+import pybullet as pb
 
 np.set_printoptions(precision=4)
 
+import copy
+
+import fixed_draco_interface_pybind
+
 from config.fixed_draco.pybullet.pybullet_params import Config
 from util.python_utils import pybullet_util
-import copy
-import fixed_draco_interface_pybind
 
 np.set_printoptions(precision=4)
 cwd = os.getcwd()

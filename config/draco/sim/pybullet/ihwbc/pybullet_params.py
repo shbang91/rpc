@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Config(object):
+class Config:
     CONTROLLER_DT = 0.00125
     N_SUBSTEP = 1
 
@@ -25,7 +25,7 @@ class Config(object):
     USE_MESHCAT = False
 
 
-class DracoLinkIdx(object):
+class DracoLinkIdx:
     torso_link = -1
     torso_com_link = 0
     neck_pitch_link = 1
@@ -68,7 +68,7 @@ class DracoLinkIdx(object):
     torso_imu = 38
 
 
-class DracoJointIdx(object):
+class DracoJointIdx:
     neck_pitch = 1
     l_shoulder_fe = 2
     l_shoulder_aa = 3
@@ -98,7 +98,7 @@ class DracoJointIdx(object):
     r_ankle_ie = 36
 
 
-class DracoManipulationLinkIdx(object):
+class DracoManipulationLinkIdx:
     torso_link = -1
     torso_com_link = 0
     neck_pitch_link = 1
@@ -149,7 +149,7 @@ class DracoManipulationLinkIdx(object):
     torso_imu = 46
 
 
-class DracoManipulationJointIdx(object):
+class DracoManipulationJointIdx:
     neck_pitch = 1
     l_shoulder_fe = 2
     l_shoulder_aa = 3
@@ -179,7 +179,7 @@ class DracoManipulationJointIdx(object):
     r_ankle_ie = 44
 
 
-class JointGains(object):
+class JointGains:
     # kp = 5. * np.ones(27)
     # kd = 0. * np.ones(27)
     kp = np.array(
